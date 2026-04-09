@@ -9,10 +9,13 @@ const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 export default function AdminScreen({ onLogout }: Props) {
-  const [tab, setTab] = useState<'leaderboard' | 'progress'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'missions'>('leaderboard');
   const [teams, setTeams] = useState<Team[]>([]);
+  const [visibleIds, setVisibleIds] = useState<string[]>(MISSIONS.map(m => m.id));
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
 
-  const load = useCallback(async () => {
+  const loadTeams = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/teams');
       const data = await res.json();
@@ -21,10 +24,46 @@ export default function AdminScreen({ onLogout }: Props) {
   }, []);
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
+    loadTeams();
+    const id = setInterval(loadTeams, 5000);
     return () => clearInterval(id);
-  }, [load]);
+  }, [loadTeams]);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(d => { if (d.visible_missions) setVisibleIds(d.visible_missions); })
+      .catch(() => {});
+  }, []);
+
+  function toggleMission(id: string) {
+    setVisibleIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+    setSaveMsg('');
+  }
+
+  function toggleAll(on: boolean) {
+    setVisibleIds(on ? MISSIONS.map(m => m.id) : []);
+    setSaveMsg('');
+  }
+
+  async function saveSettings() {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visible_missions: visibleIds }),
+      });
+      setSaveMsg(res.ok ? '✓ Saved!' : '✗ Error saving.');
+    } catch {
+      setSaveMsg('✗ Network error.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const sorted = [...teams].sort((a, b) => b.score - a.score);
 
@@ -52,6 +91,9 @@ export default function AdminScreen({ onLogout }: Props) {
           </button>
           <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}>
             📊 Progress
+          </button>
+          <button className={`admin-tab${tab === 'missions' ? ' active' : ''}`} onClick={() => setTab('missions')}>
+            🎯 Missions
           </button>
         </div>
 
@@ -120,6 +162,79 @@ export default function AdminScreen({ onLogout }: Props) {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {tab === 'missions' && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2 style={{ fontSize: '18px' }}>Visible Missions</h2>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn btn-ghost" style={{ padding: '6px 14px', fontSize: '12px' }} onClick={() => toggleAll(true)}>
+                  All on
+                </button>
+                <button className="btn btn-ghost" style={{ padding: '6px 14px', fontSize: '12px' }} onClick={() => toggleAll(false)}>
+                  All off
+                </button>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
+              Toggle which missions teams can see and play. Changes take effect immediately after saving.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+              {MISSIONS.map(m => {
+                const on = visibleIds.includes(m.id);
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => toggleMission(m.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '14px 20px',
+                      background: 'var(--card)',
+                      border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`,
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      opacity: on ? 1 : 0.45,
+                    }}
+                  >
+                    <span style={{ fontSize: '24px', flexShrink: 0 }}>{m.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '14px' }}>{m.name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{m.category} · {m.difficulty} · {m.maxPts} pts</div>
+                    </div>
+                    <div style={{
+                      width: '44px', height: '24px', borderRadius: '12px',
+                      background: on ? 'var(--accent)' : 'var(--border)',
+                      position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: '3px',
+                        left: on ? '23px' : '3px',
+                        width: '18px', height: '18px', borderRadius: '50%',
+                        background: '#fff', transition: 'left 0.2s',
+                      }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button className="btn btn-primary" onClick={saveSettings} disabled={saving}>
+                {saving ? 'SAVING...' : 'SAVE CHANGES →'}
+              </button>
+              {saveMsg && (
+                <span style={{ fontSize: '13px', color: saveMsg.startsWith('✓') ? 'var(--accent3)' : 'var(--accent2)' }}>
+                  {saveMsg}
+                </span>
+              )}
             </div>
           </div>
         )}
