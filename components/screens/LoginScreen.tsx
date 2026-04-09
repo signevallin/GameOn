@@ -1,0 +1,132 @@
+'use client';
+import { useState } from 'react';
+import { Team } from '@/lib/supabase';
+
+type Props = {
+  onTeamLogin: (team: Team) => void;
+  onAdminLogin: () => void;
+};
+
+export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
+  const [mode, setMode] = useState<'team' | 'admin'>('team');
+  const [teamName, setTeamName] = useState('');
+  const [teamCode, setTeamCode] = useState('');
+  const [adminPass, setAdminPass] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleTeamLogin() {
+    setError('');
+    if (!teamName.trim()) { setError('Please enter a team name.'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/team/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: teamName.trim(), code: teamCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error); return; }
+      onTeamLogin(data.team);
+    } catch {
+      setError('Network error. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAdminLogin() {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPass }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error); return; }
+      onAdminLogin();
+    } catch {
+      setError('Network error. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '480px', padding: '20px', position: 'relative', zIndex: 1 }} className="fade-in">
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div className="logo">IT Organisation</div>
+          <h1 style={{ fontSize: '36px', color: 'var(--accent)' }}>
+            THE CHALLENGE<br /><span style={{ color: 'var(--text)' }}>2026</span>
+          </h1>
+          <p style={{ color: 'var(--muted)', marginTop: '12px', fontSize: '14px' }}>Select your role to log in</p>
+        </div>
+
+        <div className="login-tabs">
+          <button className={`tab-btn${mode === 'team' ? ' active' : ''}`} onClick={() => { setMode('team'); setError(''); }}>
+            🧑‍💻 TEAM
+          </button>
+          <button className={`tab-btn${mode === 'admin' ? ' active' : ''}`} onClick={() => { setMode('admin'); setError(''); }}>
+            🛡️ ADMIN
+          </button>
+        </div>
+
+        <div className="card">
+          {mode === 'team' ? (
+            <>
+              <div className="form-group">
+                <label className="form-label">Team Name</label>
+                <input
+                  type="text"
+                  placeholder="E.g. Team Frontend"
+                  maxLength={20}
+                  value={teamName}
+                  onChange={e => setTeamName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Team Code (ask the organiser)</label>
+                <input
+                  type="password"
+                  placeholder="••••••"
+                  value={teamCode}
+                  onChange={e => setTeamCode(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                />
+                {error && <p className="error-msg">{error}</p>}
+              </div>
+              <button className="btn btn-primary btn-full" onClick={handleTeamLogin} disabled={loading}>
+                {loading ? 'LOGGING IN...' : 'LOG IN AS TEAM →'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="form-group">
+                <label className="form-label">Admin Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={adminPass}
+                  onChange={e => setAdminPass(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAdminLogin()}
+                />
+                {error && <p className="error-msg">{error}</p>}
+              </div>
+              <button className="btn btn-primary btn-full" onClick={handleAdminLogin} disabled={loading}>
+                {loading ? 'LOGGING IN...' : 'LOG IN AS ADMIN →'}
+              </button>
+            </>
+          )}
+        </div>
+
+        <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', marginTop: '20px' }}>
+          Team code: <code>team123</code> &nbsp;|&nbsp; Admin: <code>admin2026</code>
+        </p>
+      </div>
+    </div>
+  );
+}
