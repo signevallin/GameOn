@@ -15,13 +15,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid payload.' }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error, data } = await supabase
     .from('settings')
-    .update({ visible_missions, updated_at: new Date().toISOString() })
-    .eq('id', 1);
+    .upsert({ id: 1, visible_missions, updated_at: new Date().toISOString() })
+    .select();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data || data.length === 0) {
+    return NextResponse.json({ error: 'No rows updated – check Supabase RLS.' }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
