@@ -8,12 +8,28 @@ type Props = { onLogout: () => void };
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
+type PhotoSubmission = {
+  id: string;
+  team_id: string;
+  team_name: string;
+  mission_id: string;
+  photo_url: string;
+  status: string;
+  points_awarded: number | null;
+  created_at: string;
+};
+
+const POINT_OPTIONS = [0, 100, 200, 300, 400, 500];
+
 export default function AdminScreen({ onLogout }: Props) {
-  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'missions'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'missions' | 'photos'>('leaderboard');
   const [teams, setTeams] = useState<Team[]>([]);
   const [visibleIds, setVisibleIds] = useState<string[]>(MISSIONS.map(m => m.id));
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
+  const [submissions, setSubmissions] = useState<PhotoSubmission[]>([]);
+  const [rating, setRating] = useState<Record<string, number>>({});
+  const [rated, setRated] = useState<Set<string>>(new Set());
 
   const loadTeams = useCallback(async () => {
     try {
@@ -23,11 +39,20 @@ export default function AdminScreen({ onLogout }: Props) {
     } catch { /* ignore */ }
   }, []);
 
+  const loadPhotos = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/photos');
+      const data = await res.json();
+      if (data.submissions) setSubmissions(data.submissions);
+    } catch { /* ignore */ }
+  }, []);
+
   useEffect(() => {
     loadTeams();
-    const id = setInterval(loadTeams, 5000);
+    loadPhotos();
+    const id = setInterval(() => { loadTeams(); loadPhotos(); }, 5000);
     return () => clearInterval(id);
-  }, [loadTeams]);
+  }, [loadTeams, loadPhotos]);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -94,6 +119,20 @@ export default function AdminScreen({ onLogout }: Props) {
           </button>
           <button className={`admin-tab${tab === 'missions' ? ' active' : ''}`} onClick={() => setTab('missions')}>
             🎯 Missions
+          </button>
+          <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative' }}>
+            📸 Photos
+            {submissions.filter(s => s.status === 'pending').length > 0 && (
+              <span style={{
+                position: 'absolute', top: '-4px', right: '-4px',
+                background: 'var(--accent2)', color: '#fff',
+                borderRadius: '50%', width: '18px', height: '18px',
+                fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700,
+              }}>
+                {submissions.filter(s => s.status === 'pending').length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -163,6 +202,98 @@ export default function AdminScreen({ onLogout }: Props) {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {tab === 'photos' && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2 style={{ fontSize: '18px' }}>Photo Submissions</h2>
+              <span className="badge">{submissions.filter(s => s.status === 'pending').length} pending</span>
+            </div>
+            {submissions.length === 0 ? (
+              <div className="empty-state">No photos submitted yet.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {submissions.map(sub => {
+                  const isRated = sub.status === 'rated' || rated.has(sub.id);
+                  return (
+                    <div key={sub.id} style={{
+                      background: 'var(--card)',
+                      border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`,
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                    }}>
+                      <img
+                        src={sub.photo_url}
+                        alt={sub.team_name}
+                        style={{ width: '100%', maxHeight: '360px', objectFit: 'cover', display: 'block' }}
+                      />
+                      <div style={{ padding: '16px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '15px' }}>{sub.team_name}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                              {new Date(sub.created_at).toLocaleTimeString()}
+                            </div>
+                          </div>
+                          {isRated ? (
+                            <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '14px' }}>
+                              ✓ {sub.points_awarded ?? rating[sub.id]} pts awarded
+                            </span>
+                          ) : (
+                            <span className="badge">Pending</span>
+                          )}
+                        </div>
+                        {!isRated && (
+                          <>
+                            <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '10px' }}>
+                              Rate the photo and award points:
+                            </p>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              {POINT_OPTIONS.map(pts => (
+                                <button
+                                  key={pts}
+                                  onClick={async () => {
+                                    setRating(r => ({ ...r, [sub.id]: pts }));
+                                    await fetch('/api/admin/photos/rate', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        submissionId: sub.id,
+                                        teamId: sub.team_id,
+                                        missionId: sub.mission_id,
+                                        points: pts,
+                                      }),
+                                    });
+                                    setRated(r => new Set([...r, sub.id]));
+                                    loadPhotos();
+                                    loadTeams();
+                                  }}
+                                  style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--border)',
+                                    background: pts === 500 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)',
+                                    color: pts === 500 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Sora', sans-serif",
+                                    fontWeight: 700,
+                                    fontSize: '13px',
+                                  }}
+                                >
+                                  {pts} p
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

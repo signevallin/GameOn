@@ -11,6 +11,11 @@ import TypeRace from '@/components/games/TypeRace';
 import Hangman from '@/components/games/Hangman';
 import WouldYou from '@/components/games/WouldYou';
 import TrueFalse from '@/components/games/TrueFalse';
+import PhotoChallenge from '@/components/games/PhotoChallenge';
+import PaSparet from '@/components/games/PaSparet';
+import SolveCrime from '@/components/games/SolveCrime';
+import CelebrityQuiz from '@/components/games/CelebrityQuiz';
+import MusicEmoji from '@/components/games/MusicEmoji';
 
 type Props = {
   missionId: string;
@@ -23,6 +28,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
   const mission = MISSIONS.find(m => m.id === missionId)!;
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
+  const [photoSubmitted, setPhotoSubmitted] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -32,10 +38,14 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
     return () => clearInterval(id);
   }, []);
 
-  const display = elapsed < 60 ? `${elapsed}s` : `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`;
+  const display = elapsed < 60
+    ? `${elapsed}s`
+    : `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`;
 
   async function finish(correct: boolean, customPts?: number) {
-    const pts = correct ? (customPts !== undefined ? customPts : calcPoints(mission, elapsedRef.current)) : 0;
+    const pts = correct
+      ? (customPts !== undefined ? customPts : calcPoints(mission, elapsedRef.current))
+      : 0;
 
     if (team.completed?.includes(missionId)) {
       onDone(team, 0, correct, elapsedRef.current);
@@ -75,6 +85,61 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
         return <WouldYou question={mission.question!} maxPts={mission.maxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
         return <TrueFalse statements={mission.statements!} onFinish={finish} />;
+      case 'photo':
+        if (photoSubmitted) {
+          return (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: '56px', marginBottom: '16px' }}>⏳</div>
+              <h2 style={{ marginBottom: '12px' }}>Photo submitted!</h2>
+              <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px' }}>
+                Admin will review and rate your photo. Points will be added to your score once rated — go do other missions!
+              </p>
+              <button className="btn btn-primary" onClick={onBack}>← BACK TO MISSIONS</button>
+            </div>
+          );
+        }
+        return (
+          <PhotoChallenge
+            question={mission.question!}
+            missionId={missionId}
+            team={team}
+            onSubmitted={() => setPhotoSubmitted(true)}
+          />
+        );
+      case 'pa_sparet':
+        return (
+          <PaSparet
+            clues={mission.clues!}
+            answer={mission.answer!}
+            maxPts={mission.maxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'solve_crime':
+        return (
+          <SolveCrime
+            story={mission.crimeStory!}
+            questions={mission.crimeQuestions!}
+            maxPts={mission.maxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'celebrity_quiz':
+        return (
+          <CelebrityQuiz
+            rounds={mission.celebRounds!}
+            maxPts={mission.maxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'music_emoji':
+        return (
+          <MusicEmoji
+            rounds={mission.emojiRounds!}
+            maxPts={mission.maxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
       default:
         return null;
     }
