@@ -1,7 +1,54 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
+
+// ── Countdown hook (admin side) ──────────────────────────────────────────────
+function useCountdown(game: Game | null) {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (!game || game.status !== 'active' || !game.started_at) { setSecondsLeft(null); return; }
+    const endTime = new Date(game.started_at).getTime() + game.duration_minutes * 60 * 1000;
+    const tick = () => setSecondsLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [game]);
+  return secondsLeft;
+}
+
+function fmtTimer(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+function fmtElapsed(ms: number) {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}h ${m}m ${sec}s`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
+
+// Centered nav brand shared across all admin views
+function NavCenter({ game }: { game: Game | null }) {
+  const secondsLeft = useCountdown(game);
+  const urgentTime = secondsLeft !== null && secondsLeft < 300;
+  const timerColor = urgentTime ? 'var(--gold)' : 'var(--accent3)';
+  return (
+    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', pointerEvents: 'none' }}>
+      <span style={{ fontSize: '11px', letterSpacing: '4px', color: 'var(--accent)', opacity: 0.7, fontWeight: 700 }}>GAMEON</span>
+      {game && game.status === 'active' && secondsLeft !== null && (
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: timerColor, letterSpacing: '2px', lineHeight: 1, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
+          ⏱ {fmtTimer(secondsLeft)}
+        </span>
+      )}
+    </div>
+  );
+}
 
 type Props = { onLogout: () => void };
 type AdminView = 'games' | 'create' | 'dashboard';
@@ -31,6 +78,12 @@ export default function AdminScreen({ onLogout }: Props) {
   const [selectedMissions, setSelectedMissions] = useState<string[]>(MISSIONS.map(m => m.id));
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Timestamp of the last admin command (start/finish/restart).
+  // Polls that started BEFORE a command are discarded to prevent race conditions.
+  const lastCommandAtRef = useRef(0);
 
   const POST = (url: string, body?: object) => fetch(url, {
     method: 'POST',
@@ -90,13 +143,20 @@ export default function AdminScreen({ onLogout }: Props) {
     }
 
     async function poll() {
-      const opts: RequestInit = { cache: 'no-store' };
+      // Snapshot the time at poll start – if a command fires while the poll
+      // is in flight, we discard the stale result to prevent race conditions.
+      const pollStartedAt = Date.now();
+
       const [teamsRes, photosRes, gameRes] = await Promise.all([
-        fetch(`/api/admin/teams?gameId=${gameId}`, opts),
-        fetch('/api/admin/photos', opts),
-        fetch(`/api/game?key=${gameKey}`, opts),
+        POST('/api/admin/teams', { gameId }),
+        POST('/api/admin/photos'),
+        POST('/api/game', { key: gameKey }),
       ]);
       const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
+
+      // Discard if a command (start/finish/restart) was issued while polling
+      if (pollStartedAt < lastCommandAtRef.current) return;
+
       if (td.teams) setTeams(td.teams);
       if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
         td.teams?.some((t: Team) => t.id === s.team_id)
@@ -125,16 +185,29 @@ export default function AdminScreen({ onLogout }: Props) {
     loadGames();
   }
 
-  async function startOrStop(action: 'start' | 'finish') {
+  async function startOrStop(action: 'start' | 'finish' | 'restart') {
     if (!activeGame) return;
+    // Stamp the command time BEFORE the fetch so any poll in-flight right now
+    // (which started before this stamp) gets discarded when it returns.
+    lastCommandAtRef.current = Date.now();
     const res = await fetch('/api/admin/game/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ gameId: activeGame.id, action }),
     });
     const data = await res.json();
-    // Always apply the authoritative response from startOrStop, overriding any racing poll
+    // Directly set the authoritative state returned by the command.
+    // This intentionally bypasses applyGame so a restart can go from
+    // finished → draft without the status-priority guard blocking it.
     if (data.game) setActiveGame(data.game);
+  }
+
+  async function deleteGame(gameId: string) {
+    setDeletingId(gameId);
+    await POST('/api/admin/game', { action: 'delete', gameId });
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+    await loadGames();
   }
 
   async function ratePhoto(sub: PhotoSubmission, pts: number) {
@@ -147,13 +220,20 @@ export default function AdminScreen({ onLogout }: Props) {
     if (activeGame) loadGameData(activeGame);
   }
 
-  const sorted = [...teams].sort((a, b) => b.score - a.score);
+  // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
+  const sorted = [...teams].sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const fa = a.finished_at ? new Date(a.finished_at).getTime() : Infinity;
+    const fb = b.finished_at ? new Date(b.finished_at).getTime() : Infinity;
+    return fa - fb;
+  });
 
   // ── GAMES LIST ──
   if (view === 'games') return (
     <>
-      <nav className="nav">
+      <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand">🛡️ ADMIN</div>
+        <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
         </div>
@@ -173,12 +253,13 @@ export default function AdminScreen({ onLogout }: Props) {
             {games.map(g => {
               const statusColor = g.status === 'active' ? 'var(--accent3)' : g.status === 'finished' ? 'var(--muted)' : 'var(--gold)';
               const statusLabel = g.status === 'active' ? '🟢 Active' : g.status === 'finished' ? '⬛ Finished' : '🟡 Draft';
+              const isConfirming = confirmDeleteId === g.id;
+              const isDeleting = deletingId === g.id;
               return (
-                <div key={g.id} onClick={() => { setActiveGame(g); setView('dashboard'); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
-                  <div style={{ flex: 1 }}>
+                <div key={g.id}
+                  style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 24px', background: 'var(--card)', border: `1px solid ${isConfirming ? 'var(--accent2)' : 'var(--border)'}`, borderRadius: '12px', transition: 'all 0.2s' }}>
+                  {/* Clickable info area */}
+                  <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => { if (!isConfirming) { setActiveGame(g); setView('dashboard'); } }}>
                     <div style={{ fontWeight: 700, fontSize: '16px' }}>{g.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
                       {g.missions.length} missions · {g.duration_minutes} min
@@ -186,6 +267,27 @@ export default function AdminScreen({ onLogout }: Props) {
                   </div>
                   <div style={{ fontFamily: "'Sora', sans-serif", letterSpacing: '3px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{g.game_key}</div>
                   <div style={{ fontSize: '13px', color: statusColor, fontWeight: 700 }}>{statusLabel}</div>
+
+                  {/* Delete / confirm */}
+                  {isConfirming ? (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: '12px', color: 'var(--accent2)', fontWeight: 600 }}>Delete?</span>
+                      <button onClick={() => deleteGame(g.id)} disabled={isDeleting}
+                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                        {isDeleting ? '...' : 'YES'}
+                      </button>
+                      <button onClick={() => setConfirmDeleteId(null)}
+                        style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                        NO
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
+                      title="Delete game"
+                      style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
+                      🗑
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -198,8 +300,9 @@ export default function AdminScreen({ onLogout }: Props) {
   // ── CREATE GAME ──
   if (view === 'create') return (
     <>
-      <nav className="nav">
+      <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand">🎮 NEW GAME</div>
+        <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
         </div>
@@ -267,8 +370,9 @@ export default function AdminScreen({ onLogout }: Props) {
 
   return (
     <>
-      <nav className="nav">
+      <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand">🎮 {activeGame.name}</div>
+        <NavCenter game={activeGame} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
@@ -290,7 +394,7 @@ export default function AdminScreen({ onLogout }: Props) {
               </span>
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {activeGame.status === 'draft' && (
               <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: '15px', padding: '14px 28px' }}>
                 ▶ START GAME
@@ -299,6 +403,13 @@ export default function AdminScreen({ onLogout }: Props) {
             {activeGame.status === 'active' && (
               <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: '12px 20px' }}>
                 ⏹ END GAME
+              </button>
+            )}
+            {(activeGame.status === 'finished' || activeGame.status === 'active') && (
+              <button className="btn btn-ghost" onClick={() => startOrStop('restart')}
+                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                title="Reset game to Draft so you can start it again">
+                ↺ RESTART
               </button>
             )}
           </div>
@@ -326,14 +437,25 @@ export default function AdminScreen({ onLogout }: Props) {
               <span className="badge">{teams.length} teams</span>
             </div>
             <div className="leaderboard">
-              {sorted.length === 0 ? <div className="empty-state">No teams yet.</div> : sorted.map((t, i) => (
-                <div className="lb-row" key={t.id}>
-                  <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
-                  <div className="lb-name">{t.name}</div>
-                  <div className="lb-completed">{t.completed?.length ?? 0}/{activeGame.missions.length} missions</div>
-                  <div className="lb-score">{t.score} p</div>
-                </div>
-              ))}
+              {sorted.length === 0 ? <div className="empty-state">No teams yet.</div> : sorted.map((t, i) => {
+                const finishElapsed = t.finished_at && activeGame.started_at
+                  ? fmtElapsed(new Date(t.finished_at).getTime() - new Date(activeGame.started_at).getTime())
+                  : null;
+                return (
+                  <div className="lb-row" key={t.id}>
+                    <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
+                    <div className="lb-name">{t.name}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
+                      <div className="lb-score">{t.score} p</div>
+                      {finishElapsed ? (
+                        <div style={{ fontSize: '11px', color: 'var(--accent3)', letterSpacing: '0.5px' }}>🏁 {finishElapsed}</div>
+                      ) : (
+                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

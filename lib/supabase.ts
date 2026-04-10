@@ -12,6 +12,7 @@ export type Team = {
   completed: string[];
   game_id: string;
   created_at: string;
+  finished_at: string | null;
 };
 
 export type Game = {

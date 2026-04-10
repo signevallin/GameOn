@@ -15,6 +15,8 @@ export async function POST(req: Request) {
   const updates =
     action === 'finish'
       ? { status: 'finished' }
+      : action === 'restart'
+      ? { status: 'draft', started_at: null }
       : { status: 'active', started_at: new Date().toISOString() };
 
   const { data, error } = await supabase

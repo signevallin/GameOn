@@ -32,5 +32,20 @@ export async function POST(req: Request) {
     .from('games').select('*').eq('game_key', key.toUpperCase()).single();
 
   if (error || !data) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
+
+  // Auto-finish: if the game is active and the timer has expired, mark it finished
+  if (data.status === 'active' && data.started_at) {
+    const endTime = new Date(data.started_at).getTime() + data.duration_minutes * 60 * 1000;
+    if (Date.now() >= endTime) {
+      const { data: finished } = await getSupabase()
+        .from('games')
+        .update({ status: 'finished' })
+        .eq('id', data.id)
+        .select()
+        .single();
+      if (finished) return NextResponse.json({ game: finished });
+    }
+  }
+
   return NextResponse.json({ game: data });
 }

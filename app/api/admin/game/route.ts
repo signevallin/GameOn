@@ -43,6 +43,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ games: data });
   }
 
+  // action:'delete' – delete a game and all its teams/photo submissions
+  if (body.action === 'delete') {
+    const { gameId } = body;
+    if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
+
+    // Get team IDs first so we can cascade-delete photo submissions
+    const { data: gameTeams } = await adminClient()
+      .from('teams').select('id').eq('game_id', gameId);
+    const teamIds = (gameTeams ?? []).map((t: { id: string }) => t.id);
+    if (teamIds.length) {
+      await adminClient().from('photo_submissions').delete().in('team_id', teamIds);
+    }
+    await adminClient().from('teams').delete().eq('game_id', gameId);
+    const { error } = await adminClient().from('games').delete().eq('id', gameId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
   // default – create a new game
   const { name, missions, duration_minutes } = body;
   if (!missions?.length) {

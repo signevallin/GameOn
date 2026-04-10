@@ -36,27 +36,62 @@ function formatTime(s: number) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
-export default function MissionsScreen({ team, game, onSelectMission, onLogout, onTeamUpdate, onGameUpdate }: Props) {
+// Format elapsed seconds as e.g. "1h 23m 45s" or "23m 45s"
+function formatElapsed(ms: number) {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}h ${m}m ${sec}s`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
+
+export default function MissionsScreen({ team, game, onSelectMission, onLogout, onTeamUpdate }: Props) {
   const secondsLeft = useCountdown(game);
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
-
-  // Polling is handled by page.tsx (the state owner). onTeamUpdate / onGameUpdate
-  // are called from there every 3 s, so no local polling needed here.
+  const [finishing, setFinishing] = useState(false);
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const categories = [...new Set(visibleMissions.map(m => m.category))];
+  const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
+  const alreadyFinished = Boolean(team.finished_at);
 
   // Countdown color
   const urgentTime = secondsLeft !== null && secondsLeft < 300;
   const timerColor = isFinished ? 'var(--accent2)' : urgentTime ? 'var(--gold)' : 'var(--accent3)';
 
+  async function markDone() {
+    setFinishing(true);
+    try {
+      const res = await fetch('/api/team/finish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: team.id }),
+        cache: 'no-store',
+      });
+      const data = await res.json();
+      if (data.team) onTeamUpdate(data.team);
+    } finally {
+      setFinishing(false);
+    }
+  }
+
+  // Elapsed time from game start to team finish
+  const elapsedText = alreadyFinished && team.finished_at && game.started_at
+    ? formatElapsed(new Date(team.finished_at).getTime() - new Date(game.started_at).getTime())
+    : null;
+
   return (
     <>
       <nav className="nav">
-        <div className="nav-brand">GAMEON</div>
-        <div className="nav-right">
-          <span className="nav-team">{team.name}</span>
+        {/* Left: empty spacer so center stays centered */}
+        <div style={{ minWidth: '120px' }} />
+
+        {/* Center: score + timer */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <span className="nav-team" style={{ fontSize: '13px' }}>{team.name}</span>
           <span className="nav-score">⭐ {team.score} pts</span>
           {game.status === 'active' && secondsLeft !== null && (
             <span style={{
@@ -71,6 +106,10 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
               ⏱ {formatTime(secondsLeft)}
             </span>
           )}
+        </div>
+
+        {/* Right: logout */}
+        <div className="nav-right" style={{ minWidth: '120px', justifyContent: 'flex-end' }}>
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>
             LOG OUT
           </button>
@@ -111,17 +150,62 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
               The game is over. Final score:
             </p>
             <div style={{ fontSize: '56px', fontWeight: 700, color: 'var(--gold)' }}>{team.score} pts</div>
+            {elapsedText && (
+              <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '12px' }}>
+                Finished in <strong style={{ color: 'var(--accent3)' }}>{elapsedText}</strong>
+              </p>
+            )}
           </div>
         )}
 
         {/* ACTIVE MISSIONS */}
         {!isDraft && !isFinished && (
           <>
-            <div style={{ padding: '40px 0 32px' }}>
-              <h2>Choose your mission</h2>
-              <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
-                Faster answers = more points. Click a mission to begin.
-              </p>
+            <div style={{ padding: '40px 0 32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h2>Choose your mission</h2>
+                <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
+                  Faster answers = more points. Click a mission to begin.
+                </p>
+              </div>
+
+              {/* Mark all done button */}
+              {alreadyFinished ? (
+                <div style={{
+                  padding: '12px 20px',
+                  background: 'rgba(140,191,155,0.12)',
+                  border: '1px solid var(--accent3)',
+                  borderRadius: '10px',
+                  color: 'var(--accent3)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  ✅ Marked as done{elapsedText ? ` · ${elapsedText}` : ''}
+                </div>
+              ) : (
+                <button
+                  onClick={markDone}
+                  disabled={finishing}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '10px',
+                    border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`,
+                    background: allDone ? 'rgba(140,191,155,0.12)' : 'var(--card)',
+                    color: allDone ? 'var(--accent3)' : 'var(--muted)',
+                    fontFamily: "'Sora', sans-serif",
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    opacity: finishing ? 0.6 : 1,
+                  }}
+                >
+                  {finishing ? '...' : '🏁 Vi är klara!'}
+                </button>
+              )}
             </div>
 
             <div className="missions-grid">
