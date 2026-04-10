@@ -4,9 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  // Use service role key to bypass RLS
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
   const { visible_missions } = await req.json();
@@ -15,17 +16,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid payload.' }, { status: 400 });
   }
 
-  const { error, data } = await supabase
+  const { error } = await supabase
     .from('settings')
-    .upsert({ id: 1, visible_missions, updated_at: new Date().toISOString() })
-    .select();
+    .update({ visible_missions, updated_at: new Date().toISOString() })
+    .eq('id', 1);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data || data.length === 0) {
-    return NextResponse.json({ error: 'No rows updated – check Supabase RLS.' }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

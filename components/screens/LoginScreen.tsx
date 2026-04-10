@@ -1,33 +1,34 @@
 'use client';
 import { useState } from 'react';
-import { Team } from '@/lib/supabase';
+import { Team, Game } from '@/lib/supabase';
 
 type Props = {
-  onTeamLogin: (team: Team) => void;
+  onTeamLogin: (team: Team, game: Game) => void;
   onAdminLogin: () => void;
 };
 
 export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
   const [mode, setMode] = useState<'team' | 'admin'>('team');
   const [teamName, setTeamName] = useState('');
-  const [teamCode, setTeamCode] = useState('');
+  const [gameKey, setGameKey] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleTeamLogin() {
     setError('');
-    if (!teamName.trim()) { setError('Please enter a team name.'); return; }
+    if (!teamName.trim()) { setError('Enter a team name.'); return; }
+    if (!gameKey.trim()) { setError('Enter the game key.'); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/team/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName.trim(), code: teamCode }),
+        body: JSON.stringify({ name: teamName.trim(), gameKey: gameKey.trim() }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
-      onTeamLogin(data.team);
+      onTeamLogin(data.team, data.game);
     } catch {
       setError('Network error. Try again.');
     } finally {
@@ -89,18 +90,20 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Team Code (ask the organiser)</label>
+                <label className="form-label">Game Key (from the organiser)</label>
                 <input
-                  type="password"
-                  placeholder="••••••"
-                  value={teamCode}
-                  onChange={e => setTeamCode(e.target.value)}
+                  type="text"
+                  placeholder="E.g. X7K2P9"
+                  maxLength={6}
+                  value={gameKey}
+                  onChange={e => setGameKey(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                  style={{ letterSpacing: '4px', fontSize: '20px', textTransform: 'uppercase' }}
                 />
                 {error && <p className="error-msg">{error}</p>}
               </div>
               <button className="btn btn-primary btn-full" onClick={handleTeamLogin} disabled={loading}>
-                {loading ? 'LOGGING IN...' : 'LOG IN AS TEAM →'}
+                {loading ? 'JOINING...' : 'JOIN GAME →'}
               </button>
             </>
           ) : (
@@ -122,10 +125,6 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
             </>
           )}
         </div>
-
-        <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', marginTop: '20px' }}>
-          Team code: <code>team123</code> &nbsp;|&nbsp; Admin: <code>admin2026</code>
-        </p>
       </div>
     </div>
   );

@@ -10,5 +10,17 @@ export type Team = {
   name: string;
   score: number;
   completed: string[];
+  game_id: string;
+  created_at: string;
+};
+
+export type Game = {
+  id: string;
+  game_key: string;
+  name: string;
+  missions: string[];
+  duration_minutes: number;
+  status: 'draft' | 'active' | 'finished';
+  started_at: string | null;
   created_at: string;
 };

@@ -6,29 +6,32 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { name, code } = await req.json();
+  const { name, gameKey } = await req.json();
 
-  if (!name?.trim()) {
-    return NextResponse.json({ error: 'Team name is required.' }, { status: 400 });
-  }
+  if (!name?.trim()) return NextResponse.json({ error: 'Enter a team name.' }, { status: 400 });
+  if (!gameKey?.trim()) return NextResponse.json({ error: 'Enter a game key.' }, { status: 400 });
 
-  const expectedCode = process.env.TEAM_CODE ?? 'team123';
-  if (code !== expectedCode) {
-    return NextResponse.json({ error: 'Wrong team code. Try again.' }, { status: 401 });
-  }
+  // Find game
+  const { data: game, error: gameErr } = await supabase
+    .from('games')
+    .select('*')
+    .eq('game_key', gameKey.toUpperCase())
+    .single();
 
-  const { data, error } = await supabase
+  if (gameErr || !game) return NextResponse.json({ error: 'Wrong game key. Ask the organiser.' }, { status: 404 });
+  if (game.status === 'finished') return NextResponse.json({ error: 'This game is already finished.' }, { status: 400 });
+
+  // Upsert team in this game
+  const { data: team, error: teamErr } = await supabase
     .from('teams')
-    .upsert({ name: name.trim() }, { onConflict: 'name', ignoreDuplicates: false })
+    .upsert({ name: name.trim(), game_id: game.id, score: 0, completed: [] }, { onConflict: 'name,game_id', ignoreDuplicates: false })
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  if (teamErr) return NextResponse.json({ error: teamErr.message }, { status: 500 });
 
-  return NextResponse.json({ team: data });
+  return NextResponse.json({ team, game });
 }

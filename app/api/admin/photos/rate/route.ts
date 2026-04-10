@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
   const { submissionId, teamId, missionId, points } = await req.json();
@@ -15,7 +15,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
   }
 
-  // Mark submission as rated
   const { error: subErr } = await supabase
     .from('photo_submissions')
     .update({ status: 'rated', points_awarded: points })
@@ -23,7 +22,6 @@ export async function POST(req: Request) {
 
   if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
 
-  // Fetch team and update score + completed
   const { data: team, error: teamErr } = await supabase
     .from('teams')
     .select('score, completed')
@@ -33,12 +31,13 @@ export async function POST(req: Request) {
   if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 
   if (!team.completed?.includes(missionId)) {
-    const newCompleted = [...(team.completed ?? []), missionId];
-    const newScore = (team.score ?? 0) + points;
-
     const { error: updateErr } = await supabase
       .from('teams')
-      .update({ score: newScore, completed: newCompleted, updated_at: new Date().toISOString() })
+      .update({
+        score: (team.score ?? 0) + points,
+        completed: [...(team.completed ?? []), missionId],
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', teamId);
 
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
