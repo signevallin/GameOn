@@ -183,7 +183,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                   alignItems: 'center',
                   gap: '8px',
                 }}>
-                  ✅ Marked as done{elapsedText ? ` · ${elapsedText}` : ''}
+                  ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
                 </div>
               ) : (
                 <button
@@ -203,7 +203,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                     opacity: finishing ? 0.6 : 1,
                   }}
                 >
-                  {finishing ? '...' : '🏁 Vi är klara!'}
+                  {finishing ? '...' : '🏁 We\'re done!'}
                 </button>
               )}
             </div>

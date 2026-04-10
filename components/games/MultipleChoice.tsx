@@ -25,7 +25,7 @@ export default function MultipleChoice({ mission, onFinish }: Props) {
         {mission.options?.map((opt, i) => (
           <button
             key={i}
-            className="option-btn"
+            className={`option-btn${selected === opt ? ' selected' : ''}`}
             disabled={selected !== null}
             onClick={() => choose(opt)}
           >

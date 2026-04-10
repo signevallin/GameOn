@@ -80,19 +80,15 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {q.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (selected !== null) {
-            if (opt === q.answer) cls += ' correct';
-            else if (opt === selected) cls += ' wrong';
-          }
-          return (
-            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)}
-              style={{ textAlign: 'left' }}>
-              {opt}
-            </button>
-          );
-        })}
+        {q.options.map((opt, i) => (
+          <button key={i}
+            className={`option-btn${selected === opt ? ' selected' : ''}`}
+            disabled={selected !== null}
+            onClick={() => choose(opt)}
+            style={{ textAlign: 'left' }}>
+            {opt}
+          </button>
+        ))}
       </div>
     </>
   );

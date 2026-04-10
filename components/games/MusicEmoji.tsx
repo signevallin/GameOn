@@ -50,19 +50,15 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {r.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (selected !== null) {
-            if (opt === r.answer) cls += ' correct';
-            else if (opt === selected) cls += ' wrong';
-          }
-          return (
-            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)}
-              style={{ textAlign: 'center' }}>
-              🎵 {opt}
-            </button>
-          );
-        })}
+        {r.options.map((opt, i) => (
+          <button key={i}
+            className={`option-btn${selected === opt ? ' selected' : ''}`}
+            disabled={selected !== null}
+            onClick={() => choose(opt)}
+            style={{ textAlign: 'center' }}>
+            🎵 {opt}
+          </button>
+        ))}
       </div>
     </>
   );

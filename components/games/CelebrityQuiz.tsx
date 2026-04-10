@@ -51,19 +51,15 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
       </div>
 
       <div className="options-grid">
-        {r.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (selected !== null) {
-            if (opt === r.answer) cls += ' correct';
-            else if (opt === selected) cls += ' wrong';
-          }
-          return (
-            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)}
-              style={{ textAlign: 'center' }}>
-              {opt}
-            </button>
-          );
-        })}
+        {r.options.map((opt, i) => (
+          <button key={i}
+            className={`option-btn${selected === opt ? ' selected' : ''}`}
+            disabled={selected !== null}
+            onClick={() => choose(opt)}
+            style={{ textAlign: 'center' }}>
+            {opt}
+          </button>
+        ))}
       </div>
     </>
   );
