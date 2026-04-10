@@ -60,6 +60,9 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   }, [team.id, onTeamUpdate]);
 
   useEffect(() => {
+    // Poll immediately on mount so teams don't wait 5s for the first update
+    pollGame();
+    pollTeam();
     const id = setInterval(() => { pollGame(); pollTeam(); }, 5000);
     return () => clearInterval(id);
   }, [pollGame, pollTeam]);

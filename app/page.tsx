@@ -58,16 +58,6 @@ export default function Home() {
     }
   }, [screen, team, game, hydrated]);
 
-  // Keep localStorage in sync when MissionsScreen updates team/game via polling
-  function handleTeamUpdate(t: Team) {
-    setTeam(t);
-    try { localStorage.setItem('gameon_team', JSON.stringify(t)); } catch { /* ignore */ }
-  }
-  function handleGameUpdate(g: Game) {
-    setGame(g);
-    try { localStorage.setItem('gameon_game', JSON.stringify(g)); } catch { /* ignore */ }
-  }
-
   function handleTeamLogin(t: Team, g: Game) {
     setTeam(t);
     setGame(g);
@@ -107,8 +97,8 @@ export default function Home() {
         game={game}
         onSelectMission={handleSelectMission}
         onLogout={handleLogout}
-        onTeamUpdate={handleTeamUpdate}
-        onGameUpdate={handleGameUpdate}
+        onTeamUpdate={setTeam}
+        onGameUpdate={setGame}
       />
     );
   }
