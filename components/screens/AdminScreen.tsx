@@ -49,7 +49,13 @@ export default function AdminScreen({ onLogout }: Props) {
     if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
       td.teams?.some((t: Team) => t.id === s.team_id)
     ));
-    if (gd.game) setActiveGame(gd.game);
+    if (gd.game) {
+      const STATUS_ORDER: Record<string, number> = { draft: 0, active: 1, finished: 2 };
+      setActiveGame(prev => {
+        if (!prev) return gd.game;
+        return (STATUS_ORDER[gd.game.status] ?? 0) >= (STATUS_ORDER[prev.status] ?? 0) ? gd.game : prev;
+      });
+    }
   }, []);
 
   useEffect(() => { loadGames(); }, [loadGames]);
@@ -63,6 +69,19 @@ export default function AdminScreen({ onLogout }: Props) {
     // Snapshot id/key so the interval closure is stable
     const gameId = activeGameId;
     const gameKey = activeGameKey;
+    // Status priority: draft(0) < active(1) < finished(2)
+    // Never allow polling to downgrade status (fixes race between poll and startOrStop)
+    const STATUS_ORDER: Record<string, number> = { draft: 0, active: 1, finished: 2 };
+    function applyGame(fetched: Game) {
+      setActiveGame(prev => {
+        if (!prev) return fetched;
+        const prevLevel = STATUS_ORDER[prev.status] ?? 0;
+        const newLevel = STATUS_ORDER[fetched.status] ?? 0;
+        // Allow upgrades (draft→active, active→finished) but never downgrades
+        return newLevel >= prevLevel ? fetched : prev;
+      });
+    }
+
     async function poll() {
       const opts: RequestInit = { cache: 'no-store' };
       const [teamsRes, photosRes, gameRes] = await Promise.all([
@@ -75,7 +94,7 @@ export default function AdminScreen({ onLogout }: Props) {
       if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
         td.teams?.some((t: Team) => t.id === s.team_id)
       ));
-      if (gd.game) setActiveGame(gd.game);
+      if (gd.game) applyGame(gd.game);
     }
     poll();
     const id = setInterval(poll, 5000);
@@ -107,6 +126,7 @@ export default function AdminScreen({ onLogout }: Props) {
       body: JSON.stringify({ gameId: activeGame.id, action }),
     });
     const data = await res.json();
+    // Always apply the authoritative response from startOrStop, overriding any racing poll
     if (data.game) setActiveGame(data.game);
   }
 
