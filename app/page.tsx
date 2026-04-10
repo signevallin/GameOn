@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Team, Game } from '@/lib/supabase';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
@@ -8,7 +8,6 @@ import ResultScreen from '@/components/screens/ResultScreen';
 import AdminScreen from '@/components/screens/AdminScreen';
 
 type Screen = 'login' | 'missions' | 'challenge' | 'result' | 'admin';
-
 type ResultState = { missionId: string; pts: number; correct: boolean; elapsed: number };
 
 export default function Home() {
@@ -18,6 +17,13 @@ export default function Home() {
   const [activeMission, setActiveMission] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState | null>(null);
   const [hydrated, setHydrated] = useState(false);
+
+  // Refs so the polling interval always reads the latest values without
+  // needing to be in the dependency array (which would restart the interval).
+  const teamRef = useRef(team);
+  const gameRef = useRef(game);
+  teamRef.current = team;
+  gameRef.current = game;
 
   // ── Restore session from localStorage on first mount ──
   useEffect(() => {
@@ -33,13 +39,40 @@ export default function Home() {
         setGame(JSON.parse(savedGame));
         setScreen('missions');
       }
-    } catch {
-      // Corrupted storage – start fresh
-    }
+    } catch { /* corrupted storage – start fresh */ }
     setHydrated(true);
   }, []);
 
-  // ── Persist session whenever screen / team / game change ──
+  // ── Master polling loop: runs whenever team is on the missions screen ──
+  // Lives in page.tsx (the state owner) so there are no prop-stability issues.
+  useEffect(() => {
+    if (!hydrated) return;
+
+    async function refresh() {
+      const t = teamRef.current;
+      const g = gameRef.current;
+      if (!t || !g) return;
+
+      try {
+        const [gameRes, teamRes] = await Promise.all([
+          fetch(`/api/game?key=${g.game_key}`, { cache: 'no-store' }),
+          fetch(`/api/team/status?teamId=${t.id}`, { cache: 'no-store' }),
+        ]);
+        const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
+        if (gameData.game) setGame(gameData.game);
+        if (teamData.team) setTeam(teamData.team);
+      } catch { /* ignore network errors */ }
+    }
+
+    // Poll immediately, then every 3 seconds
+    refresh();
+    const id = setInterval(refresh, 3000);
+    return () => clearInterval(id);
+  // Only restart when the session itself changes (login/logout), not on every state update.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result']);
+
+  // ── Persist session to localStorage ──
   useEffect(() => {
     if (!hydrated) return;
     if (screen === 'admin') {
@@ -47,7 +80,6 @@ export default function Home() {
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
     } else if ((screen === 'missions' || screen === 'challenge' || screen === 'result') && team && game) {
-      // Always save as 'missions' so a refresh lands back on the mission list
       localStorage.setItem('gameon_screen', 'missions');
       localStorage.setItem('gameon_team', JSON.stringify(team));
       localStorage.setItem('gameon_game', JSON.stringify(game));
@@ -83,7 +115,6 @@ export default function Home() {
     setScreen('login');
   }
 
-  // Don't render anything until we've checked localStorage (avoids flash of login screen)
   if (!hydrated) return null;
 
   if (screen === 'login') {

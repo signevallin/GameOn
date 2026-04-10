@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 
@@ -41,31 +41,8 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
 
-  // Poll game status
-  const pollGame = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/game?key=${game.game_key}`, { cache: 'no-store' });
-      const data = await res.json();
-      if (data.game) onGameUpdate(data.game);
-    } catch { /* ignore */ }
-  }, [game.game_key, onGameUpdate]);
-
-  // Poll team score
-  const pollTeam = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/team/status?teamId=${team.id}`, { cache: 'no-store' });
-      const data = await res.json();
-      if (data.team) onTeamUpdate(data.team);
-    } catch { /* ignore */ }
-  }, [team.id, onTeamUpdate]);
-
-  useEffect(() => {
-    // Poll immediately on mount so teams don't wait 5s for the first update
-    pollGame();
-    pollTeam();
-    const id = setInterval(() => { pollGame(); pollTeam(); }, 5000);
-    return () => clearInterval(id);
-  }, [pollGame, pollTeam]);
+  // Polling is handled by page.tsx (the state owner). onTeamUpdate / onGameUpdate
+  // are called from there every 3 s, so no local polling needed here.
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const categories = [...new Set(visibleMissions.map(m => m.category))];
