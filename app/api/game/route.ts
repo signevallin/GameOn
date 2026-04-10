@@ -21,5 +21,7 @@ export async function GET(req: Request) {
     .single();
 
   if (error || !data) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
-  return NextResponse.json({ game: data });
+  return NextResponse.json({ game: data }, {
+    headers: { 'Cache-Control': 'no-store' },
+  });
 }

@@ -64,10 +64,11 @@ export default function AdminScreen({ onLogout }: Props) {
     const gameId = activeGameId;
     const gameKey = activeGameKey;
     async function poll() {
+      const opts: RequestInit = { cache: 'no-store' };
       const [teamsRes, photosRes, gameRes] = await Promise.all([
-        fetch(`/api/admin/teams?gameId=${gameId}`),
-        fetch('/api/admin/photos'),
-        fetch(`/api/game?key=${gameKey}`),
+        fetch(`/api/admin/teams?gameId=${gameId}`, opts),
+        fetch('/api/admin/photos', opts),
+        fetch(`/api/game?key=${gameKey}`, opts),
       ]);
       const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
       if (td.teams) setTeams(td.teams);

@@ -44,7 +44,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   // Poll game status
   const pollGame = useCallback(async () => {
     try {
-      const res = await fetch(`/api/game?key=${game.game_key}`);
+      const res = await fetch(`/api/game?key=${game.game_key}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.game) onGameUpdate(data.game);
     } catch { /* ignore */ }
@@ -53,7 +53,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   // Poll team score
   const pollTeam = useCallback(async () => {
     try {
-      const res = await fetch(`/api/team/status?teamId=${team.id}`);
+      const res = await fetch(`/api/team/status?teamId=${team.id}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.team) onTeamUpdate(data.team);
     } catch { /* ignore */ }
