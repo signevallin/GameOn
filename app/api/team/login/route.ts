@@ -24,10 +24,23 @@ export async function POST(req: Request) {
   if (gameErr || !game) return NextResponse.json({ error: 'Wrong game key. Ask the organiser.' }, { status: 404 });
   if (game.status === 'finished') return NextResponse.json({ error: 'This game is already finished.' }, { status: 400 });
 
-  // Upsert team in this game
+  // Check if this team name already exists in this game (to avoid resetting score)
+  const { data: existing } = await supabase
+    .from('teams')
+    .select('*')
+    .eq('name', name.trim())
+    .eq('game_id', game.id)
+    .single();
+
+  if (existing) {
+    // Team already exists — return as-is (preserve score and completed missions)
+    return NextResponse.json({ team: existing, game });
+  }
+
+  // New team — create it
   const { data: team, error: teamErr } = await supabase
     .from('teams')
-    .upsert({ name: name.trim(), game_id: game.id, score: 0, completed: [] }, { onConflict: 'name,game_id', ignoreDuplicates: false })
+    .insert({ name: name.trim(), game_id: game.id, score: 0, completed: [] })
     .select()
     .single();
 

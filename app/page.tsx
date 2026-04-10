@@ -52,16 +52,17 @@ export default function Home() {
       const t = teamRef.current;
       const g = gameRef.current;
       if (!t || !g) return;
-
       try {
-        const [gameRes, teamRes] = await Promise.all([
-          fetch(`/api/game?key=${g.game_key}`, { cache: 'no-store' }),
-          fetch(`/api/team/status?teamId=${t.id}`, { cache: 'no-store' }),
-        ]);
-        const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
-        if (gameData.game) setGame(gameData.game);
-        if (teamData.team) setTeam(teamData.team);
-      } catch { /* ignore network errors */ }
+      // _t= busts any CDN/edge cache that ignores Cache-Control headers
+      const ts = Date.now();
+      const [gameRes, teamRes] = await Promise.all([
+        fetch(`/api/game?key=${g.game_key}&_t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/team/status?teamId=${t.id}&_t=${ts}`, { cache: 'no-store' }),
+      ]);
+      const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
+      if (gameData.game) setGame(gameData.game);
+      if (teamData.team) setTeam(teamData.team);
+      } catch { /* ignore transient network errors */ }
     }
 
     // Poll immediately, then every 3 seconds

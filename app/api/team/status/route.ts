@@ -8,9 +8,10 @@ export async function GET(req: Request) {
   const teamId = searchParams.get('teamId');
   if (!teamId) return NextResponse.json({ error: 'Missing teamId.' }, { status: 400 });
 
+  // Teams table has public read RLS policy — anon key is sufficient.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data, error } = await supabase

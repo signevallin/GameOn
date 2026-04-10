@@ -9,9 +9,11 @@ export async function GET(req: Request) {
 
   if (!key) return NextResponse.json({ error: 'Missing game key.' }, { status: 400 });
 
+  // Games table has public read RLS policy — anon key is sufficient and
+  // avoids a hard dependency on SUPABASE_SERVICE_ROLE_KEY for polling reads.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data, error } = await supabase
