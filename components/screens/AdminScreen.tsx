@@ -33,7 +33,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [createError, setCreateError] = useState('');
 
   const loadGames = useCallback(async () => {
-    const res = await fetch('/api/admin/game');
+    const res = await fetch(`/api/admin/game?_t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     if (data.games) setGames(data.games);
   }, []);
@@ -194,7 +194,7 @@ export default function AdminScreen({ onLogout }: Props) {
       <nav className="nav">
         <div className="nav-brand">🎮 NEW GAME</div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setView('games')}>← BACK</button>
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '720px' }}>
@@ -263,7 +263,7 @@ export default function AdminScreen({ onLogout }: Props) {
       <nav className="nav">
         <div className="nav-brand">🎮 {activeGame.name}</div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { setView('games'); setTeams([]); setPhotos([]); }}>← GAMES</button>
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
         </div>
       </nav>
