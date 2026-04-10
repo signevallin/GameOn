@@ -53,11 +53,20 @@ export default function Home() {
       const g = gameRef.current;
       if (!t || !g) return;
       try {
-      // _t= busts any CDN/edge cache that ignores Cache-Control headers
-      const ts = Date.now();
+      // Use POST so Vercel edge never caches the response
       const [gameRes, teamRes] = await Promise.all([
-        fetch(`/api/game?key=${g.game_key}&_t=${ts}`, { cache: 'no-store' }),
-        fetch(`/api/team/status?teamId=${t.id}&_t=${ts}`, { cache: 'no-store' }),
+        fetch('/api/game', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: g.game_key }),
+          cache: 'no-store',
+        }),
+        fetch('/api/team/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ teamId: t.id }),
+          cache: 'no-store',
+        }),
       ]);
       const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
       if (gameData.error) console.error('[poll/game]', gameData.error);
