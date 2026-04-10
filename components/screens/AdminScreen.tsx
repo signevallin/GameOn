@@ -32,17 +32,24 @@ export default function AdminScreen({ onLogout }: Props) {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
+  const POST = (url: string, body?: object) => fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body ?? {}),
+    cache: 'no-store',
+  });
+
   const loadGames = useCallback(async () => {
-    const res = await fetch(`/api/admin/game?_t=${Date.now()}`, { cache: 'no-store' });
+    const res = await POST('/api/admin/game', { action: 'list' });
     const data = await res.json();
     if (data.games) setGames(data.games);
   }, []);
 
   const loadGameData = useCallback(async (game: Game) => {
     const [teamsRes, photosRes, gameRes] = await Promise.all([
-      fetch(`/api/admin/teams?gameId=${game.id}`),
-      fetch('/api/admin/photos'),
-      fetch(`/api/game?key=${game.game_key}`),
+      POST('/api/admin/teams', { gameId: game.id }),
+      POST('/api/admin/photos'),
+      POST('/api/game', { key: game.game_key }),
     ]);
     const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
     if (td.teams) setTeams(td.teams);

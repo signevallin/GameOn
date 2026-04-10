@@ -17,7 +17,7 @@ function adminClient() {
   );
 }
 
-// GET – list all games
+// GET – list all games (kept for compatibility)
 export async function GET() {
   const { data, error } = await adminClient()
     .from('games')
@@ -25,18 +25,30 @@ export async function GET() {
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ games: data }, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ games: data }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }
 
-// POST – create a new game
+// POST – either list games (action:'list') or create a new game
 export async function POST(req: Request) {
-  const { name, missions, duration_minutes } = await req.json();
+  const body = await req.json();
 
+  // action:'list' – fetch all games (POST is never cached by Vercel edge)
+  if (body.action === 'list') {
+    const { data, error } = await adminClient()
+      .from('games')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ games: data });
+  }
+
+  // default – create a new game
+  const { name, missions, duration_minutes } = body;
   if (!missions?.length) {
     return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
   }
 
-  // Generate unique key
   let game_key = generateKey();
   let attempts = 0;
   while (attempts < 10) {
