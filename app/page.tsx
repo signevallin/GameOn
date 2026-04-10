@@ -60,9 +60,11 @@ export default function Home() {
         fetch(`/api/team/status?teamId=${t.id}&_t=${ts}`, { cache: 'no-store' }),
       ]);
       const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
+      if (gameData.error) console.error('[poll/game]', gameData.error);
+      if (teamData.error) console.error('[poll/team]', teamData.error);
       if (gameData.game) setGame(gameData.game);
       if (teamData.team) setTeam(teamData.team);
-      } catch { /* ignore transient network errors */ }
+      } catch (err) { console.error('[poll] network error:', err); }
     }
 
     // Poll immediately, then every 3 seconds

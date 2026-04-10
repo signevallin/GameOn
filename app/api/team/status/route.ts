@@ -8,11 +8,15 @@ export async function GET(req: Request) {
   const teamId = searchParams.get('teamId');
   if (!teamId) return NextResponse.json({ error: 'Missing teamId.' }, { status: 400 });
 
-  // Teams table has public read RLS policy — anon key is sufficient.
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    console.error('[/api/team/status] Missing env vars:', { url: !!url, serviceKey: !!serviceKey });
+    return NextResponse.json({ error: 'Server misconfiguration.' }, { status: 500 });
+  }
+
+  const supabase = createClient(url, serviceKey);
 
   const { data, error } = await supabase
     .from('teams')
@@ -20,6 +24,10 @@ export async function GET(req: Request) {
     .eq('id', teamId)
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ team: data });
+  if (error) {
+    console.error('[/api/team/status] Supabase error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ team: data }, { headers: { 'Cache-Control': 'no-store' } });
 }

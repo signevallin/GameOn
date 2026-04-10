@@ -9,12 +9,15 @@ export async function GET(req: Request) {
 
   if (!key) return NextResponse.json({ error: 'Missing game key.' }, { status: 400 });
 
-  // Games table has public read RLS policy — anon key is sufficient and
-  // avoids a hard dependency on SUPABASE_SERVICE_ROLE_KEY for polling reads.
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    console.error('[/api/game] Missing env vars:', { url: !!url, serviceKey: !!serviceKey });
+    return NextResponse.json({ error: 'Server misconfiguration.' }, { status: 500 });
+  }
+
+  const supabase = createClient(url, serviceKey);
 
   const { data, error } = await supabase
     .from('games')
@@ -22,8 +25,10 @@ export async function GET(req: Request) {
     .eq('game_key', key)
     .single();
 
-  if (error || !data) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
-  return NextResponse.json({ game: data }, {
-    headers: { 'Cache-Control': 'no-store' },
-  });
+  if (error || !data) {
+    console.error('[/api/game] Supabase error:', error?.message);
+    return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
+  }
+
+  return NextResponse.json({ game: data }, { headers: { 'Cache-Control': 'no-store' } });
 }
