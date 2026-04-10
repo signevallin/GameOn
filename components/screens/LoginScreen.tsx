@@ -59,9 +59,8 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '480px', padding: '20px', position: 'relative', zIndex: 1 }} className="fade-in">
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div className="logo">GameOn</div>
-          <h1 style={{ fontSize: '36px', color: 'var(--accent)' }}>
-            THE CHALLENGE<br /><span style={{ color: 'var(--text)' }}>2026</span>
+          <h1 style={{ fontSize: '52px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '6px' }}>
+            GAMEON
           </h1>
           <p style={{ color: 'var(--muted)', marginTop: '12px', fontSize: '14px' }}>Select your role to log in</p>
         </div>

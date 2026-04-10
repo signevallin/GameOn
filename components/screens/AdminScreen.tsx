@@ -483,7 +483,12 @@ export default function AdminScreen({ onLogout }: Props) {
                       <td><strong>{t.name}</strong></td>
                       {activeGame.missions.map(id => {
                         const done = t.completed?.includes(id);
-                        return <td key={id}><span className={`status-dot ${done ? 'dot-done' : 'dot-pending'}`} />{done ? '✓' : '–'}</td>;
+                        const m = MISSIONS.find(x => x.id === id);
+                        return (
+                          <td key={id} style={{ color: done ? 'var(--accent3)' : 'var(--muted)', fontWeight: done ? 700 : 400 }}>
+                            {done ? (m?.maxPts ?? '✓') : '–'}
+                          </td>
+                        );
                       })}
                       <td className="pts-cell">{t.score}</td>
                     </tr>
@@ -507,7 +512,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   const isRated = sub.status === 'rated' || rated.has(sub.id);
                   return (
                     <div key={sub.id} style={{ background: 'var(--card)', border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden' }}>
-                      <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', maxHeight: '360px', objectFit: 'cover', display: 'block' }} />
+                      <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', display: 'block' }} />
                       <div style={{ padding: '16px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                           <div>

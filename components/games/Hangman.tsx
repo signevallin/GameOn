@@ -30,11 +30,13 @@ export default function Hangman({ word, hint, onFinish }: Props) {
       </div>
       <div style={{
         fontFamily: "'Sora', sans-serif",
-        fontSize: '28px',
-        letterSpacing: '8px',
+        fontSize: 'clamp(14px, 4vw, 26px)',
+        letterSpacing: 'clamp(3px, 1.5vw, 8px)',
         textAlign: 'center',
         marginBottom: '24px',
         color: won ? 'var(--accent3)' : lost ? 'var(--accent2)' : 'var(--text)',
+        wordBreak: 'break-all',
+        overflowWrap: 'break-word',
       }}>
         {display}
       </div>
