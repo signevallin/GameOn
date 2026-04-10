@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Team, Game } from '@/lib/supabase';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
@@ -17,6 +17,56 @@ export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [activeMission, setActiveMission] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  // ── Restore session from localStorage on first mount ──
+  useEffect(() => {
+    try {
+      const savedScreen = localStorage.getItem('gameon_screen') as Screen | null;
+      const savedTeam = localStorage.getItem('gameon_team');
+      const savedGame = localStorage.getItem('gameon_game');
+
+      if (savedScreen === 'admin') {
+        setScreen('admin');
+      } else if (savedScreen === 'missions' && savedTeam && savedGame) {
+        setTeam(JSON.parse(savedTeam));
+        setGame(JSON.parse(savedGame));
+        setScreen('missions');
+      }
+    } catch {
+      // Corrupted storage – start fresh
+    }
+    setHydrated(true);
+  }, []);
+
+  // ── Persist session whenever screen / team / game change ──
+  useEffect(() => {
+    if (!hydrated) return;
+    if (screen === 'admin') {
+      localStorage.setItem('gameon_screen', 'admin');
+      localStorage.removeItem('gameon_team');
+      localStorage.removeItem('gameon_game');
+    } else if ((screen === 'missions' || screen === 'challenge' || screen === 'result') && team && game) {
+      // Always save as 'missions' so a refresh lands back on the mission list
+      localStorage.setItem('gameon_screen', 'missions');
+      localStorage.setItem('gameon_team', JSON.stringify(team));
+      localStorage.setItem('gameon_game', JSON.stringify(game));
+    } else if (screen === 'login') {
+      localStorage.removeItem('gameon_screen');
+      localStorage.removeItem('gameon_team');
+      localStorage.removeItem('gameon_game');
+    }
+  }, [screen, team, game, hydrated]);
+
+  // Keep localStorage in sync when MissionsScreen updates team/game via polling
+  function handleTeamUpdate(t: Team) {
+    setTeam(t);
+    try { localStorage.setItem('gameon_team', JSON.stringify(t)); } catch { /* ignore */ }
+  }
+  function handleGameUpdate(g: Game) {
+    setGame(g);
+    try { localStorage.setItem('gameon_game', JSON.stringify(g)); } catch { /* ignore */ }
+  }
 
   function handleTeamLogin(t: Team, g: Game) {
     setTeam(t);
@@ -43,6 +93,9 @@ export default function Home() {
     setScreen('login');
   }
 
+  // Don't render anything until we've checked localStorage (avoids flash of login screen)
+  if (!hydrated) return null;
+
   if (screen === 'login') {
     return <LoginScreen onTeamLogin={handleTeamLogin} onAdminLogin={handleAdminLogin} />;
   }
@@ -54,8 +107,8 @@ export default function Home() {
         game={game}
         onSelectMission={handleSelectMission}
         onLogout={handleLogout}
-        onTeamUpdate={setTeam}
-        onGameUpdate={setGame}
+        onTeamUpdate={handleTeamUpdate}
+        onGameUpdate={handleGameUpdate}
       />
     );
   }

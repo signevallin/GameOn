@@ -54,12 +54,33 @@ export default function AdminScreen({ onLogout }: Props) {
 
   useEffect(() => { loadGames(); }, [loadGames]);
 
+  // Only restart the polling interval when the game ID changes (not when game data updates).
+  // Using activeGame?.id prevents an infinite loop where setActiveGame → effect re-runs → setActiveGame…
+  const activeGameId = activeGame?.id;
+  const activeGameKey = activeGame?.game_key;
   useEffect(() => {
-    if (!activeGame) return;
-    loadGameData(activeGame);
-    const id = setInterval(() => loadGameData(activeGame), 5000);
+    if (!activeGameId || !activeGameKey) return;
+    // Snapshot id/key so the interval closure is stable
+    const gameId = activeGameId;
+    const gameKey = activeGameKey;
+    async function poll() {
+      const [teamsRes, photosRes, gameRes] = await Promise.all([
+        fetch(`/api/admin/teams?gameId=${gameId}`),
+        fetch('/api/admin/photos'),
+        fetch(`/api/game?key=${gameKey}`),
+      ]);
+      const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
+      if (td.teams) setTeams(td.teams);
+      if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
+        td.teams?.some((t: Team) => t.id === s.team_id)
+      ));
+      if (gd.game) setActiveGame(gd.game);
+    }
+    poll();
+    const id = setInterval(poll, 5000);
     return () => clearInterval(id);
-  }, [activeGame, loadGameData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGameId]);
 
   async function createGame() {
     if (!selectedMissions.length) { setCreateError('Select at least one mission.'); return; }
