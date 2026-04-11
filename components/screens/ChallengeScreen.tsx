@@ -17,6 +17,7 @@ import SolveCrime from '@/components/games/SolveCrime';
 import CelebrityQuiz from '@/components/games/CelebrityQuiz';
 import MusicEmoji from '@/components/games/MusicEmoji';
 import CrackCode from '@/components/games/CrackCode';
+import MusicQuiz from '@/components/games/MusicQuiz';
 
 type Props = {
   missionId: string;
@@ -147,6 +148,14 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
             clues={mission.codeClues!}
             answer={mission.answer!}
             onFinish={finish}
+          />
+        );
+      case 'music_quiz':
+        return (
+          <MusicQuiz
+            rounds={mission.musicRounds!}
+            maxPts={mission.maxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
       default:

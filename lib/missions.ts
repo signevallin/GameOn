@@ -13,7 +13,8 @@ export type MissionType =
   | 'solve_crime'
   | 'celebrity_quiz'
   | 'music_emoji'
-  | 'crack_code';
+  | 'crack_code'
+  | 'music_quiz';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -21,6 +22,7 @@ export type CrimeQuestion = { question: string; options: string[]; answer: strin
 export type CelebRound = { clue: string; options: string[]; answer: string };
 export type EmojiRound = { emojis: string; options: string[]; answer: string };
 export type CodeClue = { digits: [number, number, number]; hint: string };
+export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
 
 export type Mission = {
   id: string;
@@ -45,6 +47,7 @@ export type Mission = {
   crimeQuestions?: CrimeQuestion[];
   celebRounds?: CelebRound[];
   emojiRounds?: EmojiRound[];
+  musicRounds?: MusicRound[];
 };
 
 export const MISSIONS: Mission[] = [
@@ -568,6 +571,24 @@ Three employees were in the building that evening:
     code: 'HQLJPD',
     answer: 'ENIGMA',
     hint: 'Shift each letter 3 steps BACK. H→E, Q→N, L→I ...',
+  },
+  // ── MUSIC QUIZ ──
+  {
+    id: 'music_quiz',
+    icon: '🎵',
+    name: 'Name That Tune',
+    category: 'Fun',
+    desc: 'Listen to clips and guess artist + song — then sort them by release year!',
+    difficulty: 'medium',
+    maxPts: 1000,
+    type: 'music_quiz',
+    musicRounds: [
+      { audioUrl: '', artist: 'Artist 1', title: 'Song 1', year: 2000 },
+      { audioUrl: '', artist: 'Artist 2', title: 'Song 2', year: 1995 },
+      { audioUrl: '', artist: 'Artist 3', title: 'Song 3', year: 2010 },
+      { audioUrl: '', artist: 'Artist 4', title: 'Song 4', year: 1985 },
+      { audioUrl: '', artist: 'Artist 5', title: 'Song 5', year: 2018 },
+    ],
   },
 ];
 
