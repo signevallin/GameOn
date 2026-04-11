@@ -8,13 +8,15 @@ type Props = {
   missionId: string;
   team: Team;
   onSubmitted: () => void;
+  revealable?: boolean;
 };
 
-export default function PhotoChallenge({ question, missionId, team, onSubmitted }: Props) {
+export default function PhotoChallenge({ question, missionId, team, onSubmitted, revealable }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [revealed, setRevealed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -57,6 +59,21 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted 
     } finally {
       setUploading(false);
     }
+  }
+
+  if (revealable && !revealed) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+        <h2 style={{ marginBottom: '12px' }}>Secret Word Hidden</h2>
+        <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px' }}>
+          Only press the button when your team is ready — the word to draw will appear!
+        </p>
+        <button className="btn btn-primary" onClick={() => setRevealed(true)}>
+          REVEAL WORD 👁️
+        </button>
+      </div>
+    );
   }
 
   return (

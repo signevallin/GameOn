@@ -51,6 +51,7 @@ export type Mission = {
   emojiRounds?: EmojiRound[];
   musicRounds?: MusicRound[];
   imageRounds?: ImageRound[];
+  revealable?: boolean;
 };
 
 export const MISSIONS: Mission[] = [
@@ -605,42 +606,42 @@ Three employees were in the building that evening:
     type: 'image_quiz' as const,
     imageRounds: [
       {
-        imageUrl: 'https://logo.clearbit.com/apple.com',
+        imageUrl: 'https://cdn.simpleicons.org/apple',
         options: ['Apple', 'Google', 'Microsoft', 'Samsung'],
         answer: 'Apple',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/spotify.com',
+        imageUrl: 'https://cdn.simpleicons.org/spotify',
         options: ['Spotify', 'Apple Music', 'Tidal', 'Deezer'],
         answer: 'Spotify',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/netflix.com',
+        imageUrl: 'https://cdn.simpleicons.org/netflix',
         options: ['Netflix', 'HBO Max', 'Disney+', 'Amazon Prime'],
         answer: 'Netflix',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/slack.com',
+        imageUrl: 'https://cdn.simpleicons.org/slack',
         options: ['Slack', 'Discord', 'Microsoft Teams', 'Zoom'],
         answer: 'Slack',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/github.com',
+        imageUrl: 'https://cdn.simpleicons.org/github',
         options: ['GitHub', 'GitLab', 'Bitbucket', 'Jira'],
         answer: 'GitHub',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/airbnb.com',
+        imageUrl: 'https://cdn.simpleicons.org/airbnb',
         options: ['Airbnb', 'Booking.com', 'Expedia', 'Tripadvisor'],
         answer: 'Airbnb',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/tesla.com',
+        imageUrl: 'https://cdn.simpleicons.org/tesla',
         options: ['Tesla', 'BMW', 'Mercedes-Benz', 'Audi'],
         answer: 'Tesla',
       },
       {
-        imageUrl: 'https://logo.clearbit.com/ikea.com',
+        imageUrl: 'https://cdn.simpleicons.org/ikea',
         options: ['IKEA', 'H&M', 'Zara', 'Zalando'],
         answer: 'IKEA',
       },
@@ -668,7 +669,7 @@ Three employees were in the building that evening:
         answer: 'Italy',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Sydney_Opera_House_-_Dec_2008.jpg/400px-Sydney_Opera_House_-_Dec_2008.jpg',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sydney_Australia._%2821339175489%29.jpg/400px-Sydney_Australia._%2821339175489%29.jpg',
         options: ['New Zealand', 'South Africa', 'Australia', 'Canada'],
         answer: 'Australia',
       },
@@ -678,12 +679,12 @@ Three employees were in the building that evening:
         answer: 'India',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24701-nature-natural-beauty.jpg/400px-24701-nature-natural-beauty.jpg',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/080103_hakone_fuji.jpg/400px-080103_hakone_fuji.jpg',
         options: ['China', 'Japan', 'South Korea', 'Vietnam'],
         answer: 'Japan',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Statue_of_Liberty_frontal.jpg/400px-Statue_of_Liberty_frontal.jpg',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/400px-Statue_of_Liberty_7.jpg',
         options: ['Canada', 'France', 'USA', 'United Kingdom'],
         answer: 'USA',
       },
@@ -738,7 +739,8 @@ Three employees were in the building that evening:
     difficulty: 'easy',
     maxPts: 500,
     type: 'photo',
-    question: 'One person in the team must draw a word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\n📝 Your word to draw: **ARTIFICIAL INTELLIGENCE**\n\nTake a photo of your drawing + your team reacting and upload it — admin will rate your performance!',
+    revealable: true,
+    question: 'One person in the team must draw a word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\n📝 Your word to draw: ARTIFICIAL INTELLIGENCE\n\nTake a photo of your drawing + your team reacting and upload it — admin will rate your performance!',
   },
   // ── HUMAN STATUE ──
   {

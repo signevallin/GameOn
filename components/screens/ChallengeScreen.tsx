@@ -107,6 +107,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
             missionId={missionId}
             team={team}
             onSubmitted={() => setPhotoSubmitted(true)}
+            revealable={mission.revealable}
           />
         );
       case 'pa_sparet':

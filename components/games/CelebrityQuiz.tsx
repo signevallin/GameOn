@@ -10,10 +10,20 @@ type Props = {
 
 type Selection = { forIdx: number; opt: string; revealing: boolean };
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
 
   const active = selection?.forIdx === idx ? selection : null;
 
@@ -36,7 +46,7 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
     }, 1000);
   }
 
-  const r = rounds[idx];
+  const r = shuffledRounds[idx];
 
   return (
     <>
