@@ -345,11 +345,16 @@ export default function AdminScreen({ onLogout }: Props) {
     if (!targetTeamId) return;
     setPuLoading(type);
     try {
-      await POST('/api/admin/powerup', {
+      const res = await POST('/api/admin/powerup', {
         type,
         targetTeamId,
         ...(type === 'fake_hint' ? { message: puMessages } : {}),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Power-up failed: ${err.error ?? res.statusText}`);
+        return;
+      }
       const sd = await POST('/api/settings').then(r => r.json());
       if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     } finally {

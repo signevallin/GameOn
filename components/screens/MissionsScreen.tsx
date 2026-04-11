@@ -15,13 +15,13 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   async function ack() {
     setLoading(true);
     try {
-      await fetch('/api/team/ack-notification', {
+      const res = await fetch('/api/team/ack-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId }),
         cache: 'no-store',
       });
-      onDismiss();
+      if (res.ok) onDismiss();
     } finally {
       setLoading(false);
     }
