@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Mission, calcPoints, MISSIONS } from '@/lib/missions';
-import { Team } from '@/lib/supabase';
+import { Team, Game } from '@/lib/supabase';
 import MultipleChoice from '@/components/games/MultipleChoice';
 import TextInput from '@/components/games/TextInput';
 import Puzzle from '@/components/games/Puzzle';
@@ -23,12 +23,14 @@ import ImageQuiz from '@/components/games/ImageQuiz';
 type Props = {
   missionId: string;
   team: Team;
+  game: Game;
   onDone: (updatedTeam: Team, pts: number, correct: boolean, elapsed: number) => void;
   onBack: () => void;
 };
 
-export default function ChallengeScreen({ missionId, team, onDone, onBack }: Props) {
+export default function ChallengeScreen({ missionId, team, game, onDone, onBack }: Props) {
   const mission = MISSIONS.find(m => m.id === missionId)!;
+  const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
   const [photoSubmitted, setPhotoSubmitted] = useState(false);
@@ -47,7 +49,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
 
   async function finish(correct: boolean, customPts?: number) {
     const pts = correct
-      ? (customPts !== undefined ? customPts : calcPoints(mission, elapsedRef.current))
+      ? (customPts !== undefined ? customPts : calcPoints(mission, elapsedRef.current, effectiveMaxPts))
       : 0;
 
     if (team.completed?.includes(missionId)) {
@@ -79,13 +81,13 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
       case 'memory':
         return <MemoryGame onFinish={finish} />;
       case 'reaction':
-        return <ReactionTest maxPts={mission.maxPts} missionId={missionId} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <ReactionTest maxPts={effectiveMaxPts} missionId={missionId} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'typerace':
         return <TypeRace text={mission.text!} onFinish={finish} />;
       case 'hangman':
         return <Hangman word={mission.word!} hint={mission.hint!} onFinish={finish} />;
       case 'wouldyou':
-        return <WouldYou question={mission.question!} maxPts={mission.maxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
         return <TrueFalse statements={mission.statements!} onFinish={finish} />;
       case 'photo':
@@ -115,7 +117,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
           <PaSparet
             clues={mission.clues!}
             answer={mission.answer!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -124,7 +126,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
           <SolveCrime
             story={mission.crimeStory!}
             questions={mission.crimeQuestions!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -132,7 +134,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
         return (
           <CelebrityQuiz
             rounds={mission.celebRounds!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -140,7 +142,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
         return (
           <MusicEmoji
             rounds={mission.emojiRounds!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -156,7 +158,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
         return (
           <MusicQuiz
             rounds={mission.musicRounds!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -164,7 +166,7 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
         return (
           <ImageQuiz
             rounds={mission.imageRounds!}
-            maxPts={mission.maxPts}
+            maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );

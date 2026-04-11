@@ -742,6 +742,49 @@ Three employees were in the building that evening:
     revealWord: 'ARTIFICIAL INTELLIGENCE',
     question: 'One person in the team must draw the secret word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\nReveal the word below when everyone is ready — then draw! Take a photo of your drawing + your team reacting and upload it. Admin will rate your performance!',
   },
+  // ── FILM QUIZ ──
+  {
+    id: 'film_quiz',
+    icon: '🎬',
+    name: 'Film Quiz',
+    category: 'Fun',
+    desc: 'Iconic movie quotes, scenes and facts — 6 rounds!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🎬 "You can\'t handle the truth!" — In which 1992 courtroom drama does Jack Nicholson deliver this iconic line?',
+        options: ['The Firm', 'A Few Good Men', 'Primal Fear', 'Philadelphia'],
+        answer: 'A Few Good Men',
+      },
+      {
+        clue: '🎬 Which 1994 Quentin Tarantino film follows hitmen Vincent Vega and Jules Winnfield through a series of loosely connected stories in Los Angeles?',
+        options: ['Reservoir Dogs', 'Jackie Brown', 'Kill Bill', 'Pulp Fiction'],
+        answer: 'Pulp Fiction',
+      },
+      {
+        clue: '🎬 In which film does Leonardo DiCaprio play a con artist who successfully impersonates a pilot, doctor and lawyer — all before the age of 21?',
+        options: ['The Wolf of Wall Street', 'Catch Me If You Can', 'The Aviator', 'Shutter Island'],
+        answer: 'Catch Me If You Can',
+      },
+      {
+        clue: '🎬 "Why so serious?" — Which actor won a posthumous Oscar for playing the Joker in The Dark Knight (2008)?',
+        options: ['Joaquin Phoenix', 'Jack Nicholson', 'Heath Ledger', 'Jared Leto'],
+        answer: 'Heath Ledger',
+      },
+      {
+        clue: '🎬 Which film features a sentient robot named WALL-E who falls in love with another robot named EVE?',
+        options: ['A.I. Artificial Intelligence', 'Interstellar', 'WALL-E', 'Short Circuit'],
+        answer: 'WALL-E',
+      },
+      {
+        clue: '🎬 "I\'ll be back" — In which 1984 sci-fi film does Arnold Schwarzenegger play a killing machine sent back in time?',
+        options: ['RoboCop', 'Total Recall', 'Predator', 'The Terminator'],
+        answer: 'The Terminator',
+      },
+    ],
+  },
   // ── HUMAN STATUE ──
   {
     id: 'human_statue',
@@ -756,7 +799,8 @@ Three employees were in the building that evening:
   },
 ];
 
-export function calcPoints(mission: Mission, elapsed: number): number {
+export function calcPoints(mission: Mission, elapsed: number, customMaxPts?: number): number {
+  const maxPts = customMaxPts ?? mission.maxPts;
   const ratio = Math.max(0, 1 - elapsed / 120);
-  return Math.round(mission.maxPts * 0.3 + mission.maxPts * 0.7 * ratio);
+  return Math.round(maxPts * 0.3 + maxPts * 0.7 * ratio);
 }

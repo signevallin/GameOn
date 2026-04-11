@@ -185,6 +185,9 @@ export default function AdminScreen({ onLogout }: Props) {
   const [gameName, setGameName] = useState('');
   const [duration, setDuration] = useState(45);
   const [selectedMissions, setSelectedMissions] = useState<string[]>(MISSIONS.map(m => m.id));
+  const [missionMaxPts, setMissionMaxPts] = useState<Record<string, number>>(
+    Object.fromEntries(MISSIONS.map(m => [m.id, m.maxPts]))
+  );
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -286,10 +289,16 @@ export default function AdminScreen({ onLogout }: Props) {
   async function createGame() {
     if (!selectedMissions.length) { setCreateError('Select at least one mission.'); return; }
     setCreating(true); setCreateError('');
+    // Only include custom pts that differ from the mission default
+    const customPts: Record<string, number> = {};
+    for (const id of selectedMissions) {
+      const m = MISSIONS.find(x => x.id === id);
+      if (m && missionMaxPts[id] !== m.maxPts) customPts[id] = missionMaxPts[id];
+    }
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -475,17 +484,47 @@ export default function AdminScreen({ onLogout }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {MISSIONS.map(m => {
               const on = selectedMissions.includes(m.id);
+              const pts = missionMaxPts[m.id] ?? m.maxPts;
+              const isCustom = pts !== m.maxPts;
               return (
-                <div key={m.id} onClick={() => setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id])}
-                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', background: 'var(--card)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '8px', cursor: 'pointer', opacity: on ? 1 : 0.45, transition: 'all 0.15s' }}>
-                  <span style={{ fontSize: '20px' }}>{m.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.category} · {m.difficulty} · up to {m.maxPts} pts</div>
+                <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45, transition: 'all 0.15s', overflow: 'hidden' }}>
+                  {/* Top row — click to toggle */}
+                  <div onClick={() => setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id])}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', cursor: 'pointer' }}>
+                    <span style={{ fontSize: '20px' }}>{m.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.category} · {m.difficulty}</div>
+                    </div>
+                    <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: on ? 'var(--accent)' : 'var(--border)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                      <div style={{ position: 'absolute', top: '3px', left: on ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                    </div>
                   </div>
-                  <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: on ? 'var(--accent)' : 'var(--border)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-                    <div style={{ position: 'absolute', top: '3px', left: on ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                  </div>
+                  {/* Points row — only when enabled */}
+                  {on && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 16px 12px', borderTop: '1px solid var(--border)' }}
+                      onClick={e => e.stopPropagation()}>
+                      <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', flexShrink: 0 }}>MAX PTS</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={9999}
+                        step={50}
+                        value={pts}
+                        onChange={e => setMissionMaxPts(prev => ({ ...prev, [m.id]: Math.max(0, Number(e.target.value)) }))}
+                        style={{ width: '90px', padding: '4px 8px', fontSize: '13px', fontWeight: 700, fontFamily: "'Sora', sans-serif", background: 'var(--surface)', border: `1px solid ${isCustom ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '6px', color: isCustom ? 'var(--accent)' : 'var(--text)' }}
+                      />
+                      {isCustom && (
+                        <button onClick={() => setMissionMaxPts(prev => ({ ...prev, [m.id]: m.maxPts }))}
+                          style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontFamily: "'Sora', sans-serif" }}>
+                          reset
+                        </button>
+                      )}
+                      {!isCustom && (
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>default</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

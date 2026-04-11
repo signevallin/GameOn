@@ -62,7 +62,7 @@ export async function POST(req: Request) {
   }
 
   // default – create a new game
-  const { name, missions, duration_minutes } = body;
+  const { name, missions, duration_minutes, mission_max_pts } = body;
   if (!missions?.length) {
     return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
   }
@@ -78,7 +78,13 @@ export async function POST(req: Request) {
 
   const { data, error } = await adminClient()
     .from('games')
-    .insert({ name: name || `Game ${game_key}`, missions, duration_minutes: duration_minutes || 45, game_key })
+    .insert({
+      name: name || `Game ${game_key}`,
+      missions,
+      duration_minutes: duration_minutes || 45,
+      game_key,
+      mission_max_pts: mission_max_pts ?? {},
+    })
     .select()
     .single();
 

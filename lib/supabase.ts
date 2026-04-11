@@ -27,4 +27,5 @@ export type Game = {
   status: 'draft' | 'active' | 'finished';
   started_at: string | null;
   created_at: string;
+  mission_max_pts: Record<string, number>;
 };

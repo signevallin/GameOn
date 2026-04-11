@@ -151,6 +151,7 @@ export default function Home() {
       <ChallengeScreen
         missionId={activeMission}
         team={team}
+        game={game}
         onDone={handleChallengeDone}
         onBack={() => setScreen('missions')}
       />
