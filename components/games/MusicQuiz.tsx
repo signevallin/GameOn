@@ -175,12 +175,17 @@ function TimelinePhase({ results, maxPts, onDone }: {
   const [order, setOrder] = useState<number[]>(results.map((_, i) => i));
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const touchDragIdx = useRef<number | null>(null);
+  const orderRef = useRef(order);
+  orderRef.current = order;
 
+  // ── Desktop drag ──
   function onDragStart(pos: number) { setDragIdx(pos); }
   function onDragOver(e: React.DragEvent, pos: number) {
     e.preventDefault();
     if (dragIdx === null || dragIdx === pos) return;
-    const next = [...order];
+    const next = [...orderRef.current];
     const [moved] = next.splice(dragIdx, 1);
     next.splice(pos, 0, moved);
     setOrder(next);
@@ -188,39 +193,60 @@ function TimelinePhase({ results, maxPts, onDone }: {
   }
   function onDragEnd() { setDragIdx(null); }
 
-  // Touch support
-  const touchStartPos = useRef<number | null>(null);
-  function onTouchStart(pos: number) { touchStartPos.current = pos; }
-  function onTouchEnd(e: React.TouchEvent, pos: number) {
-    if (touchStartPos.current === null || touchStartPos.current === pos) return;
+  // ── Mobile touch drag ──
+  function onTouchStart(e: React.TouchEvent, pos: number) {
+    touchDragIdx.current = pos;
+    setDragIdx(pos);
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    e.preventDefault(); // prevent page scroll while dragging
+    if (touchDragIdx.current === null) return;
+    const touch = e.touches[0];
+    const fromPos = touchDragIdx.current;
+
+    for (let i = 0; i < itemRefs.current.length; i++) {
+      const el = itemRefs.current[i];
+      if (!el || i === fromPos) continue;
+      const rect = el.getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        const next = [...orderRef.current];
+        const [moved] = next.splice(fromPos, 1);
+        next.splice(i, 0, moved);
+        setOrder(next);
+        touchDragIdx.current = i;
+        setDragIdx(i);
+        break;
+      }
+    }
+  }
+
+  function onTouchEnd() {
+    touchDragIdx.current = null;
+    setDragIdx(null);
+  }
+
+  function moveItem(pos: number, dir: -1 | 1) {
+    const target = pos + dir;
+    if (target < 0 || target >= order.length) return;
     const next = [...order];
-    const [moved] = next.splice(touchStartPos.current, 1);
-    next.splice(pos, 0, moved);
+    [next[pos], next[target]] = [next[target], next[pos]];
     setOrder(next);
-    touchStartPos.current = null;
   }
 
   function submit() {
-    // Correct order: sorted by year ascending
-    const correctOrder = [...results.map((r, i) => i)].sort((a, b) => results[a].round.year - results[b].round.year);
-
-    // Guessing score: each correct artist+title pair
+    const correctOrder = [...results.map((_, i) => i)].sort((a, b) => results[a].round.year - results[b].round.year);
     const guessPts = results.reduce((sum, r) => sum + (r.artistOk && r.titleOk ? 1 : 0), 0);
     const guessMaxPts = Math.round(maxPts * 0.6);
     const guessScore = Math.round((guessPts / results.length) * guessMaxPts);
-
-    // Timeline score: count adjacent pairs in correct relative order
     const timelineMaxPts = Math.round(maxPts * 0.4);
     let timelineCorrect = 0;
     for (let i = 0; i < order.length - 1; i++) {
-      const aYear = results[order[i]].round.year;
-      const bYear = results[order[i + 1]].round.year;
-      if (aYear <= bYear) timelineCorrect++;
+      if (results[order[i]].round.year <= results[order[i + 1]].round.year) timelineCorrect++;
     }
     const timelineScore = order.length > 1
       ? Math.round((timelineCorrect / (order.length - 1)) * timelineMaxPts)
       : timelineMaxPts;
-
     setSubmitted(true);
     setTimeout(() => onDone(guessScore + timelineScore), 800);
   }
@@ -231,7 +257,7 @@ function TimelinePhase({ results, maxPts, onDone }: {
     <>
       <div style={{ marginBottom: '20px' }}>
         <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '4px' }}>TIMELINE CHALLENGE</p>
-        <p style={{ fontSize: '14px', color: 'var(--text)' }}>Drag the songs into order — oldest release first, newest last.</p>
+        <p style={{ fontSize: '14px', color: 'var(--text)' }}>Sort the songs from oldest to newest — drag or use the arrows.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -243,12 +269,14 @@ function TimelinePhase({ results, maxPts, onDone }: {
           return (
             <div
               key={resultIdx}
+              ref={el => { itemRefs.current[pos] = el; }}
               draggable={!submitted}
               onDragStart={() => onDragStart(pos)}
               onDragOver={e => onDragOver(e, pos)}
               onDragEnd={onDragEnd}
-              onTouchStart={() => onTouchStart(pos)}
-              onTouchEnd={e => onTouchEnd(e, pos)}
+              onTouchStart={e => onTouchStart(e, pos)}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -259,25 +287,39 @@ function TimelinePhase({ results, maxPts, onDone }: {
                 borderRadius: '10px',
                 cursor: submitted ? 'default' : 'grab',
                 userSelect: 'none',
-                transition: 'all 0.15s',
+                touchAction: 'none',
+                transition: 'background 0.15s, border 0.15s',
                 opacity: dragIdx === pos ? 0.5 : 1,
               }}
             >
               <span style={{ fontSize: '18px', flexShrink: 0 }}>☰</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.artistOk && r.titleOk ? `${r.round.artist} — ${r.round.title}` : r.round.title}
+                  {r.round.title}
                 </div>
                 {submitted && (
                   <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                    Released: {r.round.year}
+                    {r.round.artist} · {r.round.year}
                   </div>
                 )}
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>#{pos + 1}</span>
+              {!submitted && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+                  <button
+                    onClick={() => moveItem(pos, -1)}
+                    disabled={pos === 0}
+                    style={{ background: 'none', border: 'none', cursor: pos === 0 ? 'default' : 'pointer', fontSize: '16px', opacity: pos === 0 ? 0.2 : 0.7, padding: '2px 6px', lineHeight: 1 }}
+                  >▲</button>
+                  <button
+                    onClick={() => moveItem(pos, 1)}
+                    disabled={pos === order.length - 1}
+                    style={{ background: 'none', border: 'none', cursor: pos === order.length - 1 ? 'default' : 'pointer', fontSize: '16px', opacity: pos === order.length - 1 ? 0.2 : 0.7, padding: '2px 6px', lineHeight: 1 }}
+                  >▼</button>
+                </div>
+              )}
               {submitted && (isCorrect
-                ? <span style={{ color: 'var(--accent3)', fontSize: '16px' }}>✓</span>
-                : <span style={{ color: 'var(--accent2)', fontSize: '16px' }}>✗</span>
+                ? <span style={{ color: 'var(--accent3)', fontSize: '16px', flexShrink: 0 }}>✓</span>
+                : <span style={{ color: 'var(--accent2)', fontSize: '16px', flexShrink: 0 }}>✗</span>
               )}
             </div>
           );
