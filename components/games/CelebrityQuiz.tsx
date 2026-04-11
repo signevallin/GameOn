@@ -11,13 +11,16 @@ type Props = {
 export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
+  // selected: what the user clicked; revealing: show correct answer in green
   const [selected, setSelected] = useState<string | null>(null);
+  const [revealing, setRevealing] = useState(false);
 
   function choose(opt: string) {
     if (selected !== null) return;
-    setSelected(opt);
     const isCorrect = opt === rounds[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
+    setSelected(opt);
+    setRevealing(true);
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
@@ -25,10 +28,12 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
         const pts = Math.round((total / rounds.length) * maxPts);
         onFinish(total > 0, pts);
       } else {
-        setIdx(i => i + 1);
+        // Clear both before advancing so nothing bleeds into next question
         setSelected(null);
+        setRevealing(false);
+        setIdx(i => i + 1);
       }
-    }, 900);
+    }, 1000);
   }
 
   const r = rounds[idx];
@@ -49,15 +54,24 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
       </div>
 
       <div className="options-grid">
-        {r.options.map((opt, i) => (
-          <button key={i}
-            className={`option-btn${selected === opt ? ' selected' : ''}`}
-            disabled={selected !== null}
-            onClick={() => choose(opt)}
-            style={{ textAlign: 'center' }}>
-            {opt}
-          </button>
-        ))}
+        {r.options.map((opt, i) => {
+          let cls = 'option-btn';
+          if (revealing) {
+            if (opt === r.answer) cls += ' correct';
+            else if (opt === selected) cls += ' wrong';
+          } else if (selected === opt) {
+            cls += ' selected';
+          }
+          return (
+            <button key={i}
+              className={cls}
+              disabled={selected !== null}
+              onClick={() => choose(opt)}
+              style={{ textAlign: 'center' }}>
+              {opt}
+            </button>
+          );
+        })}
       </div>
     </>
   );

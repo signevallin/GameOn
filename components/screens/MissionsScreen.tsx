@@ -85,35 +85,35 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
 
   return (
     <>
-      <nav className="nav">
-        {/* Left: empty spacer so center stays centered */}
-        <div style={{ minWidth: '120px' }} />
+      <nav className="nav" style={{ gap: '8px' }}>
+        {/* Team name – left */}
+        <span className="nav-team" style={{ fontSize: '12px', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {team.name}
+        </span>
 
-        {/* Center: score + timer */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <span className="nav-team" style={{ fontSize: '13px' }}>{team.name}</span>
-          <span className="nav-score">⭐ {team.score} pts</span>
-          {game.status === 'active' && secondsLeft !== null && (
-            <span style={{
-              fontFamily: "'Sora', sans-serif",
-              fontWeight: 700,
-              fontSize: '16px',
-              color: timerColor,
-              minWidth: '60px',
-              textAlign: 'center',
-              animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none',
-            }}>
-              ⏱ {formatTime(secondsLeft)}
-            </span>
-          )}
-        </div>
+        {/* Score – center-left */}
+        <span className="nav-score" style={{ flexShrink: 0 }}>⭐ {team.score}</span>
 
-        {/* Right: logout */}
-        <div className="nav-right" style={{ minWidth: '120px', justifyContent: 'flex-end' }}>
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>
-            LOG OUT
-          </button>
-        </div>
+        {/* Timer – center-right, only when active */}
+        {game.status === 'active' && secondsLeft !== null ? (
+          <span style={{
+            fontFamily: "'Sora', sans-serif",
+            fontWeight: 700,
+            fontSize: '15px',
+            color: timerColor,
+            flexShrink: 0,
+            animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none',
+          }}>
+            ⏱ {formatTime(secondsLeft)}
+          </span>
+        ) : (
+          <span style={{ flexShrink: 0, width: '70px' }} />
+        )}
+
+        {/* Logout – right */}
+        <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }} onClick={onLogout}>
+          LOG OUT
+        </button>
       </nav>
 
       <div className="container fade-in">

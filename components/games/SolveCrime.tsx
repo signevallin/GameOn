@@ -14,12 +14,14 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [revealing, setRevealing] = useState(false);
 
   function choose(opt: string) {
     if (selected !== null) return;
-    setSelected(opt);
     const isCorrect = opt === questions[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
+    setSelected(opt);
+    setRevealing(true);
 
     setTimeout(() => {
       if (idx + 1 >= questions.length) {
@@ -27,10 +29,11 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
         const pts = Math.round((totalCorrect / questions.length) * maxPts);
         onFinish(totalCorrect > 0, pts);
       } else {
-        setIdx(i => i + 1);
         setSelected(null);
+        setRevealing(false);
+        setIdx(i => i + 1);
       }
-    }, 900);
+    }, 1000);
   }
 
   if (phase === 'read') {
@@ -80,15 +83,24 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {q.options.map((opt, i) => (
-          <button key={i}
-            className={`option-btn${selected === opt ? ' selected' : ''}`}
-            disabled={selected !== null}
-            onClick={() => choose(opt)}
-            style={{ textAlign: 'left' }}>
-            {opt}
-          </button>
-        ))}
+        {q.options.map((opt, i) => {
+          let cls = 'option-btn';
+          if (revealing) {
+            if (opt === q.answer) cls += ' correct';
+            else if (opt === selected) cls += ' wrong';
+          } else if (selected === opt) {
+            cls += ' selected';
+          }
+          return (
+            <button key={i}
+              className={cls}
+              disabled={selected !== null}
+              onClick={() => choose(opt)}
+              style={{ textAlign: 'left' }}>
+              {opt}
+            </button>
+          );
+        })}
       </div>
     </>
   );

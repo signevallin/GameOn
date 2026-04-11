@@ -316,6 +316,8 @@ pre {
 
 .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(117,171,200,0.05); }
 .option-btn.selected { border-color: var(--accent); background: rgba(117,171,200,0.12); color: var(--text); }
+.option-btn.correct { border-color: var(--accent3); background: rgba(140,191,155,0.15); color: var(--accent3); }
+.option-btn.wrong { border-color: var(--accent2); background: rgba(208,117,125,0.10); color: var(--accent2); }
 .option-btn:disabled { cursor: default; }
 
 .text-input-area { display: flex; flex-direction: column; gap: 12px; }
