@@ -64,7 +64,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
       <div style={{
         width: '100%',
         aspectRatio: '16/9',
-        background: 'var(--surface)',
+        background: '#ffffff',
         border: '1px solid var(--border)',
         borderRadius: '12px',
         marginBottom: '20px',
@@ -74,7 +74,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
         overflow: 'hidden',
       }}>
         {imgError ? (
-          <span style={{ color: 'var(--muted)', fontSize: '13px' }}>Image not available</span>
+          <span style={{ color: '#888', fontSize: '13px' }}>Image not available</span>
         ) : (
           <img
             key={round.imageUrl}

@@ -51,7 +51,7 @@ export type Mission = {
   emojiRounds?: EmojiRound[];
   musicRounds?: MusicRound[];
   imageRounds?: ImageRound[];
-  revealable?: boolean;
+  revealWord?: string;
 };
 
 export const MISSIONS: Mission[] = [
@@ -669,7 +669,7 @@ Three employees were in the building that evening:
         answer: 'Italy',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Sydney_Australia._%2821339175489%29.jpg/400px-Sydney_Australia._%2821339175489%29.jpg',
+        imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Sydney_Opera_House_-_Dec_2008.jpg?width=400',
         options: ['New Zealand', 'South Africa', 'Australia', 'Canada'],
         answer: 'Australia',
       },
@@ -679,7 +679,7 @@ Three employees were in the building that evening:
         answer: 'India',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/080103_hakone_fuji.jpg/400px-080103_hakone_fuji.jpg',
+        imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Kinkaku-ji_Dec_2014.jpg?width=400',
         options: ['China', 'Japan', 'South Korea', 'Vietnam'],
         answer: 'Japan',
       },
@@ -739,8 +739,8 @@ Three employees were in the building that evening:
     difficulty: 'easy',
     maxPts: 500,
     type: 'photo',
-    revealable: true,
-    question: 'One person in the team must draw a word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\n📝 Your word to draw: ARTIFICIAL INTELLIGENCE\n\nTake a photo of your drawing + your team reacting and upload it — admin will rate your performance!',
+    revealWord: 'ARTIFICIAL INTELLIGENCE',
+    question: 'One person in the team must draw the secret word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\nReveal the word below when everyone is ready — then draw! Take a photo of your drawing + your team reacting and upload it. Admin will rate your performance!',
   },
   // ── HUMAN STATUE ──
   {

@@ -8,15 +8,15 @@ type Props = {
   missionId: string;
   team: Team;
   onSubmitted: () => void;
-  revealable?: boolean;
+  revealWord?: string;
 };
 
-export default function PhotoChallenge({ question, missionId, team, onSubmitted, revealable }: Props) {
+export default function PhotoChallenge({ question, missionId, team, onSubmitted, revealWord }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const [revealed, setRevealed] = useState(false);
+  const [wordRevealed, setWordRevealed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -61,24 +61,40 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted,
     }
   }
 
-  if (revealable && !revealed) {
-    return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
-        <h2 style={{ marginBottom: '12px' }}>Secret Word Hidden</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px' }}>
-          Only press the button when your team is ready — the word to draw will appear!
-        </p>
-        <button className="btn btn-primary" onClick={() => setRevealed(true)}>
-          REVEAL WORD 👁️
-        </button>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="challenge-question">{question}</div>
+
+      {/* Secret word box — only for missions with revealWord */}
+      {revealWord && (
+        <div style={{
+          marginBottom: '20px',
+          padding: '20px',
+          background: wordRevealed ? 'rgba(140,191,155,0.10)' : 'var(--surface)',
+          border: `1px solid ${wordRevealed ? 'var(--accent3)' : 'var(--border)'}`,
+          borderRadius: '12px',
+          textAlign: 'center',
+        }}>
+          {wordRevealed ? (
+            <>
+              <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '10px' }}>YOUR WORD TO DRAW</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent)', letterSpacing: '2px' }}>
+                {revealWord}
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: '32px', marginBottom: '10px' }}>🔒</div>
+              <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>
+                Press when everyone is ready — the word to draw will appear!
+              </p>
+              <button className="btn btn-primary" onClick={() => setWordRevealed(true)}>
+                REVEAL WORD 👁️
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(117,171,200,0.06)', border: '1px solid var(--border)', borderRadius: '8px' }}>
         <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6' }}>

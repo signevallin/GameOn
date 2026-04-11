@@ -167,7 +167,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
           onDismiss={() => setNotification(null)}
         />
       )}
-      <nav className="nav" style={{ justifyContent: 'space-between', gap: '4px', padding: '0 16px' }}>
+      <nav className="nav" style={{ gap: '4px' }}>
         {/* Team name – left */}
         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {team.name}

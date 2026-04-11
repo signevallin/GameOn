@@ -173,7 +173,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   background: rgba(10,14,26,0.9);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 14px 24px;
+  padding: 18px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
