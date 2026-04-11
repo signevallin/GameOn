@@ -791,43 +791,20 @@ Three employees were in the building that evening:
     icon: '🔀',
     name: 'Anagram',
     category: 'IT',
-    desc: 'Unscramble the letters to find the hidden word — 5 rounds!',
+    desc: 'Unscramble the letters to reveal the hidden IT word — type your answer!',
     difficulty: 'medium',
     maxPts: 300,
-    type: 'celebrity_quiz',
-    celebRounds: [
-      {
-        clue: '🔀 Unscramble these letters:\n\nR E T P O C M U',
-        options: ['COMPUTER', 'COMPILER', 'COMPRESSOR', 'CONVERTER'],
-        answer: 'COMPUTER',
-      },
-      {
-        clue: '🔀 Unscramble these letters:\n\nT I W R E T T',
-        options: ['TWITCH', 'TINDER', 'TWITTER', 'TUMBLR'],
-        answer: 'TWITTER',
-      },
-      {
-        clue: '🔀 Unscramble these letters:\n\nK R O W N E T',
-        options: ['INTRANET', 'NETWORK', 'BROWSER', 'NETBOOK'],
-        answer: 'NETWORK',
-      },
-      {
-        clue: '🔀 Unscramble these letters:\n\nF E O T A R W S',
-        options: ['HARDWARE', 'FIRMWARE', 'FREEWARE', 'SOFTWARE'],
-        answer: 'SOFTWARE',
-      },
-      {
-        clue: '🔀 Unscramble these letters:\n\nT A G O M I L R H',
-        options: ['LOGARITHM', 'FLOWCHART', 'ALGORITHM', 'ARITHMETIC'],
-        answer: 'ALGORITHM',
-      },
-    ],
+    type: 'text_input',
+    question: 'Unscramble these letters to find the hidden IT word:',
+    code: 'T A G O M I L R H',
+    answer: 'ALGORITHM',
+    hint: 'Hint: It\'s a step-by-step set of instructions for solving a problem.',
   },
   // ── SNABB-MATTE ──
   {
     id: 'snabb_matte',
     icon: '🔢',
-    name: 'Snabb-matte',
+    name: 'Quick Maths',
     category: 'Fun',
     desc: 'Mental math against the clock — 4 rounds, no calculator allowed!',
     difficulty: 'medium',
@@ -860,7 +837,7 @@ Three employees were in the building that evening:
   {
     id: 'svara_ord',
     icon: '👄',
-    name: 'Svåra ord',
+    name: 'Spelling Bee',
     category: 'Fun',
     desc: 'Which is the correct spelling? 5 notoriously tricky words!',
     difficulty: 'easy',
@@ -898,7 +875,7 @@ Three employees were in the building that evening:
   {
     id: 'flag_quiz',
     icon: '🏳️',
-    name: 'Flagg-quiz',
+    name: 'Flag Quiz',
     category: 'Fun',
     desc: 'Recognize the country from its flag — 8 rounds!',
     difficulty: 'medium',
@@ -951,7 +928,7 @@ Three employees were in the building that evening:
   {
     id: 'app_icons',
     icon: '📱',
-    name: 'App-ikoner',
+    name: 'App Icons',
     category: 'IT',
     desc: 'Recognize the app from its icon — 8 rounds!',
     difficulty: 'easy',
@@ -974,9 +951,9 @@ Three employees were in the building that evening:
         answer: 'Discord',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/linkedin/0A66C2',
-        options: ['Facebook', 'LinkedIn', 'Twitter', 'Indeed'],
-        answer: 'LinkedIn',
+        imageUrl: 'https://cdn.simpleicons.org/snapchat/FFFC00',
+        options: ['Snapchat', 'BeReal', 'Instagram', 'TikTok'],
+        answer: 'Snapchat',
       },
       {
         imageUrl: 'https://cdn.simpleicons.org/reddit/FF4500',
@@ -1004,7 +981,7 @@ Three employees were in the building that evening:
   {
     id: 'vem_sa_det',
     icon: '💬',
-    name: 'Vem sa det?',
+    name: 'Who Said It?',
     category: 'Fun',
     desc: 'Match the famous quote to the right person — 5 rounds!',
     difficulty: 'easy',
@@ -1042,7 +1019,7 @@ Three employees were in the building that evening:
   {
     id: 'sport_quiz',
     icon: '🏅',
-    name: 'Sport-quiz',
+    name: 'Sports Quiz',
     category: 'Fun',
     desc: 'Records, legends and iconic moments in sport — 5 rounds!',
     difficulty: 'medium',
@@ -1080,7 +1057,7 @@ Three employees were in the building that evening:
   {
     id: 'slogans',
     icon: '📣',
-    name: 'Varumärkesslogans',
+    name: 'Brand Slogans',
     category: 'Fun',
     desc: 'Which brand does this slogan belong to? 5 rounds!',
     difficulty: 'easy',
@@ -1118,7 +1095,7 @@ Three employees were in the building that evening:
   {
     id: 'gissa_aret',
     icon: '🗓️',
-    name: 'Gissa året',
+    name: 'Guess the Year',
     category: 'Fun',
     desc: 'When did it happen? Test your knowledge of historical moments — 5 rounds!',
     difficulty: 'medium',
