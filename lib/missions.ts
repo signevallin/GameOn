@@ -785,6 +785,373 @@ Three employees were in the building that evening:
       },
     ],
   },
+  // ── ANAGRAM ──
+  {
+    id: 'anagram',
+    icon: '🔀',
+    name: 'Anagram',
+    category: 'IT',
+    desc: 'Unscramble the letters to find the hidden word — 5 rounds!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🔀 Unscramble these letters:\n\nR E T P O C M U',
+        options: ['COMPUTER', 'COMPILER', 'COMPRESSOR', 'CONVERTER'],
+        answer: 'COMPUTER',
+      },
+      {
+        clue: '🔀 Unscramble these letters:\n\nT I W R E T T',
+        options: ['TWITCH', 'TINDER', 'TWITTER', 'TUMBLR'],
+        answer: 'TWITTER',
+      },
+      {
+        clue: '🔀 Unscramble these letters:\n\nK R O W N E T',
+        options: ['INTRANET', 'NETWORK', 'BROWSER', 'NETBOOK'],
+        answer: 'NETWORK',
+      },
+      {
+        clue: '🔀 Unscramble these letters:\n\nF E O T A R W S',
+        options: ['HARDWARE', 'FIRMWARE', 'FREEWARE', 'SOFTWARE'],
+        answer: 'SOFTWARE',
+      },
+      {
+        clue: '🔀 Unscramble these letters:\n\nT A G O M I L R H',
+        options: ['LOGARITHM', 'FLOWCHART', 'ALGORITHM', 'ARITHMETIC'],
+        answer: 'ALGORITHM',
+      },
+    ],
+  },
+  // ── SNABB-MATTE ──
+  {
+    id: 'snabb_matte',
+    icon: '🔢',
+    name: 'Snabb-matte',
+    category: 'Fun',
+    desc: 'Mental math against the clock — 4 rounds, no calculator allowed!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🧮 What is:\n\n15 × 12 = ?',
+        options: ['170', '175', '180', '185'],
+        answer: '180',
+      },
+      {
+        clue: '🧮 What is:\n\n144 ÷ 9 = ?',
+        options: ['14', '15', '16', '18'],
+        answer: '16',
+      },
+      {
+        clue: '🧮 What is:\n\n2⁸ = ?',
+        options: ['128', '256', '512', '64'],
+        answer: '256',
+      },
+      {
+        clue: '🧮 What is:\n\n7 × 8 × 3 = ?',
+        options: ['162', '165', '168', '172'],
+        answer: '168',
+      },
+    ],
+  },
+  // ── SVÅRA ORD ──
+  {
+    id: 'svara_ord',
+    icon: '👄',
+    name: 'Svåra ord',
+    category: 'Fun',
+    desc: 'Which is the correct spelling? 5 notoriously tricky words!',
+    difficulty: 'easy',
+    maxPts: 250,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '📝 Which is the correct spelling?',
+        options: ['Occurance', 'Occurence', 'Occurrence', 'Occurrance'],
+        answer: 'Occurrence',
+      },
+      {
+        clue: '📝 Which is the correct spelling?',
+        options: ['Mediteranean', 'Mediterranean', 'Mediterranian', 'Mediteranian'],
+        answer: 'Mediterranean',
+      },
+      {
+        clue: '📝 Which is the correct spelling?',
+        options: ['Entrepreneur', 'Entrepeneur', 'Entrepraneur', 'Enterpreneur'],
+        answer: 'Entrepreneur',
+      },
+      {
+        clue: '📝 Which is the correct spelling?',
+        options: ['Consientious', 'Consciencious', 'Conscientous', 'Conscientious'],
+        answer: 'Conscientious',
+      },
+      {
+        clue: '📝 Which is the correct spelling?',
+        options: ['Neccessary', 'Necesary', 'Nessecary', 'Necessary'],
+        answer: 'Necessary',
+      },
+    ],
+  },
+  // ── FLAGG-QUIZ ──
+  {
+    id: 'flag_quiz',
+    icon: '🏳️',
+    name: 'Flagg-quiz',
+    category: 'Fun',
+    desc: 'Recognize the country from its flag — 8 rounds!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'image_quiz' as const,
+    imageRounds: [
+      {
+        imageUrl: 'https://flagcdn.com/w320/br.png',
+        options: ['Argentina', 'Brazil', 'Colombia', 'Venezuela'],
+        answer: 'Brazil',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/jp.png',
+        options: ['Japan', 'China', 'South Korea', 'Taiwan'],
+        answer: 'Japan',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/ca.png',
+        options: ['USA', 'Canada', 'Australia', 'New Zealand'],
+        answer: 'Canada',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/no.png',
+        options: ['Denmark', 'Sweden', 'Norway', 'Finland'],
+        answer: 'Norway',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/kr.png',
+        options: ['China', 'Japan', 'Taiwan', 'South Korea'],
+        answer: 'South Korea',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/mx.png',
+        options: ['Mexico', 'Italy', 'Hungary', 'Bolivia'],
+        answer: 'Mexico',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/za.png',
+        options: ['Jamaica', 'South Africa', 'Kenya', 'Zimbabwe'],
+        answer: 'South Africa',
+      },
+      {
+        imageUrl: 'https://flagcdn.com/w320/pt.png',
+        options: ['Spain', 'Italy', 'Portugal', 'France'],
+        answer: 'Portugal',
+      },
+    ],
+  },
+  // ── APP-IKONER ──
+  {
+    id: 'app_icons',
+    icon: '📱',
+    name: 'App-ikoner',
+    category: 'IT',
+    desc: 'Recognize the app from its icon — 8 rounds!',
+    difficulty: 'easy',
+    maxPts: 350,
+    type: 'image_quiz' as const,
+    imageRounds: [
+      {
+        imageUrl: 'https://cdn.simpleicons.org/instagram/E4405F',
+        options: ['Snapchat', 'TikTok', 'Instagram', 'Pinterest'],
+        answer: 'Instagram',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/whatsapp/25D366',
+        options: ['WhatsApp', 'Telegram', 'Signal', 'WeChat'],
+        answer: 'WhatsApp',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/discord/5865F2',
+        options: ['Zoom', 'Teams', 'Slack', 'Discord'],
+        answer: 'Discord',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/linkedin/0A66C2',
+        options: ['Facebook', 'LinkedIn', 'Twitter', 'Indeed'],
+        answer: 'LinkedIn',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/reddit/FF4500',
+        options: ['Quora', 'Medium', 'Reddit', 'Stack Overflow'],
+        answer: 'Reddit',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/duolingo/58CC02',
+        options: ['Duolingo', 'Spotify', 'Robinhood', 'Headspace'],
+        answer: 'Duolingo',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/pinterest/E60023',
+        options: ['YouTube', 'Netflix', 'Vimeo', 'Pinterest'],
+        answer: 'Pinterest',
+      },
+      {
+        imageUrl: 'https://cdn.simpleicons.org/twitch/9146FF',
+        options: ['Twitch', 'Discord', 'Zoom', 'Skype'],
+        answer: 'Twitch',
+      },
+    ],
+  },
+  // ── VEM SA DET? ──
+  {
+    id: 'vem_sa_det',
+    icon: '💬',
+    name: 'Vem sa det?',
+    category: 'Fun',
+    desc: 'Match the famous quote to the right person — 5 rounds!',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '"To infinity and beyond!"',
+        options: ['Woody', 'Buzz Lightyear', 'Yoda', 'Iron Man'],
+        answer: 'Buzz Lightyear',
+      },
+      {
+        clue: '"Elementary, my dear Watson."',
+        options: ['Hercule Poirot', 'James Bond', 'Sherlock Holmes', 'Columbo'],
+        answer: 'Sherlock Holmes',
+      },
+      {
+        clue: '"I have a dream."',
+        options: ['Barack Obama', 'Malcolm X', 'Nelson Mandela', 'Martin Luther King Jr.'],
+        answer: 'Martin Luther King Jr.',
+      },
+      {
+        clue: '"Houston, we have a problem."\n\nThis line was said by an astronaut during the Apollo 13 mission. Who said it?',
+        options: ['Neil Armstrong', 'Buzz Aldrin', 'Jim Lovell', 'Yuri Gagarin'],
+        answer: 'Jim Lovell',
+      },
+      {
+        clue: '"The greatest glory in living lies not in never falling, but in rising every time we fall."',
+        options: ['Mahatma Gandhi', 'Winston Churchill', 'Nelson Mandela', 'Abraham Lincoln'],
+        answer: 'Nelson Mandela',
+      },
+    ],
+  },
+  // ── SPORT-QUIZ ──
+  {
+    id: 'sport_quiz',
+    icon: '🏅',
+    name: 'Sport-quiz',
+    category: 'Fun',
+    desc: 'Records, legends and iconic moments in sport — 5 rounds!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🏃 What is Usain Bolt\'s world record time for the 100m sprint, set in 2009?',
+        options: ['9.48s', '9.58s', '9.68s', '9.78s'],
+        answer: '9.58s',
+      },
+      {
+        clue: '⚽ Which country has won the most FIFA World Cup titles?',
+        options: ['Germany', 'Italy', 'Brazil', 'France'],
+        answer: 'Brazil',
+      },
+      {
+        clue: '🏊 How many Olympic gold medals did swimmer Michael Phelps win across his entire career?',
+        options: ['18', '20', '23', '28'],
+        answer: '23',
+      },
+      {
+        clue: '🎾 Which tennis player holds the all-time record for most Grand Slam singles titles in men\'s tennis?',
+        options: ['Roger Federer', 'Novak Djokovic', 'Rafael Nadal', 'Pete Sampras'],
+        answer: 'Novak Djokovic',
+      },
+      {
+        clue: '🏟️ In which city were the 1912 Summer Olympics held?',
+        options: ['London', 'Paris', 'Berlin', 'Stockholm'],
+        answer: 'Stockholm',
+      },
+    ],
+  },
+  // ── VARUMÄRKESSLOGANS ──
+  {
+    id: 'slogans',
+    icon: '📣',
+    name: 'Varumärkesslogans',
+    category: 'Fun',
+    desc: 'Which brand does this slogan belong to? 5 rounds!',
+    difficulty: 'easy',
+    maxPts: 250,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '📣 Which brand uses the slogan:\n\n"Just Do It"',
+        options: ['Adidas', 'Under Armour', 'Puma', 'Nike'],
+        answer: 'Nike',
+      },
+      {
+        clue: '📣 Which brand uses the slogan:\n\n"Think Different"',
+        options: ['Google', 'Apple', 'Microsoft', 'Samsung'],
+        answer: 'Apple',
+      },
+      {
+        clue: '📣 Which brand uses the slogan:\n\n"I\'m Lovin\' It"',
+        options: ['Burger King', 'McDonald\'s', 'KFC', 'Subway'],
+        answer: 'McDonald\'s',
+      },
+      {
+        clue: '📣 Which brand uses the slogan:\n\n"Because You\'re Worth It"',
+        options: ['Dove', 'Pantene', 'L\'Oréal', 'Garnier'],
+        answer: 'L\'Oréal',
+      },
+      {
+        clue: '📣 Which brand uses the slogan:\n\n"Finger Lickin\' Good"',
+        options: ['McDonald\'s', 'Popeyes', 'Subway', 'KFC'],
+        answer: 'KFC',
+      },
+    ],
+  },
+  // ── GISSA ÅRET ──
+  {
+    id: 'gissa_aret',
+    icon: '🗓️',
+    name: 'Gissa året',
+    category: 'Fun',
+    desc: 'When did it happen? Test your knowledge of historical moments — 5 rounds!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '📅 In what year did the Berlin Wall fall, reuniting East and West Germany?',
+        options: ['1985', '1987', '1989', '1991'],
+        answer: '1989',
+      },
+      {
+        clue: '📅 In what year did Apple release the very first iPhone?',
+        options: ['2005', '2006', '2007', '2008'],
+        answer: '2007',
+      },
+      {
+        clue: '📅 In what year did Sweden join the European Union?',
+        options: ['1993', '1995', '1997', '1999'],
+        answer: '1995',
+      },
+      {
+        clue: '📅 In what year did the Titanic sink on its maiden voyage?',
+        options: ['1908', '1910', '1912', '1914'],
+        answer: '1912',
+      },
+      {
+        clue: '📅 In what year was the first email ever sent, by Ray Tomlinson?',
+        options: ['1969', '1971', '1975', '1980'],
+        answer: '1971',
+      },
+    ],
+  },
   // ── HUMAN STATUE ──
   {
     id: 'human_statue',
