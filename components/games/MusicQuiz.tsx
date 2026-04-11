@@ -21,7 +21,7 @@ function ListenPhase({ rounds, onDone }: { rounds: MusicRound[]; onDone: (result
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const round = rounds[idx];
-  const norm = (s: string) => s.trim().toLowerCase();
+  const norm = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   // Strip parenthetical extras like "(Friends Forever)" or "(feat. The Weeknd)"
   const stripExtras = (s: string) => norm(s).replace(/\s*\(.*?\)\s*/g, '').trim();
 
