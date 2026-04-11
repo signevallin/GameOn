@@ -167,29 +167,32 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
           onDismiss={() => setNotification(null)}
         />
       )}
-      <nav className="nav" style={{ gap: '8px' }}>
+      <nav className="nav" style={{ justifyContent: 'space-between', gap: '4px', padding: '0 16px' }}>
         {/* Team name – left */}
-        <span className="nav-team" style={{ fontSize: '12px', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {team.name}
         </span>
 
-        {/* Score – center-left */}
-        <span className="nav-score" style={{ flexShrink: 0 }}>⭐ {team.score}</span>
+        {/* Score – center */}
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', flexShrink: 0, textAlign: 'center', padding: '0 8px' }}>
+          ⭐ {team.score}
+        </span>
 
         {/* Timer – center-right, only when active */}
         {game.status === 'active' && secondsLeft !== null ? (
           <span style={{
             fontFamily: "'Sora', sans-serif",
             fontWeight: 700,
-            fontSize: '15px',
+            fontSize: '14px',
             color: timerColor,
             flexShrink: 0,
+            padding: '0 8px',
             animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none',
           }}>
             ⏱ {formatTime(secondsLeft)}
           </span>
         ) : (
-          <span style={{ flexShrink: 0, width: '70px' }} />
+          <span style={{ flexShrink: 0, width: '60px' }} />
         )}
 
         {/* Logout – right */}

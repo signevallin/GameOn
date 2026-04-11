@@ -652,26 +652,39 @@ export default function AdminScreen({ onLogout }: Props) {
               <span className="badge">{pendingPhotos.length} pending</span>
             </div>
             {photos.length === 0 ? <div className="empty-state">No photos submitted yet.</div> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                 {photos.map(sub => {
                   const isRated = sub.status === 'rated' || rated.has(sub.id);
+                  const mission = MISSIONS.find(m => m.id === sub.mission_id);
                   return (
-                    <div key={sub.id} style={{ background: 'var(--card)', border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden' }}>
-                      <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', display: 'block' }} />
-                      <div style={{ padding: '16px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div key={sub.id} style={{ background: 'var(--card)', border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                      {/* Mission badge */}
+                      <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '14px' }}>{mission?.icon ?? '📸'}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {mission?.name ?? sub.mission_id}
+                        </span>
+                      </div>
+                      {/* Thumbnail */}
+                      <div style={{ height: '200px', overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                      <div style={{ padding: '12px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: '15px' }}>{sub.team_name}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{new Date(sub.created_at).toLocaleTimeString()}</div>
+                            <div style={{ fontWeight: 700, fontSize: '14px' }}>{sub.team_name}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{new Date(sub.created_at).toLocaleTimeString()}</div>
                           </div>
-                          {isRated ? <span style={{ color: 'var(--accent3)', fontWeight: 700 }}>✓ {sub.points_awarded ?? ''} pts awarded</span> : <span className="badge">Pending</span>}
+                          {isRated
+                            ? <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '13px' }}>✓ {sub.points_awarded ?? ''} p</span>
+                            : <span className="badge">Pending</span>}
                         </div>
                         {!isRated && (
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                             {POINT_OPTIONS.map(pts => (
                               <button key={pts} onClick={() => ratePhoto(sub, pts)}
-                                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 500 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 500 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px' }}>
-                                {pts} p
+                                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 500 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 500 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
+                                {pts}p
                               </button>
                             ))}
                           </div>
