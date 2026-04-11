@@ -288,6 +288,17 @@ export const MISSIONS: Mission[] = [
     type: 'photo',
     question: 'Everyone on the team must chew Hubba Bubba and blow the biggest bubble possible at the same time. Take a team selfie and upload it – admin will rate your bubbles and award up to 500 points!',
   },
+  {
+    id: 'photo_movie_scene',
+    icon: '🎬',
+    name: 'Lights, Camera, Action!',
+    category: 'Fun',
+    desc: 'Recreate a famous movie scene – admin rates your performance!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'photo',
+    question: 'Your team must recreate a famous movie scene as accurately as possible — costumes, poses, expressions, everything! Pick any movie you like. Take a photo and upload it — admin will rate your creativity and accuracy for up to 500 points!',
+  },
   // ── GUESS THE PERSON ──
   {
     id: 'pa_sparet',
