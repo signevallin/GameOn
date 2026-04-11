@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const { data: team, error: fetchErr } = await supabase
     .from('teams')
-    .select('score, completed, mission_scores')
+    .select('score, completed, mission_scores, double_points')
     .eq('id', teamId)
     .single();
 
@@ -22,15 +22,22 @@ export async function POST(req: Request) {
   if (team.completed?.includes(missionId)) return NextResponse.json({ error: 'Already completed.' }, { status: 409 });
 
   const prevScores = (team.mission_scores as Record<string, number>) ?? {};
+  const finalPts = team.double_points ? (points ?? 0) * 2 : (points ?? 0);
+
+  const updatePayload: Record<string, unknown> = {
+    score: (team.score ?? 0) + finalPts,
+    completed: [...(team.completed ?? []), missionId],
+    mission_scores: { ...prevScores, [missionId]: finalPts },
+    updated_at: new Date().toISOString(),
+  };
+
+  if (team.double_points) {
+    updatePayload.double_points = false;
+  }
 
   const { data, error } = await supabase
     .from('teams')
-    .update({
-      score: (team.score ?? 0) + (points ?? 0),
-      completed: [...(team.completed ?? []), missionId],
-      mission_scores: { ...prevScores, [missionId]: points ?? 0 },
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq('id', teamId)
     .select()
     .single();
