@@ -27,5 +27,14 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // On restart, clear power-up usage tracking so they can be used in the new game
+  if (action === 'restart') {
+    await supabase
+      .from('settings')
+      .update({ powerups_used: [], updated_at: new Date().toISOString() })
+      .eq('id', 1);
+  }
+
   return NextResponse.json({ game: data });
 }
