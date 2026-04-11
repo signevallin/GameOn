@@ -621,9 +621,9 @@ Three employees were in the building that evening:
         answer: 'Netflix',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/slack',
-        options: ['Slack', 'Discord', 'Microsoft Teams', 'Zoom'],
-        answer: 'Slack',
+        imageUrl: 'https://cdn.simpleicons.org/youtube',
+        options: ['YouTube', 'Vimeo', 'TikTok', 'Twitch'],
+        answer: 'YouTube',
       },
       {
         imageUrl: 'https://cdn.simpleicons.org/github',
@@ -679,7 +679,7 @@ Three employees were in the building that evening:
         answer: 'India',
       },
       {
-        imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Kinkaku-ji_Dec_2014.jpg?width=400',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Shinjuku_Night_View_%28cropped%29.jpg/400px-Shinjuku_Night_View_%28cropped%29.jpg',
         options: ['China', 'Japan', 'South Korea', 'Vietnam'],
         answer: 'Japan',
       },

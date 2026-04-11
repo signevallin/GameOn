@@ -10,7 +10,17 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
+  const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
   const [idx, setIdx] = useState(0);
   const [selection, setSelection] = useState<Selection | null>(null);
   const [totalPts, setTotalPts] = useState(0);
@@ -22,7 +32,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
     setImgError(false);
   }, [idx]);
 
-  const round = rounds[idx];
+  const round = shuffledRounds[idx];
   const active = selection?.forIdx === idx ? selection : null;
 
   function pick(opt: string) {
@@ -36,7 +46,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
     setSelection({ forIdx: idx, opt, revealing: true });
     setTotalPts(p => p + pts);
     setTimeout(() => {
-      if (idx + 1 >= rounds.length) {
+      if (idx + 1 >= shuffledRounds.length) {
         onFinish(totalPts + pts > 0, totalPts + pts);
       } else {
         setIdx(i => i + 1);
@@ -56,7 +66,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
         <span style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px' }}>
-          {idx + 1} / {rounds.length}
+          {idx + 1} / {shuffledRounds.length}
         </span>
         <span style={{ fontSize: '12px', color: 'var(--accent)' }}>{totalPts} pts</span>
       </div>
