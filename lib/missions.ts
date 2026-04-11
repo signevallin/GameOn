@@ -121,13 +121,37 @@ export const MISSIONS: Mission[] = [
     icon: '🔐',
     name: 'Emoji Rebus',
     category: 'IT',
-    desc: 'Which IT concept is hiding in the emojis?',
+    desc: 'Which IT concept is hiding in the emojis? 5 rounds!',
     difficulty: 'easy',
-    maxPts: 150,
-    type: 'multiple_choice',
-    question: 'Which IT concept does this emoji combination represent?\n\n🔑 + 🔒 = ?',
-    options: ['Encryption', 'Authentication', 'VPN', 'Firewall'],
-    answer: 'Encryption',
+    maxPts: 250,
+    type: 'music_emoji',
+    emojiRounds: [
+      {
+        emojis: '🔑 + 🔒',
+        options: ['Encryption', 'Authentication', 'VPN', 'Firewall'],
+        answer: 'Encryption',
+      },
+      {
+        emojis: '🔥 + 🧱',
+        options: ['Antivirus', 'Firewall', 'Sandbox', 'Proxy'],
+        answer: 'Firewall',
+      },
+      {
+        emojis: '☁️ + 💾',
+        options: ['Cloud Storage', 'RAM', 'USB Drive', 'Server Rack'],
+        answer: 'Cloud Storage',
+      },
+      {
+        emojis: '🕷️ + 🌐',
+        options: ['Bluetooth', 'World Wide Web', 'Dark Web', 'Intranet'],
+        answer: 'World Wide Web',
+      },
+      {
+        emojis: '🐞 + 🔎',
+        options: ['Hacking', 'Debugging', 'Monitoring', 'Scanning'],
+        answer: 'Debugging',
+      },
+    ],
   },
   {
     id: 'sequence',
@@ -158,13 +182,37 @@ export const MISSIONS: Mission[] = [
     icon: '🎭',
     name: 'Fun Trivia',
     category: 'Fun',
-    desc: 'General knowledge – the fun questions.',
+    desc: 'General knowledge – 5 fun questions!',
     difficulty: 'easy',
-    maxPts: 200,
-    type: 'multiple_choice',
-    question: 'How long does it approximately take for light to travel from the Sun to Earth?',
-    options: ['8 seconds', '8 minutes', '8 hours', '8 days'],
-    answer: '8 minutes',
+    maxPts: 250,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: 'How long does it approximately take for light to travel from the Sun to Earth?',
+        options: ['8 seconds', '8 minutes', '8 hours', '8 days'],
+        answer: '8 minutes',
+      },
+      {
+        clue: 'Who invented the World Wide Web in 1989?',
+        options: ['Bill Gates', 'Tim Berners-Lee', 'Steve Jobs', 'Linus Torvalds'],
+        answer: 'Tim Berners-Lee',
+      },
+      {
+        clue: 'How many bones does an adult human body have?',
+        options: ['156', '206', '248', '306'],
+        answer: '206',
+      },
+      {
+        clue: 'Which planet rotates in the opposite direction to most other planets?',
+        options: ['Mars', 'Saturn', 'Venus', 'Neptune'],
+        answer: 'Venus',
+      },
+      {
+        clue: 'What is the most spoken language in the world by number of native speakers?',
+        options: ['English', 'Spanish', 'Hindi', 'Mandarin Chinese'],
+        answer: 'Mandarin Chinese',
+      },
+    ],
   },
   {
     id: 'typerace',
@@ -226,7 +274,6 @@ export const MISSIONS: Mission[] = [
       { text: 'The average person swallows 8 spiders per year in their sleep.', answer: false },
     ],
   },
-  // ── NEW LONGER MISSIONS ──
   {
     id: 'photo_bubble',
     icon: '📸',
@@ -238,10 +285,11 @@ export const MISSIONS: Mission[] = [
     type: 'photo',
     question: 'Everyone on the team must chew Hubba Bubba and blow the biggest bubble possible at the same time. Take a team selfie and upload it – admin will rate your bubbles and award up to 500 points!',
   },
+  // ── GUESS THE PERSON ──
   {
     id: 'pa_sparet',
     icon: '🕵️',
-    name: 'På Spåret',
+    name: 'Guess the Person',
     category: 'Fun',
     desc: 'Guess the famous person from clues – fewer clues = more points!',
     difficulty: 'hard',
@@ -256,30 +304,53 @@ export const MISSIONS: Mission[] = [
     ],
     answer: 'Max Martin',
   },
+  // ── GUESS THE DESTINATION ──
+  {
+    id: 'pa_sparet_destination',
+    icon: '✈️',
+    name: 'Guess the Destination',
+    category: 'Fun',
+    desc: 'Guess the travel destination from clues – fewer clues = more points!',
+    difficulty: 'hard',
+    maxPts: 500,
+    type: 'pa_sparet',
+    clues: [
+      'I am home to the tallest building in the world, which stands at 828 metres.',
+      'I transformed from a small pearl-diving village into a global metropolis in just 50 years.',
+      'My most famous man-made island is shaped like a palm tree.',
+      'I am one of seven emirates in a federation on the Arabian Peninsula.',
+      'My national airline is called Emirates.',
+    ],
+    answer: 'Dubai',
+  },
+  // ── SOLVE THE CRIME ──
   {
     id: 'solve_crime',
     icon: '🔍',
     name: 'Solve the Crime',
     category: 'Fun',
-    desc: 'Read the case carefully and figure out who stole the laptop!',
+    desc: 'Read the case carefully and figure out who stole the laptop! Extra info is on the printed paper.',
     difficulty: 'hard',
     maxPts: 450,
     type: 'solve_crime',
-    crimeStory: `A company laptop worth 50,000 SEK was stolen from the office yesterday evening.
+    crimeStory: `A company laptop worth 50,000 SEK disappeared from the office yesterday evening.
 
-Three employees were in the building:
+Three employees were in the building that evening:
 
-🔴 Emma (HR Manager): "I left at exactly 5 PM and went straight home. My neighbour saw me arrive at 5:15 PM."
+🔴 Emma (HR Manager)
+"I left at exactly 5 PM and went straight home. My neighbour saw me arrive at 5:15 PM."
 
-🟡 Karl (Developer): "I worked until 9 PM, but I was in the break room the entire time with my headphones on. I never went to the laptop storage room."
+🟡 Karl (Developer)
+"I worked until 9 PM, but I was in the break room the entire time with my headphones on. I never went near the laptop storage room."
 
-🟢 Sara (Accountant): "I had a client dinner and returned to the office at 7 PM to pick up some documents."
+🟢 Sara (Accountant)
+"I had a client dinner and came back to the office at 7 PM to pick up some documents."
 
-— Evidence found —
-• Security camera: Someone in a blue jacket entered the laptop room at 7:30 PM.
-• Witnesses confirm Sara was wearing a blue jacket all day.
-• Karl's colleague confirms he never left the break room.
-• Emma's neighbour confirmed she arrived home at 5:15 PM.`,
+— Physical evidence (see printed paper for full details) —
+• Security camera footage: someone in a distinctive blue jacket entered the laptop room at 7:30 PM.
+• A keycard log shows only one person re-entered the building after 6 PM.
+• Karl's colleague confirms he was in the break room all evening.
+• Emma's neighbour confirmed she arrived home at 5:15 PM and never left again.`,
     crimeQuestions: [
       {
         question: 'Who stole the laptop?',
@@ -292,17 +363,18 @@ Three employees were in the building:
         answer: '7:30 PM',
       },
       {
-        question: 'What was the key piece of evidence?',
+        question: 'What was the key piece of evidence that identified the thief?',
         options: [
           "Karl's alibi in the break room",
           "Emma's neighbour's testimony",
           'The blue jacket caught on security camera',
-          'The laptop receipt',
+          'The keycard entry log',
         ],
         answer: 'The blue jacket caught on security camera',
       },
     ],
   },
+  // ── CELEBRITY QUIZ ──
   {
     id: 'celebrity_quiz',
     icon: '🌟',
@@ -329,12 +401,13 @@ Three employees were in the building:
         answer: 'Lady Gaga',
       },
       {
-        clue: 'This footballer known as CR7 has won the Ballon d\'Or five times and plays for the Portuguese national team.',
+        clue: "This footballer known as CR7 has won the Ballon d'Or five times and plays for the Portuguese national team.",
         options: ['Lionel Messi', 'Cristiano Ronaldo', 'Neymar', 'Kylian Mbappé'],
         answer: 'Cristiano Ronaldo',
       },
     ],
   },
+  // ── EMOJI SONGS ──
   {
     id: 'music_emoji',
     icon: '🎵',
@@ -352,7 +425,7 @@ Three employees were in the building:
       },
       {
         emojis: '☂️ 🌧️ 💃',
-        options: ['Purple Rain', 'Here Comes the Rain Again', 'Umbrella', 'Singin\' in the Rain'],
+        options: ['Purple Rain', 'Here Comes the Rain Again', 'Umbrella', "Singin' in the Rain"],
         answer: 'Umbrella',
       },
       {
@@ -369,6 +442,82 @@ Three employees were in the building:
         emojis: '🚀 👨 🎸',
         options: ['Space Oddity', 'Starman', 'Rocket Man', 'Major Tom'],
         answer: 'Rocket Man',
+      },
+    ],
+  },
+  // ── MIX DRINKS ──
+  {
+    id: 'mix_drinks',
+    icon: '🍹',
+    name: 'Mix the Drinks',
+    category: 'Fun',
+    desc: 'Do you know your cocktails? Identify the ingredients – 3 rounds!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: 'Zombie is a classic tiki cocktail from the 1930s. Which combination of ingredients is correct?',
+        options: [
+          'White rum, dark rum, apricot brandy, lime juice & grenadine',
+          'Vodka, triple sec, cranberry juice & lime',
+          'Gin, tonic water, cucumber & lime',
+          'Tequila, blue curaçao, salt & lime',
+        ],
+        answer: 'White rum, dark rum, apricot brandy, lime juice & grenadine',
+      },
+      {
+        clue: 'The Singapore Sling was created at the Raffles Hotel around 1915. What is its base spirit?',
+        options: ['Rum', 'Gin', 'Vodka', 'Whiskey'],
+        answer: 'Gin',
+      },
+      {
+        clue: 'The Commonwealth cocktail is a tropical long drink. Which set of ingredients is correct?',
+        options: [
+          'Rum, elderflower liqueur, passion fruit & lime juice',
+          'Vodka, lime juice & ginger beer',
+          'Gin, dry vermouth & olive brine',
+          'Bourbon, peach schnapps & orange juice',
+        ],
+        answer: 'Rum, elderflower liqueur, passion fruit & lime juice',
+      },
+    ],
+  },
+  // ── FOOD INGREDIENTS ──
+  {
+    id: 'food_ingredients',
+    icon: '🍽️',
+    name: 'What\'s in the Dish?',
+    category: 'Fun',
+    desc: 'Identify the key ingredients of classic dishes – 4 rounds!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: 'Which ingredients wrap around the beef fillet in a classic Beef Wellington?',
+        options: [
+          'Puff pastry, mushroom duxelles & prosciutto',
+          'Shortcrust pastry, onion jam & bacon',
+          'Bread dough, garlic butter & herbs',
+          'Phyllo pastry, spinach & feta',
+        ],
+        answer: 'Puff pastry, mushroom duxelles & prosciutto',
+      },
+      {
+        clue: 'A traditional Roman Carbonara does NOT contain which ingredient?',
+        options: ['Cream', 'Guanciale', 'Egg yolks', 'Pecorino Romano'],
+        answer: 'Cream',
+      },
+      {
+        clue: 'What gives traditional Spanish Paella its characteristic yellow colour?',
+        options: ['Turmeric', 'Saffron', 'Curry powder', 'Yellow paprika'],
+        answer: 'Saffron',
+      },
+      {
+        clue: 'Which noodle type is traditionally used in Pad Thai?',
+        options: ['Egg noodles', 'Soba noodles', 'Rice noodles', 'Glass noodles'],
+        answer: 'Rice noodles',
       },
     ],
   },

@@ -14,18 +14,21 @@ export async function POST(req: Request) {
 
   const { data: team, error: fetchErr } = await supabase
     .from('teams')
-    .select('score, completed')
+    .select('score, completed, mission_scores')
     .eq('id', teamId)
     .single();
 
   if (fetchErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
   if (team.completed?.includes(missionId)) return NextResponse.json({ error: 'Already completed.' }, { status: 409 });
 
+  const prevScores = (team.mission_scores as Record<string, number>) ?? {};
+
   const { data, error } = await supabase
     .from('teams')
     .update({
       score: (team.score ?? 0) + (points ?? 0),
       completed: [...(team.completed ?? []), missionId],
+      mission_scores: { ...prevScores, [missionId]: points ?? 0 },
       updated_at: new Date().toISOString(),
     })
     .eq('id', teamId)

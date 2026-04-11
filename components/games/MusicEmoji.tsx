@@ -46,7 +46,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
 
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div style={{ fontSize: '56px', marginBottom: '12px', letterSpacing: '8px' }}>{r.emojis}</div>
-        <p style={{ fontSize: '13px', color: 'var(--muted)' }}>Which song do these emojis represent?</p>
+        <p style={{ fontSize: '13px', color: 'var(--muted)' }}>What does this represent?</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -56,7 +56,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
             disabled={selected !== null}
             onClick={() => choose(opt)}
             style={{ textAlign: 'center' }}>
-            🎵 {opt}
+            {opt}
           </button>
         ))}
       </div>

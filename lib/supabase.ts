@@ -13,6 +13,7 @@ export type Team = {
   game_id: string;
   created_at: string;
   finished_at: string | null;
+  mission_scores: Record<string, number>;
 };
 
 export type Game = {

@@ -37,17 +37,15 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px' }}>
-          ROUND {idx + 1} / {rounds.length}
+          QUESTION {idx + 1} / {rounds.length}
         </div>
         <div style={{ fontSize: '12px', color: 'var(--accent)' }}>
           {correct} correct
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', fontSize: '48px', marginBottom: '16px' }}>🌟</div>
-
-      <div className="challenge-question" style={{ textAlign: 'center', fontSize: '16px', marginBottom: '28px', lineHeight: '1.6' }}>
-        "{r.clue}"
+      <div className="challenge-question" style={{ fontSize: '16px', marginBottom: '28px', lineHeight: '1.6' }}>
+        {r.clue}
       </div>
 
       <div className="options-grid">

@@ -483,13 +483,13 @@ export default function AdminScreen({ onLogout }: Props) {
                       <td><strong>{t.name}</strong></td>
                       {activeGame.missions.map(id => {
                         const done = t.completed?.includes(id);
-                        const m = MISSIONS.find(x => x.id === id);
+                        const pts = done ? (t.mission_scores?.[id] ?? null) : null;
                         return (
                           <td key={id}>
                             {done
                               ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--accent3)', fontWeight: 700, fontSize: '12px' }}>
                                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent3)', display: 'inline-block', flexShrink: 0 }} />
-                                  {m?.maxPts ?? '✓'}
+                                  {pts !== null ? pts : '✓'}
                                 </span>
                               : <span style={{ color: 'var(--muted)' }}>–</span>
                             }
