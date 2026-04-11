@@ -12,13 +12,15 @@ export type MissionType =
   | 'pa_sparet'
   | 'solve_crime'
   | 'celebrity_quiz'
-  | 'music_emoji';
+  | 'music_emoji'
+  | 'crack_code';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
 export type CrimeQuestion = { question: string; options: string[]; answer: string };
 export type CelebRound = { clue: string; options: string[]; answer: string };
 export type EmojiRound = { emojis: string; options: string[]; answer: string };
+export type CodeClue = { digits: [number, number, number]; hint: string };
 
 export type Mission = {
   id: string;
@@ -38,6 +40,7 @@ export type Mission = {
   word?: string;
   statements?: Statement[];
   clues?: string[];
+  codeClues?: CodeClue[];
   crimeStory?: string;
   crimeQuestions?: CrimeQuestion[];
   celebRounds?: CelebRound[];
@@ -520,6 +523,40 @@ Three employees were in the building that evening:
         answer: 'Rice noodles',
       },
     ],
+  },
+  // ── CRACK THE CODE ──
+  {
+    id: 'crack_code',
+    icon: '🔒',
+    name: 'Crack the Code',
+    category: 'Fun',
+    desc: 'Use the five clues to deduce the secret 3-digit lock code!',
+    difficulty: 'hard',
+    maxPts: 400,
+    type: 'crack_code',
+    answer: '394',
+    codeClues: [
+      { digits: [2, 9, 1], hint: 'One number is correct and in the right place' },
+      { digits: [2, 4, 5], hint: 'One number is correct but in the wrong place' },
+      { digits: [4, 6, 3], hint: 'Two numbers are correct but in the wrong place' },
+      { digits: [5, 7, 8], hint: 'Nothing is correct' },
+      { digits: [5, 6, 9], hint: 'One number is correct but in the wrong place' },
+    ],
+  },
+  // ── ENIGMA CIPHER ──
+  {
+    id: 'enigma_cipher',
+    icon: '📡',
+    name: 'Enigma Cipher',
+    category: 'IT',
+    desc: 'Decode the intercepted message using the Caesar cipher!',
+    difficulty: 'medium',
+    maxPts: 300,
+    type: 'text_input',
+    question: 'The Enigma machine shifts every letter forward by 3 positions in the alphabet:\nA→D · B→E · C→F · ... · X→A · Y→B · Z→C\n\nDecrypt this intercepted message and type the original word:',
+    code: 'HQLJPD',
+    answer: 'ENIGMA',
+    hint: 'Shift each letter 3 steps BACK. H→E, Q→N, L→I ...',
   },
 ];
 

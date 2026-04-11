@@ -16,6 +16,7 @@ import PaSparet from '@/components/games/PaSparet';
 import SolveCrime from '@/components/games/SolveCrime';
 import CelebrityQuiz from '@/components/games/CelebrityQuiz';
 import MusicEmoji from '@/components/games/MusicEmoji';
+import CrackCode from '@/components/games/CrackCode';
 
 type Props = {
   missionId: string;
@@ -138,6 +139,14 @@ export default function ChallengeScreen({ missionId, team, onDone, onBack }: Pro
             rounds={mission.emojiRounds!}
             maxPts={mission.maxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'crack_code':
+        return (
+          <CrackCode
+            clues={mission.codeClues!}
+            answer={mission.answer!}
+            onFinish={finish}
           />
         );
       default:
