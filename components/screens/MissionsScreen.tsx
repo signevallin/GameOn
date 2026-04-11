@@ -3,6 +3,72 @@ import { useEffect, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 
+type Notification = { type: string; message: string };
+
+function NotificationOverlay({ notification, teamId, onDismiss }: {
+  notification: Notification;
+  teamId: string;
+  onDismiss: () => void;
+}) {
+  const [loading, setLoading] = useState(false);
+
+  async function ack() {
+    setLoading(true);
+    try {
+      await fetch('/api/team/ack-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId }),
+        cache: 'no-store',
+      });
+      onDismiss();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const CONFIG: Record<string, { emoji: string; title: string; btnLabel: string; color: string }> = {
+    sabotage: { emoji: '💥', title: 'SABOTAGE!', btnLabel: 'OK', color: 'var(--accent2)' },
+    double_points: { emoji: '🎉', title: 'POWER-UP!', btnLabel: "LET'S GO!", color: 'var(--accent3)' },
+    fake_hint: { emoji: '🔍', title: 'SECRET TIP', btnLabel: 'OK', color: 'var(--accent)' },
+  };
+
+  const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.75)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <div style={{
+        background: 'var(--card)',
+        border: `2px solid ${cfg.color}`,
+        borderRadius: '16px',
+        padding: '40px 32px',
+        maxWidth: '380px',
+        width: '100%',
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '56px', marginBottom: '16px' }}>{cfg.emoji}</div>
+        <h2 style={{ color: cfg.color, marginBottom: '16px', letterSpacing: '2px' }}>{cfg.title}</h2>
+        <p style={{ fontSize: '15px', color: 'var(--text)', marginBottom: '32px', lineHeight: 1.6 }}>
+          {notification.message}
+        </p>
+        <button
+          className="btn btn-primary"
+          style={{ padding: '12px 32px', fontSize: '14px' }}
+          onClick={ack}
+          disabled={loading}
+        >
+          {loading ? '...' : cfg.btnLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 type Props = {
   team: Team;
   game: Game;
@@ -52,6 +118,15 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
   const [finishing, setFinishing] = useState(false);
+  const [notification, setNotification] = useState<Notification | null>(
+    team.pending_notification ?? null
+  );
+
+  useEffect(() => {
+    if (team.pending_notification) {
+      setNotification(team.pending_notification);
+    }
+  }, [team.pending_notification]);
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const categories = [...new Set(visibleMissions.map(m => m.category))];
@@ -85,6 +160,13 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
 
   return (
     <>
+      {notification && (
+        <NotificationOverlay
+          notification={notification}
+          teamId={team.id}
+          onDismiss={() => setNotification(null)}
+        />
+      )}
       <nav className="nav" style={{ gap: '8px' }}>
         {/* Team name – left */}
         <span className="nav-team" style={{ fontSize: '12px', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
