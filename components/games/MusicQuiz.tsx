@@ -297,8 +297,18 @@ function TimelinePhase({ results, maxPts, onDone }: {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function MusicQuiz({ rounds, maxPts, onFinish }: Props) {
   const [phase, setPhase] = useState<'listen' | 'timeline'>('listen');
+  const [shuffledRounds] = useState(() => shuffle(rounds));
   const [guessResults, setGuessResults] = useState<GuessResult[]>([]);
 
   function handleListenDone(results: GuessResult[]) {
@@ -311,7 +321,7 @@ export default function MusicQuiz({ rounds, maxPts, onFinish }: Props) {
   }
 
   if (phase === 'listen') {
-    return <ListenPhase rounds={rounds} onDone={handleListenDone} />;
+    return <ListenPhase rounds={shuffledRounds} onDone={handleListenDone} />;
   }
 
   return (
