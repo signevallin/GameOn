@@ -22,11 +22,19 @@ function ListenPhase({ rounds, onDone }: { rounds: MusicRound[]; onDone: (result
 
   const round = rounds[idx];
   const norm = (s: string) => s.trim().toLowerCase();
+  // Strip parenthetical extras like "(Friends Forever)" or "(feat. The Weeknd)"
+  const stripExtras = (s: string) => norm(s).replace(/\s*\(.*?\)\s*/g, '').trim();
+
+  function matches(input: string, correct: string) {
+    const n = norm(input);
+    const c = norm(correct);
+    return n === c || c.startsWith(n) || stripExtras(correct) === n;
+  }
 
   function submit() {
     if (revealed) return;
-    const artistOk = norm(artistInput) === norm(round.artist);
-    const titleOk = norm(titleInput) === norm(round.title);
+    const artistOk = matches(artistInput, round.artist);
+    const titleOk = matches(titleInput, round.title);
     setResults(r => [...r, { round, artistOk, titleOk }]);
     setRevealed(true);
   }
