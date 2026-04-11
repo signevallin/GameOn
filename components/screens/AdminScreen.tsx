@@ -50,6 +50,115 @@ function NavCenter({ game }: { game: Game | null }) {
   );
 }
 
+type PowerUpsCardProps = {
+  teams: Team[];
+  powerupsUsed: string[];
+  puTargets: Record<string, string>;
+  setPuTargets: (v: Record<string, string>) => void;
+  puMessages: string;
+  setPuMessages: (v: string) => void;
+  puLoading: string | null;
+  onActivate: (type: string) => void;
+};
+
+function PowerUpsCard({
+  teams, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
+}: PowerUpsCardProps) {
+  function isUsed(type: string, teamId: string) {
+    return powerupsUsed.includes(`${type}_${teamId}`);
+  }
+
+  function usedOnName(type: string) {
+    const key = powerupsUsed.find(k => k.startsWith(`${type}_`));
+    if (!key) return null;
+    const teamId = key.slice(type.length + 1);
+    return teams.find(t => t.id === teamId)?.name ?? null;
+  }
+
+  function setTarget(type: string, teamId: string) {
+    setPuTargets({ ...puTargets, [type]: teamId });
+  }
+
+  const selectStyle = {
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: '1px solid var(--border)',
+    background: 'var(--surface)',
+    color: 'var(--text)',
+    fontFamily: "'Sora', sans-serif",
+    fontSize: '12px',
+    cursor: 'pointer',
+    flex: 1,
+    minWidth: 0,
+  };
+
+  const POWERS = [
+    { type: 'sabotage', icon: '🧨', label: 'Sabotage a team', btn: 'ACTIVATE' },
+    { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE' },
+    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND' },
+  ];
+
+  return (
+    <div className="card" style={{ marginTop: '24px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', color: 'var(--accent)', marginBottom: '20px' }}>
+        ⚡ POWER-UPS
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {POWERS.map(({ type, icon, label, btn }) => {
+          const usedName = usedOnName(type);
+          const selectedTeamId = puTargets[type];
+          const alreadyUsedOnSelected = selectedTeamId ? isUsed(type, selectedTeamId) : false;
+          const isLoading = puLoading === type;
+
+          return (
+            <div key={type}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>{icon}</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, flex: '0 0 auto' }}>{label}</span>
+                <select
+                  value={selectedTeamId}
+                  onChange={e => setTarget(type, e.target.value)}
+                  disabled={!!usedName}
+                  style={selectStyle}
+                >
+                  <option value="">Select team…</option>
+                  {teams.map(t => (
+                    <option key={t.id} value={t.id} disabled={isUsed(type, t.id)}>
+                      {t.name}{isUsed(type, t.id) ? ' ✓' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-primary"
+                  style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
+                  disabled={!selectedTeamId || alreadyUsedOnSelected || !!usedName || isLoading || (type === 'fake_hint' && !puMessages.trim())}
+                  onClick={() => onActivate(type)}
+                >
+                  {isLoading ? '...' : btn}
+                </button>
+              </div>
+              {type === 'fake_hint' && !usedName && (
+                <input
+                  type="text"
+                  placeholder="Type your fake hint..."
+                  value={puMessages}
+                  onChange={e => setPuMessages(e.target.value)}
+                  style={{ marginTop: '8px', width: '100%', fontSize: '13px' }}
+                />
+              )}
+              {usedName && (
+                <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '4px' }}>
+                  ✓ Used on: {usedName}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 type Props = { onLogout: () => void };
 type AdminView = 'games' | 'create' | 'dashboard';
 
@@ -71,6 +180,12 @@ export default function AdminScreen({ onLogout }: Props) {
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos'>('leaderboard');
   const [rated, setRated] = useState<Set<string>>(new Set());
+  const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
+  const [puTargets, setPuTargets] = useState<Record<string, string>>({
+    sabotage: '', double_points: '', fake_hint: '',
+  });
+  const [puMessages, setPuMessages] = useState('');
+  const [puLoading, setPuLoading] = useState<string | null>(null);
 
   // Create form state
   const [gameName, setGameName] = useState('');
@@ -99,12 +214,15 @@ export default function AdminScreen({ onLogout }: Props) {
   }, []);
 
   const loadGameData = useCallback(async (game: Game) => {
-    const [teamsRes, photosRes, gameRes] = await Promise.all([
+    const [teamsRes, photosRes, gameRes, settingsRes] = await Promise.all([
       POST('/api/admin/teams', { gameId: game.id }),
       POST('/api/admin/photos'),
       POST('/api/game', { key: game.game_key }),
+      POST('/api/settings'),
     ]);
-    const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
+    const [td, pd, gd, sd] = await Promise.all([
+      teamsRes.json(), photosRes.json(), gameRes.json(), settingsRes.json(),
+    ]);
     if (td.teams) setTeams(td.teams);
     if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
       td.teams?.some((t: Team) => t.id === s.team_id)
@@ -116,6 +234,7 @@ export default function AdminScreen({ onLogout }: Props) {
         return (STATUS_ORDER[gd.game.status] ?? 0) >= (STATUS_ORDER[prev.status] ?? 0) ? gd.game : prev;
       });
     }
+    if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
   }, []);
 
   useEffect(() => { loadGames(); }, [loadGames]);
@@ -143,18 +262,18 @@ export default function AdminScreen({ onLogout }: Props) {
     }
 
     async function poll() {
-      // Snapshot the time at poll start – if a command fires while the poll
-      // is in flight, we discard the stale result to prevent race conditions.
       const pollStartedAt = Date.now();
 
-      const [teamsRes, photosRes, gameRes] = await Promise.all([
+      const [teamsRes, photosRes, gameRes, settingsRes] = await Promise.all([
         POST('/api/admin/teams', { gameId }),
         POST('/api/admin/photos'),
         POST('/api/game', { key: gameKey }),
+        POST('/api/settings'),
       ]);
-      const [td, pd, gd] = await Promise.all([teamsRes.json(), photosRes.json(), gameRes.json()]);
+      const [td, pd, gd, sd] = await Promise.all([
+        teamsRes.json(), photosRes.json(), gameRes.json(), settingsRes.json(),
+      ]);
 
-      // Discard if a command (start/finish/restart) was issued while polling
       if (pollStartedAt < lastCommandAtRef.current) return;
 
       if (td.teams) setTeams(td.teams);
@@ -162,6 +281,7 @@ export default function AdminScreen({ onLogout }: Props) {
         td.teams?.some((t: Team) => t.id === s.team_id)
       ));
       if (gd.game) applyGame(gd.game);
+      if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     }
     poll();
     const id = setInterval(poll, 5000);
@@ -218,6 +338,23 @@ export default function AdminScreen({ onLogout }: Props) {
     });
     setRated(r => new Set([...r, sub.id]));
     if (activeGame) loadGameData(activeGame);
+  }
+
+  async function activatePowerup(type: string) {
+    const targetTeamId = puTargets[type];
+    if (!targetTeamId) return;
+    setPuLoading(type);
+    try {
+      await POST('/api/admin/powerup', {
+        type,
+        targetTeamId,
+        ...(type === 'fake_hint' ? { message: puMessages } : {}),
+      });
+      const sd = await POST('/api/settings').then(r => r.json());
+      if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
+    } finally {
+      setPuLoading(null);
+    }
   }
 
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
@@ -544,6 +681,19 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
             )}
           </div>
+        )}
+
+        {activeGame.status === 'active' && (
+          <PowerUpsCard
+            teams={teams}
+            powerupsUsed={powerupsUsed}
+            puTargets={puTargets}
+            setPuTargets={setPuTargets}
+            puMessages={puMessages}
+            setPuMessages={setPuMessages}
+            puLoading={puLoading}
+            onActivate={activatePowerup}
+          />
         )}
       </div>
     </>
