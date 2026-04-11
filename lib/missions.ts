@@ -14,7 +14,8 @@ export type MissionType =
   | 'celebrity_quiz'
   | 'music_emoji'
   | 'crack_code'
-  | 'music_quiz';
+  | 'music_quiz'
+  | 'image_quiz';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -23,6 +24,7 @@ export type CelebRound = { clue: string; options: string[]; answer: string };
 export type EmojiRound = { emojis: string; options: string[]; answer: string };
 export type CodeClue = { digits: [number, number, number]; hint: string };
 export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
+export type ImageRound = { imageUrl: string; options: string[]; answer: string };
 
 export type Mission = {
   id: string;
@@ -48,6 +50,7 @@ export type Mission = {
   celebRounds?: CelebRound[];
   emojiRounds?: EmojiRound[];
   musicRounds?: MusicRound[];
+  imageRounds?: ImageRound[];
 };
 
 export const MISSIONS: Mission[] = [
@@ -589,6 +592,165 @@ Three employees were in the building that evening:
       { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/6inch.mp3', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016 },
       { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Lemonade.mp3', artist: 'Beyoncé', title: 'Lemonade', year: 2016 },
     ],
+  },
+  // ── LOGO QUIZ ──
+  {
+    id: 'logo_quiz',
+    icon: '🏢',
+    name: 'Logo Quiz',
+    category: 'IT',
+    desc: 'Recognize the company from its logo — how many can you get?',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'image_quiz' as const,
+    imageRounds: [
+      {
+        imageUrl: 'https://logo.clearbit.com/apple.com',
+        options: ['Apple', 'Google', 'Microsoft', 'Samsung'],
+        answer: 'Apple',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/spotify.com',
+        options: ['Spotify', 'Apple Music', 'Tidal', 'Deezer'],
+        answer: 'Spotify',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/netflix.com',
+        options: ['Netflix', 'HBO Max', 'Disney+', 'Amazon Prime'],
+        answer: 'Netflix',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/slack.com',
+        options: ['Slack', 'Discord', 'Microsoft Teams', 'Zoom'],
+        answer: 'Slack',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/github.com',
+        options: ['GitHub', 'GitLab', 'Bitbucket', 'Jira'],
+        answer: 'GitHub',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/airbnb.com',
+        options: ['Airbnb', 'Booking.com', 'Expedia', 'Tripadvisor'],
+        answer: 'Airbnb',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/tesla.com',
+        options: ['Tesla', 'BMW', 'Mercedes-Benz', 'Audi'],
+        answer: 'Tesla',
+      },
+      {
+        imageUrl: 'https://logo.clearbit.com/ikea.com',
+        options: ['IKEA', 'H&M', 'Zara', 'Zalando'],
+        answer: 'IKEA',
+      },
+    ],
+  },
+  // ── GEOGUESS ──
+  {
+    id: 'geo_guess',
+    icon: '🗺️',
+    name: 'GeoGuess',
+    category: 'Fun',
+    desc: 'Recognize the landmark — which country is it in?',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'image_quiz' as const,
+    imageRounds: [
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_(cropped).jpg/400px-Tour_Eiffel_Wikimedia_Commons_(cropped).jpg',
+        options: ['France', 'Belgium', 'Italy', 'Spain'],
+        answer: 'France',
+      },
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/400px-Colosseo_2020.jpg',
+        options: ['Greece', 'Italy', 'Spain', 'Turkey'],
+        answer: 'Italy',
+      },
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Sydney_Opera_House_-_Dec_2008.jpg/400px-Sydney_Opera_House_-_Dec_2008.jpg',
+        options: ['New Zealand', 'South Africa', 'Australia', 'Canada'],
+        answer: 'Australia',
+      },
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/400px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg',
+        options: ['Pakistan', 'Bangladesh', 'India', 'Sri Lanka'],
+        answer: 'India',
+      },
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24701-nature-natural-beauty.jpg/400px-24701-nature-natural-beauty.jpg',
+        options: ['China', 'Japan', 'South Korea', 'Vietnam'],
+        answer: 'Japan',
+      },
+      {
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Statue_of_Liberty_frontal.jpg/400px-Statue_of_Liberty_frontal.jpg',
+        options: ['Canada', 'France', 'USA', 'United Kingdom'],
+        answer: 'USA',
+      },
+    ],
+  },
+
+  // ── FINISH THE LYRICS ──
+  {
+    id: 'finish_lyrics',
+    icon: '🎤',
+    name: 'Finish the Lyrics',
+    category: 'Fun',
+    desc: 'Complete the next line of these iconic songs!',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🎵 "Is this the real life?\nIs this just fantasy?\nCaught in a landslide,\nNo escape from reality..."',
+        options: ['Open your eyes, Look up to the skies and see', 'I am just a poor boy, nobody loves me', 'Anyway the wind blows, doesn\'t really matter', 'Scaramouche, Scaramouche, will you do the fandango'],
+        answer: 'Open your eyes, Look up to the skies and see',
+      },
+      {
+        clue: '🎵 "Just a small town girl\nLivin\' in a lonely world\nShe took the midnight train..."',
+        options: ['Going anywhere', 'To the city lights', 'To find her dreams', 'Back to her home'],
+        answer: 'Going anywhere',
+      },
+      {
+        clue: '🎵 "I\'ve heard there was a secret chord\nThat David played and it pleased the Lord\nBut you don\'t really care for music, do ya?..."',
+        options: ['It goes like this, the fourth, the fifth', 'Well, hallelujah, hallelujah', 'The minor fall and the major lift', 'Your faith was strong but you needed proof'],
+        answer: 'It goes like this, the fourth, the fifth',
+      },
+      {
+        clue: '🎵 "She\'s got a smile that it seems to me\nReminds me of childhood memories..."',
+        options: ['Where everything was as fresh as the bright blue sky', 'And love was all she knew', 'And the days were long and free', 'Where the sun would always shine'],
+        answer: 'Where everything was as fresh as the bright blue sky',
+      },
+      {
+        clue: '🎵 "Never gonna give you up\nNever gonna let you down\nNever gonna run around..."',
+        options: ['And desert you', 'And leave you cold', 'And make you cry', 'And say goodbye'],
+        answer: 'And desert you',
+      },
+    ],
+  },
+  // ── PICTIONARY ──
+  {
+    id: 'pictionary',
+    icon: '🎨',
+    name: 'Pictionary',
+    category: 'Fun',
+    desc: 'One person draws, the rest guess — admin rates your teamwork!',
+    difficulty: 'easy',
+    maxPts: 500,
+    type: 'photo',
+    question: 'One person in the team must draw a word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\n📝 Your word to draw: **ARTIFICIAL INTELLIGENCE**\n\nTake a photo of your drawing + your team reacting and upload it — admin will rate your performance!',
+  },
+  // ── HUMAN STATUE ──
+  {
+    id: 'human_statue',
+    icon: '🗿',
+    name: 'Human Statue',
+    category: 'Fun',
+    desc: 'Create a human sculpture — admin rates your pose!',
+    difficulty: 'easy',
+    maxPts: 500,
+    type: 'photo',
+    question: 'Your entire team must form a human sculpture/pose together representing the word:\n\n🗿 **TEAMWORK**\n\nNo props allowed — only your bodies! Hold the pose, take a team photo and upload it. Admin will judge your creativity and accuracy for up to 500 points!',
   },
 ];
 
