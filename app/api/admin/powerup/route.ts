@@ -11,7 +11,7 @@ function getSupabase() {
 }
 
 const MESSAGES: Record<string, string> = {
-  sabotage: '💥 SABOTAGE! -10 points deducted from your team',
+  sabotage: '💥 SABOTAGE! -100 points deducted from your team',
   double_points: '🎉 POWER-UP! Double points on your next mission!',
 };
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
   };
 
   if (type === 'sabotage') {
-    teamUpdate.score = Math.max(0, (team.score ?? 0) - 10);
+    teamUpdate.score = Math.max(0, (team.score ?? 0) - 100);
   }
   if (type === 'double_points') {
     teamUpdate.double_points = true;
