@@ -64,7 +64,9 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
         body: JSON.stringify({ teamId: team.id, missionId, points: pts }),
       });
       const data = await res.json();
-      onDone(data.team ?? team, pts, correct, elapsedRef.current);
+      // Use the actual awarded pts from the server (may be doubled by powerup)
+      const actualPts = data.team?.mission_scores?.[missionId] ?? pts;
+      onDone(data.team ?? team, actualPts, correct, elapsedRef.current);
     } catch {
       onDone(team, pts, correct, elapsedRef.current);
     }
