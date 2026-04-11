@@ -28,7 +28,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   }
 
   const CONFIG: Record<string, { emoji: string; title: string; btnLabel: string; color: string }> = {
-    sabotage: { emoji: '💥', title: 'SABOTAGE!', btnLabel: 'OK', color: 'var(--accent2)' },
+    sabotage: { emoji: '💻', title: 'YOU HAVE BEEN HACKED!', btnLabel: 'OK', color: 'var(--accent2)' },
     double_points: { emoji: '🎉', title: 'POWER-UP!', btnLabel: "LET'S GO!", color: 'var(--accent3)' },
     fake_hint: { emoji: '🔍', title: 'SECRET TIP', btnLabel: 'OK', color: 'var(--accent)' },
   };

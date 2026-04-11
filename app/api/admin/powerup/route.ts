@@ -11,7 +11,7 @@ function getSupabase() {
 }
 
 const MESSAGES: Record<string, string> = {
-  sabotage: '💥 SABOTAGE! -100 points deducted from your team',
+  sabotage: '💻 YOU HAVE BEEN HACKED! -100 points deducted from your team',
   double_points: '🎉 POWER-UP! Double points on your next mission!',
 };
 
