@@ -8,18 +8,25 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
+// Store the selection together with the question index it belongs to.
+// This prevents the highlight from "bleeding" onto the next question
+// if a later round happens to share the same option text.
+type Selection = { forIdx: number; opt: string; revealing: boolean };
+
 export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [revealing, setRevealing] = useState(false);
+  const [selection, setSelection] = useState<Selection | null>(null);
+
+  // Only use the selection if it was made for the current question
+  const active = selection?.forIdx === idx ? selection : null;
 
   function choose(opt: string) {
-    if (selected !== null) return;
+    if (active) return;
     const isCorrect = opt === rounds[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
-    setSelected(opt);
-    setRevealing(true);
+
+    setSelection({ forIdx: idx, opt, revealing: true });
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
@@ -27,8 +34,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
         const pts = Math.round((total / rounds.length) * maxPts);
         onFinish(total > 0, pts);
       } else {
-        setSelected(null);
-        setRevealing(false);
+        setSelection(null);
         setIdx(i => i + 1);
       }
     }, 1000);
@@ -55,16 +61,16 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {r.options.map((opt, i) => {
           let cls = 'option-btn';
-          if (revealing) {
+          if (active?.revealing) {
             if (opt === r.answer) cls += ' correct';
-            else if (opt === selected) cls += ' wrong';
-          } else if (selected === opt) {
+            else if (opt === active.opt) cls += ' wrong';
+          } else if (active?.opt === opt) {
             cls += ' selected';
           }
           return (
             <button key={i}
               className={cls}
-              disabled={selected !== null}
+              disabled={!!active}
               onClick={() => choose(opt)}
               style={{ textAlign: 'center' }}>
               {opt}
