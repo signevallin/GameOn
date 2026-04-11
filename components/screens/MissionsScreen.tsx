@@ -31,6 +31,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
     sabotage: { emoji: '💻', title: 'YOU HAVE BEEN HACKED!', btnLabel: 'OK', color: 'var(--accent2)' },
     double_points: { emoji: '🎉', title: 'POWER-UP!', btnLabel: "LET'S GO!", color: 'var(--accent3)' },
     fake_hint: { emoji: '🔍', title: 'SECRET TIP', btnLabel: 'OK', color: 'var(--accent)' },
+    photo_rated: { emoji: '📸', title: 'PHOTO RATED!', btnLabel: 'NICE!', color: 'var(--accent3)' },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;

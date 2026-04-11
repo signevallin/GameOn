@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { MISSIONS } from '@/lib/missions';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,14 +31,30 @@ export async function POST(req: Request) {
 
   if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 
+  const mission = MISSIONS.find(m => m.id === missionId);
+  const missionName = mission ? `${mission.icon} ${mission.name}` : 'Photo Challenge';
+
+  const notification = points > 0
+    ? { type: 'photo_rated', message: `Your photo for "${missionName}" has been rated! You earned ${points} points! 🎉` }
+    : { type: 'photo_rated', message: `Your photo for "${missionName}" was reviewed — unfortunately no points this time. Keep going! 💪` };
+
   if (!team.completed?.includes(missionId)) {
     const { error: updateErr } = await supabase
       .from('teams')
       .update({
         score: (team.score ?? 0) + points,
         completed: [...(team.completed ?? []), missionId],
+        pending_notification: notification,
         updated_at: new Date().toISOString(),
       })
+      .eq('id', teamId);
+
+    if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+  } else {
+    // Already completed (re-rating) — still send the notification
+    const { error: updateErr } = await supabase
+      .from('teams')
+      .update({ pending_notification: notification, updated_at: new Date().toISOString() })
       .eq('id', teamId);
 
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
