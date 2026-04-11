@@ -583,11 +583,11 @@ Three employees were in the building that evening:
     maxPts: 1000,
     type: 'music_quiz',
     musicRounds: [
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/graduation.mp3', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 2000 },
+      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Graduation.mp3', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 2000 },
       { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/time.mp3', artist: 'Hans Zimmer', title: 'Time', year: 2010 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/holocene.mp3', artist: 'Bon Iver', title: 'Holocene', year: 2011 },
+      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Holocene.mp3', artist: 'Bon Iver', title: 'Holocene', year: 2011 },
       { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/6inch.mp3', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/lemonade.mp3', artist: 'Beyoncé', title: 'Lemonade', year: 2016 },
+      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Lemonade.mp3', artist: 'Beyoncé', title: 'Lemonade', year: 2016 },
     ],
   },
 ];
