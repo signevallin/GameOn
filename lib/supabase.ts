@@ -14,6 +14,8 @@ export type Team = {
   created_at: string;
   finished_at: string | null;
   mission_scores: Record<string, number>;
+  pending_notification: { type: string; message: string } | null;
+  double_points: boolean;
 };
 
 export type Game = {
