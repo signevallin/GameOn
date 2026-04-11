@@ -317,7 +317,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                           <div className="mission-desc">{m.desc}</div>
                           <div className="mission-meta">
                             <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
-                            <span className="mission-pts">up to {m.maxPts} pts</span>
+                            <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
                           </div>
                         </div>
                       );
