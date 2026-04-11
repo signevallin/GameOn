@@ -68,11 +68,11 @@ function PowerUpsCard({
     return powerupsUsed.includes(`${type}_${teamId}`);
   }
 
-  function usedOnName(type: string) {
-    const key = powerupsUsed.find(k => k.startsWith(`${type}_`));
-    if (!key) return null;
-    const teamId = key.slice(type.length + 1);
-    return teams.find(t => t.id === teamId)?.name ?? null;
+  function usedOnNames(type: string) {
+    return powerupsUsed
+      .filter(k => k.startsWith(`${type}_`))
+      .map(k => teams.find(t => t.id === k.slice(type.length + 1))?.name)
+      .filter(Boolean) as string[];
   }
 
   function setTarget(type: string, teamId: string) {
@@ -99,62 +99,56 @@ function PowerUpsCard({
   ];
 
   return (
-    <div className="card" style={{ marginTop: '24px' }}>
-      <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px', color: 'var(--accent)', marginBottom: '20px' }}>
-        ⚡ POWER-UPS
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {POWERS.map(({ type, icon, label, btn }) => {
-          const usedName = usedOnName(type);
-          const selectedTeamId = puTargets[type];
-          const alreadyUsedOnSelected = selectedTeamId ? isUsed(type, selectedTeamId) : false;
-          const isLoading = puLoading === type;
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {POWERS.map(({ type, icon, label, btn }) => {
+        const usedNames = usedOnNames(type);
+        const selectedTeamId = puTargets[type];
+        const alreadyUsedOnSelected = selectedTeamId ? isUsed(type, selectedTeamId) : false;
+        const isLoading = puLoading === type;
 
-          return (
-            <div key={type}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '18px', flexShrink: 0 }}>{icon}</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, flex: '0 0 auto' }}>{label}</span>
-                <select
-                  value={selectedTeamId}
-                  onChange={e => setTarget(type, e.target.value)}
-                  disabled={!!usedName}
-                  style={selectStyle}
-                >
-                  <option value="">Select team…</option>
-                  {teams.map(t => (
-                    <option key={t.id} value={t.id} disabled={isUsed(type, t.id)}>
-                      {t.name}{isUsed(type, t.id) ? ' ✓' : ''}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  className="btn btn-primary"
-                  style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
-                  disabled={!selectedTeamId || alreadyUsedOnSelected || !!usedName || isLoading || (type === 'fake_hint' && !puMessages.trim())}
-                  onClick={() => onActivate(type)}
-                >
-                  {isLoading ? '...' : btn}
-                </button>
-              </div>
-              {type === 'fake_hint' && !usedName && (
-                <input
-                  type="text"
-                  placeholder="Type your fake hint..."
-                  value={puMessages}
-                  onChange={e => setPuMessages(e.target.value)}
-                  style={{ marginTop: '8px', width: '100%', fontSize: '13px' }}
-                />
-              )}
-              {usedName && (
-                <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '4px' }}>
-                  ✓ Used on: {usedName}
-                </div>
-              )}
+        return (
+          <div key={type} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, flex: '0 0 auto' }}>{label}</span>
+              <select
+                value={selectedTeamId}
+                onChange={e => setTarget(type, e.target.value)}
+                style={selectStyle}
+              >
+                <option value="">Select team…</option>
+                {teams.map(t => (
+                  <option key={t.id} value={t.id} disabled={isUsed(type, t.id)}>
+                    {t.name}{isUsed(type, t.id) ? ' ✓' : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-primary"
+                style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
+                disabled={!selectedTeamId || alreadyUsedOnSelected || isLoading || (type === 'fake_hint' && !puMessages.trim())}
+                onClick={() => onActivate(type)}
+              >
+                {isLoading ? '...' : btn}
+              </button>
             </div>
-          );
-        })}
-      </div>
+            {type === 'fake_hint' && (
+              <input
+                type="text"
+                placeholder="Type your fake hint..."
+                value={puMessages}
+                onChange={e => setPuMessages(e.target.value)}
+                style={{ marginTop: '10px', width: '100%', fontSize: '13px' }}
+              />
+            )}
+            {usedNames.length > 0 && (
+              <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '8px' }}>
+                ✓ Used on: {usedNames.join(', ')}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -178,7 +172,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
-  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups'>('leaderboard');
   const [rated, setRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
   const [puTargets, setPuTargets] = useState<Record<string, string>>({
@@ -569,6 +563,9 @@ export default function AdminScreen({ onLogout }: Props) {
               </span>
             )}
           </button>
+          {activeGame.status === 'active' && (
+            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups</button>
+          )}
         </div>
 
         {/* LEADERBOARD */}
@@ -688,17 +685,24 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         )}
 
-        {activeGame.status === 'active' && (
-          <PowerUpsCard
-            teams={teams}
-            powerupsUsed={powerupsUsed}
-            puTargets={puTargets}
-            setPuTargets={setPuTargets}
-            puMessages={puMessages}
-            setPuMessages={setPuMessages}
-            puLoading={puLoading}
-            onActivate={activatePowerup}
-          />
+        {/* POWER-UPS */}
+        {tab === 'powerups' && activeGame.status === 'active' && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2 style={{ fontSize: '18px' }}>Power-ups</h2>
+              <span className="badge">{teams.length} teams</span>
+            </div>
+            <PowerUpsCard
+              teams={teams}
+              powerupsUsed={powerupsUsed}
+              puTargets={puTargets}
+              setPuTargets={setPuTargets}
+              puMessages={puMessages}
+              setPuMessages={setPuMessages}
+              puLoading={puLoading}
+              onActivate={activatePowerup}
+            />
+          </div>
         )}
       </div>
     </>
