@@ -170,7 +170,17 @@ type PhotoSubmission = {
   mission_id: string; photo_url: string; status: string;
   points_awarded: number | null; created_at: string;
 };
-const POINT_OPTIONS = [0, 100, 200, 300, 400, 500];
+function getPointOptions(maxPts: number): number[] {
+  const steps = 5;
+  const step = Math.ceil(maxPts / steps / 100) * 100;
+  const opts: number[] = [0];
+  for (let i = 1; i <= steps; i++) {
+    const v = Math.min(i * step, maxPts);
+    if (!opts.includes(v)) opts.push(v);
+  }
+  if (!opts.includes(maxPts)) opts.push(maxPts);
+  return opts;
+}
 
 export default function AdminScreen({ onLogout }: Props) {
   const [view, setView] = useState<AdminView>('games');
@@ -737,16 +747,20 @@ export default function AdminScreen({ onLogout }: Props) {
                             ? <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '13px' }}>✓ {sub.points_awarded ?? ''} p</span>
                             : <span className="badge">Pending</span>}
                         </div>
-                        {!isRated && (
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {POINT_OPTIONS.map(pts => (
-                              <button key={pts} onClick={() => ratePhoto(sub, pts)}
-                                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 500 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 500 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
-                                {pts}p
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        {!isRated && (() => {
+                          const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
+                          const pointOptions = getPointOptions(missionMaxPts);
+                          return (
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {pointOptions.map(pts => (
+                                <button key={pts} onClick={() => ratePhoto(sub, pts)}
+                                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === missionMaxPts ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === missionMaxPts ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
