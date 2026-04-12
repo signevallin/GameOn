@@ -23,7 +23,7 @@ export default function GameOnLogo({ size = 22 }: Props) {
         fontSize: `${symbolSize}px`,
         color: 'var(--accent)',
         lineHeight: 1,
-        marginRight: `-${Math.round(size * 0.04)}px`,
+        marginRight: `-${Math.round(size * 0.10)}px`,
       }}>⏻</span>
       <span style={{
         fontFamily: "'Sora', sans-serif",
