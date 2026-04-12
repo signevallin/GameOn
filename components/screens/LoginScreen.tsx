@@ -71,7 +71,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
             <span style={{
               fontFamily: "'Sora', sans-serif",
               fontWeight: 800,
-              fontSize: '52px',
+              fontSize: '58px',
               color: 'var(--accent)',
               lineHeight: 1,
               position: 'relative',
