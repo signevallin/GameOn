@@ -79,14 +79,17 @@ export default function MemorySpeed({ rounds, maxPts, onFinish }: Props) {
             <p style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '8px' }}>
               MEMORIZE THESE ITEMS
             </p>
-            <div style={{
-              fontSize: '56px',
-              fontWeight: 800,
-              fontFamily: "'Sora', sans-serif",
-              color: urgentCountdown ? 'var(--accent2)' : 'var(--accent3)',
-              lineHeight: 1,
-              animation: urgentCountdown ? 'pulse 0.5s infinite alternate' : 'none',
-            }}>
+            <div
+              key={countdown}
+              style={{
+                fontSize: '56px',
+                fontWeight: 800,
+                fontFamily: "'Sora', sans-serif",
+                color: urgentCountdown ? 'var(--accent2)' : 'var(--accent3)',
+                lineHeight: 1,
+                animation: urgentCountdown ? 'pulse 0.5s infinite alternate' : 'none',
+              }}
+            >
               {countdown}
             </div>
           </div>
