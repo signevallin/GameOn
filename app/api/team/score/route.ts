@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const { data: team, error: fetchErr } = await supabase
     .from('teams')
-    .select('score, completed, mission_scores, double_points')
+    .select('score, completed, mission_scores, double_points, active_effects')
     .eq('id', teamId)
     .single();
 
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
 
   const prevScores = (team.mission_scores as Record<string, number>) ?? {};
   const finalPts = team.double_points ? (points ?? 0) * 2 : (points ?? 0);
+  const effects = (team.active_effects as Record<string, unknown>) ?? {};
 
   const updatePayload: Record<string, unknown> = {
     score: (team.score ?? 0) + finalPts,
@@ -33,6 +34,12 @@ export async function POST(req: Request) {
 
   if (team.double_points) {
     updatePayload.double_points = false;
+  }
+
+  // Decrement double_trouble counter
+  if (effects.double_trouble_remaining && (effects.double_trouble_remaining as number) > 0) {
+    const remaining = (effects.double_trouble_remaining as number) - 1;
+    updatePayload.active_effects = { ...effects, double_trouble_remaining: remaining };
   }
 
   const { data, error } = await supabase

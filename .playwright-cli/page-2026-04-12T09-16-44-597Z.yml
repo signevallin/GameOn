@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Game
+        - generic [ref=e8]: ⏻
+        - generic [ref=e9]: "n"
+      - paragraph [ref=e10]: Select your role to log in
+    - generic [ref=e11]:
+      - button "🧑‍💻 TEAM" [ref=e12] [cursor=pointer]
+      - button "🛡️ ADMIN" [ref=e13] [cursor=pointer]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Team Name
+        - textbox "E.g. Team Frontend" [ref=e17]
+      - generic [ref=e18]:
+        - generic [ref=e19]: Game Key (from the organiser)
+        - textbox "E.g. X7K2P9" [ref=e20]
+      - button "JOIN GAME →" [ref=e21] [cursor=pointer]

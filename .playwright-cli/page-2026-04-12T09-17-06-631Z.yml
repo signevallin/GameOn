@@ -1,0 +1,17 @@
+- generic [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Game
+        - generic [ref=e8]: ⏻
+        - generic [ref=e9]: "n"
+      - paragraph [ref=e10]: Select your role to log in
+    - generic [ref=e11]:
+      - button "🧑‍💻 TEAM" [ref=e12] [cursor=pointer]
+      - button "🛡️ ADMIN" [active] [ref=e13] [cursor=pointer]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Admin Password
+        - textbox "••••••••" [ref=e22]
+      - button "LOG IN AS ADMIN →" [ref=e23] [cursor=pointer]

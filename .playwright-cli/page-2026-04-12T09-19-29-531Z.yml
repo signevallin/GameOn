@@ -1,0 +1,326 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e30]:
+    - generic [ref=e31]: playwright
+    - generic [ref=e32]: ⭐ 0
+    - generic [ref=e33]: ⏱ 43:29
+    - button "LOG OUT" [ref=e34] [cursor=pointer]
+  - generic [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - heading "Choose your mission" [level=2] [ref=e38]
+        - paragraph [ref=e39]: Faster answers = more points. Click a mission to begin.
+      - button "🏁 We're done!" [ref=e40] [cursor=pointer]
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e44]: 💻 IT Missions
+        - generic [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]: 🧩
+          - generic [ref=e47]: Code Riddle
+          - generic [ref=e48]: What does the code output? Think carefully!
+          - generic [ref=e49]:
+            - generic [ref=e50]: Medium
+            - generic [ref=e51]: up to 300 pts
+        - generic [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]: 💾
+          - generic [ref=e54]: Binary Decoder
+          - generic [ref=e55]: Convert binary to a decimal number.
+          - generic [ref=e56]:
+            - generic [ref=e57]: Easy
+            - generic [ref=e58]: up to 200 pts
+        - generic [ref=e59] [cursor=pointer]:
+          - generic [ref=e60]: 🐛
+          - generic [ref=e61]: Bug Hunt
+          - generic [ref=e62]: Find the bug in the code.
+          - generic [ref=e63]:
+            - generic [ref=e64]: Hard
+            - generic [ref=e65]: up to 500 pts
+        - generic [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]: ⌨️
+          - generic [ref=e68]: Terminal Guru
+          - generic [ref=e69]: Which command gets the job done?
+          - generic [ref=e70]:
+            - generic [ref=e71]: Medium
+            - generic [ref=e72]: up to 300 pts
+        - generic [ref=e73] [cursor=pointer]:
+          - generic [ref=e74]: 🧠
+          - generic [ref=e75]: Memory Match
+          - generic [ref=e76]: Match IT terms with their definitions.
+          - generic [ref=e77]:
+            - generic [ref=e78]: Medium
+            - generic [ref=e79]: up to 400 pts
+        - generic [ref=e80] [cursor=pointer]:
+          - generic [ref=e81]: 🔐
+          - generic [ref=e82]: Emoji Rebus
+          - generic [ref=e83]: Which IT concept is hiding in the emojis? 5 rounds!
+          - generic [ref=e84]:
+            - generic [ref=e85]: Easy
+            - generic [ref=e86]: up to 250 pts
+        - generic [ref=e87] [cursor=pointer]:
+          - generic [ref=e88]: 🔢
+          - generic [ref=e89]: Sequence Logic
+          - generic [ref=e90]: What comes next in the number sequence?
+          - generic [ref=e91]:
+            - generic [ref=e92]: Medium
+            - generic [ref=e93]: up to 250 pts
+        - generic [ref=e94] [cursor=pointer]:
+          - generic [ref=e95]: 📡
+          - generic [ref=e96]: Enigma Cipher
+          - generic [ref=e97]: Decode the intercepted message using the Caesar cipher!
+          - generic [ref=e98]:
+            - generic [ref=e99]: Medium
+            - generic [ref=e100]: up to 300 pts
+        - generic [ref=e101] [cursor=pointer]:
+          - generic [ref=e102]: 🏢
+          - generic [ref=e103]: Logo Quiz
+          - generic [ref=e104]: Recognize the company from its logo — how many can you get?
+          - generic [ref=e105]:
+            - generic [ref=e106]: Easy
+            - generic [ref=e107]: up to 400 pts
+        - generic [ref=e108] [cursor=pointer]:
+          - generic [ref=e109]: 🔀
+          - generic [ref=e110]: Anagram
+          - generic [ref=e111]: Unscramble the letters to reveal the hidden IT word — type your answer!
+          - generic [ref=e112]:
+            - generic [ref=e113]: Medium
+            - generic [ref=e114]: up to 300 pts
+        - generic [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]: 📱
+          - generic [ref=e117]: App Icons
+          - generic [ref=e118]: Recognize the app from its icon — 8 rounds!
+          - generic [ref=e119]:
+            - generic [ref=e120]: Easy
+            - generic [ref=e121]: up to 350 pts
+      - generic [ref=e122]:
+        - generic [ref=e124]: 🎉 Fun Missions
+        - generic [ref=e125] [cursor=pointer]:
+          - generic [ref=e126]: ⚡
+          - generic [ref=e127]: Reaction Test
+          - generic [ref=e128]: Click as fast as you can when it flashes!
+          - generic [ref=e129]:
+            - generic [ref=e130]: Easy
+            - generic [ref=e131]: up to 350 pts
+        - generic [ref=e132] [cursor=pointer]:
+          - generic [ref=e133]: 🎭
+          - generic [ref=e134]: Fun Trivia
+          - generic [ref=e135]: General knowledge – 5 fun questions!
+          - generic [ref=e136]:
+            - generic [ref=e137]: Easy
+            - generic [ref=e138]: up to 250 pts
+        - generic [ref=e139] [cursor=pointer]:
+          - generic [ref=e140]: 🏎️
+          - generic [ref=e141]: Type Race
+          - generic [ref=e142]: Type the text as fast and accurately as possible!
+          - generic [ref=e143]:
+            - generic [ref=e144]: Medium
+            - generic [ref=e145]: up to 450 pts
+        - generic [ref=e146] [cursor=pointer]:
+          - generic [ref=e147]: 🔤
+          - generic [ref=e148]: Word Guess
+          - generic [ref=e149]: Hangman – guess the word letter by letter!
+          - generic [ref=e150]:
+            - generic [ref=e151]: Medium
+            - generic [ref=e152]: up to 300 pts
+        - generic [ref=e153] [cursor=pointer]:
+          - generic [ref=e154]: 🤔
+          - generic [ref=e155]: Who on the team...?
+          - generic [ref=e156]: Vote for who in YOUR team fits best!
+          - generic [ref=e157]:
+            - generic [ref=e158]: Easy
+            - generic [ref=e159]: up to 100 pts
+        - generic [ref=e160] [cursor=pointer]:
+          - generic [ref=e161]: 🔀
+          - generic [ref=e162]: Number Puzzle
+          - generic [ref=e163]: Drag and drop the numbers into the right order!
+          - generic [ref=e164]:
+            - generic [ref=e165]: Easy
+            - generic [ref=e166]: up to 200 pts
+        - generic [ref=e167] [cursor=pointer]:
+          - generic [ref=e168]: ✅
+          - generic [ref=e169]: True or False
+          - generic [ref=e170]: Funny statements – true or false?
+          - generic [ref=e171]:
+            - generic [ref=e172]: Easy
+            - generic [ref=e173]: up to 150 pts
+        - generic [ref=e174] [cursor=pointer]:
+          - generic [ref=e175]: 📸
+          - generic [ref=e176]: Bubble Challenge
+          - generic [ref=e177]: Team selfie – blow the biggest Hubba Bubba bubble! Admin rates your photo.
+          - generic [ref=e178]:
+            - generic [ref=e179]: Easy
+            - generic [ref=e180]: up to 500 pts
+        - generic [ref=e181] [cursor=pointer]:
+          - generic [ref=e182]: 🎬
+          - generic [ref=e183]: Lights, Camera, Action!
+          - generic [ref=e184]: Recreate a famous movie scene – admin rates your performance!
+          - generic [ref=e185]:
+            - generic [ref=e186]: Medium
+            - generic [ref=e187]: up to 500 pts
+        - generic [ref=e188] [cursor=pointer]:
+          - generic [ref=e189]: 🕵️
+          - generic [ref=e190]: Guess the Person
+          - generic [ref=e191]: Guess the famous person from clues – fewer clues = more points!
+          - generic [ref=e192]:
+            - generic [ref=e193]: Hard
+            - generic [ref=e194]: up to 500 pts
+        - generic [ref=e195] [cursor=pointer]:
+          - generic [ref=e196]: ✈️
+          - generic [ref=e197]: Guess the Destination
+          - generic [ref=e198]: Guess the travel destination from clues – fewer clues = more points!
+          - generic [ref=e199]:
+            - generic [ref=e200]: Hard
+            - generic [ref=e201]: up to 500 pts
+        - generic [ref=e202] [cursor=pointer]:
+          - generic [ref=e203]: 🔍
+          - generic [ref=e204]: Solve the Crime
+          - generic [ref=e205]: Read the case carefully and figure out who stole the laptop! Extra info is on the printed paper.
+          - generic [ref=e206]:
+            - generic [ref=e207]: Hard
+            - generic [ref=e208]: up to 450 pts
+        - generic [ref=e209] [cursor=pointer]:
+          - generic [ref=e210]: 🌟
+          - generic [ref=e211]: Celebrity Quiz
+          - generic [ref=e212]: Guess which famous person is being described – 4 rounds!
+          - generic [ref=e213]:
+            - generic [ref=e214]: Medium
+            - generic [ref=e215]: up to 400 pts
+        - generic [ref=e216] [cursor=pointer]:
+          - generic [ref=e217]: 🎵
+          - generic [ref=e218]: Emoji Songs
+          - generic [ref=e219]: Guess the song from the emojis – 5 rounds!
+          - generic [ref=e220]:
+            - generic [ref=e221]: Medium
+            - generic [ref=e222]: up to 350 pts
+        - generic [ref=e223] [cursor=pointer]:
+          - generic [ref=e224]: 🍹
+          - generic [ref=e225]: Mix the Drinks
+          - generic [ref=e226]: Do you know your cocktails? Identify the ingredients – 3 rounds!
+          - generic [ref=e227]:
+            - generic [ref=e228]: Medium
+            - generic [ref=e229]: up to 300 pts
+        - generic [ref=e230] [cursor=pointer]:
+          - generic [ref=e231]: 🍽️
+          - generic [ref=e232]: What's in the Dish?
+          - generic [ref=e233]: Identify the key ingredients of classic dishes – 4 rounds!
+          - generic [ref=e234]:
+            - generic [ref=e235]: Medium
+            - generic [ref=e236]: up to 300 pts
+        - generic [ref=e237] [cursor=pointer]:
+          - generic [ref=e238]: 🔒
+          - generic [ref=e239]: Crack the Code
+          - generic [ref=e240]: Use the five clues to deduce the secret 3-digit lock code!
+          - generic [ref=e241]:
+            - generic [ref=e242]: Hard
+            - generic [ref=e243]: up to 400 pts
+        - generic [ref=e244] [cursor=pointer]:
+          - generic [ref=e245]: 🎵
+          - generic [ref=e246]: Name That Tune
+          - generic [ref=e247]: Listen to clips and guess artist + song — then sort them by release year!
+          - generic [ref=e248]:
+            - generic [ref=e249]: Medium
+            - generic [ref=e250]: up to 1000 pts
+        - generic [ref=e251] [cursor=pointer]:
+          - generic [ref=e252]: 🗺️
+          - generic [ref=e253]: GeoGuess
+          - generic [ref=e254]: Recognize the landmark — which country is it in?
+          - generic [ref=e255]:
+            - generic [ref=e256]: Medium
+            - generic [ref=e257]: up to 400 pts
+        - generic [ref=e258] [cursor=pointer]:
+          - generic [ref=e259]: 🎤
+          - generic [ref=e260]: Finish the Lyrics
+          - generic [ref=e261]: Complete the next line of these iconic songs!
+          - generic [ref=e262]:
+            - generic [ref=e263]: Easy
+            - generic [ref=e264]: up to 400 pts
+        - generic [ref=e265] [cursor=pointer]:
+          - generic [ref=e266]: 🎨
+          - generic [ref=e267]: Pictionary
+          - generic [ref=e268]: One person draws, the rest guess — admin rates your teamwork!
+          - generic [ref=e269]:
+            - generic [ref=e270]: Easy
+            - generic [ref=e271]: up to 500 pts
+        - generic [ref=e272] [cursor=pointer]:
+          - generic [ref=e273]: 🎬
+          - generic [ref=e274]: Film Quiz
+          - generic [ref=e275]: Iconic movie quotes, scenes and facts — 6 rounds!
+          - generic [ref=e276]:
+            - generic [ref=e277]: Medium
+            - generic [ref=e278]: up to 400 pts
+        - generic [ref=e279] [cursor=pointer]:
+          - generic [ref=e280]: 🔢
+          - generic [ref=e281]: Quick Maths
+          - generic [ref=e282]: Mental math against the clock — 4 rounds, no calculator allowed!
+          - generic [ref=e283]:
+            - generic [ref=e284]: Medium
+            - generic [ref=e285]: up to 300 pts
+        - generic [ref=e286] [cursor=pointer]:
+          - generic [ref=e287]: 👄
+          - generic [ref=e288]: Spelling Bee
+          - generic [ref=e289]: Which is the correct spelling? 5 notoriously tricky words!
+          - generic [ref=e290]:
+            - generic [ref=e291]: Easy
+            - generic [ref=e292]: up to 250 pts
+        - generic [ref=e293] [cursor=pointer]:
+          - generic [ref=e294]: 🏳️
+          - generic [ref=e295]: Flag Quiz
+          - generic [ref=e296]: Recognize the country from its flag — 8 rounds!
+          - generic [ref=e297]:
+            - generic [ref=e298]: Medium
+            - generic [ref=e299]: up to 400 pts
+        - generic [ref=e300] [cursor=pointer]:
+          - generic [ref=e301]: 💬
+          - generic [ref=e302]: Who Said It?
+          - generic [ref=e303]: Match the famous quote to the right person — 5 rounds!
+          - generic [ref=e304]:
+            - generic [ref=e305]: Easy
+            - generic [ref=e306]: up to 300 pts
+        - generic [ref=e307] [cursor=pointer]:
+          - generic [ref=e308]: 🏅
+          - generic [ref=e309]: Sports Quiz
+          - generic [ref=e310]: Records, legends and iconic moments in sport — 5 rounds!
+          - generic [ref=e311]:
+            - generic [ref=e312]: Medium
+            - generic [ref=e313]: up to 300 pts
+        - generic [ref=e314] [cursor=pointer]:
+          - generic [ref=e315]: 📣
+          - generic [ref=e316]: Brand Slogans
+          - generic [ref=e317]: Which brand does this slogan belong to? 5 rounds!
+          - generic [ref=e318]:
+            - generic [ref=e319]: Easy
+            - generic [ref=e320]: up to 250 pts
+        - generic [ref=e321] [cursor=pointer]:
+          - generic [ref=e322]: 🗓️
+          - generic [ref=e323]: Guess the Year
+          - generic [ref=e324]: When did it happen? Test your knowledge of historical moments — 5 rounds!
+          - generic [ref=e325]:
+            - generic [ref=e326]: Medium
+            - generic [ref=e327]: up to 300 pts
+        - generic [ref=e328] [cursor=pointer]:
+          - generic [ref=e329]: 🔍
+          - generic [ref=e330]: Spot the Error
+          - generic [ref=e331]: Each statement has one deliberate mistake — can you find it?
+          - generic [ref=e332]:
+            - generic [ref=e333]: Medium
+            - generic [ref=e334]: up to 350 pts
+        - generic [ref=e335] [cursor=pointer]:
+          - generic [ref=e336]: 🧩
+          - generic [ref=e337]: Visual IQ
+          - generic [ref=e338]: Spot the pattern and find what comes next — 6 rounds!
+          - generic [ref=e339]:
+            - generic [ref=e340]: Medium
+            - generic [ref=e341]: up to 350 pts
+        - generic [ref=e342] [cursor=pointer]:
+          - generic [ref=e343]: 🧠
+          - generic [ref=e344]: Memory Speed
+          - generic [ref=e345]: Memorize the items — then spot the missing one!
+          - generic [ref=e346]:
+            - generic [ref=e347]: Medium
+            - generic [ref=e348]: up to 400 pts
+        - generic [ref=e349] [cursor=pointer]:
+          - generic [ref=e350]: 🗿
+          - generic [ref=e351]: Human Statue
+          - generic [ref=e352]: Create a human sculpture — admin rates your pose!
+          - generic [ref=e353]:
+            - generic [ref=e354]: Easy
+            - generic [ref=e355]: up to 500 pts

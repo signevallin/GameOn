@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e356]:
+    - generic [ref=e357]: 🎬 Film Quiz
+    - generic [ref=e358]:
+      - generic [ref=e359]: ⭐ 0 pts
+      - button "← MISSIONS" [ref=e360] [cursor=pointer]
+  - generic [ref=e361]:
+    - generic [ref=e362]:
+      - generic [ref=e363]:
+        - heading "Film Quiz" [level=2] [ref=e364]
+        - paragraph [ref=e365]: Iconic movie quotes, scenes and facts — 6 rounds!
+      - generic [ref=e366]:
+        - generic [ref=e367]: Time
+        - generic [ref=e368]: 1:45
+    - generic [ref=e369]:
+      - generic [ref=e370]:
+        - generic [ref=e371]: QUESTION 4 / 6
+        - generic [ref=e372]: 3 correct
+      - generic [ref=e373]: 🎬 "Why so serious?" — Which actor won a posthumous Oscar for playing the Joker in The Dark Knight (2008)?
+      - generic [ref=e374]:
+        - button "Jared Leto" [ref=e387] [cursor=pointer]
+        - button "Heath Ledger" [ref=e388] [cursor=pointer]
+        - button "Jack Nicholson" [ref=e389] [cursor=pointer]
+        - button "Joaquin Phoenix" [ref=e390] [cursor=pointer]

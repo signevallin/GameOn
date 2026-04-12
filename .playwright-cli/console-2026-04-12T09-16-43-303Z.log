@@ -1,0 +1,3 @@
+[    1415ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://game-on-smoky.vercel.app/favicon.ico:0
+[   41712ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://game-on-smoky.vercel.app/:0
+[   44791ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://game-on-smoky.vercel.app/api/admin/login:0

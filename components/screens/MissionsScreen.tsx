@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
+import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
 
 type Notification = { type: string; message: string };
 
@@ -29,10 +30,12 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   }
 
   const CONFIG: Record<string, { emoji: string; title: string; btnLabel: string; color: string }> = {
-    sabotage:     { emoji: '💻', title: 'YOU HAVE BEEN HACKED!', btnLabel: 'OK',         color: 'var(--accent2)' },
-    double_points:{ emoji: '🎉', title: 'POWER-UP!',             btnLabel: "LET'S GO!",  color: 'var(--accent3)' },
-    fake_hint:    { emoji: '🔍', title: 'SECRET TIP',            btnLabel: 'OK',         color: 'var(--accent)' },
-    photo_rated:  { emoji: '📸', title: 'PHOTO RATED!',          btnLabel: 'NICE!',      color: 'var(--accent3)' },
+    sabotage:        { emoji: '💻', title: 'YOU HAVE BEEN HACKED!',  btnLabel: 'OK',        color: 'var(--accent2)' },
+    double_points:   { emoji: '🎉', title: 'POWER-UP!',              btnLabel: "LET'S GO!", color: 'var(--accent3)' },
+    fake_hint:       { emoji: '🔍', title: 'SECRET TIP',             btnLabel: 'OK',        color: 'var(--accent)' },
+    photo_rated:     { emoji: '📸', title: 'PHOTO RATED!',           btnLabel: 'NICE!',     color: 'var(--accent3)' },
+    powerup_self:    { emoji: '⚡', title: 'POWER-UP ACTIVATED!',    btnLabel: "LET'S GO!", color: 'var(--accent3)' },
+    powerup_received:{ emoji: '😈', title: 'INCOMING ATTACK!',       btnLabel: 'DAMN IT!',  color: 'var(--accent2)' },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
@@ -74,6 +77,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 type Props = {
   team: Team;
   game: Game;
+  teams: Team[];
   onSelectMission: (id: string) => void;
   onLogout: () => void;
   onTeamUpdate: (team: Team) => void;
@@ -112,13 +116,22 @@ function formatElapsed(ms: number) {
   return `${sec}s`;
 }
 
-export default function MissionsScreen({ team, game, onSelectMission, onLogout, onTeamUpdate }: Props) {
+export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate }: Props) {
   const secondsLeft = useCountdown(game);
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
   const [finishing, setFinishing] = useState(false);
   const [confirmDone, setConfirmDone] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
+  const [showPowerups, setShowPowerups] = useState(false);
+
+  // Freeze effect
+  const effects = team.active_effects ?? {};
+  const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until) : null;
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
+  const isFrozen = freezeUntil ? freezeUntil.getTime() > now : false;
+  const freezeSecsLeft = isFrozen ? Math.ceil((freezeUntil!.getTime() - now) / 1000) : 0;
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
@@ -174,6 +187,16 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
         />
       )}
 
+      {/* FREEZE overlay */}
+      {isFrozen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 900, background: 'rgba(10,30,60,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+          <div style={{ fontSize: '72px' }}>❄️</div>
+          <h2 style={{ color: '#7ec8e3', letterSpacing: '2px' }}>YOU ARE FROZEN</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Another team froze you!</p>
+          <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 800, color: '#7ec8e3' }}>{freezeSecsLeft}s</div>
+        </div>
+      )}
+
       <nav className="nav" style={{ gap: '4px' }}>
         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {team.name}
@@ -187,6 +210,11 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
           </span>
         ) : (
           <span style={{ flexShrink: 0, width: '60px' }} />
+        )}
+        {!isDraft && !isFinished && (
+          <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0, color: 'var(--gold)' }} onClick={() => setShowPowerups(true)}>
+            ⚡
+          </button>
         )}
         <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }} onClick={onLogout}>
           LOG OUT
@@ -225,6 +253,15 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
         {/* ACTIVE */}
         {!isDraft && !isFinished && (
           <>
+            {showPowerups && (
+              <TeamPowerupsScreen
+                team={team}
+                teams={teams}
+                onBack={() => setShowPowerups(false)}
+                onTeamUpdate={onTeamUpdate}
+              />
+            )}
+            {!showPowerups && (<>
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
@@ -341,14 +378,22 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                   </span>
                 </div>
 
+                {effects.double_trouble_remaining && effects.double_trouble_remaining > 0 ? (
+                  <div style={{ padding: '14px 18px', borderRadius: '10px', marginBottom: '16px', background: 'rgba(208,117,125,0.10)', border: '1px solid var(--accent2)', color: 'var(--accent2)', fontWeight: 700, fontSize: '13px' }}>
+                    😈 Double Trouble! Complete {effects.double_trouble_remaining} more mission{effects.double_trouble_remaining > 1 ? 's' : ''} before unlocking new ones.
+                  </div>
+                ) : null}
+
                 <div className="missions-grid" style={{ paddingBottom: '40px' }}>
                   {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
                     const done = team.completed?.includes(m.id);
+                    const blocked = isFrozen || (!!effects.double_trouble_remaining && effects.double_trouble_remaining > 0 && !done);
                     return (
                       <div
                         key={m.id}
                         className={`mission-card${done ? ' done' : ''}`}
-                        onClick={() => !done && onSelectMission(m.id)}
+                        style={{ opacity: blocked && !done ? 0.45 : 1 }}
+                        onClick={() => !done && !blocked && onSelectMission(m.id)}
                       >
                         <span className="mission-icon">{m.icon}</span>
                         <div className="mission-name">{m.name}</div>
@@ -363,6 +408,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                 </div>
               </>
             )}
+            </>)}
           </>
         )}
       </div>

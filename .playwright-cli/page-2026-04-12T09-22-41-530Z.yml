@@ -1,0 +1,13 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e399]:
+    - generic [ref=e400]: MISSION COMPLETE
+    - button "← BACK" [ref=e402] [cursor=pointer]
+  - generic [ref=e403]:
+    - generic [ref=e404]: 🎉
+    - heading "Correct answer!" [level=2] [ref=e405]
+    - generic [ref=e406]: "+400"
+    - generic [ref=e407]: points
+    - paragraph [ref=e408]: Solved in 176 seconds!
+    - paragraph [ref=e409]: "Total score: 400 p"
+    - button "MORE MISSIONS →" [ref=e410] [cursor=pointer]

@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e730]:
+    - generic [ref=e731]: 🗺️ GeoGuess
+    - generic [ref=e732]:
+      - generic [ref=e733]: ⭐ 400 pts
+      - button "← MISSIONS" [ref=e734] [cursor=pointer]
+  - generic [ref=e735]:
+    - generic [ref=e736]:
+      - generic [ref=e737]:
+        - heading "GeoGuess" [level=2] [ref=e738]
+        - paragraph [ref=e739]: Recognize the landmark — which country is it in?
+      - generic [ref=e740]:
+        - generic [ref=e741]: Time
+        - generic [ref=e742]: 1:15
+    - generic [ref=e743]:
+      - generic [ref=e744]:
+        - generic [ref=e745]: 4 / 6
+        - generic [ref=e746]: 173 pts
+      - img "Guess what this is" [ref=e762]
+      - generic [ref=e749]:
+        - button "India" [disabled] [ref=e763]
+        - button "Pakistan" [disabled] [ref=e764]
+        - button "Bangladesh" [disabled] [ref=e765]
+        - button "Sri Lanka" [disabled] [ref=e766]

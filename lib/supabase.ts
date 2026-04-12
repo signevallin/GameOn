@@ -16,6 +16,12 @@ export type Team = {
   mission_scores: Record<string, number>;
   pending_notification: { type: string; message: string } | null;
   double_points: boolean;
+  active_effects: {
+    freeze_until?: string;
+    shield_until?: string;
+    double_trouble_remaining?: number;
+  };
+  team_powerups_used: string[];
 };
 
 export type Game = {

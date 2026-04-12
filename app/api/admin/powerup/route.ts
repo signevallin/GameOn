@@ -47,15 +47,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Power-up already used.' }, { status: 409 });
   }
 
-  // Fetch current team score (needed for sabotage)
+  // Fetch current team score (needed for sabotage) and active effects
   const { data: team, error: teamErr } = await supabase
     .from('teams')
-    .select('score')
+    .select('score, active_effects')
     .eq('id', targetTeamId)
     .single();
 
   if (teamErr || !team) {
     return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
+  }
+
+  // Check shield — block sabotage if active
+  if (type === 'sabotage') {
+    const effects = (team.active_effects as Record<string, string>) ?? {};
+    const shieldUntil = effects.shield_until ? new Date(effects.shield_until) : null;
+    if (shieldUntil && shieldUntil > new Date()) {
+      return NextResponse.json({ error: 'That team has a shield active! Sabotage blocked.' }, { status: 400 });
+    }
   }
 
   // Build the team update

@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e730]:
+    - generic [ref=e731]: 🗺️ GeoGuess
+    - generic [ref=e732]:
+      - generic [ref=e733]: ⭐ 400 pts
+      - button "← MISSIONS" [ref=e734] [cursor=pointer]
+  - generic [ref=e735]:
+    - generic [ref=e736]:
+      - generic [ref=e737]:
+        - heading "GeoGuess" [level=2] [ref=e738]
+        - paragraph [ref=e739]: Recognize the landmark — which country is it in?
+      - generic [ref=e740]:
+        - generic [ref=e741]: Time
+        - generic [ref=e742]: 45s
+    - generic [ref=e743]:
+      - generic [ref=e744]:
+        - generic [ref=e745]: 2 / 6
+        - generic [ref=e746]: 77 pts
+      - img "Guess what this is" [ref=e754]
+      - generic [ref=e749]:
+        - button "Spain" [disabled] [ref=e753]
+        - button "Turkey" [disabled] [ref=e755]
+        - button "Italy" [disabled] [ref=e751]
+        - button "Greece" [disabled] [ref=e756]

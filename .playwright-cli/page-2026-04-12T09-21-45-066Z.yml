@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e356]:
+    - generic [ref=e357]: 🎬 Film Quiz
+    - generic [ref=e358]:
+      - generic [ref=e359]: ⭐ 0 pts
+      - button "← MISSIONS" [ref=e360] [cursor=pointer]
+  - generic [ref=e361]:
+    - generic [ref=e362]:
+      - generic [ref=e363]:
+        - heading "Film Quiz" [level=2] [ref=e364]
+        - paragraph [ref=e365]: Iconic movie quotes, scenes and facts — 6 rounds!
+      - generic [ref=e366]:
+        - generic [ref=e367]: Time
+        - generic [ref=e368]: 2:01
+    - generic [ref=e369]:
+      - generic [ref=e370]:
+        - generic [ref=e371]: QUESTION 5 / 6
+        - generic [ref=e372]: 4 correct
+      - generic [ref=e373]: 🎬 Which film features a sentient robot named WALL-E who falls in love with another robot named EVE?
+      - generic [ref=e374]:
+        - button "Short Circuit" [ref=e391] [cursor=pointer]
+        - button "A.I. Artificial Intelligence" [ref=e392] [cursor=pointer]
+        - button "WALL-E" [ref=e393] [cursor=pointer]
+        - button "Interstellar" [ref=e394] [cursor=pointer]

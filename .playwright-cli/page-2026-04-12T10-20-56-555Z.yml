@@ -1,0 +1,11 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - navigation [ref=e789]:
+    - generic [ref=e790]: playwright
+    - generic [ref=e791]: ⭐ 666
+    - button "LOG OUT" [ref=e792] [cursor=pointer]
+  - generic [ref=e794]:
+    - generic [ref=e795]: 🏁
+    - heading "Time's up!" [level=2] [ref=e796]
+    - paragraph [ref=e797]: "The game is over. Final score:"
+    - generic [ref=e798]: 666 pts

@@ -14,6 +14,7 @@ export default function Home() {
   const [screen, setScreen] = useState<Screen>('login');
   const [team, setTeam] = useState<Team | null>(null);
   const [game, setGame] = useState<Game | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [activeMission, setActiveMission] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -54,7 +55,7 @@ export default function Home() {
       if (!t || !g) return;
       try {
       // Use POST so Vercel edge never caches the response
-      const [gameRes, teamRes] = await Promise.all([
+      const [gameRes, teamRes, teamsRes] = await Promise.all([
         fetch('/api/game', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -67,12 +68,19 @@ export default function Home() {
           body: JSON.stringify({ teamId: t.id }),
           cache: 'no-store',
         }),
+        fetch('/api/team/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId: g.id }),
+          cache: 'no-store',
+        }),
       ]);
-      const [gameData, teamData] = await Promise.all([gameRes.json(), teamRes.json()]);
+      const [gameData, teamData, teamsData] = await Promise.all([gameRes.json(), teamRes.json(), teamsRes.json()]);
       if (gameData.error) console.error('[poll/game]', gameData.error);
       if (teamData.error) console.error('[poll/team]', teamData.error);
       if (gameData.game) setGame(gameData.game);
       if (teamData.team) setTeam(teamData.team);
+      if (teamsData.teams) setTeams(teamsData.teams);
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
@@ -138,6 +146,7 @@ export default function Home() {
       <MissionsScreen
         team={team}
         game={game}
+        teams={teams}
         onSelectMission={handleSelectMission}
         onLogout={handleLogout}
         onTeamUpdate={setTeam}
