@@ -15,7 +15,8 @@ export type MissionType =
   | 'music_emoji'
   | 'crack_code'
   | 'music_quiz'
-  | 'image_quiz';
+  | 'image_quiz'
+  | 'memory_speed';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -25,6 +26,7 @@ export type EmojiRound = { emojis: string; options: string[]; answer: string };
 export type CodeClue = { digits: [number, number, number]; hint: string };
 export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
 export type ImageRound = { imageUrl: string; options: string[]; answer: string };
+export type MemorySpeedRound = { items: string[]; missing: string; options: string[]; memorizeSeconds?: number };
 
 export type Mission = {
   id: string;
@@ -51,6 +53,7 @@ export type Mission = {
   emojiRounds?: EmojiRound[];
   musicRounds?: MusicRound[];
   imageRounds?: ImageRound[];
+  memorySpeedRounds?: MemorySpeedRound[];
   revealWord?: string;
 };
 
@@ -1126,6 +1129,124 @@ Three employees were in the building that evening:
         clue: '📅 In what year was the first email ever sent, by Ray Tomlinson?',
         options: ['1969', '1971', '1975', '1980'],
         answer: '1971',
+      },
+    ],
+  },
+  // ── SPOT THE ERROR ──
+  {
+    id: 'spot_error',
+    icon: '🔍',
+    name: 'Spot the Error',
+    category: 'Fun',
+    desc: 'Each statement has one deliberate mistake — can you find it?',
+    difficulty: 'medium',
+    maxPts: 350,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🔍 Find the mistake:\n\n"In the famous painting The Scream by Edvard Munch, the figure is holding its hands over its eyes."',
+        options: ['The hands are over the ears, not the eyes', 'The painting is actually called The Cry', 'The artist is Pablo Picasso, not Munch', 'The background shows a city skyline'],
+        answer: 'The hands are over the ears, not the eyes',
+      },
+      {
+        clue: '🔍 Find the mistake:\n\n"In Monopoly, if you land on Go you collect £100."',
+        options: ['You only collect money when you pass Go, not land on it', 'You collect £200, not £100', 'Landing on Go sends you to jail', 'Go is called Start in the official rules'],
+        answer: 'You collect £200, not £100',
+      },
+      {
+        clue: '🔍 Find the mistake:\n\n"The three Unforgivable Curses in Harry Potter are: Avada Kedavra, Crucio, and Expelliarmus."',
+        options: ['Expelliarmus is the Disarming Charm, not an Unforgivable Curse — the third is Imperio', 'Avada Kedavra causes sleep, not death', 'There are actually four Unforgivable Curses', 'Crucio was invented by Voldemort'],
+        answer: 'Expelliarmus is the Disarming Charm, not an Unforgivable Curse — the third is Imperio',
+      },
+      {
+        clue: '🔍 Find the mistake:\n\n"The Eiffel Tower was built as a permanent landmark to celebrate the French Revolution\'s 100th anniversary."',
+        options: ['It was actually designed by Gustave Monet', 'It was originally built as a temporary structure, intended to be demolished', 'It was built for the 200th anniversary', 'It was originally intended as a lighthouse'],
+        answer: 'It was originally built as a temporary structure, intended to be demolished',
+      },
+      {
+        clue: '🔍 Find the mistake:\n\n"A group of flamingos is called a flock."',
+        options: ['A group of flamingos is actually called a flamboyance', 'Flamingos are native to Antarctica', 'A group of flamingos is called a pride', 'Flamingos are pink because of their feathers, not their diet'],
+        answer: 'A group of flamingos is actually called a flamboyance',
+      },
+    ],
+  },
+  // ── VISUAL IQ ──
+  {
+    id: 'visual_iq',
+    icon: '🧩',
+    name: 'Visual IQ',
+    category: 'Fun',
+    desc: 'Spot the pattern and find what comes next — 6 rounds!',
+    difficulty: 'medium',
+    maxPts: 350,
+    type: 'celebrity_quiz',
+    celebRounds: [
+      {
+        clue: '🔢 What comes next?\n\n2 → 4 → 8 → 16 → 32 → ?',
+        options: ['48', '56', '64', '60'],
+        answer: '64',
+      },
+      {
+        clue: '🎨 What comes next?\n\n🔴 🟡 🟢  🔴 🟡 🟢  🔴 🟡 ?',
+        options: ['🔴', '🟡', '🔵', '🟢'],
+        answer: '🟢',
+      },
+      {
+        clue: '🔢 What comes next in this famous sequence?\n\n1 → 1 → 2 → 3 → 5 → 8 → 13 → ?',
+        options: ['18', '20', '21', '24'],
+        answer: '21',
+      },
+      {
+        clue: '🎨 What comes next?\n\n🐣 🐥 🐔   🐣 🐥 🐔   🐣 ?',
+        options: ['🐔', '🐣', '🦆', '🐥'],
+        answer: '🐥',
+      },
+      {
+        clue: '🔢 What comes next?\n\n100 → 50 → 25 → 12.5 → ?',
+        options: ['6', '5', '8', '6.25'],
+        answer: '6.25',
+      },
+      {
+        clue: '🔢 What comes next?\n\n1 → 4 → 9 → 16 → 25 → ?',
+        options: ['30', '35', '36', '49'],
+        answer: '36',
+      },
+    ],
+  },
+  // ── MEMORY SPEED ──
+  {
+    id: 'memory_speed',
+    icon: '🧠',
+    name: 'Memory Speed',
+    category: 'Fun',
+    desc: 'Memorize the items — then spot the missing one!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'memory_speed',
+    memorySpeedRounds: [
+      {
+        items: ['🍕 Pizza', '🚗 Car', '🌍 Globe', '🎸 Guitar', '💻 Laptop', '📱 Phone'],
+        missing: '🚗 Car',
+        options: ['🚗 Car', '☕ Coffee', '🎯 Target', '🔑 Key'],
+        memorizeSeconds: 8,
+      },
+      {
+        items: ['🐘 Elephant', '🦁 Lion', '🐬 Dolphin', '🦊 Fox', '🐢 Turtle', '🦅 Eagle'],
+        missing: '🦊 Fox',
+        options: ['🦊 Fox', '🐺 Wolf', '🦋 Butterfly', '🐸 Frog'],
+        memorizeSeconds: 8,
+      },
+      {
+        items: ['🍎 Apple', '🍊 Orange', '🍋 Lemon', '🍇 Grapes', '🍓 Strawberry', '🥝 Kiwi', '🍑 Peach', '🥭 Mango'],
+        missing: '🍇 Grapes',
+        options: ['🍇 Grapes', '🍒 Cherry', '🍈 Melon', '🫐 Blueberry'],
+        memorizeSeconds: 10,
+      },
+      {
+        items: ['🗼 Eiffel Tower', '🗽 Statue of Liberty', '🏯 Castle', '⛩️ Torii Gate', '🕌 Mosque', '🏛️ Parthenon', '🗿 Moai', '🕍 Synagogue'],
+        missing: '🏯 Castle',
+        options: ['🏯 Castle', '⛪ Church', '🏟️ Stadium', '🏰 Palace'],
+        memorizeSeconds: 10,
       },
     ],
   },

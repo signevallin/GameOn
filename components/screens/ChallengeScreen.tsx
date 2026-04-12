@@ -19,6 +19,7 @@ import MusicEmoji from '@/components/games/MusicEmoji';
 import CrackCode from '@/components/games/CrackCode';
 import MusicQuiz from '@/components/games/MusicQuiz';
 import ImageQuiz from '@/components/games/ImageQuiz';
+import MemorySpeed from '@/components/games/MemorySpeed';
 
 type Props = {
   missionId: string;
@@ -168,6 +169,14 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
         return (
           <ImageQuiz
             rounds={mission.imageRounds!}
+            maxPts={effectiveMaxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'memory_speed':
+        return (
+          <MemorySpeed
+            rounds={mission.memorySpeedRounds!}
             maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
