@@ -74,6 +74,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
 
     setTimeout(() => {
       if (idx + 1 >= shuffledRounds.length) {
+        setQ(s => ({ ...s, selection: null })); // clear highlight before async finish
         onFinish(totalPts + pts > 0, totalPts + pts);
       } else {
         // Single state update: idx advances AND selection clears in one render.

@@ -69,6 +69,7 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
       if (idx + 1 >= rounds.length) {
         const total = isCorrect ? correct + 1 : correct;
         const pts = Math.round((total / rounds.length) * maxPts);
+        setQ(s => ({ ...s, selection: null })); // clear highlight before async finish
         onFinish(total > 0, pts);
       } else {
         // Single state update: idx advances AND selection clears in one render.
