@@ -5,12 +5,13 @@ type Props = {
   clues: string[];
   answer: string;
   maxPts: number;
+  placeholder?: string;
   onFinish: (correct: boolean, pts: number) => void;
 };
 
 const PTS_BY_CLUE = [500, 400, 300, 200, 100];
 
-export default function PaSparet({ clues, answer, maxPts, onFinish }: Props) {
+export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is this person?', onFinish }: Props) {
   const [revealed, setRevealed] = useState(1);
   const [guess, setGuess] = useState('');
   const [wrong, setWrong] = useState<number[]>([]);
@@ -86,7 +87,7 @@ export default function PaSparet({ clues, answer, maxPts, onFinish }: Props) {
             type="text"
             value={guess}
             onChange={e => setGuess(e.target.value)}
-            placeholder="Who is this person?"
+            placeholder={placeholder}
             onKeyDown={e => e.key === 'Enter' && submit()}
             style={{ flex: 1 }}
           />

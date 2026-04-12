@@ -121,6 +121,7 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
             clues={mission.clues!}
             answer={mission.answer!}
             maxPts={effectiveMaxPts}
+            placeholder={mission.id === 'guess_destination' ? 'Which city or place?' : 'Who is this person?'}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
