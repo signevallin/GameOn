@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { CelebRound } from '@/lib/missions';
 
 type Props = {
@@ -8,31 +8,30 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-// Selection state lives entirely inside this keyed component.
-// When `key` changes (idx advances), React fully unmounts → fresh state, no bleed.
-function OptionsGrid({ options, answer, onChoose }: {
+type Selection = { opt: string };
+
+function OptionsGrid({ options, answer, selection, onChoose }: {
   options: string[];
   answer: string;
+  selection: Selection | null;
   onChoose: (opt: string) => void;
 }) {
-  const [selected, setSelected] = useState<string | null>(null);
-
-  function handleClick(opt: string) {
-    if (selected !== null) return;
-    setSelected(opt);
-    onChoose(opt);
-  }
-
   return (
     <div className="options-grid">
       {options.map((opt, i) => {
         let cls = 'option-btn';
-        if (selected !== null) {
+        if (selection) {
           if (opt === answer) cls += ' correct';
-          else if (opt === selected) cls += ' wrong';
+          else if (opt === selection.opt) cls += ' wrong';
         }
         return (
-          <button key={i} className={cls} disabled={selected !== null} onClick={() => handleClick(opt)} style={{ textAlign: 'center' }}>
+          <button
+            key={i}
+            className={cls}
+            disabled={!!selection}
+            onClick={() => onChoose(opt)}
+            style={{ textAlign: 'center' }}
+          >
             {opt}
           </button>
         );
@@ -50,26 +49,30 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// idx and selection are merged into one state object so they always update
+// in a single React commit — no batching needed, no intermediate renders.
+type QState = { idx: number; selection: Selection | null };
+
 export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
-  const [idx, setIdx] = useState(0);
+  const [{ idx, selection }, setQ] = useState<QState>({ idx: 0, selection: null });
   const [correct, setCorrect] = useState(0);
   const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
-  const advancingRef = useRef(false);
 
   function choose(opt: string) {
-    if (advancingRef.current) return;
-    advancingRef.current = true;
+    if (selection) return;
     const isCorrect = opt === rounds[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
 
+    setQ(s => ({ ...s, selection: { opt } }));
+
     setTimeout(() => {
-      advancingRef.current = false;
       if (idx + 1 >= rounds.length) {
         const total = isCorrect ? correct + 1 : correct;
         const pts = Math.round((total / rounds.length) * maxPts);
         onFinish(total > 0, pts);
       } else {
-        setIdx(i => i + 1);
+        // Single state update: idx advances AND selection clears in one render.
+        setQ({ idx: idx + 1, selection: null });
       }
     }, 1000);
   }
@@ -91,7 +94,9 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
         {r.clue}
       </div>
 
-      <OptionsGrid key={idx} options={r.options} answer={r.answer} onChoose={choose} />
+      {/* key={idx} guarantees a full unmount when the question changes,
+          AND the selection prop is null in the same render — double protection. */}
+      <OptionsGrid key={idx} options={r.options} answer={r.answer} selection={selection} onChoose={choose} />
     </>
   );
 }

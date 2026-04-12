@@ -17,31 +17,24 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// Selection state lives entirely inside this keyed component.
-// When `key` changes (idx advances), React fully unmounts → fresh state, no bleed.
-function ImageOptions({ options, answer, onPick }: {
+type Selection = { opt: string };
+
+function ImageOptions({ options, answer, selection, onPick }: {
   options: string[];
   answer: string;
+  selection: Selection | null;
   onPick: (opt: string) => void;
 }) {
-  const [selected, setSelected] = useState<string | null>(null);
-
-  function handleClick(opt: string) {
-    if (selected !== null) return;
-    setSelected(opt);
-    onPick(opt);
-  }
-
   return (
     <div className="options-grid">
       {options.map((opt, i) => {
         let cls = 'option-btn';
-        if (selected !== null) {
+        if (selection) {
           if (opt === answer) cls += ' correct';
-          else if (opt === selected) cls += ' wrong';
+          else if (opt === selection.opt) cls += ' wrong';
         }
         return (
-          <button key={i} className={cls} disabled={selected !== null} onClick={() => handleClick(opt)}>
+          <button key={i} className={cls} disabled={!!selection} onClick={() => onPick(opt)}>
             {opt}
           </button>
         );
@@ -50,13 +43,16 @@ function ImageOptions({ options, answer, onPick }: {
   );
 }
 
+// idx and selection are merged into one state object so they always update
+// in a single React commit — no batching needed, no intermediate renders.
+type QState = { idx: number; selection: Selection | null };
+
 export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
   const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
-  const [idx, setIdx] = useState(0);
+  const [{ idx, selection }, setQ] = useState<QState>({ idx: 0, selection: null });
   const [totalPts, setTotalPts] = useState(0);
   const [imgError, setImgError] = useState(false);
   const startRef = useRef(Date.now());
-  const advancingRef = useRef(false);
 
   useEffect(() => {
     startRef.current = Date.now();
@@ -66,8 +62,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
   const round = shuffledRounds[idx];
 
   function pick(opt: string) {
-    if (advancingRef.current) return;
-    advancingRef.current = true;
+    if (selection) return;
     const elapsed = (Date.now() - startRef.current) / 1000;
     const ratio = Math.max(0, 1 - elapsed / 30);
     const ptsPerRound = Math.round(maxPts / rounds.length);
@@ -75,13 +70,14 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
       ? Math.round(ptsPerRound * 0.4 + ptsPerRound * 0.6 * ratio)
       : 0;
     setTotalPts(p => p + pts);
+    setQ(s => ({ ...s, selection: { opt } }));
 
     setTimeout(() => {
-      advancingRef.current = false;
       if (idx + 1 >= shuffledRounds.length) {
         onFinish(totalPts + pts > 0, totalPts + pts);
       } else {
-        setIdx(i => i + 1);
+        // Single state update: idx advances AND selection clears in one render.
+        setQ({ idx: idx + 1, selection: null });
       }
     }, 1200);
   }
@@ -120,7 +116,9 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
         )}
       </div>
 
-      <ImageOptions key={idx} options={round.options} answer={round.answer} onPick={pick} />
+      {/* key={idx} guarantees a full unmount when the question changes,
+          AND the selection prop is null in the same render — double protection. */}
+      <ImageOptions key={idx} options={round.options} answer={round.answer} selection={selection} onPick={pick} />
     </>
   );
 }
