@@ -73,7 +73,7 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
             cls += ' selected';
           }
           return (
-            <button key={i}
+            <button key={`${idx}-${i}`}
               className={cls}
               disabled={!!active}
               onClick={() => choose(opt)}
