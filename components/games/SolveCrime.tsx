@@ -13,23 +13,22 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
   const [phase, setPhase] = useState<'read' | 'quiz'>('read');
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [selection, setSelection] = useState<{ forIdx: number; opt: string; revealing: boolean } | null>(null);
-
-  const active = selection?.forIdx === idx ? selection : null;
+  const [selected, setSelected] = useState<string | null>(null);
 
   function choose(opt: string) {
-    if (active) return;
+    if (selected !== null) return;
     const isCorrect = opt === questions[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
-    setSelection({ forIdx: idx, opt, revealing: true });
+    setSelected(opt);
 
     setTimeout(() => {
       if (idx + 1 >= questions.length) {
         const totalCorrect = isCorrect ? correct + 1 : correct;
         const pts = Math.round((totalCorrect / questions.length) * maxPts);
+        setSelected(null);
         onFinish(totalCorrect > 0, pts);
       } else {
-        setSelection(null);
+        setSelected(null);
         setIdx(i => i + 1);
       }
     }, 1000);
@@ -81,21 +80,16 @@ export default function SolveCrime({ story, questions, maxPts, onFinish }: Props
         {q.question}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* key forces full unmount+remount when question changes */}
+      <div key={`q-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {q.options.map((opt, i) => {
           let cls = 'option-btn';
-          if (active?.revealing) {
+          if (selected !== null) {
             if (opt === q.answer) cls += ' correct';
-            else if (opt === active.opt) cls += ' wrong';
-          } else if (active?.opt === opt) {
-            cls += ' selected';
+            else if (opt === selected) cls += ' wrong';
           }
           return (
-            <button key={i}
-              className={cls}
-              disabled={!!active}
-              onClick={() => choose(opt)}
-              style={{ textAlign: 'left' }}>
+            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)} style={{ textAlign: 'left' }}>
               {opt}
             </button>
           );

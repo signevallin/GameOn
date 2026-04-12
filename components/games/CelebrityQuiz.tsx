@@ -8,38 +8,6 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-type Selection = { opt: string };
-
-function OptionsGrid({ options, answer, selection, onChoose }: {
-  options: string[];
-  answer: string;
-  selection: Selection | null;
-  onChoose: (opt: string) => void;
-}) {
-  return (
-    <div className="options-grid">
-      {options.map((opt, i) => {
-        let cls = 'option-btn';
-        if (selection) {
-          if (opt === answer) cls += ' correct';
-          else if (opt === selection.opt) cls += ' wrong';
-        }
-        return (
-          <button
-            key={i}
-            className={cls}
-            disabled={!!selection}
-            onClick={() => onChoose(opt)}
-            style={{ textAlign: 'center' }}
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -49,31 +17,29 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// idx and selection are merged into one state object so they always update
-// in a single React commit — no batching needed, no intermediate renders.
-type QState = { idx: number; selection: Selection | null };
-
 export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
-  const [{ idx, selection }, setQ] = useState<QState>({ idx: 0, selection: null });
+  const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
   const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
 
   function choose(opt: string) {
-    if (selection) return;
-    const isCorrect = opt === rounds[idx].answer;
+    if (selected !== null) return;
+    const isCorrect = opt === shuffledRounds[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
-
-    setQ(s => ({ ...s, selection: { opt } }));
+    setSelected(opt);
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
         const total = isCorrect ? correct + 1 : correct;
         const pts = Math.round((total / rounds.length) * maxPts);
-        setQ(s => ({ ...s, selection: null })); // clear highlight before async finish
+        setSelected(null);
         onFinish(total > 0, pts);
       } else {
-        // Single state update: idx advances AND selection clears in one render.
-        setQ({ idx: idx + 1, selection: null });
+        // Use functional updater for idx to avoid closure staleness,
+        // and reset selected to null. Both fire in one setTimeout tick.
+        setSelected(null);
+        setIdx(i => i + 1);
       }
     }, 1000);
   }
@@ -95,9 +61,21 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
         {r.clue}
       </div>
 
-      {/* key={idx} guarantees a full unmount when the question changes,
-          AND the selection prop is null in the same render — double protection. */}
-      <OptionsGrid key={idx} options={r.options} answer={r.answer} selection={selection} onChoose={choose} />
+      {/* key forces full unmount+remount when question changes — guarantees no visual bleed */}
+      <div key={`q-${idx}`} className="options-grid">
+        {r.options.map((opt, i) => {
+          let cls = 'option-btn';
+          if (selected !== null) {
+            if (opt === r.answer) cls += ' correct';
+            else if (opt === selected) cls += ' wrong';
+          }
+          return (
+            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)} style={{ textAlign: 'center' }}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 }
