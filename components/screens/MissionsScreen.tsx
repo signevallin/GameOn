@@ -197,7 +197,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <nav className="nav" style={{ gap: '4px' }}>
+      <nav className="nav" style={{ gap: '0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1', minWidth: 0 }}>
           <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {team.name}
@@ -267,15 +267,15 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
-                <div style={{ padding: '32px 0 24px' }}>
-                  <h2>Choose your mission</h2>
-                  <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
+                <div style={{ padding: '20px 0 16px' }}>
+                  <h2 style={{ fontSize: '20px' }}>Choose your mission</h2>
+                  <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '13px' }}>
                     Select a category to see missions.
                   </p>
                 </div>
 
                 {/* Category cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', paddingBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', paddingBottom: '24px' }}>
                   {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
                     const cat = SUPER_CATEGORIES[key];
                     const allCatDone = done === missions.length;
@@ -287,7 +287,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           background: 'var(--card)',
                           border: `1px solid ${allCatDone ? cat.color : 'var(--border)'}`,
                           borderRadius: '14px',
-                          padding: '20px 16px',
+                          padding: '16px 14px',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                           position: 'relative',
@@ -297,11 +297,11 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         {/* coloured top stripe */}
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
 
-                        <div style={{ fontSize: '32px', marginBottom: '10px' }}>{cat.icon}</div>
-                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '6px', lineHeight: 1.2 }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
                           {cat.label}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
                           {done}/{missions.length} missions
                         </div>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: cat.color, letterSpacing: '0.5px' }}>
@@ -318,7 +318,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 </div>
 
                 {/* We're done — always at the bottom */}
-                <div style={{ padding: '8px 0 48px' }}>
+                <div style={{ padding: '8px 0 32px' }}>
                   {alreadyFinished ? (
                     <div style={{ padding: '16px 20px', background: 'rgba(140,191,155,0.12)', border: '1px solid var(--accent3)', borderRadius: '12px', color: 'var(--accent3)', fontWeight: 700, fontSize: '14px', textAlign: 'center' }}>
                       ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
@@ -366,7 +366,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             ) : (
               /* ── MISSION LIST VIEW ── */
               <>
-                <div style={{ padding: '24px 0 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ padding: '16px 0 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <button
                     onClick={() => setSelectedCategory(null)}
                     style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', padding: '0', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '4px' }}

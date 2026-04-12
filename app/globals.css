@@ -61,6 +61,10 @@ body::after {
   z-index: 1;
 }
 
+@media (max-width: 600px) {
+  .container { padding: 16px 16px; }
+}
+
 /* ── TYPOGRAPHY ── */
 .logo {
   font-size: 13px;
@@ -180,6 +184,10 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   z-index: 100;
 }
 
+@media (max-width: 600px) {
+  .nav { padding: 12px 16px; }
+}
+
 .nav-brand { font-size: 14px; color: var(--accent); letter-spacing: 2px; }
 .nav-right { display: flex; align-items: center; gap: 16px; }
 .nav-team { font-size: 12px; color: var(--muted); }
@@ -191,6 +199,10 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
   padding-bottom: 40px;
+}
+
+@media (max-width: 600px) {
+  .missions-grid { grid-template-columns: 1fr; }
 }
 
 .mission-card {
@@ -215,8 +227,10 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   transition: transform 0.3s;
 }
 
-.mission-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
-.mission-card:hover::before { transform: scaleX(1); }
+@media (hover: hover) {
+  .mission-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+  .mission-card:hover::before { transform: scaleX(1); }
+}
 
 .mission-card.done {
   opacity: 0.5;
@@ -234,6 +248,12 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
 }
 
 .mission-icon { font-size: 36px; margin-bottom: 16px; display: block; }
+
+@media (max-width: 600px) {
+  .mission-card { padding: 16px; }
+  .mission-icon { font-size: 28px; margin-bottom: 10px; }
+  .mission-name { font-size: 14px; }
+}
 .mission-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
 .mission-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
 .mission-meta { display: flex; align-items: center; justify-content: space-between; }
@@ -242,12 +262,20 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
 /* ── CHALLENGE ── */
 .challenge-wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px; position: relative; z-index: 1; }
 
+@media (max-width: 600px) {
+  .challenge-wrap { padding: 16px 16px; }
+}
+
 .challenge-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 32px;
   gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .challenge-header { margin-bottom: 20px; }
 }
 
 .timer-box {
