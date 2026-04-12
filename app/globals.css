@@ -311,6 +311,9 @@ pre {
   font-size: 13px;
   cursor: pointer;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  -webkit-appearance: none;
 }
 
 .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(117,171,200,0.05); transition: background 0.15s, border-color 0.15s; }

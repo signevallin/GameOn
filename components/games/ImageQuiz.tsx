@@ -1,29 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ImageRound } from '@/lib/missions';
-
-type Selection = { forIdx: number; opt: string; revealing: boolean };
-
-function ImageOptions({ options, answer, active, onPick }: {
-  options: string[]; answer: string; active: Selection | null; onPick: (opt: string) => void;
-}) {
-  return (
-    <div className="options-grid">
-      {options.map((opt, i) => {
-        let cls = 'option-btn';
-        if (active) {
-          if (opt === answer) cls += ' correct';
-          else if (opt === active.opt) cls += ' wrong';
-        }
-        return (
-          <button key={i} className={cls} onClick={() => onPick(opt)} disabled={!!active}>
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 type Props = {
   rounds: ImageRound[];
@@ -40,13 +17,46 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// Selection state lives entirely inside this keyed component.
+// When `key` changes (idx advances), React fully unmounts → fresh state, no bleed.
+function ImageOptions({ options, answer, onPick }: {
+  options: string[];
+  answer: string;
+  onPick: (opt: string) => void;
+}) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  function handleClick(opt: string) {
+    if (selected !== null) return;
+    setSelected(opt);
+    onPick(opt);
+  }
+
+  return (
+    <div className="options-grid">
+      {options.map((opt, i) => {
+        let cls = 'option-btn';
+        if (selected !== null) {
+          if (opt === answer) cls += ' correct';
+          else if (opt === selected) cls += ' wrong';
+        }
+        return (
+          <button key={i} className={cls} disabled={selected !== null} onClick={() => handleClick(opt)}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
   const [shuffledRounds] = useState(() => rounds.map(r => ({ ...r, options: shuffle(r.options) })));
   const [idx, setIdx] = useState(0);
-  const [selection, setSelection] = useState<Selection | null>(null);
   const [totalPts, setTotalPts] = useState(0);
   const [imgError, setImgError] = useState(false);
   const startRef = useRef(Date.now());
+  const advancingRef = useRef(false);
 
   useEffect(() => {
     startRef.current = Date.now();
@@ -54,24 +64,24 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
   }, [idx]);
 
   const round = shuffledRounds[idx];
-  const active = selection?.forIdx === idx ? selection : null;
 
   function pick(opt: string) {
-    if (active?.revealing) return;
+    if (advancingRef.current) return;
+    advancingRef.current = true;
     const elapsed = (Date.now() - startRef.current) / 1000;
     const ratio = Math.max(0, 1 - elapsed / 30);
     const ptsPerRound = Math.round(maxPts / rounds.length);
     const pts = opt === round.answer
       ? Math.round(ptsPerRound * 0.4 + ptsPerRound * 0.6 * ratio)
       : 0;
-    setSelection({ forIdx: idx, opt, revealing: true });
     setTotalPts(p => p + pts);
+
     setTimeout(() => {
+      advancingRef.current = false;
       if (idx + 1 >= shuffledRounds.length) {
         onFinish(totalPts + pts > 0, totalPts + pts);
       } else {
         setIdx(i => i + 1);
-        setSelection(null);
       }
     }, 1200);
   }
@@ -110,7 +120,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
         )}
       </div>
 
-      <ImageOptions key={idx} options={round.options} answer={round.answer} active={active} onPick={pick} />
+      <ImageOptions key={idx} options={round.options} answer={round.answer} onPick={pick} />
     </>
   );
 }

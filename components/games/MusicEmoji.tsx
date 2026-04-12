@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EmojiRound } from '@/lib/missions';
 
 type Props = {
@@ -8,24 +8,31 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-// Store the selection together with the question index it belongs to.
-// This prevents the highlight from "bleeding" onto the next question
-// if a later round happens to share the same option text.
-type Selection = { forIdx: number; opt: string; revealing: boolean };
-
-function EmojiOptions({ options, answer, active, onChoose }: {
-  options: string[]; answer: string; active: Selection | null; onChoose: (opt: string) => void;
+// Selection state lives entirely inside this keyed component.
+// When `key` changes (idx advances), React fully unmounts → fresh state, no bleed.
+function EmojiOptions({ options, answer, onChoose }: {
+  options: string[];
+  answer: string;
+  onChoose: (opt: string) => void;
 }) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  function handleClick(opt: string) {
+    if (selected !== null) return;
+    setSelected(opt);
+    onChoose(opt);
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {options.map((opt, i) => {
         let cls = 'option-btn';
-        if (active) {
+        if (selected !== null) {
           if (opt === answer) cls += ' correct';
-          else if (opt === active.opt) cls += ' wrong';
+          else if (opt === selected) cls += ' wrong';
         }
         return (
-          <button key={i} className={cls} disabled={!!active} onClick={() => onChoose(opt)} style={{ textAlign: 'center' }}>
+          <button key={i} className={cls} disabled={selected !== null} onClick={() => handleClick(opt)} style={{ textAlign: 'center' }}>
             {opt}
           </button>
         );
@@ -37,25 +44,21 @@ function EmojiOptions({ options, answer, active, onChoose }: {
 export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [selection, setSelection] = useState<Selection | null>(null);
-
-  // Only use the selection if it was made for the current question
-  const active = selection?.forIdx === idx ? selection : null;
+  const advancingRef = useRef(false);
 
   function choose(opt: string) {
-    if (active) return;
+    if (advancingRef.current) return;
+    advancingRef.current = true;
     const isCorrect = opt === rounds[idx].answer;
     if (isCorrect) setCorrect(c => c + 1);
 
-    setSelection({ forIdx: idx, opt, revealing: true });
-
     setTimeout(() => {
+      advancingRef.current = false;
       if (idx + 1 >= rounds.length) {
         const total = isCorrect ? correct + 1 : correct;
         const pts = Math.round((total / rounds.length) * maxPts);
         onFinish(total > 0, pts);
       } else {
-        setSelection(null);
         setIdx(i => i + 1);
       }
     }, 1000);
@@ -79,7 +82,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
         <p style={{ fontSize: '13px', color: 'var(--muted)' }}>What does this represent?</p>
       </div>
 
-      <EmojiOptions key={idx} options={r.options} answer={r.answer} active={active} onChoose={choose} />
+      <EmojiOptions key={idx} options={r.options} answer={r.answer} onChoose={choose} />
     </>
   );
 }
