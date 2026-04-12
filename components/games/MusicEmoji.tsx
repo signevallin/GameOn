@@ -13,6 +13,27 @@ type Props = {
 // if a later round happens to share the same option text.
 type Selection = { forIdx: number; opt: string; revealing: boolean };
 
+function EmojiOptions({ options, answer, active, onChoose }: {
+  options: string[]; answer: string; active: Selection | null; onChoose: (opt: string) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {options.map((opt, i) => {
+        let cls = 'option-btn';
+        if (active) {
+          if (opt === answer) cls += ' correct';
+          else if (opt === active.opt) cls += ' wrong';
+        }
+        return (
+          <button key={i} className={cls} disabled={!!active} onClick={() => onChoose(opt)} style={{ textAlign: 'center' }}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
@@ -58,26 +79,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
         <p style={{ fontSize: '13px', color: 'var(--muted)' }}>What does this represent?</p>
       </div>
 
-      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {r.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (active?.revealing) {
-            if (opt === r.answer) cls += ' correct';
-            else if (opt === active.opt) cls += ' wrong';
-          } else if (active?.opt === opt) {
-            cls += ' selected';
-          }
-          return (
-            <button key={`${idx}-${i}`}
-              className={cls}
-              disabled={!!active}
-              onClick={() => choose(opt)}
-              style={{ textAlign: 'center' }}>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
+      <EmojiOptions key={idx} options={r.options} answer={r.answer} active={active} onChoose={choose} />
     </>
   );
 }

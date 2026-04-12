@@ -4,6 +4,27 @@ import { ImageRound } from '@/lib/missions';
 
 type Selection = { forIdx: number; opt: string; revealing: boolean };
 
+function ImageOptions({ options, answer, active, onPick }: {
+  options: string[]; answer: string; active: Selection | null; onPick: (opt: string) => void;
+}) {
+  return (
+    <div className="options-grid">
+      {options.map((opt, i) => {
+        let cls = 'option-btn';
+        if (active) {
+          if (opt === answer) cls += ' correct';
+          else if (opt === active.opt) cls += ' wrong';
+        }
+        return (
+          <button key={i} className={cls} onClick={() => onPick(opt)} disabled={!!active}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 type Props = {
   rounds: ImageRound[];
   maxPts: number;
@@ -55,13 +76,6 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
     }, 1200);
   }
 
-  function optClass(opt: string) {
-    if (!active) return 'option-btn';
-    if (opt === round.answer) return 'option-btn correct';
-    if (opt === active.opt) return 'option-btn wrong';
-    return 'option-btn';
-  }
-
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -96,13 +110,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
         )}
       </div>
 
-      <div key={idx} className="options-grid">
-        {round.options.map((opt, i) => (
-          <button key={`${idx}-${i}`} className={optClass(opt)} onClick={() => pick(opt)} disabled={!!active}>
-            {opt}
-          </button>
-        ))}
-      </div>
+      <ImageOptions key={idx} options={round.options} answer={round.answer} active={active} onPick={pick} />
     </>
   );
 }

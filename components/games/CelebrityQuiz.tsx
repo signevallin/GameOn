@@ -10,6 +10,27 @@ type Props = {
 
 type Selection = { forIdx: number; opt: string; revealing: boolean };
 
+function OptionsGrid({ options, answer, active, onChoose }: {
+  options: string[]; answer: string; active: Selection | null; onChoose: (opt: string) => void;
+}) {
+  return (
+    <div className="options-grid">
+      {options.map((opt, i) => {
+        let cls = 'option-btn';
+        if (active?.revealing) {
+          if (opt === answer) cls += ' correct';
+          else if (opt === active.opt) cls += ' wrong';
+        }
+        return (
+          <button key={i} className={cls} disabled={!!active} onClick={() => onChoose(opt)} style={{ textAlign: 'center' }}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -63,26 +84,7 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
         {r.clue}
       </div>
 
-      <div key={idx} className="options-grid">
-        {r.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (active?.revealing) {
-            if (opt === r.answer) cls += ' correct';
-            else if (opt === active.opt) cls += ' wrong';
-          } else if (active?.opt === opt) {
-            cls += ' selected';
-          }
-          return (
-            <button key={`${idx}-${i}`}
-              className={cls}
-              disabled={!!active}
-              onClick={() => choose(opt)}
-              style={{ textAlign: 'center' }}>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
+      <OptionsGrid key={idx} options={r.options} answer={r.answer} active={active} onChoose={choose} />
     </>
   );
 }
