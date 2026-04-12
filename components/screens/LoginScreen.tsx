@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Team, Game } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 
@@ -15,6 +15,11 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
   const [adminPass, setAdminPass] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get('key');
+    if (key) setGameKey(key.toUpperCase());
+  }, []);
 
   async function handleTeamLogin() {
     setError('');

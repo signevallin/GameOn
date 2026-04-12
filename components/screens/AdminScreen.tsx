@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
+import { QRCodeSVG } from 'qrcode.react';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -560,19 +561,32 @@ export default function AdminScreen({ onLogout }: Props) {
       </nav>
 
       <div className="container fade-in">
-        {/* GAME KEY + START */}
+        {/* GAME KEY + QR + START */}
         <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share this with your teams</p>
-            <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
-              {activeGame.game_key}
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            {/* QR code */}
+            <div style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0 }}>
+              <QRCodeSVG
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
+                size={100}
+                bgColor="#ffffff"
+                fgColor="#0f1724"
+                level="M"
+              />
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
-              {activeGame.missions.length} missions · {activeGame.duration_minutes} min ·{' '}
-              <span style={{ color: activeGame.status === 'active' ? 'var(--accent3)' : activeGame.status === 'finished' ? 'var(--muted)' : 'var(--gold)', fontWeight: 700 }}>
-                {activeGame.status === 'active' ? '🟢 Running' : activeGame.status === 'finished' ? '⬛ Finished' : '🟡 Draft'}
-              </span>
-            </p>
+            {/* Key + status */}
+            <div>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share with teams</p>
+              <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
+                {activeGame.game_key}
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
+                {activeGame.missions.length} missions · {activeGame.duration_minutes} min ·{' '}
+                <span style={{ color: activeGame.status === 'active' ? 'var(--accent3)' : activeGame.status === 'finished' ? 'var(--muted)' : 'var(--gold)', fontWeight: 700 }}>
+                  {activeGame.status === 'active' ? '🟢 Running' : activeGame.status === 'finished' ? '⬛ Finished' : '🟡 Draft'}
+                </span>
+              </p>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {activeGame.status === 'draft' && (
