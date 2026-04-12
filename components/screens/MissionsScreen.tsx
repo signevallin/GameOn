@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
+import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 
 type Notification = { type: string; message: string };
 
@@ -28,10 +29,10 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   }
 
   const CONFIG: Record<string, { emoji: string; title: string; btnLabel: string; color: string }> = {
-    sabotage: { emoji: '💻', title: 'YOU HAVE BEEN HACKED!', btnLabel: 'OK', color: 'var(--accent2)' },
-    double_points: { emoji: '🎉', title: 'POWER-UP!', btnLabel: "LET'S GO!", color: 'var(--accent3)' },
-    fake_hint: { emoji: '🔍', title: 'SECRET TIP', btnLabel: 'OK', color: 'var(--accent)' },
-    photo_rated: { emoji: '📸', title: 'PHOTO RATED!', btnLabel: 'NICE!', color: 'var(--accent3)' },
+    sabotage:     { emoji: '💻', title: 'YOU HAVE BEEN HACKED!', btnLabel: 'OK',         color: 'var(--accent2)' },
+    double_points:{ emoji: '🎉', title: 'POWER-UP!',             btnLabel: "LET'S GO!",  color: 'var(--accent3)' },
+    fake_hint:    { emoji: '🔍', title: 'SECRET TIP',            btnLabel: 'OK',         color: 'var(--accent)' },
+    photo_rated:  { emoji: '📸', title: 'PHOTO RATED!',          btnLabel: 'NICE!',      color: 'var(--accent3)' },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
@@ -79,12 +80,11 @@ type Props = {
   onGameUpdate: (game: Game) => void;
 };
 
-const DIFF_CLS: Record<string, string> = { easy: 'tag-easy', medium: 'tag-medium', hard: 'tag-hard' };
+const DIFF_CLS: Record<string, string>   = { easy: 'tag-easy', medium: 'tag-medium', hard: 'tag-hard' };
 const DIFF_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
 function useCountdown(game: Game) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
-
   useEffect(() => {
     if (game.status !== 'active' || !game.started_at) { setSecondsLeft(null); return; }
     const endTime = new Date(game.started_at).getTime() + game.duration_minutes * 60 * 1000;
@@ -93,7 +93,6 @@ function useCountdown(game: Game) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [game]);
-
   return secondsLeft;
 }
 
@@ -103,7 +102,6 @@ function formatTime(s: number) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
-// Format elapsed seconds as e.g. "1h 23m 45s" or "23m 45s"
 function formatElapsed(ms: number) {
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);
@@ -119,22 +117,18 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
   const [finishing, setFinishing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
 
   useEffect(() => {
-    if (team.pending_notification) {
-      setNotification(team.pending_notification);
-    }
+    if (team.pending_notification) setNotification(team.pending_notification);
   }, [team.pending_notification]);
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
-  const categories = [...new Set(visibleMissions.map(m => m.category))];
   const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
   const alreadyFinished = Boolean(team.finished_at);
-
-  // Countdown color
   const urgentTime = secondsLeft !== null && secondsLeft < 300;
   const timerColor = isFinished ? 'var(--accent2)' : urgentTime ? 'var(--gold)' : 'var(--accent3)';
 
@@ -154,10 +148,20 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
     }
   }
 
-  // Elapsed time from game start to team finish
   const elapsedText = alreadyFinished && team.finished_at && game.started_at
     ? formatElapsed(new Date(team.finished_at).getTime() - new Date(game.started_at).getTime())
     : null;
+
+  // Build per-super-category stats from visible missions
+  const categoryStats = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(key => {
+    const missions = visibleMissions.filter(m => MISSION_SUPER_CATEGORY[m.id] === key);
+    if (missions.length === 0) return null;
+    const pts = missions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts);
+    const minPts = Math.min(...pts);
+    const maxPts = Math.max(...pts);
+    const doneMissions = missions.filter(m => team.completed?.includes(m.id));
+    return { key, missions, minPts, maxPts, done: doneMissions.length };
+  }).filter(Boolean) as { key: SuperCategoryKey; missions: typeof visibleMissions; minPts: number; maxPts: number; done: number }[];
 
   return (
     <>
@@ -168,73 +172,46 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
           onDismiss={() => setNotification(null)}
         />
       )}
+
       <nav className="nav" style={{ gap: '4px' }}>
-        {/* Team name – left */}
         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {team.name}
         </span>
-
-        {/* Score – center */}
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', flexShrink: 0, textAlign: 'center', padding: '0 8px' }}>
           ⭐ {team.score}
         </span>
-
-        {/* Timer – center-right, only when active */}
         {game.status === 'active' && secondsLeft !== null ? (
-          <span style={{
-            fontFamily: "'Sora', sans-serif",
-            fontWeight: 700,
-            fontSize: '14px',
-            color: timerColor,
-            flexShrink: 0,
-            padding: '0 8px',
-            animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none',
-          }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, flexShrink: 0, padding: '0 8px', animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
             ⏱ {formatTime(secondsLeft)}
           </span>
         ) : (
           <span style={{ flexShrink: 0, width: '60px' }} />
         )}
-
-        {/* Logout – right */}
         <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }} onClick={onLogout}>
           LOG OUT
         </button>
       </nav>
 
       <div className="container fade-in">
-        {/* WAITING STATE */}
+
+        {/* WAITING */}
         {isDraft && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
             <div style={{ fontSize: '64px', marginBottom: '24px' }}>⏳</div>
             <h2 style={{ marginBottom: '12px' }}>Waiting for the game to start...</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-              The admin will start the game shortly. The page updates automatically.
-            </p>
-            <div style={{
-              display: 'inline-block',
-              marginTop: '32px',
-              padding: '12px 24px',
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              fontFamily: "'Sora', sans-serif",
-              fontSize: '13px',
-              color: 'var(--muted)',
-            }}>
+            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>The admin will start the game shortly.</p>
+            <div style={{ display: 'inline-block', marginTop: '32px', padding: '12px 24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontFamily: "'Sora', sans-serif", fontSize: '13px', color: 'var(--muted)' }}>
               Game: <strong style={{ color: 'var(--accent)', letterSpacing: '3px' }}>{game.game_key}</strong>
             </div>
           </div>
         )}
 
-        {/* GAME OVER STATE */}
+        {/* GAME OVER */}
         {isFinished && (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <div style={{ fontSize: '64px', marginBottom: '24px' }}>🏁</div>
             <h2 style={{ marginBottom: '12px', color: 'var(--accent2)' }}>Time&apos;s up!</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>
-              The game is over. Final score:
-            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>The game is over. Final score:</p>
             <div style={{ fontSize: '56px', fontWeight: 700, color: 'var(--gold)' }}>{team.score} pts</div>
             {elapsedText && (
               <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '12px' }}>
@@ -244,89 +221,116 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
           </div>
         )}
 
-        {/* ACTIVE MISSIONS */}
+        {/* ACTIVE */}
         {!isDraft && !isFinished && (
           <>
-            <div style={{ padding: '40px 0 32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-              <div>
-                <h2>Choose your mission</h2>
-                <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
-                  Faster answers = more points. Click a mission to begin.
-                </p>
-              </div>
-
-              {/* Mark all done button */}
-              {alreadyFinished ? (
-                <div style={{
-                  padding: '12px 20px',
-                  background: 'rgba(140,191,155,0.12)',
-                  border: '1px solid var(--accent3)',
-                  borderRadius: '10px',
-                  color: 'var(--accent3)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}>
-                  ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
-                </div>
-              ) : (
-                <button
-                  onClick={markDone}
-                  disabled={finishing}
-                  style={{
-                    padding: '12px 24px',
-                    borderRadius: '10px',
-                    border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`,
-                    background: allDone ? 'rgba(140,191,155,0.12)' : 'var(--card)',
-                    color: allDone ? 'var(--accent3)' : 'var(--muted)',
-                    fontFamily: "'Sora', sans-serif",
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    opacity: finishing ? 0.6 : 1,
-                  }}
-                >
-                  {finishing ? '...' : '🏁 We\'re done!'}
-                </button>
-              )}
-            </div>
-
-            <div className="missions-grid">
-              {categories.map(cat => {
-                const catMissions = visibleMissions.filter(m => m.category === cat);
-                const catIcon = cat === 'IT' ? '💻' : '🎉';
-                return (
-                  <div key={cat} style={{ display: 'contents' }}>
-                    <div style={{ gridColumn: '1/-1', marginTop: '12px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', letterSpacing: '2px', color: 'var(--muted)', textTransform: 'uppercase' }}>
-                        {catIcon} {cat} Missions
-                      </span>
-                    </div>
-                    {catMissions.map(m => {
-                      const done = team.completed?.includes(m.id);
-                      return (
-                        <div
-                          key={m.id}
-                          className={`mission-card${done ? ' done' : ''}`}
-                          onClick={() => !done && onSelectMission(m.id)}
-                        >
-                          <span className="mission-icon">{m.icon}</span>
-                          <div className="mission-name">{m.name}</div>
-                          <div className="mission-desc">{m.desc}</div>
-                          <div className="mission-meta">
-                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
-                            <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+            {/* ── CATEGORY VIEW ── */}
+            {selectedCategory === null ? (
+              <>
+                <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h2>Choose your mission</h2>
+                    <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
+                      Select a category to see missions.
+                    </p>
                   </div>
-                );
-              })}
-            </div>
+                  {alreadyFinished ? (
+                    <div style={{ padding: '12px 20px', background: 'rgba(140,191,155,0.12)', border: '1px solid var(--accent3)', borderRadius: '10px', color: 'var(--accent3)', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={markDone}
+                      disabled={finishing}
+                      style={{ padding: '12px 24px', borderRadius: '10px', border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`, background: allDone ? 'rgba(140,191,155,0.12)' : 'var(--card)', color: allDone ? 'var(--accent3)' : 'var(--muted)', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', opacity: finishing ? 0.6 : 1 }}
+                    >
+                      {finishing ? '...' : "🏁 We're done!"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Category cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', paddingBottom: '40px' }}>
+                  {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
+                    const cat = SUPER_CATEGORIES[key];
+                    const allCatDone = done === missions.length;
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => setSelectedCategory(key)}
+                        style={{
+                          background: 'var(--card)',
+                          border: `1px solid ${allCatDone ? cat.color : 'var(--border)'}`,
+                          borderRadius: '14px',
+                          padding: '20px 16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* coloured top stripe */}
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
+
+                        <div style={{ fontSize: '32px', marginBottom: '10px' }}>{cat.icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '6px', lineHeight: 1.2 }}>
+                          {cat.label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '10px' }}>
+                          {done}/{missions.length} missions
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: cat.color, letterSpacing: '0.5px' }}>
+                          {minPts === maxPts ? `up to ${minPts}` : `${minPts}–${maxPts}`} pts
+                        </div>
+
+                        {/* done badge */}
+                        {allCatDone && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              /* ── MISSION LIST VIEW ── */
+              <>
+                <div style={{ padding: '24px 0 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', padding: '0', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    ← Back
+                  </button>
+                  <span style={{ color: 'var(--border)' }}>|</span>
+                  <span style={{ fontSize: '16px' }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
+                  <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text)' }}>
+                    {SUPER_CATEGORIES[selectedCategory].label}
+                  </span>
+                </div>
+
+                <div className="missions-grid" style={{ paddingBottom: '40px' }}>
+                  {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
+                    const done = team.completed?.includes(m.id);
+                    return (
+                      <div
+                        key={m.id}
+                        className={`mission-card${done ? ' done' : ''}`}
+                        onClick={() => !done && onSelectMission(m.id)}
+                      >
+                        <span className="mission-icon">{m.icon}</span>
+                        <div className="mission-name">{m.name}</div>
+                        <div className="mission-desc">{m.desc}</div>
+                        <div className="mission-meta">
+                          <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
+                          <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
