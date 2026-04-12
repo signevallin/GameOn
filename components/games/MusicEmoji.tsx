@@ -58,7 +58,7 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
         <p style={{ fontSize: '13px', color: 'var(--muted)' }}>What does this represent?</p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {r.options.map((opt, i) => {
           let cls = 'option-btn';
           if (active?.revealing) {

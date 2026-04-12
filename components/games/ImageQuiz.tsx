@@ -96,7 +96,7 @@ export default function ImageQuiz({ rounds, maxPts, onFinish }: Props) {
         )}
       </div>
 
-      <div className="options-grid">
+      <div key={idx} className="options-grid">
         {round.options.map((opt, i) => (
           <button key={`${idx}-${i}`} className={optClass(opt)} onClick={() => pick(opt)} disabled={!!active}>
             {opt}

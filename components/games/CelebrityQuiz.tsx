@@ -63,7 +63,7 @@ export default function CelebrityQuiz({ rounds, maxPts, onFinish }: Props) {
         {r.clue}
       </div>
 
-      <div className="options-grid">
+      <div key={idx} className="options-grid">
         {r.options.map((opt, i) => {
           let cls = 'option-btn';
           if (active?.revealing) {
