@@ -4,6 +4,7 @@ import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
+import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -58,6 +59,7 @@ function NavCenter({ game }: { game: Game | null }) {
 
 type PowerUpsCardProps = {
   teams: Team[];
+  gameId: string;
   powerupsUsed: string[];
   puTargets: Record<string, string>;
   setPuTargets: (v: Record<string, string>) => void;
@@ -68,15 +70,15 @@ type PowerUpsCardProps = {
 };
 
 function PowerUpsCard({
-  teams, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
+  teams, gameId, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
 }: PowerUpsCardProps) {
-  function isUsed(type: string, teamId: string) {
-    return powerupsUsed.includes(`${type}_${teamId}`);
+  function isUsedKey(key: string) {
+    return powerupsUsed.includes(key);
   }
 
   function usedOnNames(type: string) {
     return powerupsUsed
-      .filter(k => k.startsWith(`${type}_`))
+      .filter(k => k.startsWith(`${type}_`) && k !== `${type}_all`)
       .map(k => teams.find(t => t.id === k.slice(type.length + 1))?.name)
       .filter(Boolean) as string[];
   }
@@ -99,18 +101,51 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK' },
-    { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE' },
-    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND' },
+    { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
+    { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
+    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: false },
   ];
+
+  const finalFrenzyUsed = isUsedKey('final_frenzy_all');
+  const finalFrenzyLoading = puLoading === 'final_frenzy';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {POWERS.map(({ type, icon, label, btn }) => {
-        const usedNames = usedOnNames(type);
-        const selectedTeamId = puTargets[type];
-        const alreadyUsedOnSelected = selectedTeamId ? isUsed(type, selectedTeamId) : false;
+
+      {/* ── Final Frenzy (broadcast only) ── */}
+      <div style={{
+        background: finalFrenzyUsed ? 'var(--card)' : 'linear-gradient(135deg, rgba(208,117,125,0.12) 0%, rgba(222,187,107,0.10) 100%)',
+        border: `1px solid ${finalFrenzyUsed ? 'var(--border)' : 'rgba(208,117,125,0.5)'}`,
+        borderRadius: '12px',
+        padding: '16px 20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '22px', flexShrink: 0 }}>🔥</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: finalFrenzyUsed ? 'var(--muted)' : 'var(--accent2)' }}>Final Frenzy</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>Doubles all points for ALL teams instantly</div>
+          </div>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--surface)', borderRadius: '4px', padding: '2px 7px', border: '1px solid var(--border)', flexShrink: 0 }}>ALL TEAMS</span>
+          <button
+            className="btn btn-primary"
+            style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: finalFrenzyUsed ? 'var(--surface)' : 'var(--accent2)', borderColor: finalFrenzyUsed ? 'var(--border)' : 'var(--accent2)' }}
+            disabled={finalFrenzyUsed || finalFrenzyLoading}
+            onClick={() => onActivate('final_frenzy')}
+          >
+            {finalFrenzyLoading ? '...' : finalFrenzyUsed ? '✓ ACTIVATED' : 'ACTIVATE'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Per-team power-ups ── */}
+      {POWERS.map(({ type, icon, label, btn, allowAll }) => {
+        const selectedTeamId = puTargets[type] ?? '';
+        const isAllSelected = selectedTeamId === 'all';
+        const usedKey = isAllSelected ? `${type}_all` : selectedTeamId ? `${type}_${selectedTeamId}` : '';
+        const alreadyUsed = usedKey ? isUsedKey(usedKey) : false;
         const isLoading = puLoading === type;
+        const usedNames = usedOnNames(type);
+        const allUsed = isUsedKey(`${type}_all`);
 
         return (
           <div key={type} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
@@ -121,21 +156,28 @@ function PowerUpsCard({
                 value={selectedTeamId}
                 onChange={e => setTarget(type, e.target.value)}
                 style={selectStyle}
+                disabled={allUsed}
               >
                 <option value="">Select team…</option>
-                {teams.map(t => (
-                  <option key={t.id} value={t.id} disabled={isUsed(type, t.id)}>
-                    {t.name}{isUsed(type, t.id) ? ' ✓' : ''}
-                  </option>
-                ))}
+                {allowAll && (
+                  <option value="all" disabled={allUsed}>{allUsed ? '✓ All teams (used)' : '📢 All teams'}</option>
+                )}
+                {teams.map(t => {
+                  const tUsed = isUsedKey(`${type}_${t.id}`) || allUsed;
+                  return (
+                    <option key={t.id} value={t.id} disabled={tUsed}>
+                      {t.name}{tUsed ? ' ✓' : ''}
+                    </option>
+                  );
+                })}
               </select>
               <button
                 className="btn btn-primary"
                 style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
-                disabled={!selectedTeamId || alreadyUsedOnSelected || isLoading || (type === 'fake_hint' && !puMessages.trim())}
+                disabled={!selectedTeamId || alreadyUsed || isLoading || (type === 'fake_hint' && !puMessages.trim())}
                 onClick={() => onActivate(type)}
               >
-                {isLoading ? '...' : btn}
+                {isLoading ? '...' : isAllSelected ? `${btn} ALL` : btn}
               </button>
             </div>
             {type === 'fake_hint' && (
@@ -147,7 +189,10 @@ function PowerUpsCard({
                 style={{ marginTop: '10px', width: '100%', fontSize: '13px' }}
               />
             )}
-            {usedNames.length > 0 && (
+            {allUsed && (
+              <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '8px' }}>✓ Sent to all teams</div>
+            )}
+            {!allUsed && usedNames.length > 0 && (
               <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '8px' }}>
                 ✓ Used on: {usedNames.join(', ')}
               </div>
@@ -192,7 +237,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [rated, setRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
   const [puTargets, setPuTargets] = useState<Record<string, string>>({
-    sabotage: '', double_points: '', fake_hint: '',
+    sabotage: '', double_points: '', fake_hint: '', final_frenzy: 'all',
   });
   const [puMessages, setPuMessages] = useState('');
   const [puLoading, setPuLoading] = useState<string | null>(null);
@@ -361,12 +406,15 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function activatePowerup(type: string) {
     const targetTeamId = puTargets[type];
-    if (!targetTeamId) return;
+    const isBroadcast = type === 'final_frenzy' || targetTeamId === 'all';
+    if (!targetTeamId && !isBroadcast) return;
+    if (!isBroadcast && !targetTeamId) return;
     setPuLoading(type);
     try {
       const res = await POST('/api/admin/powerup', {
         type,
-        targetTeamId,
+        targetTeamId: isBroadcast ? 'all' : targetTeamId,
+        gameId: activeGame?.id,
         ...(type === 'fake_hint' ? { message: puMessages } : {}),
       });
       if (!res.ok) {
@@ -497,50 +545,68 @@ export default function AdminScreen({ onLogout }: Props) {
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {MISSIONS.map(m => {
-              const on = selectedMissions.includes(m.id);
-              const pts = missionMaxPts[m.id] ?? m.maxPts;
-              const isCustom = pts !== m.maxPts;
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => {
+              const cat = SUPER_CATEGORIES[catKey];
+              const catMissions = MISSIONS.filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey);
+              if (catMissions.length === 0) return null;
+              const allOn = catMissions.every(m => selectedMissions.includes(m.id));
               return (
-                <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45, transition: 'all 0.15s', overflow: 'hidden' }}>
-                  {/* Top row — click to toggle */}
-                  <div onClick={() => setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id])}
-                    style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', cursor: 'pointer' }}>
-                    <span style={{ fontSize: '20px' }}>{m.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.category} · {m.difficulty}</div>
-                    </div>
-                    <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: on ? 'var(--accent)' : 'var(--border)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-                      <div style={{ position: 'absolute', top: '3px', left: on ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
-                    </div>
+                <div key={catKey}>
+                  {/* Category header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: cat.color }}>
+                      {cat.icon} {cat.label.toUpperCase()}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const ids = catMissions.map(m => m.id);
+                        setSelectedMissions(prev => allOn
+                          ? prev.filter(x => !ids.includes(x))
+                          : [...new Set([...prev, ...ids])]);
+                      }}
+                      style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      {allOn ? 'Deselect all' : 'Select all'}
+                    </button>
                   </div>
-                  {/* Points row — only when enabled */}
-                  {on && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 16px 12px', borderTop: '1px solid var(--border)' }}
-                      onClick={e => e.stopPropagation()}>
-                      <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', flexShrink: 0 }}>MAX PTS</span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={9999}
-                        step={50}
-                        value={pts}
-                        onChange={e => setMissionMaxPts(prev => ({ ...prev, [m.id]: Math.max(0, Number(e.target.value)) }))}
-                        style={{ width: '90px', padding: '4px 8px', fontSize: '13px', fontWeight: 700, fontFamily: "'Sora', sans-serif", background: 'var(--surface)', border: `1px solid ${isCustom ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '6px', color: isCustom ? 'var(--accent)' : 'var(--text)' }}
-                      />
-                      {isCustom && (
-                        <button onClick={() => setMissionMaxPts(prev => ({ ...prev, [m.id]: m.maxPts }))}
-                          style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontFamily: "'Sora', sans-serif" }}>
-                          reset
-                        </button>
-                      )}
-                      {!isCustom && (
-                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>default</span>
-                      )}
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {catMissions.map(m => {
+                      const on = selectedMissions.includes(m.id);
+                      const pts = missionMaxPts[m.id] ?? m.maxPts;
+                      const isCustom = pts !== m.maxPts;
+                      return (
+                        <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? cat.color : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45, overflow: 'hidden' }}>
+                          <div onClick={() => setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id])}
+                            style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}>
+                            <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.maxPts} pts</div>
+                            </div>
+                            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? cat.color : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                              <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                            </div>
+                          </div>
+                          {on && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px 10px', borderTop: '1px solid var(--border)' }}
+                              onClick={e => e.stopPropagation()}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', flexShrink: 0 }}>MAX PTS</span>
+                              <input
+                                type="number" min={0} max={9999} step={50} value={pts}
+                                onChange={e => setMissionMaxPts(prev => ({ ...prev, [m.id]: Math.max(0, Number(e.target.value)) }))}
+                                style={{ width: '90px', padding: '4px 8px', fontSize: '13px', fontWeight: 700, fontFamily: "'Sora', sans-serif", background: 'var(--surface)', border: `1px solid ${isCustom ? cat.color : 'var(--border)'}`, borderRadius: '6px', color: isCustom ? cat.color : 'var(--text)' }}
+                              />
+                              {isCustom
+                                ? <button onClick={() => setMissionMaxPts(prev => ({ ...prev, [m.id]: m.maxPts }))} style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontFamily: "'Sora', sans-serif" }}>reset</button>
+                                : <span style={{ fontSize: '11px', color: 'var(--muted)' }}>default</span>
+                              }
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
@@ -668,49 +734,87 @@ export default function AdminScreen({ onLogout }: Props) {
         )}
 
         {/* PROGRESS */}
-        {tab === 'progress' && (
-          <div className="fade-in">
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'auto' }}>
-              <table className="progress-table">
-                <thead>
-                  <tr>
-                    <th>Team</th>
-                    {activeGame.missions.map(id => {
-                      const m = MISSIONS.find(x => x.id === id);
-                      return <th key={id}>{m?.icon ?? id}</th>;
-                    })}
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.length === 0 ? (
-                    <tr><td colSpan={activeGame.missions.length + 2} style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
-                  ) : sorted.map(t => (
-                    <tr key={t.id}>
-                      <td><strong>{t.name}</strong></td>
-                      {activeGame.missions.map(id => {
-                        const done = t.completed?.includes(id);
-                        const pts = done ? (t.mission_scores?.[id] ?? null) : null;
-                        return (
-                          <td key={id}>
-                            {done
-                              ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--accent3)', fontWeight: 700, fontSize: '12px' }}>
-                                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent3)', display: 'inline-block', flexShrink: 0 }} />
-                                  {pts !== null ? pts : '✓'}
-                                </span>
-                              : <span style={{ color: 'var(--muted)' }}>–</span>
-                            }
-                          </td>
-                        );
-                      })}
-                      <td className="pts-cell">{t.score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {tab === 'progress' && (() => {
+          // Group active missions by super-category
+          const catGroups = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => ({
+            catKey,
+            cat: SUPER_CATEGORIES[catKey],
+            missions: activeGame.missions
+              .map(id => MISSIONS.find(x => x.id === id))
+              .filter((m): m is NonNullable<typeof m> => !!m && MISSION_SUPER_CATEGORY[m.id] === catKey),
+          })).filter(g => g.missions.length > 0);
+
+          return (
+            <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {catGroups.map(({ catKey, cat, missions }) => (
+                <div key={catKey}>
+                  {/* Category header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '16px' }}>{cat.icon}</span>
+                    <span style={{ fontWeight: 800, fontSize: '13px', color: cat.color, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{cat.label}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  {/* Table for this category */}
+                  <div style={{ background: 'var(--card)', border: `1px solid ${cat.color}33`, borderRadius: '12px', overflow: 'auto' }}>
+                    <table className="progress-table">
+                      <thead>
+                        <tr>
+                          <th>Team</th>
+                          {missions.map(m => (
+                            <th key={m.id} title={m.name}>{m.icon}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sorted.length === 0 ? (
+                          <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
+                        ) : sorted.map(t => (
+                          <tr key={t.id}>
+                            <td><strong>{t.name}</strong></td>
+                            {missions.map(m => {
+                              const done = t.completed?.includes(m.id);
+                              const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
+                              return (
+                                <td key={m.id}>
+                                  {done
+                                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: cat.color, fontWeight: 700, fontSize: '12px' }}>
+                                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
+                                        {pts !== null ? pts : '✓'}
+                                      </span>
+                                    : <span style={{ color: 'var(--muted)' }}>–</span>
+                                  }
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+
+              {/* Total score summary */}
+              {sorted.length > 0 && (
+                <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                  <div style={{ padding: '10px 14px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', fontWeight: 800, fontSize: '12px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                    Total Score
+                  </div>
+                  <table className="progress-table">
+                    <tbody>
+                      {sorted.map(t => (
+                        <tr key={t.id}>
+                          <td><strong>{t.name}</strong></td>
+                          <td className="pts-cell" style={{ textAlign: 'right' }}>{t.score} p</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* PHOTOS */}
         {tab === 'photos' && (
@@ -779,6 +883,7 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
             <PowerUpsCard
               teams={teams}
+              gameId={activeGame.id}
               powerupsUsed={powerupsUsed}
               puTargets={puTargets}
               setPuTargets={setPuTargets}

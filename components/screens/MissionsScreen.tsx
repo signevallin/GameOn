@@ -198,9 +198,16 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
       )}
 
       <nav className="nav" style={{ gap: '4px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', flex: '1', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {team.name}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1', minWidth: 0 }}>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {team.name}
+          </span>
+          {!isDraft && !isFinished && (
+            <button onClick={() => setShowPowerups(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', flexShrink: 0, lineHeight: 1 }} title="Power-Ups">
+              ⚡
+            </button>
+          )}
+        </div>
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', flexShrink: 0, textAlign: 'center', padding: '0 8px' }}>
           ⭐ {team.score}
         </span>
@@ -210,11 +217,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
           </span>
         ) : (
           <span style={{ flexShrink: 0, width: '60px' }} />
-        )}
-        {!isDraft && !isFinished && (
-          <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0, color: 'var(--gold)' }} onClick={() => setShowPowerups(true)}>
-            ⚡
-          </button>
         )}
         <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }} onClick={onLogout}>
           LOG OUT
