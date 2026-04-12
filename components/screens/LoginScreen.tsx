@@ -59,9 +59,32 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '480px', padding: '20px', position: 'relative', zIndex: 1 }} className="fade-in">
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '52px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '6px' }}>
-            GAMEON
-          </h1>
+          {/* GameOn logo — "Game" white, power symbol + "n" in accent blue */}
+          <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+            <span style={{
+              fontFamily: "'Sora', sans-serif",
+              fontWeight: 800,
+              fontSize: '58px',
+              color: '#e0e7f3',
+              letterSpacing: '-1px',
+            }}>Game</span>
+            <span style={{
+              fontFamily: "'Sora', sans-serif",
+              fontWeight: 800,
+              fontSize: '52px',
+              color: 'var(--accent)',
+              lineHeight: 1,
+              position: 'relative',
+              top: '2px',
+            }}>⏻</span>
+            <span style={{
+              fontFamily: "'Sora', sans-serif",
+              fontWeight: 800,
+              fontSize: '58px',
+              color: 'var(--accent)',
+              letterSpacing: '-1px',
+            }}>n</span>
+          </div>
           <p style={{ color: 'var(--muted)', marginTop: '12px', fontSize: '14px' }}>Select your role to log in</p>
         </div>
 
