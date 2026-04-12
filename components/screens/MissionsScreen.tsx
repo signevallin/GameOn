@@ -117,6 +117,7 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
   const [finishing, setFinishing] = useState(false);
+  const [confirmDone, setConfirmDone] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
@@ -227,30 +228,15 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
-                <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-                  <div>
-                    <h2>Choose your mission</h2>
-                    <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
-                      Select a category to see missions.
-                    </p>
-                  </div>
-                  {alreadyFinished ? (
-                    <div style={{ padding: '12px 20px', background: 'rgba(140,191,155,0.12)', border: '1px solid var(--accent3)', borderRadius: '10px', color: 'var(--accent3)', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={markDone}
-                      disabled={finishing}
-                      style={{ padding: '12px 24px', borderRadius: '10px', border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`, background: allDone ? 'rgba(140,191,155,0.12)' : 'var(--card)', color: allDone ? 'var(--accent3)' : 'var(--muted)', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s', opacity: finishing ? 0.6 : 1 }}
-                    >
-                      {finishing ? '...' : "🏁 We're done!"}
-                    </button>
-                  )}
+                <div style={{ padding: '32px 0 24px' }}>
+                  <h2>Choose your mission</h2>
+                  <p style={{ color: 'var(--muted)', marginTop: '8px', fontSize: '14px' }}>
+                    Select a category to see missions.
+                  </p>
                 </div>
 
                 {/* Category cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', paddingBottom: '40px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', paddingBottom: '24px' }}>
                   {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
                     const cat = SUPER_CATEGORIES[key];
                     const allCatDone = done === missions.length;
@@ -291,6 +277,52 @@ export default function MissionsScreen({ team, game, onSelectMission, onLogout, 
                     );
                   })}
                 </div>
+
+                {/* We're done — always at the bottom */}
+                <div style={{ padding: '8px 0 48px' }}>
+                  {alreadyFinished ? (
+                    <div style={{ padding: '16px 20px', background: 'rgba(140,191,155,0.12)', border: '1px solid var(--accent3)', borderRadius: '12px', color: 'var(--accent3)', fontWeight: 700, fontSize: '14px', textAlign: 'center' }}>
+                      ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDone(true)}
+                      style={{ width: '100%', padding: '16px', borderRadius: '12px', border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`, background: allDone ? 'rgba(140,191,155,0.08)' : 'transparent', color: allDone ? 'var(--accent3)' : 'var(--muted)', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                    >
+                      🏁 We&apos;re done!
+                    </button>
+                  )}
+                </div>
+
+                {/* Confirm dialog */}
+                {confirmDone && (
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+                    <div style={{ background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '16px', padding: '40px 32px', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
+                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏁</div>
+                      <h2 style={{ marginBottom: '12px' }}>Are you sure?</h2>
+                      <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px', lineHeight: 1.6 }}>
+                        This marks your team as finished. You won&apos;t be able to complete more missions after this.
+                      </p>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button
+                          className="btn btn-ghost"
+                          style={{ flex: 1 }}
+                          onClick={() => setConfirmDone(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          style={{ flex: 1 }}
+                          disabled={finishing}
+                          onClick={async () => { setConfirmDone(false); await markDone(); }}
+                        >
+                          {finishing ? '...' : "Yes, we're done!"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               /* ── MISSION LIST VIEW ── */
