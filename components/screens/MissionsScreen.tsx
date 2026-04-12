@@ -133,123 +133,109 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   );
 }
 
-// ── Leaderboard overlay ───────────────────────────────────────────────────────
+// ── Leaderboard inline view ───────────────────────────────────────────────────
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', '#b0c4de', '#cd7f32'];
 
-function LeaderboardOverlay({ teams, myTeamId, totalMissions, onClose }: {
+function LeaderboardView({ teams, myTeamId, totalMissions }: {
   teams: Team[];
   myTeamId: string;
   totalMissions: number;
-  onClose: () => void;
 }) {
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const myRank = sorted.findIndex(t => t.id === myTeamId);
   const myTeam = sorted[myRank];
   const leader = sorted[0];
   const gap = myTeam && leader && leader.id !== myTeamId ? leader.score - myTeam.score : 0;
+  const maxScore = leader?.score || 1;
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 950,
-      background: 'rgba(0,0,0,0.85)',
-      display: 'flex', flexDirection: 'column',
-      overflow: 'hidden',
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '20px 20px 16px',
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--surface)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <div>
-          <div style={{ fontWeight: 800, fontSize: '18px', letterSpacing: '-0.5px' }}>🏆 Leaderboard</div>
-          <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{teams.length} teams</div>
-        </div>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '24px', cursor: 'pointer', padding: '4px 8px', lineHeight: 1 }}
-        >✕</button>
-      </div>
-
+    <div style={{ paddingBottom: '32px' }}>
       {/* My position callout */}
       {myTeam && (
         <div style={{
-          margin: '16px 16px 0',
-          padding: '14px 16px',
+          padding: '16px',
           background: 'rgba(0,229,255,0.06)',
-          border: '1px solid rgba(0,229,255,0.25)',
-          borderRadius: '12px',
+          border: '1px solid rgba(0,229,255,0.20)',
+          borderRadius: '14px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexShrink: 0,
+          marginBottom: '20px',
         }}>
           <div>
             <div style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '1.5px', fontWeight: 700 }}>YOUR TEAM</div>
-            <div style={{ fontWeight: 800, fontSize: '16px', marginTop: '2px' }}>{myTeam.name}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontWeight: 800, fontSize: '22px', color: 'var(--gold)' }}>{myTeam.score} pts</div>
-            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+            <div style={{ fontWeight: 800, fontSize: '17px', marginTop: '3px' }}>{myTeam.name}</div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
               {myRank === 0 ? '🔥 Leading!' : gap > 0 ? `${gap} pts behind leader` : 'Tied for lead'}
             </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontWeight: 800, fontSize: '28px', color: 'var(--gold)', lineHeight: 1 }}>{myTeam.score}</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>pts · #{myRank + 1}</div>
           </div>
         </div>
       )}
 
-      {/* Ranking list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {sorted.map((t, i) => {
-            const isMe = t.id === myTeamId;
-            const missionsDone = t.completed?.length ?? 0;
-            return (
-              <div
-                key={t.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '14px',
-                  padding: '14px 16px',
-                  background: isMe ? 'rgba(0,229,255,0.08)' : 'var(--card)',
-                  border: `1px solid ${isMe ? 'rgba(0,229,255,0.35)' : 'var(--border)'}`,
-                  borderRadius: '12px',
-                }}
-              >
-                {/* Rank */}
+      {/* Rankings */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {sorted.map((t, i) => {
+          const isMe = t.id === myTeamId;
+          const missionsDone = t.completed?.length ?? 0;
+          const barPct = maxScore > 0 ? Math.max(4, Math.round((t.score / maxScore) * 100)) : 4;
+
+          return (
+            <div
+              key={t.id}
+              style={{
+                padding: '12px 14px',
+                background: isMe ? 'rgba(0,229,255,0.07)' : 'var(--card)',
+                border: `1px solid ${isMe ? 'rgba(0,229,255,0.30)' : i === 0 ? 'rgba(222,187,107,0.25)' : 'var(--border)'}`,
+                borderRadius: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                {/* Rank badge */}
                 <div style={{
-                  width: '32px', flexShrink: 0, textAlign: 'center',
-                  fontSize: i < 3 ? '22px' : '14px',
+                  width: '28px', flexShrink: 0, textAlign: 'center',
+                  fontSize: i < 3 ? '18px' : '13px',
                   fontWeight: 800,
                   color: RANK_COLORS[i] ?? 'var(--muted)',
                 }}>
                   {i < 3 ? RANK_ICONS[i] : i + 1}
                 </div>
 
-                {/* Name + missions */}
+                {/* Name */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontWeight: 700, fontSize: '15px',
+                    fontWeight: 700, fontSize: '14px',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     color: isMe ? 'var(--accent)' : 'var(--text)',
                   }}>
-                    {t.name}{isMe ? ' (you)' : ''}
+                    {t.name}{isMe ? ' · you' : ''}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
-                    {missionsDone}/{totalMissions} missions{t.finished_at ? ' · 🏁 finished' : ''}
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                    {missionsDone}/{totalMissions} missions{t.finished_at ? ' · 🏁' : ''}
                   </div>
                 </div>
 
                 {/* Score */}
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontWeight: 800, fontSize: '18px', color: i === 0 ? 'var(--gold)' : 'var(--text)' }}>
-                    {t.score}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>pts</div>
+                <div style={{ fontWeight: 800, fontSize: '18px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
+                  {t.score}
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Score bar */}
+              <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${barPct}%`,
+                  background: isMe ? 'var(--accent)' : i === 0 ? 'var(--gold)' : RANK_COLORS[i] ?? 'var(--muted)',
+                  borderRadius: '2px',
+                  transition: 'width 0.6s ease',
+                }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -444,7 +430,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [confirmDone, setConfirmDone] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
   const [showPowerups, setShowPowerups] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
 
   // Freeze effect
   const effects = team.active_effects ?? {};
@@ -518,16 +504,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      {/* LEADERBOARD overlay */}
-      {showLeaderboard && (
-        <LeaderboardOverlay
-          teams={teams}
-          myTeamId={team.id}
-          totalMissions={visibleMissions.length}
-          onClose={() => setShowLeaderboard(false)}
-        />
-      )}
-
       <nav className="nav" style={{ gap: '0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1', minWidth: 0 }}>
           <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -536,11 +512,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
           {!isDraft && !isFinished && (
             <button onClick={() => setShowPowerups(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', flexShrink: 0, lineHeight: 1 }} title="Power-Ups">
               ⚡
-            </button>
-          )}
-          {!isDraft && teams.length > 1 && (
-            <button onClick={() => setShowLeaderboard(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', flexShrink: 0, lineHeight: 1 }} title="Leaderboard">
-              🏆
             </button>
           )}
         </div>
@@ -552,11 +523,8 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             ⏱ {formatTime(secondsLeft)}
           </span>
         ) : (
-          <span style={{ flexShrink: 0, width: '60px' }} />
+          <span style={{ flexShrink: 0, width: '4px' }} />
         )}
-        <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px', flexShrink: 0 }} onClick={onLogout}>
-          LOG OUT
-        </button>
       </nav>
 
       <div className="container fade-in">
@@ -590,10 +558,61 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               />
             )}
             {!showPowerups && (<>
+
+            {/* ── TAB SWITCHER ── */}
+            {teams.length > 1 && (
+              <div style={{
+                display: 'flex',
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '10px',
+                padding: '3px',
+                gap: '3px',
+                marginTop: '16px',
+                marginBottom: '4px',
+              }}>
+                {(['missions', 'leaderboard'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => { setActiveTab(tab); setSelectedCategory(null); }}
+                    style={{
+                      flex: 1,
+                      padding: '9px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontFamily: "'Sora', sans-serif",
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      letterSpacing: '0.5px',
+                      background: activeTab === tab ? 'var(--accent)' : 'transparent',
+                      color: activeTab === tab ? '#0a0e19' : 'var(--muted)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tab === 'missions' ? '🎯 Missions' : '🏆 Leaderboard'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* ── LEADERBOARD TAB ── */}
+            {activeTab === 'leaderboard' && (
+              <div style={{ paddingTop: '16px' }}>
+                <LeaderboardView
+                  teams={teams}
+                  myTeamId={team.id}
+                  totalMissions={visibleMissions.length}
+                />
+              </div>
+            )}
+
+            {/* ── MISSIONS TAB ── */}
+            {activeTab === 'missions' && (<>
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
-                <div style={{ padding: '20px 0 16px' }}>
+                <div style={{ padding: '16px 0 14px' }}>
                   <h2 style={{ fontSize: '20px' }}>Choose your mission</h2>
                   <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '13px' }}>
                     Select a category to see missions.
@@ -722,6 +741,17 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               </>
             )}
             </>)}
+            </>)}
+
+            {/* ── LOGOUT AT BOTTOM ── */}
+            <div style={{ padding: '8px 0 40px', textAlign: 'center' }}>
+              <button
+                onClick={onLogout}
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", letterSpacing: '0.5px', padding: '8px 16px' }}
+              >
+                Log out
+              </button>
+            </div>
           </>
         )}
       </div>
