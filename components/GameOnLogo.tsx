@@ -5,9 +5,8 @@ type Props = {
 
 export default function GameOnLogo({ size = 22 }: Props) {
   const symbolSize = Math.round(size * 1.24);
-  const gap = -Math.round(size * 0.04);
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', lineHeight: 1 }}>
       <span style={{
         fontFamily: "'Sora', sans-serif",
         fontWeight: 800,
@@ -21,9 +20,7 @@ export default function GameOnLogo({ size = 22 }: Props) {
         fontSize: `${symbolSize}px`,
         color: 'var(--accent)',
         lineHeight: 1,
-        position: 'relative',
-        top: `${Math.round(size * 0.03)}px`,
-        marginRight: `${gap}px`,
+        marginRight: `-${Math.round(size * 0.04)}px`,
       }}>⏻</span>
       <span style={{
         fontFamily: "'Sora', sans-serif",
