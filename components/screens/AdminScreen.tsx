@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
+import GameOnLogo from '@/components/GameOnLogo';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -381,11 +382,7 @@ export default function AdminScreen({ onLogout }: Props) {
   if (view === 'games') return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
-        </div>
+        <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
@@ -454,11 +451,7 @@ export default function AdminScreen({ onLogout }: Props) {
   if (view === 'create') return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
-        </div>
+        <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
@@ -558,11 +551,7 @@ export default function AdminScreen({ onLogout }: Props) {
   return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
-        </div>
+        <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={activeGame} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
