@@ -71,11 +71,12 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
             <span style={{
               fontFamily: "'Sora', sans-serif",
               fontWeight: 800,
-              fontSize: '58px',
+              fontSize: '80px',
               color: 'var(--accent)',
               lineHeight: 1,
               position: 'relative',
               top: '2px',
+              marginRight: '-6px',
             }}>⏻</span>
             <span style={{
               fontFamily: "'Sora', sans-serif",

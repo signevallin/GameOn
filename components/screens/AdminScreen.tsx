@@ -40,11 +40,11 @@ function NavCenter({ game }: { game: Game | null }) {
   const timerColor = urgentTime ? 'var(--gold)' : 'var(--accent3)';
   return (
     <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', pointerEvents: 'none' }}>
-      <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
-      </div>
+      {game && (
+        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+          {game.name}
+        </span>
+      )}
       {game && game.status === 'active' && secondsLeft !== null && (
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: timerColor, letterSpacing: '2px', lineHeight: 1, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
           ⏱ {fmtTimer(secondsLeft)}
