@@ -40,7 +40,11 @@ function NavCenter({ game }: { game: Game | null }) {
   const timerColor = urgentTime ? 'var(--gold)' : 'var(--accent3)';
   return (
     <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', pointerEvents: 'none' }}>
-      <span style={{ fontSize: '11px', letterSpacing: '4px', color: 'var(--accent)', opacity: 0.7, fontWeight: 700 }}>GAMEON</span>
+      <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '16px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
+      </div>
       {game && game.status === 'active' && secondsLeft !== null && (
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: timerColor, letterSpacing: '2px', lineHeight: 1, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
           ⏱ {fmtTimer(secondsLeft)}
@@ -377,7 +381,11 @@ export default function AdminScreen({ onLogout }: Props) {
   if (view === 'games') return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand">🛡️ ADMIN</div>
+        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
+        </div>
         <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
@@ -446,7 +454,11 @@ export default function AdminScreen({ onLogout }: Props) {
   if (view === 'create') return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand">🎮 NEW GAME</div>
+        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
+        </div>
         <NavCenter game={null} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
@@ -546,7 +558,11 @@ export default function AdminScreen({ onLogout }: Props) {
   return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand">🎮 {activeGame.name}</div>
+        <div className="nav-brand" style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: '#e0e7f3', letterSpacing: '-0.5px' }}>Game</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', position: 'relative', top: '1px' }}>⏻</span>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '22px', color: 'var(--accent)', letterSpacing: '-0.5px' }}>n</span>
+        </div>
         <NavCenter game={activeGame} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
