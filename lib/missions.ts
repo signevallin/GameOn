@@ -582,7 +582,7 @@ Three employees were in the building that evening:
   // ── MUSIC QUIZ ──
   {
     id: 'music_quiz',
-    icon: '🎵',
+    icon: '🎧',
     name: 'Name That Tune',
     category: 'Fun',
     desc: 'Listen to clips and guess artist + song — then sort them by release year!',
@@ -748,7 +748,7 @@ Three employees were in the building that evening:
   // ── FILM QUIZ ──
   {
     id: 'film_quiz',
-    icon: '🎬',
+    icon: '🍿',
     name: 'Film Quiz',
     category: 'Fun',
     desc: 'Iconic movie quotes, scenes and facts — 6 rounds!',
@@ -791,7 +791,7 @@ Three employees were in the building that evening:
   // ── ANAGRAM ──
   {
     id: 'anagram',
-    icon: '🔀',
+    icon: '🔡',
     name: 'Anagram',
     category: 'IT',
     desc: 'Unscramble the letters to reveal the hidden IT word — type your answer!',
@@ -806,7 +806,7 @@ Three employees were in the building that evening:
   // ── SNABB-MATTE ──
   {
     id: 'snabb_matte',
-    icon: '🔢',
+    icon: '🧮',
     name: 'Quick Maths',
     category: 'Fun',
     desc: 'Mental math against the clock — 4 rounds, no calculator allowed!',
@@ -1135,7 +1135,7 @@ Three employees were in the building that evening:
   // ── SPOT THE ERROR ──
   {
     id: 'spot_error',
-    icon: '🔍',
+    icon: '🚨',
     name: 'Spot the Error',
     category: 'Fun',
     desc: 'Each statement has one deliberate mistake — can you find it?',
@@ -1173,7 +1173,7 @@ Three employees were in the building that evening:
   // ── VISUAL IQ ──
   {
     id: 'visual_iq',
-    icon: '🧩',
+    icon: '👁️',
     name: 'Visual IQ',
     category: 'Fun',
     desc: 'Spot the pattern and find what comes next — 6 rounds!',
@@ -1216,7 +1216,7 @@ Three employees were in the building that evening:
   // ── MEMORY SPEED ──
   {
     id: 'memory_speed',
-    icon: '🧠',
+    icon: '⏱️',
     name: 'Memory Speed',
     category: 'Fun',
     desc: 'Memorize the items — then spot the missing one!',
