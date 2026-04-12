@@ -5,7 +5,7 @@ type Props = {
 
 export default function GameOnLogo({ size = 22 }: Props) {
   const symbolSize = Math.round(size * 1.24);
-  const gap = -Math.round(size * 0.1);
+  const gap = Math.round(size * 0.04);
   return (
     <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
       <span style={{
