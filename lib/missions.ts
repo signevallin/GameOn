@@ -682,7 +682,7 @@ Three employees were in the building that evening:
         answer: 'India',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Shinjuku_Night_View_%28cropped%29.jpg/400px-Shinjuku_Night_View_%28cropped%29.jpg',
+        imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Fuji_san_from_Fujikawaguchiko_2010.JPG?width=400',
         options: ['China', 'Japan', 'South Korea', 'Vietnam'],
         answer: 'Japan',
       },
