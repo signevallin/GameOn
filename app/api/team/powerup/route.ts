@@ -11,7 +11,7 @@ function getSupabase() {
   );
 }
 
-const VALID_TYPES = ['second_chance', 'freeze', 'double_trouble', 'shield', 'all_in'] as const;
+const VALID_TYPES = ['freeze', 'double_trouble', 'shield', 'all_in'] as const;
 type PowerUpType = typeof VALID_TYPES[number];
 
 export async function POST(req: Request) {
@@ -36,22 +36,6 @@ export async function POST(req: Request) {
   }
 
   // Self-targeting power-ups
-  if (type === 'second_chance') {
-    // Find a mission completed with 0 points (failed)
-    const scores: Record<string, number> = sender.mission_scores ?? {};
-    const failedMission = (sender.completed ?? []).find((id: string) => (scores[id] ?? 1) === 0);
-    if (!failedMission) return NextResponse.json({ error: 'No failed missions to retry.' }, { status: 400 });
-
-    const newCompleted = (sender.completed as string[]).filter((id: string) => id !== failedMission);
-    await supabase.from('teams').update({
-      completed: newCompleted,
-      team_powerups_used: [...usedPowerups, type],
-      pending_notification: { type: 'powerup_self', message: `🔄 Second Chance activated! You can retry the mission you failed.` },
-    }).eq('id', senderTeamId);
-
-    return NextResponse.json({ ok: true });
-  }
-
   if (type === 'shield') {
     const shieldUntil = new Date(Date.now() + 2 * 60 * 1000).toISOString();
     const effects = sender.active_effects ?? {};
@@ -114,15 +98,43 @@ export async function POST(req: Request) {
   }
 
   if (type === 'all_in') {
-    const stolen = Math.floor((target.score ?? 0) * 0.5);
-    await supabase.from('teams').update({
-      score: Math.max(0, (target.score ?? 0) - stolen),
-      pending_notification: { type: 'powerup_received', message: `💸 ALL IN! Another team stole 50% of your points (${stolen} pts)!` },
-    }).eq('id', targetTeamId);
-    // Give stolen points to sender
-    await supabase.from('teams').update({
-      score: (sender.score ?? 0) + stolen,
-    }).eq('id', senderTeamId);
+    const senderScore = sender.score ?? 0;
+    const targetScore = target.score ?? 0;
+    const wager = Math.floor(senderScore * 0.3);
+    const won = Math.random() < 0.5;
+    const prize = Math.floor(targetScore * 0.3);
+
+    if (won) {
+      // Sender wins: gains 30% of target's points, target loses them
+      const newSenderScore = senderScore + prize;
+      const newTargetScore = Math.max(0, targetScore - prize);
+      await supabase.from('teams').update({
+        score: newSenderScore,
+      }).eq('id', senderTeamId);
+      await supabase.from('teams').update({
+        score: newTargetScore,
+        pending_notification: { type: 'powerup_received', message: `🎲 ALL IN! Another team gambled against you — and won! They took ${prize} pts (30%) from you.` },
+      }).eq('id', targetTeamId);
+
+      // Mark sender used + attach result
+      await supabase.from('teams').update({ team_powerups_used: [...usedPowerups, type] }).eq('id', senderTeamId);
+      return NextResponse.json({ ok: true, won: true, newSenderScore, resultMessage: `🎲 You won the gamble! +${prize} pts stolen from ${target.name}!` });
+    } else {
+      // Sender loses: target gains 30% of sender's points, sender loses them
+      const newSenderScore = Math.max(0, senderScore - wager);
+      const newTargetScore = targetScore + wager;
+      await supabase.from('teams').update({
+        score: newSenderScore,
+      }).eq('id', senderTeamId);
+      await supabase.from('teams').update({
+        score: newTargetScore,
+        pending_notification: { type: 'powerup_self', message: `🎲 ALL IN backfired on your rival! They gambled against you and lost — you gained ${wager} pts!` },
+      }).eq('id', targetTeamId);
+
+      // Mark sender used + attach result
+      await supabase.from('teams').update({ team_powerups_used: [...usedPowerups, type] }).eq('id', senderTeamId);
+      return NextResponse.json({ ok: true, won: false, newSenderScore, resultMessage: `🎲 You lost the gamble… -${wager} pts went to ${target.name}.` });
+    }
   }
 
   // Mark sender powerup as used

@@ -12,11 +12,10 @@ type PowerUp = {
 };
 
 const POWERUPS: PowerUp[] = [
-  { id: 'second_chance', icon: '🔄', label: 'Second Chance',   desc: 'Retry a mission you already failed.',                         color: 'var(--accent3)', offensive: false },
-  { id: 'shield',        icon: '🛡️', label: 'Shield',          desc: 'Immune to sabotage & attacks for 2 minutes.',               color: 'var(--accent)',  offensive: false },
-  { id: 'freeze',        icon: '❄️', label: 'Freeze',          desc: 'Lock a rival team for 60 seconds.',                         color: '#7ec8e3',        offensive: true  },
-  { id: 'double_trouble',icon: '😈', label: 'Double Trouble',  desc: 'Force a rival to complete 2 missions before unlocking next.',color: 'var(--accent2)', offensive: true  },
-  { id: 'all_in',        icon: '💸', label: 'All In',          desc: 'Steal 50% of a rival team\'s current points.',              color: 'var(--gold)',    offensive: true  },
+  { id: 'shield',        icon: '🛡️', label: 'Shield',          desc: 'Immune to sabotage & attacks for 2 minutes.',                             color: 'var(--accent)',  offensive: false },
+  { id: 'freeze',        icon: '❄️', label: 'Freeze',          desc: 'Lock a rival team for 60 seconds.',                                       color: '#7ec8e3',        offensive: true  },
+  { id: 'double_trouble',icon: '😈', label: 'Double Trouble',  desc: 'Force a rival to complete 2 assigned missions before playing freely.',     color: 'var(--accent2)', offensive: true  },
+  { id: 'all_in',        icon: '🎲', label: 'All In',          desc: 'Gamble 30% of your points against a rival — coin flip decides the winner.',color: 'var(--gold)',    offensive: true  },
 ];
 
 type Props = {
@@ -56,8 +55,10 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
         onTeamUpdate({ ...team, team_powerups_used: [...used, selected.id] });
         setSelected(null);
       } else {
-        setFeedback({ msg: selected.offensive ? `${selected.icon} ${selected.label} sent!` : `${selected.icon} ${selected.label} activated!`, ok: true });
-        onTeamUpdate({ ...team, team_powerups_used: [...used, selected.id] });
+        const msg = data.resultMessage
+          ?? (selected.offensive ? `${selected.icon} ${selected.label} sent!` : `${selected.icon} ${selected.label} activated!`);
+        setFeedback({ msg, ok: data.won !== false });
+        onTeamUpdate({ ...team, team_powerups_used: [...used, selected.id], score: data.newSenderScore ?? team.score });
         setSelected(null);
         setTargetId('');
       }
