@@ -262,16 +262,6 @@ export const MISSIONS: Mission[] = [
     question: 'Who on the team would most likely accidentally delete the production database?',
   },
   {
-    id: 'puzzle',
-    icon: '🔀',
-    name: 'Number Puzzle',
-    category: 'Fun',
-    desc: 'Drag and drop the numbers into the right order!',
-    difficulty: 'easy',
-    maxPts: 200,
-    type: 'puzzle',
-  },
-  {
     id: 'true_false',
     icon: '✅',
     name: 'True or False',

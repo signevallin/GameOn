@@ -4,7 +4,6 @@ import { Mission, calcPoints, MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import MultipleChoice from '@/components/games/MultipleChoice';
 import TextInput from '@/components/games/TextInput';
-import Puzzle from '@/components/games/Puzzle';
 import MemoryGame from '@/components/games/MemoryGame';
 import ReactionTest from '@/components/games/ReactionTest';
 import TypeRace from '@/components/games/TypeRace';
@@ -79,8 +78,6 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
         return <MultipleChoice mission={mission} onFinish={finish} />;
       case 'text_input':
         return <TextInput mission={mission} onFinish={finish} />;
-      case 'puzzle':
-        return <Puzzle onFinish={finish} />;
       case 'memory':
         return <MemoryGame onFinish={finish} />;
       case 'reaction':
