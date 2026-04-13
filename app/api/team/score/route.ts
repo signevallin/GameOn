@@ -39,7 +39,11 @@ export async function POST(req: Request) {
   // Decrement double_trouble counter
   if (effects.double_trouble_remaining && (effects.double_trouble_remaining as number) > 0) {
     const remaining = (effects.double_trouble_remaining as number) - 1;
-    updatePayload.active_effects = { ...effects, double_trouble_remaining: remaining };
+    const newEffects: Record<string, unknown> = { ...effects, double_trouble_remaining: remaining };
+    if (remaining === 0) {
+      delete newEffects.double_trouble_missions;
+    }
+    updatePayload.active_effects = newEffects;
   }
 
   const { data, error } = await supabase

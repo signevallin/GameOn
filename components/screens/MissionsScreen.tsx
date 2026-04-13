@@ -635,6 +635,51 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
             {/* ── MISSIONS TAB ── */}
             {activeTab === 'missions' && (<>
+
+            {/* ── DOUBLE TROUBLE PENALTY VIEW ── */}
+            {effects.double_trouble_remaining && (effects.double_trouble_remaining as number) > 0 ? (() => {
+              const penaltyIds = (effects.double_trouble_missions as string[] | undefined) ?? [];
+              const penaltyMissions = MISSIONS.filter(m => penaltyIds.includes(m.id));
+              return (
+                <div style={{ paddingTop: '16px' }}>
+                  <div style={{
+                    padding: '16px 18px',
+                    background: 'rgba(208,117,125,0.10)',
+                    border: '1px solid var(--accent2)',
+                    borderRadius: '12px',
+                    marginBottom: '20px',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>😈</div>
+                    <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--accent2)', letterSpacing: '1px', marginBottom: '6px' }}>DOUBLE TROUBLE</div>
+                    <div style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.6 }}>
+                      You must complete these {penaltyMissions.length} mission{penaltyMissions.length !== 1 ? 's' : ''} before you can play freely again.<br />
+                      <strong style={{ color: 'var(--text)' }}>{(effects.double_trouble_remaining as number)} remaining</strong>
+                    </div>
+                  </div>
+                  <div className="missions-grid">
+                    {penaltyMissions.map(m => {
+                      const done = team.completed?.includes(m.id);
+                      return (
+                        <div
+                          key={m.id}
+                          className={`mission-card${done ? ' done' : ''}`}
+                          onClick={() => !done && onSelectMission(m.id)}
+                        >
+                          <span className="mission-icon">{m.icon}</span>
+                          <div className="mission-name">{m.name}</div>
+                          <div className="mission-desc">{m.desc}</div>
+                          <div className="mission-meta">
+                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
+                            <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })() : (<>
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
@@ -736,16 +781,10 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   </span>
                 </div>
 
-                {effects.double_trouble_remaining && effects.double_trouble_remaining > 0 ? (
-                  <div style={{ padding: '14px 18px', borderRadius: '10px', marginBottom: '16px', background: 'rgba(208,117,125,0.10)', border: '1px solid var(--accent2)', color: 'var(--accent2)', fontWeight: 700, fontSize: '13px' }}>
-                    😈 Double Trouble! Complete {effects.double_trouble_remaining} more mission{effects.double_trouble_remaining > 1 ? 's' : ''} before unlocking new ones.
-                  </div>
-                ) : null}
-
                 <div className="missions-grid" style={{ paddingBottom: '40px' }}>
                   {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
                     const done = team.completed?.includes(m.id);
-                    const blocked = isFrozen || (!!effects.double_trouble_remaining && effects.double_trouble_remaining > 0 && !done);
+                    const blocked = isFrozen;
                     return (
                       <div
                         key={m.id}
@@ -766,8 +805,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 </div>
               </>
             )}
-            </>)}
-            </>)}
+            </>)}{/* closes double_trouble false-branch and ternary */}
+            </>)}{/* closes activeTab missions */}
+            </>)}{/* closes !showPowerups */}
 
             {/* ── LOGOUT AT BOTTOM ── */}
             <div style={{ padding: '8px 0 40px', textAlign: 'center' }}>

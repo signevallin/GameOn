@@ -20,6 +20,7 @@ export type Team = {
     freeze_until?: string;
     shield_until?: string;
     double_trouble_remaining?: number;
+    double_trouble_missions?: string[];
   };
   team_powerups_used: string[];
 };

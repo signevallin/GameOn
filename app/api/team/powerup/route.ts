@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { MISSIONS } from '@/lib/missions';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,9 +93,23 @@ export async function POST(req: Request) {
   }
 
   if (type === 'double_trouble') {
+    // Fetch the game to get its mission list
+    const { data: game } = await supabase.from('games').select('missions').eq('id', target.game_id).single();
+    const gameMissionIds: string[] = game?.missions ?? [];
+    const completed = (target.completed ?? []) as string[];
+    const undone = MISSIONS.filter(m =>
+      (gameMissionIds.length === 0 || gameMissionIds.includes(m.id)) && !completed.includes(m.id)
+    );
+    const shuffled = [...undone].sort(() => Math.random() - 0.5);
+    const penaltyIds = shuffled.slice(0, 2).map(m => m.id);
+
     await supabase.from('teams').update({
-      active_effects: { ...targetEffects, double_trouble_remaining: (targetEffects.double_trouble_remaining ?? 0) + 2 },
-      pending_notification: { type: 'powerup_received', message: `😈 DOUBLE TROUBLE! You must complete 2 missions before your next one unlocks.` },
+      active_effects: {
+        ...targetEffects,
+        double_trouble_remaining: 2,
+        double_trouble_missions: penaltyIds,
+      },
+      pending_notification: { type: 'powerup_received', message: `😈 DOUBLE TROUBLE! You must complete 2 assigned missions before you can play freely again.` },
     }).eq('id', targetTeamId);
   }
 
