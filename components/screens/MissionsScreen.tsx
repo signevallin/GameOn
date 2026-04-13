@@ -241,7 +241,7 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 }
 
 // ── End screen ────────────────────────────────────────────────────────────────
-function EndScreen({ team, teams, game }: { team: Team; teams: Team[]; game: Game }) {
+function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[]; game: Game; onLogout: () => void }) {
   const sorted = [...teams].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     const fa = a.finished_at ? new Date(a.finished_at).getTime() : Infinity;
@@ -356,6 +356,7 @@ function EndScreen({ team, teams, game }: { team: Team; teams: Team[]; game: Gam
           background: 'var(--card)',
           border: '1px solid var(--border)',
           borderRadius: '14px',
+          marginBottom: '32px',
         }}>
           <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>YOUR GAME</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -372,6 +373,25 @@ function EndScreen({ team, teams, game }: { team: Team; teams: Team[]; game: Gam
             ))}
           </div>
         </div>
+
+        {/* Logout / new game */}
+        <button
+          onClick={onLogout}
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            color: 'var(--muted)',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            letterSpacing: '0.5px',
+          }}
+        >
+          ↩ Leave & start new game
+        </button>
       </div>
     </>
   );
@@ -549,7 +569,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
         {/* GAME OVER — full end screen */}
         {isFinished && (
-          <EndScreen team={team} teams={teams} game={game} />
+          <EndScreen team={team} teams={teams} game={game} onLogout={onLogout} />
         )}
 
         {/* ACTIVE */}
