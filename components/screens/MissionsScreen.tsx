@@ -135,7 +135,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 
 // ── Leaderboard inline view ───────────────────────────────────────────────────
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
-const RANK_COLORS = ['var(--gold)', '#b0c4de', '#cd7f32'];
+const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 function LeaderboardView({ teams, myTeamId, totalMissions }: {
   teams: Team[];
@@ -155,21 +155,22 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
       {myTeam && (
         <div style={{
           padding: '16px',
-          background: 'rgba(0,229,255,0.06)',
-          border: '1px solid rgba(0,229,255,0.20)',
-          borderRadius: '14px',
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--accent)',
+          borderRadius: '12px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: '20px',
+          marginBottom: '16px',
         }}>
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '1.5px', fontWeight: 700 }}>YOUR TEAM</div>
-            <div style={{ fontWeight: 800, fontSize: '17px', marginTop: '3px' }}>{myTeam.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>Your team</div>
+            <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text)', marginTop: '3px' }}>{myTeam.name}</div>
             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
-              {myRank === 0 ? '🔥 Leading!' : gap > 0 ? `${gap} pts behind leader` : 'Tied for lead'}
+              {myRank === 0 ? '🔥 Leading!' : gap > 0 ? `${gap} pts behind #1` : 'Tied for lead'}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontWeight: 800, fontSize: '28px', color: 'var(--gold)', lineHeight: 1 }}>{myTeam.score}</div>
+            <div style={{ fontWeight: 800, fontSize: '26px', color: 'var(--gold)', lineHeight: 1 }}>{myTeam.score}</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>pts · #{myRank + 1}</div>
           </div>
         </div>
@@ -181,19 +182,19 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
           const isMe = t.id === myTeamId;
           const missionsDone = t.completed?.length ?? 0;
           const barPct = maxScore > 0 ? Math.max(4, Math.round((t.score / maxScore) * 100)) : 4;
+          const barColor = i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--muted)';
 
           return (
             <div
               key={t.id}
               style={{
                 padding: '12px 14px',
-                background: isMe ? 'rgba(0,229,255,0.07)' : 'var(--card)',
-                border: `1px solid ${isMe ? 'rgba(0,229,255,0.30)' : i === 0 ? 'rgba(222,187,107,0.25)' : 'var(--border)'}`,
+                background: 'var(--card)',
+                border: `1px solid ${isMe ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: '12px',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                {/* Rank badge */}
                 <div style={{
                   width: '28px', flexShrink: 0, textAlign: 'center',
                   fontSize: i < 3 ? '18px' : '13px',
@@ -203,7 +204,6 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
                   {i < 3 ? RANK_ICONS[i] : i + 1}
                 </div>
 
-                {/* Name */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     fontWeight: 700, fontSize: '14px',
@@ -217,18 +217,17 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
                   </div>
                 </div>
 
-                {/* Score */}
-                <div style={{ fontWeight: 800, fontSize: '18px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
                   {t.score}
                 </div>
               </div>
 
               {/* Score bar */}
-              <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ height: '3px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%',
                   width: `${barPct}%`,
-                  background: isMe ? 'var(--accent)' : i === 0 ? 'var(--gold)' : RANK_COLORS[i] ?? 'var(--muted)',
+                  background: isMe ? 'var(--accent)' : barColor,
                   borderRadius: '2px',
                   transition: 'width 0.6s ease',
                 }} />
@@ -504,8 +503,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <nav className="nav" style={{ gap: '0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1', minWidth: 0 }}>
+      <nav className="nav" style={{ justifyContent: 'space-between' }}>
+        {/* Team name + power-up */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0, flex: 1 }}>
           <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {team.name}
           </span>
@@ -515,15 +515,21 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             </button>
           )}
         </div>
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', flexShrink: 0, textAlign: 'center', padding: '0 8px' }}>
+
+        {/* Score — centered */}
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', whiteSpace: 'nowrap' }}>
           ⭐ {team.score}
         </span>
+
+        {/* Timer — right aligned */}
         {game.status === 'active' && secondsLeft !== null ? (
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, flexShrink: 0, padding: '0 8px', animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
-            ⏱ {formatTime(secondsLeft)}
-          </span>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
+              ⏱ {formatTime(secondsLeft)}
+            </span>
+          </div>
         ) : (
-          <span style={{ flexShrink: 0, width: '4px' }} />
+          <div style={{ flex: 1 }} />
         )}
       </nav>
 
