@@ -13,6 +13,10 @@
   --gold: #debb6b;
   --silver: #a8b8c8;
   --bronze: #bf8450;
+  /* alpha variants for highlights */
+  --accent-dim: rgba(117,171,200,0.08);
+  --accent-border: rgba(117,171,200,0.30);
+  --gold-dim: rgba(222,187,107,0.35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

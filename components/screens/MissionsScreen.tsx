@@ -312,8 +312,8 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
                   style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 16px',
-                    background: isMe ? 'rgba(0,229,255,0.08)' : 'var(--card)',
-                    border: `1px solid ${isMe ? 'rgba(0,229,255,0.30)' : i === 0 ? 'rgba(222,187,107,0.35)' : 'var(--border)'}`,
+                    background: isMe ? 'var(--accent-dim)' : 'var(--card)',
+                    border: `1px solid ${isMe ? 'var(--accent-border)' : i === 0 ? 'var(--gold-dim)' : 'var(--border)'}`,
                     borderRadius: '12px',
                   }}
                 >
@@ -612,7 +612,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                       fontSize: '13px',
                       letterSpacing: '0.5px',
                       background: activeTab === tab ? 'var(--accent)' : 'transparent',
-                      color: activeTab === tab ? '#0a0e19' : 'var(--muted)',
+                      color: activeTab === tab ? 'var(--bg)' : 'var(--muted)',
                       transition: 'all 0.15s',
                     }}
                   >
