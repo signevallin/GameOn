@@ -90,7 +90,7 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
       case 'wouldyou':
         return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
-        return <TrueFalse statements={mission.statements!} onFinish={finish} />;
+        return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'photo':
         if (photoSubmitted) {
           return (
@@ -119,7 +119,7 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
             clues={mission.clues!}
             answer={mission.answer!}
             maxPts={effectiveMaxPts}
-            placeholder={mission.id === 'guess_destination' ? 'Which city or place?' : 'Who is this person?'}
+            placeholder={mission.id === 'pa_sparet_destination' ? 'Which city or place?' : 'Who is this person?'}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );

@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { Statement } from '@/lib/missions';
 
-type Props = { statements: Statement[]; onFinish: (correct: boolean) => void };
+type Props = { statements: Statement[]; maxPts?: number; onFinish: (correct: boolean, pts?: number) => void };
 
-export default function TrueFalse({ statements, onFinish }: Props) {
+export default function TrueFalse({ statements, maxPts = 150, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [flash, setFlash] = useState<boolean | null>(null);
@@ -13,11 +13,13 @@ export default function TrueFalse({ statements, onFinish }: Props) {
     if (flash !== null) return;
     const correct = val === statements[idx].answer;
     setFlash(correct);
-    if (correct) setScore(s => s + 1);
+    const newScore = correct ? score + 1 : score;
+    if (correct) setScore(newScore);
     setTimeout(() => {
       setFlash(null);
       if (idx + 1 >= statements.length) {
-        onFinish(true);
+        const pts = Math.round(maxPts * (newScore / statements.length));
+        onFinish(newScore > 0, pts);
       } else {
         setIdx(i => i + 1);
       }
@@ -55,7 +57,7 @@ export default function TrueFalse({ statements, onFinish }: Props) {
           ❌<br /><span style={{ fontSize: '14px' }}>FALSE</span>
         </button>
       </div>
-      <p style={{ marginTop: '16px', fontSize: '12px', color: 'var(--muted)' }}>Score: {score}/{idx}</p>
+      <p style={{ marginTop: '16px', fontSize: '12px', color: 'var(--muted)' }}>Score: {score}/{idx + 1}</p>
     </div>
   );
 }

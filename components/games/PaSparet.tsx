@@ -9,8 +9,6 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-const PTS_BY_CLUE = [500, 400, 300, 200, 100];
-
 export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is this person?', onFinish }: Props) {
   const [revealed, setRevealed] = useState(1);
   const [guess, setGuess] = useState('');
@@ -18,7 +16,14 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
   const [done, setDone] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const pts = PTS_BY_CLUE[revealed - 1] ?? 100;
+  // Scale pts from maxPts down to 20% of maxPts across the clues
+  function ptsByClue(clueIndex: number): number {
+    const steps = Math.max(clues.length - 1, 1);
+    const factor = 1 - (clueIndex / steps) * 0.8;
+    return Math.round(maxPts * factor);
+  }
+
+  const pts = ptsByClue(revealed - 1);
   const allRevealed = revealed >= clues.length;
 
   function submit() {
@@ -103,7 +108,7 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
           onClick={() => { setRevealed(r => r + 1); setGuess(''); }}
           style={{ marginTop: '12px', fontSize: '12px' }}
         >
-          SHOW NEXT CLUE (-{PTS_BY_CLUE[revealed - 1] - (PTS_BY_CLUE[revealed] ?? 50)} pts)
+          SHOW NEXT CLUE (-{ptsByClue(revealed - 1) - ptsByClue(revealed)} pts)
         </button>
       )}
     </>
