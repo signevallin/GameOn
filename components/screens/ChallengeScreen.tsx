@@ -19,6 +19,7 @@ import CrackCode from '@/components/games/CrackCode';
 import MusicQuiz from '@/components/games/MusicQuiz';
 import ImageQuiz from '@/components/games/ImageQuiz';
 import MemorySpeed from '@/components/games/MemorySpeed';
+import ColorMemory from '@/components/games/ColorMemory';
 
 type Props = {
   missionId: string;
@@ -179,6 +180,8 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
+      case 'color_memory':
+        return <ColorMemory maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       default:
         return null;
     }

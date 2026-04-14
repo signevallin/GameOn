@@ -16,7 +16,8 @@ export type MissionType =
   | 'crack_code'
   | 'music_quiz'
   | 'image_quiz'
-  | 'memory_speed';
+  | 'memory_speed'
+  | 'color_memory';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -260,6 +261,16 @@ export const MISSIONS: Mission[] = [
     maxPts: 100,
     type: 'wouldyou',
     question: 'Who on the team would most likely accidentally delete the production database?',
+  },
+  {
+    id: 'color_memory',
+    icon: '🎨',
+    name: 'Color Memory',
+    category: 'Brain',
+    desc: 'A color flashes for 5 seconds — then mix it back using three sliders. How sharp is your memory?',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'color_memory',
   },
   {
     id: 'true_false',
