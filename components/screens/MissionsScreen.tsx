@@ -530,7 +530,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {team.name}
           </span>
           {!isDraft && !isFinished && (
-            <button onClick={() => setShowPowerups(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '2px 4px', flexShrink: 0, lineHeight: 1 }} title="Power-Ups">
+            <button onClick={() => setShowPowerups(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '0', flexShrink: 0, lineHeight: 1, minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Power-Ups" aria-label="Power-Ups">
               ⚡
             </button>
           )}

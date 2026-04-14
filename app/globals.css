@@ -56,6 +56,14 @@ body::after {
 
 .fade-in { animation: fadeIn 0.4s ease; }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── LAYOUT ── */
 .container {
   max-width: 900px;
@@ -102,14 +110,20 @@ h2 {
   letter-spacing: 1px;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
+  min-height: 44px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-primary { background: var(--accent); color: #0a0e19; }
-.btn-primary:hover { background: #33eaff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.3); }
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.btn-primary { background: var(--accent); color: var(--bg); }
+.btn-primary:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(117,171,200,0.25); }
 
 .btn-danger { background: var(--accent2); color: #fff; }
-.btn-danger:hover { background: #ff6b84; transform: translateY(-2px); }
+.btn-danger:hover { background: #c45f68; transform: translateY(-2px); }
 
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
@@ -174,9 +188,9 @@ input[type=text], input[type=password] {
   padding: 14px 16px;
   width: 100%;
   outline: none;
-  transition: border 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,200,0.10); }
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,200,0.15); }
 
 .form-label {
   font-size: 12px;
@@ -262,9 +276,14 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   border-radius: 12px;
   padding: 24px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   position: relative;
   overflow: hidden;
+}
+
+.mission-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .mission-card::before {
@@ -390,9 +409,15 @@ pre {
   font-size: 13px;
   cursor: pointer;
   text-align: left;
+  min-height: 44px;
   -webkit-tap-highlight-color: transparent;
   outline: none;
   -webkit-appearance: none;
+}
+
+.option-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @media (hover: hover) {
@@ -425,7 +450,7 @@ pre {
   font-size: 18px;
   font-weight: 700;
   cursor: grab;
-  transition: all 0.15s;
+  transition: border-color 0.15s, background-color 0.15s, transform 0.15s, opacity 0.15s;
   user-select: none;
 }
 
@@ -524,9 +549,12 @@ pre {
   border: none;
   background: transparent;
   color: var(--muted);
-  transition: all 0.2s;
+  min-height: 44px;
+  transition: background-color 0.2s, color 0.2s;
   font-family: 'Sora', sans-serif;
 }
+
+.admin-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .admin-tab.active { background: var(--accent); color: #0a0e19; }
 
@@ -540,7 +568,7 @@ pre {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  transition: all 0.2s;
+  transition: transform 0.2s;
 }
 
 .lb-row:hover { transform: translateX(4px); }
@@ -601,8 +629,11 @@ pre {
   border: none;
   background: transparent;
   color: var(--muted);
-  transition: all 0.2s;
+  min-height: 44px;
+  transition: background-color 0.2s, color 0.2s;
 }
+
+.tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .tab-btn.active { background: var(--accent); color: #0a0e19; }
 
