@@ -13,7 +13,8 @@ function hsl(h: number, s: number, l: number) {
 }
 
 export default function ColorMemory({ onFinish, maxPts = 400 }: Props) {
-  const [phase, setPhase] = useState<'memorize' | 'match'>('memorize');
+  const [phase, setPhase] = useState<'memorize' | 'match' | 'reveal'>('memorize');
+  const [result, setResult] = useState<{ pts: number; correct: boolean } | null>(null);
   const [countdown, setCountdown] = useState(MEMORIZE_SECS);
 
   const [target] = useState(() => ({
@@ -38,7 +39,10 @@ export default function ColorMemory({ onFinish, maxPts = 400 }: Props) {
     const dL = Math.abs(target.l - guess.l) / 100;
     const distance = dH * 0.5 + dS * 0.25 + dL * 0.25;
     const pts = Math.max(0, Math.round(maxPts * (1 - distance / 0.45)));
-    onFinish(pts >= Math.round(maxPts * 0.25), pts);
+    const correct = pts >= Math.round(maxPts * 0.25);
+    setResult({ pts, correct });
+    setPhase('reveal');
+    setTimeout(() => onFinish(correct, pts), 2500);
   }
 
   const targetColor  = hsl(target.h, target.s, target.l);
@@ -140,11 +144,13 @@ export default function ColorMemory({ onFinish, maxPts = 400 }: Props) {
           <div style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, textAlign: 'center', marginBottom: '6px' }}>TARGET</div>
           <div style={{
             height: '90px', borderRadius: '14px',
-            background: 'var(--surface)',
-            border: '2px solid var(--border)',
+            background: phase === 'reveal' ? targetColor : 'var(--surface)',
+            border: `2px solid ${phase === 'reveal' ? targetColor : 'var(--border)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.5s, border-color 0.5s',
+            boxShadow: phase === 'reveal' ? `0 0 20px ${targetColor}60` : 'none',
           }}>
-            <span style={{ fontSize: '28px', opacity: 0.4 }}>?</span>
+            {phase !== 'reveal' && <span style={{ fontSize: '28px', opacity: 0.4 }}>?</span>}
           </div>
         </div>
       </div>
@@ -178,9 +184,24 @@ export default function ColorMemory({ onFinish, maxPts = 400 }: Props) {
         ))}
       </div>
 
-      <button className="btn btn-primary" style={{ width: '100%', fontSize: '15px' }} onClick={submit}>
-        Submit
-      </button>
+      {phase === 'reveal' && result ? (
+        <div style={{
+          textAlign: 'center',
+          padding: '16px',
+          borderRadius: '12px',
+          background: result.correct ? 'rgba(140,191,155,0.12)' : 'rgba(208,117,125,0.12)',
+          border: `1px solid ${result.correct ? 'var(--accent3)' : 'var(--accent2)'}`,
+        }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: result.correct ? 'var(--accent3)' : 'var(--accent2)', marginBottom: '4px' }}>
+            {result.correct ? '🎯 Nice eye!' : '👀 Not quite…'}
+          </div>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--gold)' }}>{result.pts} pts</div>
+        </div>
+      ) : (
+        <button className="btn btn-primary" style={{ width: '100%', fontSize: '15px' }} onClick={submit}>
+          Submit
+        </button>
+      )}
     </div>
   );
 }
