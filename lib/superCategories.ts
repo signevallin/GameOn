@@ -35,6 +35,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   spot_error:      'logic',
   visual_iq:       'logic',
   memory_speed:    'logic',
+  color_memory:    'logic',
   solve_crime:     'logic',
 
   // Music & Film
