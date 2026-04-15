@@ -30,6 +30,8 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
   const [targetId, setTargetId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [coinPhase, setCoinPhase] = useState<'spinning' | 'win' | 'lose' | null>(null);
+  const [coinMsg, setCoinMsg] = useState('');
 
   const rivals = teams.filter(t => t.id !== team.id);
   const used = team.team_powerups_used ?? [];
@@ -39,6 +41,41 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
     if (selected.offensive && !targetId) return;
     setLoading(true);
     setFeedback(null);
+
+    // All In gets the coin flip visualisation
+    if (selected.id === 'all_in') {
+      setCoinPhase('spinning');
+      const [res] = await Promise.all([
+        fetch('/api/team/powerup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'all_in', senderTeamId: team.id, targetTeamId: targetId }),
+          cache: 'no-store',
+        }),
+        new Promise(r => setTimeout(r, 2200)), // minimum spin time
+      ]);
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) {
+        setCoinPhase(null);
+        setFeedback({ msg: data.error, ok: false });
+        return;
+      }
+
+      setCoinMsg(data.resultMessage ?? (data.won ? '🎲 You won!' : '🎲 You lost…'));
+      setCoinPhase(data.won ? 'win' : 'lose');
+      onTeamUpdate({ ...team, team_powerups_used: [...used, 'all_in'], score: data.newSenderScore ?? team.score });
+
+      setTimeout(() => {
+        setCoinPhase(null);
+        setSelected(null);
+        setTargetId('');
+        setFeedback({ msg: data.resultMessage ?? (data.won ? '🎲 You won!' : '🎲 You lost…'), ok: data.won });
+      }, 2800);
+      return;
+    }
+
     try {
       const res = await fetch('/api/team/powerup', {
         method: 'POST',
@@ -51,7 +88,6 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
         setFeedback({ msg: data.error, ok: false });
       } else if (data.blocked) {
         setFeedback({ msg: data.message, ok: false });
-        // Still update local used list
         onTeamUpdate({ ...team, team_powerups_used: [...used, selected.id] });
         setSelected(null);
       } else {
@@ -71,6 +107,68 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
 
   return (
     <div className="container fade-in" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
+
+      {/* ── COIN FLIP OVERLAY ── */}
+      {coinPhase && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.88)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: '32px',
+        }}>
+          {/* Coin */}
+          <div style={{ perspective: '600px' }}>
+            <div
+              className={
+                coinPhase === 'spinning' ? 'coin-spinning' :
+                coinPhase === 'win'      ? 'coin-land-win' :
+                                           'coin-land-lose'
+              }
+              style={{ width: '120px', height: '120px', position: 'relative', transformStyle: 'preserve-3d' }}
+            >
+              {/* Front face — WIN */}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                backfaceVisibility: 'hidden',
+                background: 'radial-gradient(circle at 35% 35%, #f5d87a, var(--gold) 60%, #a8800a)',
+                border: '4px solid #c9a227',
+                boxShadow: '0 0 30px rgba(222,187,107,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '52px',
+              }}>🏆</div>
+              {/* Back face — LOSE */}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)',
+                background: 'radial-gradient(circle at 35% 35%, #c47a82, var(--accent2) 60%, #7a3038)',
+                border: '4px solid #a04050',
+                boxShadow: '0 0 30px rgba(208,117,125,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '52px',
+              }}>💸</div>
+            </div>
+          </div>
+
+          {/* Label */}
+          {coinPhase === 'spinning' ? (
+            <p style={{ color: 'var(--muted)', fontSize: '14px', letterSpacing: '2px', fontWeight: 700 }}>
+              FLIPPING…
+            </p>
+          ) : (
+            <div style={{ textAlign: 'center', animation: 'coinResultFadeIn 0.4s ease forwards' }}>
+              <div style={{
+                fontSize: '20px', fontWeight: 800, letterSpacing: '1px',
+                color: coinPhase === 'win' ? 'var(--gold)' : 'var(--accent2)',
+                marginBottom: '8px',
+              }}>
+                {coinPhase === 'win' ? 'YOU WON!' : 'YOU LOST…'}
+              </div>
+              <div style={{ fontSize: '14px', color: 'var(--muted)' }}>{coinMsg}</div>
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}>
           ← Back
