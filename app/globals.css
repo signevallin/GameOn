@@ -5,7 +5,8 @@
   --surface: #111726;
   --card: #192033;
   --border: #283550;
-  --accent: #00e5ff;
+  --accent: #75abc8;
+  --accent-hover: #00e5ff;
   --accent2: #d0757d;
   --accent3: #8cbf9b;
   --text: #e0e7f3;
@@ -14,8 +15,8 @@
   --silver: #a8b8c8;
   --bronze: #bf8450;
   /* alpha variants for highlights */
-  --accent-dim: rgba(0,229,255,0.08);
-  --accent-border: rgba(0,229,255,0.30);
+  --accent-dim: rgba(117,171,200,0.08);
+  --accent-border: rgba(117,171,200,0.30);
   --gold-dim: rgba(222,187,107,0.35);
 }
 
@@ -34,7 +35,7 @@ body::before {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background:
-    radial-gradient(ellipse at 10% 20%, rgba(0,229,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 20%, rgba(117,171,200,0.07) 0%, transparent 60%),
     radial-gradient(ellipse at 90% 80%, rgba(208,117,125,0.05) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
@@ -151,13 +152,13 @@ h2 {
 }
 
 .btn-primary { background: var(--accent); color: var(--bg); }
-.btn-primary:hover { background: var(--accent3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.25); }
+.btn-primary:hover { background: var(--accent-hover); color: #000; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.25); }
 
 .btn-danger { background: var(--accent2); color: #fff; }
 .btn-danger:hover { background: #c45f68; transform: translateY(-2px); }
 
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-ghost:hover { border-color: var(--accent-hover); color: var(--accent-hover); }
 
 .btn-full { width: 100%; text-align: center; display: block; }
 
@@ -221,7 +222,7 @@ input[type=text], input[type=password] {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.15); }
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,200,0.15); }
 
 .form-label {
   font-size: 12px;
@@ -258,7 +259,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,
 
 /* ── BADGE ── */
 .badge {
-  background: rgba(0,229,255,0.15);
+  background: rgba(117,171,200,0.15);
   color: var(--accent);
   border-radius: 20px;
   padding: 4px 12px;
@@ -322,14 +323,14 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--accent);
+  background: var(--accent-hover);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s;
 }
 
 @media (hover: hover) {
-  .mission-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+  .mission-card:hover { border-color: var(--accent-hover); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
   .mission-card:hover::before { transform: scaleX(1); }
 }
 
@@ -405,8 +406,8 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,
 
 code {
   font-family: 'Sora', sans-serif;
-  background: rgba(0,229,255,0.08);
-  border: 1px solid rgba(0,229,255,0.2);
+  background: rgba(117,171,200,0.08);
+  border: 1px solid rgba(117,171,200,0.2);
   border-radius: 4px;
   padding: 2px 6px;
   font-size: 14px;
@@ -452,9 +453,9 @@ pre {
 }
 
 @media (hover: hover) {
-  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,229,255,0.05); transition: background 0.15s, border-color 0.15s; }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent-hover); background: rgba(0,229,255,0.05); transition: background 0.15s, border-color 0.15s; }
 }
-.option-btn.selected { border-color: var(--accent); background: rgba(0,229,255,0.12); color: var(--text); }
+.option-btn.selected { border-color: var(--accent); background: rgba(117,171,200,0.12); color: var(--text); }
 .option-btn.correct { border-color: var(--accent3); background: rgba(140,191,155,0.15); color: var(--accent3); }
 .option-btn.wrong { border-color: var(--accent2); background: rgba(208,117,125,0.10); color: var(--accent2); }
 .option-btn:disabled { cursor: default; }
@@ -485,9 +486,9 @@ pre {
   user-select: none;
 }
 
-.puzzle-piece:hover { border-color: var(--accent); background: rgba(0,229,255,0.07); }
+.puzzle-piece:hover { border-color: var(--accent-hover); background: rgba(0,229,255,0.07); }
 .puzzle-piece.dragging { opacity: 0.4; transform: scale(0.95); }
-.puzzle-piece.drag-over { border-color: var(--accent); background: rgba(0,229,255,0.15); transform: scale(1.05); }
+.puzzle-piece.drag-over { border-color: var(--accent-hover); background: rgba(0,229,255,0.15); transform: scale(1.05); }
 .puzzle-piece.correct-pos { border-color: var(--accent3); background: rgba(140,191,155,0.10); color: var(--accent3); }
 
 /* ── MEMORY GAME ── */
