@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 type Round = { emoji: string; label: string; accept: string[] };
 
 const ROUNDS: Round[] = [
-  { emoji: '🗼', label: 'Eiffeltornet',        accept: ['eiffeltornet','eiffel tower','eiffel','eiffeltorn'] },
-  { emoji: '🦁', label: 'Lejon',               accept: ['lejon','lion'] },
-  { emoji: '🎸', label: 'Gitarr',              accept: ['gitarr','guitar','elgitarr'] },
-  { emoji: '🌋', label: 'Vulkan',              accept: ['vulkan','volcano'] },
-  { emoji: '🦅', label: 'Örn',                 accept: ['örn','eagle','örnfågel'] },
-  { emoji: '🎺', label: 'Trumpet',             accept: ['trumpet','trumpethorn'] },
-  { emoji: '🏯', label: 'Japanskt slott',      accept: ['japanskt slott','slott','castle','pagoda','tempel'] },
-  { emoji: '🦑', label: 'Bläckfisk',           accept: ['bläckfisk','squid','octopus'] },
+  { emoji: '🗼', label: 'Eiffel Tower',   accept: ['eiffel tower','eiffel','eiffeltower'] },
+  { emoji: '🦁', label: 'Lion',           accept: ['lion'] },
+  { emoji: '🎸', label: 'Guitar',         accept: ['guitar','electric guitar'] },
+  { emoji: '🌋', label: 'Volcano',        accept: ['volcano'] },
+  { emoji: '🦅', label: 'Eagle',          accept: ['eagle','bald eagle'] },
+  { emoji: '🎺', label: 'Trumpet',        accept: ['trumpet'] },
+  { emoji: '🏯', label: 'Japanese Castle',accept: ['japanese castle','castle','pagoda','temple'] },
+  { emoji: '🦑', label: 'Squid',          accept: ['squid','octopus'] },
 ];
 
 const MAX_BLUR = 20;
@@ -95,7 +95,7 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
     <div style={{ textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
-          BILD {roundIdx + 1}/{rounds.length}
+          IMAGE {roundIdx + 1}/{rounds.length}
         </span>
         <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>
       </div>
@@ -134,7 +134,7 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
 
       {/* Blur indicator */}
       <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px' }}>SUDDIGHET</span>
+        <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px' }}>BLUR</span>
         <div style={{ display: 'flex', gap: '3px' }}>
           {Array.from({ length: 10 }, (_, i) => (
             <div key={i} style={{
@@ -144,11 +144,11 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
             }} />
           ))}
         </div>
-        <span style={{ fontSize: '11px', color: blur === 0 ? 'var(--accent3)' : 'var(--muted)', letterSpacing: '1px' }}>KLART</span>
+        <span style={{ fontSize: '11px', color: blur === 0 ? 'var(--accent3)' : 'var(--muted)', letterSpacing: '1px' }}>CLEAR</span>
       </div>
 
       {wrong && (
-        <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>❌ Fel! Fortsätt försöka…</p>
+        <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>❌ Wrong! Keep trying…</p>
       )}
 
       {!revealed && (
@@ -158,11 +158,11 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder="Vad föreställer bilden?"
+            placeholder="What does the image show?"
             style={{ flex: 1 }}
           />
           <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
-            GISSA →
+            GUESS →
           </button>
         </div>
       )}

@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       score: newTargetScore,
       pending_notification: {
         type: 'powerup_received',
-        message: `⚔️ Ditt lag utmanades i en duell! Motståndaren svarade rätt på ${correctCount}/3 frågor och stal ${stolen} poäng från er!`,
+        message: `⚔️ Your team was challenged to a duel! The opponent answered ${correctCount}/3 questions correctly and stole ${stolen} points from you!`,
       },
     })
     .eq('id', targetTeamId);

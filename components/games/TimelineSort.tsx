@@ -4,11 +4,11 @@ import { useState } from 'react';
 type Item = { label: string; year: number };
 
 const TIMELINE_ITEMS: Item[] = [
-  { label: 'Titanic sjunker',            year: 1912 },
-  { label: 'Månlandningen – Apollo 11',  year: 1969 },
-  { label: 'Berlinmurens fall',          year: 1989 },
-  { label: 'World Wide Web (internet)',  year: 1991 },
-  { label: 'iPhone lanseras av Apple',   year: 2007 },
+  { label: 'Titanic sinks',              year: 1912 },
+  { label: 'Moon landing – Apollo 11',   year: 1969 },
+  { label: 'Fall of the Berlin Wall',    year: 1989 },
+  { label: 'World Wide Web launched',    year: 1991 },
+  { label: 'First iPhone released',      year: 2007 },
 ];
 
 type Props = {
@@ -47,7 +47,7 @@ export default function TimelineSort({ maxPts, onFinish }: Props) {
           {correctCount === TIMELINE_ITEMS.length ? '🏆' : correctCount >= 3 ? '👍' : '😅'}
         </div>
         <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--gold)', marginBottom: '20px' }}>
-          {correctCount}/{TIMELINE_ITEMS.length} på rätt plats!
+          {correctCount}/{TIMELINE_ITEMS.length} in the right place!
         </div>
         <div style={{ textAlign: 'left' }}>
           {sorted.map((item, i) => {
@@ -72,8 +72,8 @@ export default function TimelineSort({ maxPts, onFinish }: Props) {
   return (
     <div>
       <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px', lineHeight: 1.6 }}>
-        Sortera händelserna i kronologisk ordning — äldst högst upp, nyast längst ned.<br />
-        Använd <strong>▲ ▼</strong> för att flytta.
+        Sort the events in chronological order — oldest at the top, newest at the bottom.<br />
+        Use <strong>▲ ▼</strong> to move items.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
@@ -117,7 +117,7 @@ export default function TimelineSort({ maxPts, onFinish }: Props) {
       </div>
 
       <button className="btn btn-primary btn-full" onClick={submit}>
-        BEKRÄFTA ORDNING ✓
+        CONFIRM ORDER ✓
       </button>
     </div>
   );

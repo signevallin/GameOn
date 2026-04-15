@@ -4,12 +4,12 @@ import { useState } from 'react';
 type Question = { q: string; answer: number; unit: string; hint: string };
 
 const QUESTIONS: Question[] = [
-  { q: 'Hur högt är Eiffeltornet i meter?',          answer: 330,  unit: 'm',      hint: 'Inklusive antennen' },
-  { q: 'Hur lång är Nilen i kilometer?',             answer: 6650, unit: 'km',     hint: 'Världens längsta flod' },
-  { q: 'Hur många länder finns det i världen?',      answer: 195,  unit: 'länder', hint: 'FN-erkända stater' },
-  { q: 'Vilket år byggdes Kinesiska muren (start)?', answer: 221,  unit: 'f.kr',   hint: 'Under Qin-dynastin' },
-  { q: 'Hur många ben har en bläckfisk?',            answer: 8,    unit: 'ben',    hint: 'Tänk på namnet' },
-  { q: 'Hur snabb är ljuset i km/s (avrundat)?',     answer: 300000, unit: 'km/s', hint: 'Det snabbaste som finns' },
+  { q: 'How tall is the Eiffel Tower in metres?',        answer: 330,    unit: 'm',       hint: 'Including the antenna' },
+  { q: 'How long is the Nile river in kilometres?',      answer: 6650,   unit: 'km',      hint: "The world's longest river" },
+  { q: 'How many countries are there in the world?',     answer: 195,    unit: 'countries',hint: 'UN-recognised states' },
+  { q: 'In what year was the Great Wall of China begun?',answer: 221,    unit: 'BC',      hint: 'Under the Qin dynasty' },
+  { q: 'How many legs does an octopus have?',            answer: 8,      unit: 'legs',    hint: 'Think about the name' },
+  { q: 'What is the speed of light in km/s (rounded)?',  answer: 300000, unit: 'km/s',   hint: 'The fastest thing in existence' },
 ];
 
 type Props = {
@@ -58,7 +58,7 @@ export default function ClosestWins({ maxPts, onFinish }: Props) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
-          FRÅGA {qIdx + 1}/{questions.length}
+          QUESTION {qIdx + 1}/{questions.length}
         </span>
         <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>
       </div>
@@ -75,11 +75,11 @@ export default function ClosestWins({ maxPts, onFinish }: Props) {
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder={`Ditt svar${q.unit ? ` (${q.unit})` : ''}`}
+            placeholder={`Your answer${q.unit ? ` (${q.unit})` : ''}`}
             style={{ flex: 1 }}
           />
           <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
-            SVARA →
+            ANSWER →
           </button>
         </div>
       ) : (
@@ -88,10 +88,10 @@ export default function ClosestWins({ maxPts, onFinish }: Props) {
           borderRadius: '12px', padding: '24px', textAlign: 'center',
         }}>
           <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px' }}>
-            Rätt svar: <strong style={{ color: 'var(--text)' }}>{q.answer.toLocaleString()} {q.unit}</strong>
+            Correct answer: <strong style={{ color: 'var(--text)' }}>{q.answer.toLocaleString()} {q.unit}</strong>
           </div>
           <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>
-            Ditt svar: <strong style={{ color: 'var(--text)' }}>{parseFloat(guess).toLocaleString()} {q.unit}</strong>
+            Your answer: <strong style={{ color: 'var(--text)' }}>{parseFloat(guess).toLocaleString()} {q.unit}</strong>
           </div>
 
           <div style={{
@@ -101,11 +101,11 @@ export default function ClosestWins({ maxPts, onFinish }: Props) {
             +{result.pts} pts
           </div>
           <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
-            Träffsäkerhet: {result.accuracy}%
+            Accuracy: {result.accuracy}%
           </div>
 
           <button className="btn btn-primary" onClick={next}>
-            {qIdx + 1 >= questions.length ? 'SE RESULTAT →' : 'NÄSTA FRÅGA →'}
+            {qIdx + 1 >= questions.length ? 'SEE RESULTS →' : 'NEXT QUESTION →'}
           </button>
         </div>
       )}

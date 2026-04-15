@@ -5,16 +5,16 @@ import { Team } from '@/lib/supabase';
 type Question = { q: string; options: string[]; answer: string };
 
 const QUESTIONS: Question[] = [
-  { q: 'Vilket land är störst till ytan?',            options: ['USA','Kina','Ryssland','Kanada'],        answer: 'Ryssland' },
-  { q: 'Vad är 17 × 23?',                             options: ['381','391','401','411'],                 answer: '391' },
-  { q: 'Hur många bitar är en byte?',                  options: ['4','8','16','32'],                       answer: '8' },
-  { q: 'Vilket land uppfann tryckeriet?',              options: ['Japan','Indien','Kina','Korea'],         answer: 'Kina' },
-  { q: 'Vilket år gick första iPhone i försäljning?', options: ['2005','2006','2007','2008'],              answer: '2007' },
-  { q: 'Vad kallas rädslans hormon?',                 options: ['Serotonin','Dopamin','Adrenalin','Oxytocin'], answer: 'Adrenalin' },
-  { q: 'Hur många planeter finns i solsystemet?',     options: ['7','8','9','10'],                        answer: '8' },
-  { q: 'Vilket land har flest invånare?',             options: ['Indien','Kina','USA','Ryssland'],        answer: 'Indien' },
-  { q: 'Vad är kvadratroten ur 144?',                 options: ['11','12','13','14'],                     answer: '12' },
-  { q: 'Vilken gas andas vi in mest?',                options: ['Syre','Kväve','Koldioxid','Argon'],      answer: 'Kväve' },
+  { q: 'Which country is the largest by area?',            options: ['USA','China','Russia','Canada'],          answer: 'Russia' },
+  { q: 'What is 17 × 23?',                                options: ['381','391','401','411'],                  answer: '391' },
+  { q: 'How many bits are in a byte?',                     options: ['4','8','16','32'],                        answer: '8' },
+  { q: 'Which country invented the printing press?',       options: ['Japan','India','China','Korea'],          answer: 'China' },
+  { q: 'In what year was the first iPhone released?',      options: ['2005','2006','2007','2008'],              answer: '2007' },
+  { q: 'What is the hormone associated with fear?',        options: ['Serotonin','Dopamine','Adrenaline','Oxytocin'], answer: 'Adrenaline' },
+  { q: 'How many planets are in our solar system?',        options: ['7','8','9','10'],                        answer: '8' },
+  { q: 'Which country has the most people?',               options: ['India','China','USA','Russia'],           answer: 'India' },
+  { q: 'What is the square root of 144?',                 options: ['11','12','13','14'],                      answer: '12' },
+  { q: 'Which gas makes up most of the air we breathe?',  options: ['Oxygen','Nitrogen','Carbon dioxide','Argon'], answer: 'Nitrogen' },
 ];
 
 const STEAL_PCT_PER_CORRECT = 0.10; // 10% per correct answer, max 30%
@@ -94,16 +94,16 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
           background: 'rgba(208,117,125,0.08)', border: '1px solid var(--accent2)',
           borderRadius: '10px', fontSize: '13px', color: 'var(--accent2)', lineHeight: 1.6,
         }}>
-          ⚔️ Välj ett rival-lag att utmana! Svara rätt på triviafrågor för att stjäla{' '}
-          <strong>10% av deras poäng per rätt svar</strong> (max 30%).
+          ⚔️ Choose a rival team to challenge! Answer trivia questions correctly to steal{' '}
+          <strong>10% of their points per correct answer</strong> (max 30%).
         </div>
 
         <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '2px', display: 'block', marginBottom: '10px' }}>
-          VÄLJ RIVAL-LAG
+          SELECT RIVAL TEAM
         </label>
 
         {rivals.length === 0 ? (
-          <p style={{ color: 'var(--muted)', fontSize: '13px' }}>Inga andra lag i det här spelet.</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px' }}>No other teams in this game.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
             {rivals.map(t => (
@@ -134,7 +134,7 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
           disabled={!targetId}
           style={{ background: 'var(--accent2)', borderColor: 'var(--accent2)' }}
         >
-          ⚔️ STARTA DUELLEN →
+          ⚔️ START THE DUEL →
         </button>
       </div>
     );
@@ -148,7 +148,7 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
           <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
-            FRÅGA {qIdx + 1}/{questions.length}
+            QUESTION {qIdx + 1}/{questions.length}
           </span>
           <span style={{ fontSize: '13px', color: 'var(--accent2)', fontWeight: 700 }}>
             ⚔️ vs. {target?.name}
@@ -190,7 +190,7 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
 
         {loading && (
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '13px', marginTop: '16px' }}>
-            Räknar ut resultat…
+            Calculating result…
           </p>
         )}
       </div>
@@ -205,10 +205,10 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
       <div style={{ fontSize: '64px', marginBottom: '16px' }}>{won ? '⚔️' : '🛡️'}</div>
       <h2 style={{ marginBottom: '8px', color: won ? 'var(--gold)' : 'var(--accent2)' }}>
-        {won ? 'Duellen vanns!' : 'Duellen förlorades…'}
+        {won ? 'Duel Won!' : 'Duel Lost…'}
       </h2>
       <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '20px' }}>
-        {correctCount}/{questions.length} rätta svar mot <strong style={{ color: 'var(--text)' }}>{target?.name}</strong>
+        {correctCount}/{questions.length} correct answers against <strong style={{ color: 'var(--text)' }}>{target?.name}</strong>
       </p>
 
       {(stolen ?? 0) > 0 ? (
@@ -221,7 +221,7 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
             +{stolen} pts
           </div>
           <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
-            stulet från {target?.name}
+            stolen from {target?.name}
           </div>
         </div>
       ) : (
@@ -230,13 +230,13 @@ export default function DuelTrivia({ team, teams, onFinish }: Props) {
           background: 'rgba(208,117,125,0.10)', border: '1px solid var(--accent2)',
           borderRadius: '12px', marginBottom: '20px',
         }}>
-          <div style={{ fontSize: '18px', color: 'var(--accent2)' }}>Inga poäng stulna</div>
+          <div style={{ fontSize: '18px', color: 'var(--accent2)' }}>No points stolen</div>
         </div>
       )}
 
       <div>
         <button className="btn btn-primary" onClick={() => onFinish(won, stolen ?? 0)}>
-          FORTSÄTT →
+          CONTINUE →
         </button>
       </div>
     </div>

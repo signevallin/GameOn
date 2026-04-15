@@ -13,7 +13,7 @@ type Scene = {
 
 const SCENES: Scene[] = [
   {
-    name: 'Parken',
+    name: 'The Park',
     cols: 6, rows: 4,
     gridA: [
       ['☀️','🌤️','🌤️','🌤️','🌤️','🌤️'],
@@ -30,7 +30,7 @@ const SCENES: Scene[] = [
     diffs: [{ row: 0, col: 0 }, { row: 1, col: 2 }, { row: 2, col: 2 }],
   },
   {
-    name: 'Hamnen',
+    name: 'The Harbour',
     cols: 6, rows: 4,
     gridA: [
       ['🌤️','🌤️','⛅','🌤️','🌤️','🌤️'],
@@ -47,7 +47,7 @@ const SCENES: Scene[] = [
     diffs: [{ row: 0, col: 2 }, { row: 1, col: 1 }, { row: 2, col: 2 }],
   },
   {
-    name: 'Rymden',
+    name: 'Outer Space',
     cols: 6, rows: 4,
     gridA: [
       ['⭐','⭐','🌙','⭐','⭐','⭐'],
@@ -139,8 +139,8 @@ export default function SpotDifference({ maxPts, onFinish }: Props) {
       </div>
 
       <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>
-        Klicka på <strong style={{ color: 'var(--text)' }}>höger bild</strong> för att markera skillnaderna.
-        {' '}<span style={{ color: 'var(--gold)' }}>{found.length}/{scene.diffs.length} hittade</span>
+        Click on the <strong style={{ color: 'var(--text)' }}>right image</strong> to mark the differences.
+        {' '}<span style={{ color: 'var(--gold)' }}>{found.length}/{scene.diffs.length} found</span>
       </p>
 
       <div style={{ overflowX: 'auto', marginBottom: '8px' }}>
@@ -170,7 +170,7 @@ export default function SpotDifference({ maxPts, onFinish }: Props) {
           {/* Panel B — Find differences */}
           <div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', marginBottom: '6px', textAlign: 'center' }}>
-              HITTA SKILLNADER →
+              FIND DIFFERENCES →
             </div>
             <div style={{
               display: 'grid',

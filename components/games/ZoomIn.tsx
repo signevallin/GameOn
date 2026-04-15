@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 type Round = { emoji: string; label: string; accept: string[] };
 
 const ROUNDS: Round[] = [
-  { emoji: '🍕', label: 'Pizza',         accept: ['pizza'] },
-  { emoji: '🚂', label: 'Tåg',           accept: ['tåg','train','lok','ångtåg'] },
-  { emoji: '🎯', label: 'Dartspel',      accept: ['dartspel','dart','piltavla','tavla'] },
-  { emoji: '🦋', label: 'Fjäril',        accept: ['fjäril','butterfly'] },
-  { emoji: '🏆', label: 'Pokal',         accept: ['pokal','trophy','bägare'] },
-  { emoji: '🌍', label: 'Jordgloben',    accept: ['jordgloben','glob','jordklot','globen','earth','jord'] },
-  { emoji: '🎪', label: 'Cirkus',        accept: ['cirkus','circus','tält'] },
-  { emoji: '🦒', label: 'Giraff',        accept: ['giraff','giraffe'] },
+  { emoji: '🍕', label: 'Pizza',    accept: ['pizza'] },
+  { emoji: '🚂', label: 'Train',    accept: ['train','steam train','locomotive'] },
+  { emoji: '🎯', label: 'Dartboard',accept: ['dartboard','dart','darts'] },
+  { emoji: '🦋', label: 'Butterfly',accept: ['butterfly'] },
+  { emoji: '🏆', label: 'Trophy',   accept: ['trophy','cup'] },
+  { emoji: '🌍', label: 'Globe',    accept: ['globe','earth','world'] },
+  { emoji: '🎪', label: 'Circus',   accept: ['circus','circus tent','tent'] },
+  { emoji: '🦒', label: 'Giraffe',  accept: ['giraffe'] },
 ];
 
 // Scale steps: zoomed in → zoomed out. Higher = more zoomed in.
@@ -77,7 +77,7 @@ export default function ZoomIn({ maxPts, onFinish }: Props) {
     <div style={{ textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
-          BILD {roundIdx + 1}/{rounds.length}
+          IMAGE {roundIdx + 1}/{rounds.length}
         </span>
         <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>
       </div>
@@ -129,7 +129,7 @@ export default function ZoomIn({ maxPts, onFinish }: Props) {
       </div>
 
       {wrong && (
-        <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>❌ Fel! Prova igen…</p>
+        <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>❌ Wrong! Try again…</p>
       )}
 
       {!revealed && (
@@ -140,11 +140,11 @@ export default function ZoomIn({ maxPts, onFinish }: Props) {
               value={guess}
               onChange={e => setGuess(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder="Vad föreställer bilden?"
+              placeholder="What does the image show?"
               style={{ flex: 1 }}
             />
             <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
-              GISSA →
+              GUESS →
             </button>
           </div>
 
@@ -154,7 +154,7 @@ export default function ZoomIn({ maxPts, onFinish }: Props) {
               onClick={revealMore}
               style={{ fontSize: '12px' }}
             >
-              🔎 ZOOMA UT ({stepsLeft} steg kvar)
+              🔎 ZOOM OUT ({stepsLeft} steps left)
             </button>
           )}
         </>

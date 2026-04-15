@@ -85,27 +85,27 @@ export default function SimonSays({ maxPts, onFinish }: Props) {
 
   const statusLabel =
     phase === 'intro' ? '' :
-    phase === 'show'  ? '👁️ TITTA PÅ SEKVENSEN…' :
-    phase === 'input' ? '👆 DIN TUR – UPPREPA!' :
-    phase === 'wrong' ? '❌ FEL! SPELET SLUT' :
-                        '🏆 ALLA NIVÅER KLARA!';
+    phase === 'show'  ? '👁️ WATCH THE SEQUENCE…' :
+    phase === 'input' ? '👆 YOUR TURN – REPEAT!' :
+    phase === 'wrong' ? '❌ WRONG! GAME OVER' :
+                        '🏆 ALL LEVELS COMPLETE!';
 
   return (
     <div style={{ textAlign: 'center' }}>
       {phase === 'intro' ? (
         <>
           <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '28px', lineHeight: 1.6 }}>
-            Titta på färgsekvensen och upprepa den exakt.<br />
-            Klara <strong style={{ color: 'var(--gold)' }}>{WIN_LEVEL} nivåer</strong> för full poäng!
+            Watch the color sequence and repeat it exactly.<br />
+            Complete <strong style={{ color: 'var(--gold)' }}>{WIN_LEVEL} levels</strong> for full points!
           </p>
-          <button className="btn btn-primary" onClick={startGame}>STARTA SIMON →</button>
+          <button className="btn btn-primary" onClick={startGame}>START SIMON →</button>
         </>
       ) : (
         <>
           <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
             <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '1px' }}>{statusLabel}</span>
             <span style={{ fontWeight: 800, color: 'var(--gold)', fontSize: '13px' }}>
-              NIVÅ {level}/{WIN_LEVEL}
+              LEVEL {level}/{WIN_LEVEL}
             </span>
           </div>
 
@@ -131,7 +131,7 @@ export default function SimonSays({ maxPts, onFinish }: Props) {
 
           {phase === 'wrong' && (
             <p style={{ color: 'var(--accent2)', fontSize: '14px' }}>
-              Du klarade {level - 1} av {WIN_LEVEL} nivåer.
+              You completed {level - 1} of {WIN_LEVEL} levels.
             </p>
           )}
         </>
