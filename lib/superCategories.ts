@@ -69,4 +69,15 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   photo_movie_scene: 'action',
   pictionary:        'action',
   human_statue:      'action',
+  simon_says:        'action',
+
+  // Logic & Mind (visual)
+  pixel_reveal:      'logic',
+  zoom_in:           'logic',
+  spot_difference:   'logic',
+
+  // Knowledge & Trivia
+  timeline:          'knowledge',
+  closest_wins:      'knowledge',
+  duel_trivia:       'knowledge',
 };

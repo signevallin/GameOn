@@ -1,0 +1,114 @@
+'use client';
+import { useState } from 'react';
+
+type Question = { q: string; answer: number; unit: string; hint: string };
+
+const QUESTIONS: Question[] = [
+  { q: 'Hur högt är Eiffeltornet i meter?',          answer: 330,  unit: 'm',      hint: 'Inklusive antennen' },
+  { q: 'Hur lång är Nilen i kilometer?',             answer: 6650, unit: 'km',     hint: 'Världens längsta flod' },
+  { q: 'Hur många länder finns det i världen?',      answer: 195,  unit: 'länder', hint: 'FN-erkända stater' },
+  { q: 'Vilket år byggdes Kinesiska muren (start)?', answer: 221,  unit: 'f.kr',   hint: 'Under Qin-dynastin' },
+  { q: 'Hur många ben har en bläckfisk?',            answer: 8,    unit: 'ben',    hint: 'Tänk på namnet' },
+  { q: 'Hur snabb är ljuset i km/s (avrundat)?',     answer: 300000, unit: 'km/s', hint: 'Det snabbaste som finns' },
+];
+
+type Props = {
+  maxPts: number;
+  onFinish: (correct: boolean, pts?: number) => void;
+};
+
+export default function ClosestWins({ maxPts, onFinish }: Props) {
+  const [questions]  = useState(() => [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 3));
+  const [qIdx, setQIdx]           = useState(0);
+  const [guess, setGuess]         = useState('');
+  const [result, setResult]       = useState<{ pts: number; accuracy: number } | null>(null);
+  const [totalPts, setTotalPts]   = useState(0);
+  const [done, setDone]           = useState(false);
+
+  const ptsPerQ = Math.round(maxPts / questions.length);
+  const q = questions[qIdx];
+
+  function submit() {
+    const val = parseFloat(guess.replace(',', '.'));
+    if (isNaN(val)) return;
+
+    const error = Math.abs(val - q.answer) / Math.max(1, q.answer);
+    // Full pts at exact, 0 pts at 50%+ error
+    const pts = Math.round(ptsPerQ * Math.max(0, 1 - error / 0.5));
+    const accuracy = Math.max(0, Math.round((1 - error) * 100));
+    setResult({ pts, accuracy });
+    setTotalPts(prev => prev + pts);
+  }
+
+  function next() {
+    const newTotal = totalPts + (result?.pts ?? 0);
+    if (qIdx + 1 >= questions.length) {
+      setDone(true);
+      onFinish(newTotal > 0, newTotal);
+    } else {
+      setQIdx(i => i + 1);
+      setGuess('');
+      setResult(null);
+    }
+  }
+
+  if (done) return null;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
+          FRÅGA {qIdx + 1}/{questions.length}
+        </span>
+        <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>
+      </div>
+
+      <h3 style={{ fontSize: '17px', lineHeight: 1.5, marginBottom: '10px' }}>{q.q}</h3>
+      <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '24px' }}>
+        💡 {q.hint}
+      </p>
+
+      {!result ? (
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="number"
+            value={guess}
+            onChange={e => setGuess(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+            placeholder={`Ditt svar${q.unit ? ` (${q.unit})` : ''}`}
+            style={{ flex: 1 }}
+          />
+          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+            SVARA →
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: '12px', padding: '24px', textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px' }}>
+            Rätt svar: <strong style={{ color: 'var(--text)' }}>{q.answer.toLocaleString()} {q.unit}</strong>
+          </div>
+          <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>
+            Ditt svar: <strong style={{ color: 'var(--text)' }}>{parseFloat(guess).toLocaleString()} {q.unit}</strong>
+          </div>
+
+          <div style={{
+            fontSize: '36px', fontWeight: 800, marginBottom: '4px',
+            color: result.pts > ptsPerQ * 0.5 ? 'var(--gold)' : result.pts > 0 ? 'var(--accent)' : 'var(--accent2)',
+          }}>
+            +{result.pts} pts
+          </div>
+          <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
+            Träffsäkerhet: {result.accuracy}%
+          </div>
+
+          <button className="btn btn-primary" onClick={next}>
+            {qIdx + 1 >= questions.length ? 'SE RESULTAT →' : 'NÄSTA FRÅGA →'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

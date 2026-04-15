@@ -17,7 +17,14 @@ export type MissionType =
   | 'music_quiz'
   | 'image_quiz'
   | 'memory_speed'
-  | 'color_memory';
+  | 'color_memory'
+  | 'pixel_reveal'
+  | 'zoom_in'
+  | 'spot_difference'
+  | 'simon_says'
+  | 'timeline'
+  | 'closest_wins'
+  | 'duel_trivia';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -1262,6 +1269,83 @@ Three employees were in the building that evening:
     maxPts: 500,
     type: 'photo',
     question: 'Your entire team must form a human sculpture/pose together representing the word:\n\n🗿 **TEAMWORK**\n\nNo props allowed — only your bodies! Hold the pose, take a team photo and upload it. Admin will judge your creativity and accuracy for up to 500 points!',
+  },
+  // ── PIXEL REVEAL ──
+  {
+    id: 'pixel_reveal',
+    icon: '🔍',
+    name: 'Pixel Reveal',
+    category: 'Visuellt',
+    desc: 'En suddig bild skärps gradvis — gissa vad det föreställer! Ju tidigare du gissar rätt, desto mer poäng.',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'pixel_reveal',
+  },
+  // ── ZOOM IN ──
+  {
+    id: 'zoom_in',
+    icon: '🔎',
+    name: 'Zoom In',
+    category: 'Visuellt',
+    desc: 'Extrem närbild zoomas ut steg för steg. Gissa så tidigt som möjligt för maxpoäng!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'zoom_in',
+  },
+  // ── SPOT THE DIFFERENCE ──
+  {
+    id: 'spot_difference',
+    icon: '👀',
+    name: 'Hitta skillnaderna',
+    category: 'Visuellt',
+    desc: 'Två nästan identiska bilder sida vid sida — klicka på alla skillnader du hittar!',
+    difficulty: 'hard',
+    maxPts: 500,
+    type: 'spot_difference',
+  },
+  // ── SIMON SAYS ──
+  {
+    id: 'simon_says',
+    icon: '🔴',
+    name: 'Simon Says',
+    category: 'Reflex',
+    desc: 'Kom ihåg och upprepa sekvensen av färger. Varje nivå blir längre — klara 5 nivåer för full poäng!',
+    difficulty: 'medium',
+    maxPts: 450,
+    type: 'simon_says',
+  },
+  // ── TIMELINE ──
+  {
+    id: 'timeline',
+    icon: '📅',
+    name: 'Tidslinje',
+    category: 'Trivia',
+    desc: 'Sortera 5 historiska händelser i rätt kronologisk ordning. Varje korrekt placerad händelse ger poäng!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'timeline',
+  },
+  // ── CLOSEST WINS ──
+  {
+    id: 'closest_wins',
+    icon: '🎯',
+    name: 'Närmast vinner',
+    category: 'Trivia',
+    desc: 'Gissa siffror så nära det rätta svaret som möjligt. Precision belönas — ju närmre desto fler poäng!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'closest_wins',
+  },
+  // ── DUEL TRIVIA ──
+  {
+    id: 'duel_trivia',
+    icon: '⚔️',
+    name: 'Duell-trivia',
+    category: 'Social',
+    desc: 'Utmana ett rival-lag! Svara rätt på triviafrågor för att stjäla 10% av deras poäng per rätt svar (max 30%).',
+    difficulty: 'hard',
+    maxPts: 600,
+    type: 'duel_trivia',
   },
 ];
 

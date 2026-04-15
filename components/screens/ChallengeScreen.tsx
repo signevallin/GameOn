@@ -20,16 +20,24 @@ import MusicQuiz from '@/components/games/MusicQuiz';
 import ImageQuiz from '@/components/games/ImageQuiz';
 import MemorySpeed from '@/components/games/MemorySpeed';
 import ColorMemory from '@/components/games/ColorMemory';
+import PixelReveal from '@/components/games/PixelReveal';
+import ZoomIn from '@/components/games/ZoomIn';
+import SpotDifference from '@/components/games/SpotDifference';
+import SimonSays from '@/components/games/SimonSays';
+import TimelineSort from '@/components/games/TimelineSort';
+import ClosestWins from '@/components/games/ClosestWins';
+import DuelTrivia from '@/components/games/DuelTrivia';
 
 type Props = {
   missionId: string;
   team: Team;
   game: Game;
+  teams?: Team[];
   onDone: (updatedTeam: Team, pts: number, correct: boolean, elapsed: number) => void;
   onBack: () => void;
 };
 
-export default function ChallengeScreen({ missionId, team, game, onDone, onBack }: Props) {
+export default function ChallengeScreen({ missionId, team, game, teams = [], onDone, onBack }: Props) {
   const mission = MISSIONS.find(m => m.id === missionId)!;
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
   const [elapsed, setElapsed] = useState(0);
@@ -182,6 +190,20 @@ export default function ChallengeScreen({ missionId, team, game, onDone, onBack 
         );
       case 'color_memory':
         return <ColorMemory maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'pixel_reveal':
+        return <PixelReveal maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'zoom_in':
+        return <ZoomIn maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'spot_difference':
+        return <SpotDifference maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'simon_says':
+        return <SimonSays maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'timeline':
+        return <TimelineSort maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'closest_wins':
+        return <ClosestWins maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'duel_trivia':
+        return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
       default:
         return null;
     }
