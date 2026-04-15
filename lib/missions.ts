@@ -20,7 +20,6 @@ export type MissionType =
   | 'color_memory'
   | 'pixel_reveal'
   | 'zoom_in'
-  | 'spot_difference'
   | 'simon_says'
   | 'timeline'
   | 'closest_wins'
@@ -1291,17 +1290,6 @@ Three employees were in the building that evening:
     difficulty: 'medium',
     maxPts: 400,
     type: 'zoom_in',
-  },
-  // ── SPOT THE DIFFERENCE ──
-  {
-    id: 'spot_difference',
-    icon: '👀',
-    name: 'Hitta skillnaderna',
-    category: 'Visuellt',
-    desc: 'Two almost identical images side by side — click on all the differences you can find!',
-    difficulty: 'hard',
-    maxPts: 500,
-    type: 'spot_difference',
   },
   // ── SIMON SAYS ──
   {

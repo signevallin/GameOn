@@ -59,13 +59,22 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundIdx]);
 
+  function advanceRound(newTotal: number) {
+    setTimeout(() => {
+      if (roundIdx + 1 >= rounds.length) {
+        onFinish(newTotal > 0, newTotal);
+      } else {
+        setRoundIdx(i => i + 1);
+      }
+    }, 1800);
+  }
+
   function submit() {
     if (revealedRef.current) return;
     const g = guess.trim().toLowerCase();
     const r = rounds[roundIdx];
     if (r.accept.some(a => a.toLowerCase() === g)) {
       if (timerRef.current) clearInterval(timerRef.current);
-      // More points the higher the blur (earlier the guess)
       const pts = Math.max(
         Math.round(ptsPerRound * 0.15),
         Math.round(ptsPerRound * (blurRef.current / MAX_BLUR)),
@@ -74,18 +83,19 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
       revealedRef.current = true;
       setRevealed(true);
       setTotalPts(newTotal);
-
-      setTimeout(() => {
-        if (roundIdx + 1 >= rounds.length) {
-          onFinish(true, newTotal);
-        } else {
-          setRoundIdx(i => i + 1);
-        }
-      }, 1800);
+      advanceRound(newTotal);
     } else {
       setWrong(true);
       setGuess('');
     }
+  }
+
+  function pass() {
+    if (revealedRef.current) return;
+    if (timerRef.current) clearInterval(timerRef.current);
+    revealedRef.current = true;
+    setRevealed(true);
+    advanceRound(totalPts);
   }
 
   const r = rounds[roundIdx];
@@ -152,19 +162,28 @@ export default function PixelReveal({ maxPts, onFinish }: Props) {
       )}
 
       {!revealed && (
-        <div style={{ display: 'flex', gap: '10px', maxWidth: '420px', margin: '0 auto' }}>
-          <input
-            type="text"
-            value={guess}
-            onChange={e => setGuess(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder="What does the image show?"
-            style={{ flex: 1 }}
-          />
-          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
-            GUESS →
+        <>
+          <div style={{ display: 'flex', gap: '10px', maxWidth: '420px', margin: '0 auto 10px' }}>
+            <input
+              type="text"
+              value={guess}
+              onChange={e => setGuess(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submit()}
+              placeholder="What does the image show?"
+              style={{ flex: 1 }}
+            />
+            <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+              GUESS →
+            </button>
+          </div>
+          <button
+            className="btn btn-ghost btn-full"
+            onClick={pass}
+            style={{ maxWidth: '420px', margin: '0 auto', display: 'block', fontSize: '12px' }}
+          >
+            PASS – SKIP THIS IMAGE
           </button>
-        </div>
+        </>
       )}
     </div>
   );

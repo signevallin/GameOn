@@ -22,7 +22,6 @@ import MemorySpeed from '@/components/games/MemorySpeed';
 import ColorMemory from '@/components/games/ColorMemory';
 import PixelReveal from '@/components/games/PixelReveal';
 import ZoomIn from '@/components/games/ZoomIn';
-import SpotDifference from '@/components/games/SpotDifference';
 import SimonSays from '@/components/games/SimonSays';
 import TimelineSort from '@/components/games/TimelineSort';
 import ClosestWins from '@/components/games/ClosestWins';
@@ -194,8 +193,6 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
         return <PixelReveal maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'zoom_in':
         return <ZoomIn maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
-      case 'spot_difference':
-        return <SpotDifference maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'simon_says':
         return <SimonSays maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'timeline':

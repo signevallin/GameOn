@@ -74,7 +74,6 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   // Logic & Mind (visual)
   pixel_reveal:      'logic',
   zoom_in:           'logic',
-  spot_difference:   'logic',
 
   // Knowledge & Trivia
   timeline:          'knowledge',
