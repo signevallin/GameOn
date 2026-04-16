@@ -708,40 +708,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
-                {/* Power-up banner */}
-                {availablePowerups > 0 && (
-                  <button
-                    onClick={() => setShowPowerups(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      width: '100%',
-                      marginTop: '16px',
-                      padding: '12px 16px',
-                      background: 'rgba(255,200,0,0.08)',
-                      border: '1px solid var(--gold)',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,200,0,0.15)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,200,0,0.08)')}
-                  >
-                    <span style={{ fontSize: '28px', lineHeight: 1, flexShrink: 0 }}>⚡</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '13px', color: 'var(--gold)', letterSpacing: '1px' }}>
-                        {availablePowerups} POWER-UP{availablePowerups !== 1 ? 'S' : ''} AVAILABLE
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                        Freeze rivals, steal points and more — tap to use
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 700, flexShrink: 0 }}>USE →</span>
-                  </button>
-                )}
-
                 <div style={{ padding: '16px 0 14px' }}>
                   <h2 style={{ fontSize: '20px' }}>Choose your mission</h2>
                   <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '13px' }}>
