@@ -473,6 +473,12 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
                       {g.missions.length} missions · {g.duration_minutes} min
                     </div>
+                    <div style={{ fontSize: '11px', color: 'var(--border)', marginTop: '4px', letterSpacing: '0.5px' }}>
+                      {g.started_at
+                        ? `▶ ${new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        : `Created ${new Date(g.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                      }
+                    </div>
                   </div>
                   <div style={{ fontFamily: "'Sora', sans-serif", letterSpacing: '3px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{g.game_key}</div>
                   <div style={{ fontSize: '13px', color: statusColor, fontWeight: 700 }}>{statusLabel}</div>
