@@ -468,6 +468,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
+  const totalPowerups = 4; // shield, freeze, double_trouble, all_in
+  const usedPowerups = (team.team_powerups_used ?? []).length;
+  const availablePowerups = totalPowerups - usedPowerups;
   const alreadyFinished = Boolean(team.finished_at);
   const urgentTime = secondsLeft !== null && secondsLeft < 300;
   const timerColor = isFinished ? 'var(--accent2)' : urgentTime ? 'var(--gold)' : 'var(--accent3)';
@@ -530,8 +533,30 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {team.name}
           </span>
           {!isDraft && !isFinished && (
-            <button onClick={() => setShowPowerups(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '0', flexShrink: 0, lineHeight: 1, minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Power-Ups" aria-label="Power-Ups">
-              ⚡
+            <button
+              onClick={() => setShowPowerups(true)}
+              aria-label="Power-Ups"
+              style={{
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: availablePowerups > 0 ? 'rgba(255,200,0,0.12)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${availablePowerups > 0 ? 'var(--gold)' : 'var(--border)'}`,
+                borderRadius: '20px',
+                padding: '4px 10px 4px 7px',
+                cursor: 'pointer',
+                color: availablePowerups > 0 ? 'var(--gold)' : 'var(--muted)',
+                fontFamily: "'Sora', sans-serif",
+                fontWeight: 700,
+                fontSize: '12px',
+                letterSpacing: '0.5px',
+                lineHeight: 1,
+                transition: 'all 0.2s',
+              }}
+            >
+              <span style={{ fontSize: '14px', lineHeight: 1 }}>⚡</span>
+              <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
         </div>
@@ -683,6 +708,40 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
+                {/* Power-up banner */}
+                {availablePowerups > 0 && (
+                  <button
+                    onClick={() => setShowPowerups(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      width: '100%',
+                      marginTop: '16px',
+                      padding: '12px 16px',
+                      background: 'rgba(255,200,0,0.08)',
+                      border: '1px solid var(--gold)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,200,0,0.15)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,200,0,0.08)')}
+                  >
+                    <span style={{ fontSize: '28px', lineHeight: 1, flexShrink: 0 }}>⚡</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '13px', color: 'var(--gold)', letterSpacing: '1px' }}>
+                        {availablePowerups} POWER-UP{availablePowerups !== 1 ? 'S' : ''} AVAILABLE
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                        Freeze rivals, steal points and more — tap to use
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 700, flexShrink: 0 }}>USE →</span>
+                  </button>
+                )}
+
                 <div style={{ padding: '16px 0 14px' }}>
                   <h2 style={{ fontSize: '20px' }}>Choose your mission</h2>
                   <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '13px' }}>
