@@ -670,32 +670,32 @@ Three employees were in the building that evening:
     type: 'image_quiz' as const,
     imageRounds: [
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_(cropped).jpg/400px-Tour_Eiffel_Wikimedia_Commons_(cropped).jpg',
+        imageUrl: '/geo/eiffel.jpg',
         options: ['France', 'Belgium', 'Italy', 'Spain'],
         answer: 'France',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/400px-Colosseo_2020.jpg',
+        imageUrl: '/geo/colosseum.jpg',
         options: ['Greece', 'Italy', 'Spain', 'Turkey'],
         answer: 'Italy',
       },
       {
-        imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Sydney_Opera_House_-_Dec_2008.jpg?width=400',
+        imageUrl: '/geo/sydney.jpg',
         options: ['New Zealand', 'South Africa', 'Australia', 'Canada'],
         answer: 'Australia',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/400px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg',
+        imageUrl: '/geo/tajmahal.jpg',
         options: ['Pakistan', 'Bangladesh', 'India', 'Sri Lanka'],
         answer: 'India',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/080103_hakkai_fuji.jpg/400px-080103_hakkai_fuji.jpg',
+        imageUrl: '/geo/fuji.jpg',
         options: ['China', 'Japan', 'South Korea', 'Vietnam'],
         answer: 'Japan',
       },
       {
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/400px-Statue_of_Liberty_7.jpg',
+        imageUrl: '/geo/liberty.jpg',
         options: ['Canada', 'France', 'USA', 'United Kingdom'],
         answer: 'USA',
       },
