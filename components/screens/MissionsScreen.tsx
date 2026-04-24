@@ -526,50 +526,51 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '8px' }}>
-        {/* Left: power-up pill + team name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+      <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', alignItems: 'center', gap: '4px' }}>
+        {/* Col 1: team name */}
+        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {team.name}
+        </span>
+
+        {/* Col 2: power-up pill */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           {!isDraft && !isFinished && (
             <button
               onClick={() => setShowPowerups(true)}
               aria-label="Power-Ups"
               style={{
-                flexShrink: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 background: availablePowerups > 0 ? 'rgba(255,200,0,0.12)' : 'rgba(255,255,255,0.05)',
                 border: `1px solid ${availablePowerups > 0 ? 'var(--gold)' : 'var(--border)'}`,
                 borderRadius: '20px',
-                padding: '4px 10px 4px 7px',
+                padding: '4px 8px 4px 6px',
                 cursor: 'pointer',
                 color: availablePowerups > 0 ? 'var(--gold)' : 'var(--muted)',
                 fontFamily: "'Sora', sans-serif",
                 fontWeight: 700,
-                fontSize: '12px',
-                letterSpacing: '0.5px',
+                fontSize: '11px',
                 lineHeight: 1,
                 transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
               }}
             >
-              <span style={{ fontSize: '14px', lineHeight: 1 }}>⚡</span>
+              <span style={{ fontSize: '13px', lineHeight: 1 }}>⚡</span>
               <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {team.name}
-          </span>
         </div>
 
-        {/* Center: score */}
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
+        {/* Col 3: score */}
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
           ⭐ {team.score}
         </span>
 
-        {/* Right: timer */}
+        {/* Col 4: timer */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {game.status === 'active' && secondsLeft !== null && (
-            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none', whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none', whiteSpace: 'nowrap' }}>
               ⏱ {formatTime(secondsLeft)}
             </span>
           )}
