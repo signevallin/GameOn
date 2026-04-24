@@ -118,33 +118,36 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
           const isRated = sub?.status === 'rated';
           const isPending = sub?.status === 'pending';
 
+          const isSubmitted = isPending || isRated;
+
           return (
             <div key={item.id} style={{
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
               padding: '12px 14px',
-              background: isRated ? 'rgba(140,191,155,0.08)' : isPending ? 'rgba(117,171,200,0.06)' : 'var(--card)',
-              border: `1px solid ${isRated ? 'var(--accent3)' : isPending ? 'var(--accent)' : 'var(--border)'}`,
+              background: isSubmitted ? 'var(--surface)' : 'var(--card)',
+              border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`,
               borderRadius: '12px',
+              opacity: isSubmitted ? 0.6 : 1,
               transition: 'all 0.2s',
             }}>
               {/* Icon */}
-              <span style={{ fontSize: '22px', flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ fontSize: '22px', flexShrink: 0, filter: isSubmitted ? 'grayscale(1)' : 'none' }}>{item.icon}</span>
 
               {/* Label */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: isRated ? 'var(--accent3)' : 'var(--text)', lineHeight: 1.3 }}>
-                  {item.label}
+                <div style={{ fontSize: '13px', fontWeight: 700, color: isRated ? 'var(--accent3)' : isSubmitted ? 'var(--muted)' : 'var(--text)', lineHeight: 1.3, textDecoration: isSubmitted && !isRated ? 'line-through' : 'none' }}>
+                  {isSubmitted && '✓ '}{item.label}
                 </div>
                 {isRated && (
                   <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '2px', fontWeight: 700 }}>
-                    ✓ Rated — {sub.points_awarded} pts
+                    Rated — {sub.points_awarded} pts
                   </div>
                 )}
                 {isPending && (
                   <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                    ⏳ Waiting for admin rating…
+                    Photo submitted — awaiting rating
                   </div>
                 )}
               </div>
