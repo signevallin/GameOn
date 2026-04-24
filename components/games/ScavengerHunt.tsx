@@ -39,10 +39,12 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
   // Always keep loadRef pointing to the latest closure
   loadRef.current = async function loadSubmissions() {
     try {
-      const res = await fetch(
-        `/api/scavenger/team?teamId=${team.id}&missionId=${missionId}&t=${Date.now()}`,
-        { cache: 'no-store' }
-      );
+      const res = await fetch('/api/scavenger/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: team.id, missionId }),
+        cache: 'no-store',
+      });
       const data = await res.json();
       if (Array.isArray(data.submissions)) {
         setSubmissions(prev => {

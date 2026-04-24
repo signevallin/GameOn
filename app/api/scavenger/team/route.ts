@@ -3,10 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const teamId = searchParams.get('teamId');
-  const missionId = searchParams.get('missionId');
+export async function POST(req: Request) {
+  const { teamId, missionId } = await req.json();
 
   if (!teamId || !missionId) {
     return NextResponse.json({ error: 'Missing teamId or missionId.' }, { status: 400 });
@@ -25,5 +23,5 @@ export async function GET(req: Request) {
     .order('created_at', { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ submissions: data }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
+  return NextResponse.json({ submissions: data });
 }
