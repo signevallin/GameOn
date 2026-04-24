@@ -526,12 +526,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <nav className="nav" style={{ justifyContent: 'space-between' }}>
-        {/* Team name + power-up */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0, flex: 1 }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {team.name}
-          </span>
+      <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '8px' }}>
+        {/* Left: power-up pill + team name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
           {!isDraft && !isFinished && (
             <button
               onClick={() => setShowPowerups(true)}
@@ -559,23 +556,24 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {team.name}
+          </span>
         </div>
 
-        {/* Score — centered */}
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', whiteSpace: 'nowrap' }}>
+        {/* Center: score */}
+        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
           ⭐ {team.score}
         </span>
 
-        {/* Timer — right aligned */}
-        {game.status === 'active' && secondsLeft !== null ? (
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
+        {/* Right: timer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {game.status === 'active' && secondsLeft !== null && (
+            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none', whiteSpace: 'nowrap' }}>
               ⏱ {formatTime(secondsLeft)}
             </span>
-          </div>
-        ) : (
-          <div style={{ flex: 1 }} />
-        )}
+          )}
+        </div>
       </nav>
 
       <div className="container fade-in">
