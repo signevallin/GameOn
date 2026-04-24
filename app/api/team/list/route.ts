@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const { data: teams, error } = await supabase
     .from('teams')
-    .select('id, name, score, active_effects')
+    .select('id, name, score, active_effects, completed, finished_at')
     .eq('game_id', gameId)
     .order('score', { ascending: false });
 
