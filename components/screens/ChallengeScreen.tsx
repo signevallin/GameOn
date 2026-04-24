@@ -45,6 +45,10 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
   const [photoSubmitted, setPhotoSubmitted] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const id = setInterval(() => {
       elapsedRef.current += 1;
       setElapsed(e => e + 1);
