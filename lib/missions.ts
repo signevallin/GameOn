@@ -1357,6 +1357,48 @@ Three employees were in the building that evening:
 
   // ── GKN AEROSPACE ──
   {
+    id: 'gkn_aircraft_quiz',
+    icon: '🛫',
+    name: 'Spot the Aircraft',
+    category: 'GKN Aerospace',
+    desc: 'Can you identify the aircraft from the photo? Guess fast for maximum points!',
+    difficulty: 'medium',
+    maxPts: 450,
+    type: 'image_quiz',
+    imageRounds: [
+      {
+        imageUrl: '/aircraft/a350.jpg',
+        answer: 'Airbus A350',
+        options: ['Airbus A350', 'Boeing 787', 'Airbus A330', 'Boeing 777'],
+      },
+      {
+        imageUrl: '/aircraft/b787.jpg',
+        answer: 'Boeing 787 Dreamliner',
+        options: ['Boeing 787 Dreamliner', 'Boeing 777', 'Airbus A350', 'Boeing 767'],
+      },
+      {
+        imageUrl: '/aircraft/a380.jpg',
+        answer: 'Airbus A380',
+        options: ['Airbus A380', 'Boeing 747', 'Airbus A350', 'Boeing 777X'],
+      },
+      {
+        imageUrl: '/aircraft/f35.jpg',
+        answer: 'F-35 Lightning II',
+        options: ['F-35 Lightning II', 'F-22 Raptor', 'Eurofighter Typhoon', 'JAS 39 Gripen'],
+      },
+      {
+        imageUrl: '/aircraft/b737max.jpg',
+        answer: 'Boeing 737 MAX',
+        options: ['Boeing 737 MAX', 'Airbus A320neo', 'Boeing 757', 'Airbus A321'],
+      },
+      {
+        imageUrl: '/aircraft/a320neo.jpg',
+        answer: 'Airbus A320neo',
+        options: ['Airbus A320neo', 'Boeing 737 MAX', 'Airbus A319', 'Boeing 717'],
+      },
+    ],
+  },
+  {
     id: 'gkn_trivia',
     icon: '✈️',
     name: 'GKN Trivia',

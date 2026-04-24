@@ -90,4 +90,5 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   gkn_closest:       'gkn',
   gkn_pa_sparet:     'gkn',
   gkn_timeline:      'gkn',
+  gkn_aircraft_quiz: 'gkn',
 };
