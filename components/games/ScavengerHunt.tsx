@@ -37,12 +37,21 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
 
   // Load existing submissions on mount and poll for rating updates
   async function loadSubmissions() {
-    const res = await fetch(`/api/scavenger/team?teamId=${team.id}&missionId=${missionId}`);
+    const res = await fetch(`/api/scavenger/team?teamId=${team.id}&missionId=${missionId}`, { cache: 'no-store' });
     const data = await res.json();
     if (data.submissions) {
-      const map: Record<string, Submission> = {};
-      for (const s of data.submissions) map[s.item_id] = s;
-      setSubmissions(map);
+      const serverMap: Record<string, Submission> = {};
+      for (const s of data.submissions) serverMap[s.item_id] = s;
+      // Merge: keep optimistic entries the server doesn't know about yet
+      setSubmissions(prev => {
+        const merged = { ...serverMap };
+        for (const [itemId, sub] of Object.entries(prev)) {
+          if (!merged[itemId] && sub.id.startsWith('pending-')) {
+            merged[itemId] = sub;
+          }
+        }
+        return merged;
+      });
     }
   }
 
