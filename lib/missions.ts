@@ -23,7 +23,8 @@ export type MissionType =
   | 'simon_says'
   | 'timeline'
   | 'closest_wins'
-  | 'duel_trivia';
+  | 'duel_trivia'
+  | 'scavenger_hunt';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -1334,6 +1335,17 @@ Three employees were in the building that evening:
     difficulty: 'hard',
     maxPts: 600,
     type: 'duel_trivia',
+  },
+  // ── SCAVENGER HUNT ──
+  {
+    id: 'scavenger_hunt',
+    icon: '📍',
+    name: 'Scavenger Hunt',
+    category: 'Action',
+    desc: 'Find and photograph 8 items from the list. Admin rates each photo — the more you find, the more points you earn!',
+    difficulty: 'medium',
+    maxPts: 800,
+    type: 'scavenger_hunt',
   },
 ];
 

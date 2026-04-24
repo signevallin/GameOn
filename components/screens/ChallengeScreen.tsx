@@ -26,6 +26,7 @@ import SimonSays from '@/components/games/SimonSays';
 import TimelineSort from '@/components/games/TimelineSort';
 import ClosestWins from '@/components/games/ClosestWins';
 import DuelTrivia from '@/components/games/DuelTrivia';
+import ScavengerHunt from '@/components/games/ScavengerHunt';
 
 type Props = {
   missionId: string;
@@ -201,6 +202,8 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
         return <ClosestWins maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'duel_trivia':
         return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'scavenger_hunt':
+        return <ScavengerHunt team={team} gameId={game.id} missionId={missionId} onBack={onBack} />;
       default:
         return null;
     }

@@ -215,6 +215,14 @@ type PhotoSubmission = {
   mission_id: string; photo_url: string; status: string;
   points_awarded: number | null; created_at: string;
 };
+
+type ScavengerSubmission = {
+  id: string; team_id: string; team_name: string;
+  game_id: string; mission_id: string;
+  item_id: string; item_label: string;
+  photo_url: string; status: string;
+  points_awarded: number | null; created_at: string;
+};
 function getPointOptions(maxPts: number): number[] {
   const steps = 5;
   const step = Math.ceil(maxPts / steps / 100) * 100;
@@ -233,8 +241,10 @@ export default function AdminScreen({ onLogout }: Props) {
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
+  const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups'>('leaderboard');
   const [rated, setRated] = useState<Set<string>>(new Set());
+  const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
   const [puTargets, setPuTargets] = useState<Record<string, string>>({
     sabotage: '', double_points: '', fake_hint: '', final_frenzy: 'all',
@@ -272,17 +282,21 @@ export default function AdminScreen({ onLogout }: Props) {
   }, []);
 
   const loadGameData = useCallback(async (game: Game) => {
-    const [teamsRes, photosRes, gameRes, settingsRes] = await Promise.all([
+    const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
       POST('/api/admin/teams', { gameId: game.id }),
       POST('/api/admin/photos'),
+      POST('/api/scavenger/submissions'),
       POST('/api/game', { key: game.game_key }),
       POST('/api/settings'),
     ]);
-    const [td, pd, gd, sd] = await Promise.all([
-      teamsRes.json(), photosRes.json(), gameRes.json(), settingsRes.json(),
+    const [td, pd, scvd, gd, sd] = await Promise.all([
+      teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
     ]);
     if (td.teams) setTeams(td.teams);
     if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
+      td.teams?.some((t: Team) => t.id === s.team_id)
+    ));
+    if (scvd.submissions) setScavengerSubs(scvd.submissions.filter((s: ScavengerSubmission) =>
       td.teams?.some((t: Team) => t.id === s.team_id)
     ));
     if (gd.game) {
@@ -322,20 +336,24 @@ export default function AdminScreen({ onLogout }: Props) {
     async function poll() {
       const pollStartedAt = Date.now();
 
-      const [teamsRes, photosRes, gameRes, settingsRes] = await Promise.all([
+      const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
         POST('/api/admin/teams', { gameId }),
         POST('/api/admin/photos'),
+        POST('/api/scavenger/submissions'),
         POST('/api/game', { key: gameKey }),
         POST('/api/settings'),
       ]);
-      const [td, pd, gd, sd] = await Promise.all([
-        teamsRes.json(), photosRes.json(), gameRes.json(), settingsRes.json(),
+      const [td, pd, scvd, gd, sd] = await Promise.all([
+        teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
       ]);
 
       if (pollStartedAt < lastCommandAtRef.current) return;
 
       if (td.teams) setTeams(td.teams);
       if (pd.submissions) setPhotos(pd.submissions.filter((s: PhotoSubmission) =>
+        td.teams?.some((t: Team) => t.id === s.team_id)
+      ));
+      if (scvd.submissions) setScavengerSubs(scvd.submissions.filter((s: ScavengerSubmission) =>
         td.teams?.some((t: Team) => t.id === s.team_id)
       ));
       if (gd.game) applyGame(gd.game);
@@ -401,6 +419,16 @@ export default function AdminScreen({ onLogout }: Props) {
       body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, points: pts }),
     });
     setRated(r => new Set([...r, sub.id]));
+    if (activeGame) loadGameData(activeGame);
+  }
+
+  async function rateScavengerPhoto(sub: ScavengerSubmission, pts: number) {
+    await fetch('/api/scavenger/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, itemLabel: sub.item_label, points: pts }),
+    });
+    setScavengerRated(r => new Set([...r, sub.id]));
     if (activeGame) loadGameData(activeGame);
   }
 
@@ -630,6 +658,8 @@ export default function AdminScreen({ onLogout }: Props) {
   // ── GAME DASHBOARD ──
   if (!activeGame) return null;
   const pendingPhotos = photos.filter(s => s.status === 'pending' && !rated.has(s.id));
+  const pendingScavenger = scavengerSubs.filter(s => s.status === 'pending' && !scavengerRated.has(s.id));
+  const totalPendingPhotos = pendingPhotos.length + pendingScavenger.length;
 
   return (
     <>
@@ -697,9 +727,9 @@ export default function AdminScreen({ onLogout }: Props) {
           <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}>📊 Progress</button>
           <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative' }}>
             📸 Photos
-            {pendingPhotos.length > 0 && (
+            {totalPendingPhotos > 0 && (
               <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent2)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                {pendingPhotos.length}
+                {totalPendingPhotos}
               </span>
             )}
           </button>
@@ -876,6 +906,57 @@ export default function AdminScreen({ onLogout }: Props) {
                   );
                 })}
               </div>
+            )}
+
+            {/* Scavenger Hunt submissions */}
+            {scavengerSubs.length > 0 && (
+              <>
+                <div className="section-header" style={{ marginTop: '32px' }}>
+                  <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
+                  <span className="badge">{pendingScavenger.length} pending</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                  {scavengerSubs.map(sub => {
+                    const isRated = sub.status === 'rated' || scavengerRated.has(sub.id);
+                    return (
+                      <div key={sub.id} style={{ background: 'var(--card)', border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        {/* Header */}
+                        <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '14px' }}>📍</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {sub.item_label}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{sub.team_name}</div>
+                          </div>
+                        </div>
+                        {/* Thumbnail */}
+                        <div style={{ height: '200px', overflow: 'hidden', flexShrink: 0 }}>
+                          <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        </div>
+                        <div style={{ padding: '12px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{new Date(sub.created_at).toLocaleTimeString()}</div>
+                            {isRated
+                              ? <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '13px' }}>✓ {sub.points_awarded ?? ''} p</span>
+                              : <span className="badge">Pending</span>}
+                          </div>
+                          {!isRated && (
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {[0, 25, 50, 75, 100].map(pts => (
+                                <button key={pts} onClick={() => rateScavengerPhoto(sub, pts)}
+                                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 100 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 100 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}

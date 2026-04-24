@@ -79,4 +79,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   timeline:          'knowledge',
   closest_wins:      'knowledge',
   duel_trivia:       'knowledge',
+
+  // Action & Creative
+  scavenger_hunt:    'action',
 };
