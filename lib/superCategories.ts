@@ -1,4 +1,4 @@
-export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action';
+export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action' | 'gkn';
 
 export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   label: string;
@@ -11,6 +11,7 @@ export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   music_film: { label: 'Music & Film',          icon: '🎵', color: 'var(--gold)',    desc: 'Songs, lyrics and movie knowledge' },
   knowledge:  { label: 'Knowledge & Trivia',    icon: '🌍', color: 'var(--accent3)', desc: 'Geography, history and general trivia' },
   action:     { label: 'Action & Creative',     icon: '⚡', color: 'var(--accent2)', desc: 'Physical, speed and creative challenges' },
+  gkn:        { label: 'GKN Aerospace',          icon: '✈️', color: '#4a90d9',        desc: 'Missions about GKN Aerospace and aviation' },
 };
 
 /** Maps every mission id to its super-category. */
@@ -82,4 +83,11 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
 
   // Action & Creative
   scavenger_hunt:    'action',
+
+  // GKN Aerospace
+  gkn_trivia:        'gkn',
+  gkn_truefalse:     'gkn',
+  gkn_closest:       'gkn',
+  gkn_pa_sparet:     'gkn',
+  gkn_timeline:      'gkn',
 };

@@ -24,7 +24,8 @@ export type MissionType =
   | 'timeline'
   | 'closest_wins'
   | 'duel_trivia'
-  | 'scavenger_hunt';
+  | 'scavenger_hunt'
+  | 'trivia_quiz';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -35,6 +36,9 @@ export type CodeClue = { digits: [number, number, number]; hint: string };
 export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
 export type ImageRound = { imageUrl: string; options: string[]; answer: string };
 export type MemorySpeedRound = { items: string[]; missing: string; options: string[]; memorizeSeconds?: number };
+export type TriviaRound = { question: string; options: string[]; answer: string };
+export type TimelineItem = { label: string; year: number };
+export type ClosestWinsQuestion = { q: string; answer: number; unit: string; hint: string };
 
 export type Mission = {
   id: string;
@@ -63,6 +67,9 @@ export type Mission = {
   imageRounds?: ImageRound[];
   memorySpeedRounds?: MemorySpeedRound[];
   revealWord?: string;
+  triviaRounds?: TriviaRound[];
+  timelineItems?: TimelineItem[];
+  closestWinsQuestions?: ClosestWinsQuestion[];
 };
 
 export const MISSIONS: Mission[] = [
@@ -1346,6 +1353,107 @@ Three employees were in the building that evening:
     difficulty: 'medium',
     maxPts: 800,
     type: 'scavenger_hunt',
+  },
+
+  // ── GKN AEROSPACE ──
+  {
+    id: 'gkn_trivia',
+    icon: '✈️',
+    name: 'GKN Trivia',
+    category: 'GKN Aerospace',
+    desc: 'Test your knowledge about GKN Aerospace — four questions, one chance each!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'trivia_quiz',
+    triviaRounds: [
+      {
+        question: 'In which Swedish city is GKN Aerospace\'s largest manufacturing site?',
+        options: ['Gothenburg', 'Stockholm', 'Trollhättan', 'Malmö'],
+        answer: 'Trollhättan',
+      },
+      {
+        question: 'What type of aircraft component is a "nacelle"?',
+        options: ['The wing\'s leading edge', 'The housing around a jet engine', 'The landing gear assembly', 'The cockpit windshield'],
+        answer: 'The housing around a jet engine',
+      },
+      {
+        question: 'Which company did GKN Aerospace acquire in 2015 to expand its composite capabilities?',
+        options: ['Airbus Services', 'Fokker Technologies', 'Rolls-Royce Composites', 'Spirit AeroSystems'],
+        answer: 'Fokker Technologies',
+      },
+      {
+        question: 'What material is GKN Aerospace particularly known for pioneering in aircraft manufacturing?',
+        options: ['Titanium alloys', 'Carbon fibre composites', 'Aluminium', 'Hardened steel'],
+        answer: 'Carbon fibre composites',
+      },
+    ],
+  },
+  {
+    id: 'gkn_truefalse',
+    icon: '🛩️',
+    name: 'Aviation True or False',
+    category: 'GKN Aerospace',
+    desc: 'True or false? Test your knowledge of GKN Aerospace and aviation.',
+    difficulty: 'easy',
+    maxPts: 200,
+    type: 'truefalse',
+    statements: [
+      { text: 'GKN Aerospace manufactures complete, ready-to-fly aircraft.', answer: false },
+      { text: 'GKN Aerospace operates in more than 10 countries.', answer: true },
+      { text: 'Carbon fibre composite materials are lighter than aluminium.', answer: true },
+      { text: 'GKN\'s industrial roots date all the way back to the 18th century.', answer: true },
+      { text: 'GKN Aerospace manufactures structural components for the Airbus A350.', answer: true },
+    ],
+  },
+  {
+    id: 'gkn_closest',
+    icon: '🔢',
+    name: 'Aviation Numbers',
+    category: 'GKN Aerospace',
+    desc: 'Guess aviation and GKN numbers as accurately as possible. The closer you are, the more points you earn!',
+    difficulty: 'medium',
+    maxPts: 450,
+    type: 'closest_wins',
+    closestWinsQuestions: [
+      { q: 'How many employees does GKN Aerospace have globally?', answer: 15000, unit: 'employees', hint: 'They operate across 15+ countries' },
+      { q: 'How fast does a modern commercial aircraft cruise, in km/h?', answer: 900, unit: 'km/h', hint: 'Think about a transatlantic flight duration' },
+      { q: 'In what year were GKN\'s earliest industrial roots established?', answer: 1759, unit: '', hint: 'It was during the Industrial Revolution era' },
+    ],
+  },
+  {
+    id: 'gkn_pa_sparet',
+    icon: '🕵️',
+    name: 'Guess the Aircraft',
+    category: 'GKN Aerospace',
+    desc: 'Identify the aircraft from clues — fewer clues used means more points!',
+    difficulty: 'hard',
+    maxPts: 500,
+    type: 'pa_sparet',
+    clues: [
+      'More than 53% of my structural weight consists of composite materials.',
+      'GKN Aerospace manufactures key components including my rear fuselage section.',
+      'I took my maiden flight in June 2013 and entered airline service in late 2015.',
+      'My wingspan measures approximately 65 metres, wider than a Boeing 777.',
+      'Airlines like Qatar Airways, Singapore Airlines and Finnair operate me on long-haul routes.',
+    ],
+    answer: 'Airbus A350',
+  },
+  {
+    id: 'gkn_timeline',
+    icon: '📅',
+    name: 'GKN History',
+    category: 'GKN Aerospace',
+    desc: 'Sort key milestones in GKN Aerospace\'s history into the correct chronological order.',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'timeline',
+    timelineItems: [
+      { label: 'Dowlais Iron Company founded — GKN\'s earliest industrial roots', year: 1759 },
+      { label: 'Guest, Keen & Nettlefolds (GKN) formed from merger of major British firms', year: 1902 },
+      { label: 'GKN Aerospace acquires Volvo Aero, establishing a major site in Trollhättan, Sweden', year: 2012 },
+      { label: 'GKN Aerospace acquires Fokker Technologies, expanding its composite footprint', year: 2015 },
+      { label: 'Melrose Industries acquires GKN plc', year: 2018 },
+    ],
   },
 ];
 

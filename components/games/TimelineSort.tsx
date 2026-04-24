@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 type Item = { label: string; year: number };
 
-const TIMELINE_ITEMS: Item[] = [
+const DEFAULT_ITEMS: Item[] = [
   { label: 'Titanic sinks',              year: 1912 },
   { label: 'Moon landing – Apollo 11',   year: 1969 },
   { label: 'Fall of the Berlin Wall',    year: 1989 },
@@ -13,10 +13,12 @@ const TIMELINE_ITEMS: Item[] = [
 
 type Props = {
   maxPts: number;
+  items?: Item[];
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function TimelineSort({ maxPts, onFinish }: Props) {
+export default function TimelineSort({ maxPts, items, onFinish }: Props) {
+  const TIMELINE_ITEMS = items ?? DEFAULT_ITEMS;
   const [order, setOrder]       = useState<Item[]>(() => [...TIMELINE_ITEMS].sort(() => Math.random() - 0.5));
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);

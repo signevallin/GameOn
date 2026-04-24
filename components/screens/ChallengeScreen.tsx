@@ -27,6 +27,7 @@ import TimelineSort from '@/components/games/TimelineSort';
 import ClosestWins from '@/components/games/ClosestWins';
 import DuelTrivia from '@/components/games/DuelTrivia';
 import ScavengerHunt from '@/components/games/ScavengerHunt';
+import TriviaQuiz from '@/components/games/TriviaQuiz';
 
 type Props = {
   missionId: string;
@@ -201,9 +202,11 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
       case 'simon_says':
         return <SimonSays maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'timeline':
-        return <TimelineSort maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TimelineSort maxPts={effectiveMaxPts} items={mission.timelineItems} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'closest_wins':
-        return <ClosestWins maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <ClosestWins maxPts={effectiveMaxPts} questions={mission.closestWinsQuestions} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'trivia_quiz':
+        return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'duel_trivia':
         return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'scavenger_hunt':

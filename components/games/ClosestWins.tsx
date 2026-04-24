@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 type Question = { q: string; answer: number; unit: string; hint: string };
 
-const QUESTIONS: Question[] = [
+const DEFAULT_QUESTIONS: Question[] = [
   { q: 'How tall is the Eiffel Tower in metres?',        answer: 330,    unit: 'm',       hint: 'Including the antenna' },
   { q: 'How long is the Nile river in kilometres?',      answer: 6650,   unit: 'km',      hint: "The world's longest river" },
   { q: 'How many countries are there in the world?',     answer: 195,    unit: 'countries',hint: 'UN-recognised states' },
@@ -14,11 +14,15 @@ const QUESTIONS: Question[] = [
 
 type Props = {
   maxPts: number;
+  questions?: Question[];
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function ClosestWins({ maxPts, onFinish }: Props) {
-  const [questions]  = useState(() => [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 3));
+export default function ClosestWins({ maxPts, questions: propQuestions, onFinish }: Props) {
+  const [questions]  = useState(() => {
+    const pool = propQuestions ?? DEFAULT_QUESTIONS;
+    return [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+  });
   const [qIdx, setQIdx]           = useState(0);
   const [guess, setGuess]         = useState('');
   const [result, setResult]       = useState<{ pts: number; accuracy: number } | null>(null);
