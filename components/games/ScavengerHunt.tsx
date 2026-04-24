@@ -43,13 +43,11 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
     if (data.submissions) {
       const serverMap: Record<string, Submission> = {};
       for (const s of data.submissions) serverMap[s.item_id] = s;
-      // Merge: keep optimistic entries the server doesn't know about yet
+      // Always use server data when available; keep local only for items server doesn't have yet
       setSubmissions(prev => {
-        const merged = { ...serverMap };
-        for (const [itemId, sub] of Object.entries(prev)) {
-          if (!merged[itemId] && sub.id.startsWith('pending-')) {
-            merged[itemId] = sub;
-          }
+        const merged = { ...prev };
+        for (const [itemId, serverSub] of Object.entries(serverMap)) {
+          merged[itemId] = serverSub;
         }
         return merged;
       });
