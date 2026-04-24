@@ -131,7 +131,9 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px', color: 'var(--muted)', letterSpacing: '0.5px' }}>
             <span>{submittedCount}/{SCAVENGER_ITEMS.length} submitted</span>
-            <span style={{ color: 'var(--gold)', fontWeight: 700 }}>⭐ {totalPts} pts so far</span>
+            {totalPts > 0 && (
+              <span style={{ color: 'var(--gold)', fontWeight: 700 }}>⭐ {totalPts} pts so far</span>
+            )}
           </div>
           <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${(submittedCount / SCAVENGER_ITEMS.length) * 100}%`, background: 'var(--accent)', borderRadius: '2px', transition: 'width 0.4s' }} />
