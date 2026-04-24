@@ -78,7 +78,7 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
 
       if (!res.ok) { setError('Could not save submission.'); return; }
 
-      // Optimistically update UI immediately — don't wait for server roundtrip
+      // Optimistically update UI immediately — polling loop will sync real data
       setSubmissions(prev => ({
         ...prev,
         [itemId]: {
@@ -89,9 +89,6 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
           points_awarded: null,
         },
       }));
-
-      // Also refresh from server in background to get the real id
-      loadSubmissions();
     } catch {
       setError('Something went wrong. Try again.');
     } finally {
