@@ -126,27 +126,26 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
               alignItems: 'center',
               gap: '12px',
               padding: '12px 14px',
-              background: isSubmitted ? 'var(--surface)' : 'var(--card)',
-              border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`,
+              background: isRated ? 'rgba(140,191,155,0.08)' : isSubmitted ? 'rgba(80,80,90,0.25)' : 'var(--card)',
+              border: `1px solid ${isRated ? 'var(--accent3)' : isSubmitted ? 'rgba(120,120,130,0.4)' : 'var(--border)'}`,
               borderRadius: '12px',
-              opacity: isSubmitted ? 0.6 : 1,
               transition: 'all 0.2s',
             }}>
               {/* Icon */}
-              <span style={{ fontSize: '22px', flexShrink: 0, filter: isSubmitted ? 'grayscale(1)' : 'none' }}>{item.icon}</span>
+              <span style={{ fontSize: '22px', flexShrink: 0, filter: isSubmitted && !isRated ? 'grayscale(1) brightness(0.5)' : 'none' }}>{item.icon}</span>
 
               {/* Label */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: isRated ? 'var(--accent3)' : isSubmitted ? 'var(--muted)' : 'var(--text)', lineHeight: 1.3, textDecoration: isSubmitted && !isRated ? 'line-through' : 'none' }}>
-                  {isSubmitted && '✓ '}{item.label}
+                <div style={{ fontSize: '13px', fontWeight: 700, color: isRated ? 'var(--accent3)' : isSubmitted ? '#666' : 'var(--text)', lineHeight: 1.3 }}>
+                  {isSubmitted && !isRated && <span style={{ marginRight: '4px' }}>✓</span>}{item.label}
                 </div>
                 {isRated && (
                   <div style={{ fontSize: '12px', color: 'var(--accent3)', marginTop: '2px', fontWeight: 700 }}>
-                    Rated — {sub.points_awarded} pts
+                    ✓ Rated — {sub.points_awarded} pts
                   </div>
                 )}
                 {isPending && (
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
                     Photo submitted — awaiting rating
                   </div>
                 )}
