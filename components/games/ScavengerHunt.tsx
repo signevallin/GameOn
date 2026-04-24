@@ -34,10 +34,11 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ itemId: string; url: string } | null>(null);
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const prevScoreRef = useRef(team.score);
 
   // Load existing submissions on mount and poll for rating updates
   async function loadSubmissions() {
-    const res = await fetch(`/api/scavenger/team?teamId=${team.id}&missionId=${missionId}`, { cache: 'no-store' });
+    const res = await fetch(`/api/scavenger/team?teamId=${team.id}&missionId=${missionId}&t=${Date.now()}`, { cache: 'no-store' });
     const data = await res.json();
     if (data.submissions) {
       const serverMap: Record<string, Submission> = {};
@@ -61,6 +62,15 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When team score changes (admin rated a photo), immediately reload submissions
+  useEffect(() => {
+    if (team.score !== prevScoreRef.current) {
+      prevScoreRef.current = team.score;
+      loadSubmissions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team.score]);
 
   async function handleFile(itemId: string, itemLabel: string, file: File) {
     setUploading(itemId);
@@ -180,8 +190,8 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
                 />
               )}
 
-              {/* Upload button */}
-              {!isRated && (
+              {/* Upload button — only for items not yet submitted */}
+              {!isSubmitted && (
                 <>
                   <input
                     ref={el => { inputRefs.current[item.id] = el; }}
@@ -202,9 +212,9 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
                       flexShrink: 0,
                       padding: '7px 12px',
                       borderRadius: '8px',
-                      border: `1px solid ${isPending ? 'var(--accent)' : 'var(--border)'}`,
+                      border: '1px solid var(--border)',
                       background: 'transparent',
-                      color: isPending ? 'var(--accent)' : 'var(--muted)',
+                      color: 'var(--muted)',
                       cursor: isUploading ? 'not-allowed' : 'pointer',
                       fontFamily: "'Sora', sans-serif",
                       fontWeight: 700,
@@ -213,7 +223,7 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {isUploading ? '...' : isPending ? '🔄 REPLACE' : '📷 UPLOAD'}
+                    {isUploading ? '...' : '📷 UPLOAD'}
                   </button>
                 </>
               )}

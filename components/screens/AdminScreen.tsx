@@ -909,55 +909,67 @@ export default function AdminScreen({ onLogout }: Props) {
             )}
 
             {/* Scavenger Hunt submissions */}
-            {scavengerSubs.length > 0 && (
-              <>
-                <div className="section-header" style={{ marginTop: '32px' }}>
-                  <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
-                  <span className="badge">{pendingScavenger.length} pending</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {scavengerSubs.map(sub => {
-                    const isRated = sub.status === 'rated' || scavengerRated.has(sub.id);
-                    return (
-                      <div key={sub.id} style={{ background: 'var(--card)', border: `1px solid ${isRated ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                        {/* Header */}
-                        <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '14px' }}>📍</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {sub.item_label}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{sub.team_name}</div>
-                          </div>
-                        </div>
-                        {/* Thumbnail */}
-                        <div style={{ height: '200px', overflow: 'hidden', flexShrink: 0 }}>
-                          <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        </div>
-                        <div style={{ padding: '12px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{new Date(sub.created_at).toLocaleTimeString()}</div>
-                            {isRated
-                              ? <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '13px' }}>✓ {sub.points_awarded ?? ''} p</span>
-                              : <span className="badge">Pending</span>}
-                          </div>
-                          {!isRated && (
-                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                              {[0, 25, 50, 75, 100].map(pts => (
-                                <button key={pts} onClick={() => rateScavengerPhoto(sub, pts)}
-                                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 100 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 100 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
-                                  {pts}p
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+            {scavengerSubs.length > 0 && (() => {
+              const scavPending = scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id));
+              const scavRated   = scavengerSubs.filter(s => s.status === 'rated' || scavengerRated.has(s.id));
+
+              function ScavengerCard({ sub, showRateButtons }: { sub: ScavengerSubmission; showRateButtons: boolean }) {
+                return (
+                  <div style={{ background: 'var(--card)', border: `1px solid ${!showRateButtons ? 'var(--accent3)' : 'var(--border)'}`, borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '14px' }}>📍</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.item_label}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{sub.team_name}</div>
                       </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+                      {!showRateButtons && <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '13px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>}
+                    </div>
+                    <div style={{ height: '180px', overflow: 'hidden', flexShrink: 0 }}>
+                      <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                    {showRateButtons && (
+                      <div style={{ padding: '10px 12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {[0, 25, 50, 75, 100].map(pts => (
+                          <button key={pts} onClick={() => rateScavengerPhoto(sub, pts)}
+                            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: pts === 100 ? 'rgba(222,187,107,0.15)' : pts === 0 ? 'rgba(208,117,125,0.10)' : 'var(--surface)', color: pts === 100 ? 'var(--gold)' : pts === 0 ? 'var(--accent2)' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px' }}>
+                            {pts}p
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  {/* Pending */}
+                  {scavPending.length > 0 && (
+                    <>
+                      <div className="section-header" style={{ marginTop: '32px' }}>
+                        <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
+                        <span className="badge">{scavPending.length} pending</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+                        {scavPending.map(sub => <ScavengerCard key={sub.id} sub={sub} showRateButtons={true} />)}
+                      </div>
+                    </>
+                  )}
+                  {/* Rated archive */}
+                  {scavRated.length > 0 && (
+                    <>
+                      <div className="section-header" style={{ marginTop: '28px' }}>
+                        <h2 style={{ fontSize: '16px', color: 'var(--muted)' }}>✓ Rated</h2>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{scavRated.length} photos</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
+                        {scavRated.map(sub => <ScavengerCard key={sub.id} sub={sub} showRateButtons={false} />)}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
