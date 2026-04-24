@@ -34,40 +34,37 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ itemId: string; url: string } | null>(null);
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const prevScoreRef = useRef(team.score);
+  const loadRef = useRef<() => Promise<void>>();
 
-  // Load existing submissions on mount and poll for rating updates
-  async function loadSubmissions() {
-    const res = await fetch(`/api/scavenger/team?teamId=${team.id}&missionId=${missionId}&t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    if (data.submissions) {
-      const serverMap: Record<string, Submission> = {};
-      for (const s of data.submissions) serverMap[s.item_id] = s;
-      // Always use server data when available; keep local only for items server doesn't have yet
-      setSubmissions(prev => {
-        const merged = { ...prev };
-        for (const [itemId, serverSub] of Object.entries(serverMap)) {
-          merged[itemId] = serverSub;
-        }
-        return merged;
-      });
-    }
-  }
+  // Always keep loadRef pointing to the latest closure
+  loadRef.current = async function loadSubmissions() {
+    try {
+      const res = await fetch(
+        `/api/scavenger/team?teamId=${team.id}&missionId=${missionId}&t=${Date.now()}`,
+        { cache: 'no-store' }
+      );
+      const data = await res.json();
+      if (Array.isArray(data.submissions)) {
+        setSubmissions(prev => {
+          const merged = { ...prev };
+          for (const s of data.submissions) {
+            merged[s.item_id] = s; // server always wins
+          }
+          return merged;
+        });
+      }
+    } catch { /* ignore network errors */ }
+  };
 
   useEffect(() => {
-    loadSubmissions();
-    const id = setInterval(loadSubmissions, 6000);
+    loadRef.current?.();
+    const id = setInterval(() => loadRef.current?.(), 3000);
     return () => clearInterval(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When team score changes (admin rated a photo), immediately reload submissions
+  // When team score changes (admin rated a photo), immediately reload
   useEffect(() => {
-    if (team.score !== prevScoreRef.current) {
-      prevScoreRef.current = team.score;
-      loadSubmissions();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadRef.current?.();
   }, [team.score]);
 
   async function handleFile(itemId: string, itemLabel: string, file: File) {
