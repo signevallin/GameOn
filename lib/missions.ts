@@ -789,13 +789,18 @@ Three employees were in the building that evening:
       },
       {
         emojis: '🛹 🕷️ 🔬 🦎 🌉 👴 💥',
-        options: ['The Amazing Spider-Man', 'Spider-Man', 'Spider-Man: Homecoming', 'Venom'],
-        answer: 'The Amazing Spider-Man',
+        options: ['Spider-Man', 'The Amazing Spider-Man', 'Spider-Man: Homecoming', 'Venom'],
+        answer: 'Spider-Man',
       },
       {
         emojis: '👴 🎈 🏠 🦜 🐕 🧒 🎒',
         options: ['Up', 'Coco', 'Inside Out', 'Ratatouille'],
         answer: 'Up',
+      },
+      {
+        emojis: '🐉 👦 🦷 🛡️ ⚔️ 🇳🇴 🦾',
+        options: ['How to Train Your Dragon', 'Brave', 'The Hobbit', 'Eragon'],
+        answer: 'How to Train Your Dragon',
       },
     ],
   },
