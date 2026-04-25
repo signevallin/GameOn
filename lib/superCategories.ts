@@ -45,6 +45,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   finish_lyrics:   'music_film',
   film_quiz:       'music_film',
   celebrity_quiz:  'music_film',
+  movie_emoji:     'music_film',
 
   // Knowledge & Trivia
   trivia_fun:           'knowledge',

@@ -25,7 +25,8 @@ export type MissionType =
   | 'closest_wins'
   | 'duel_trivia'
   | 'scavenger_hunt'
-  | 'trivia_quiz';
+  | 'trivia_quiz'
+  | 'movie_emoji';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -759,6 +760,44 @@ Three employees were in the building that evening:
     type: 'photo',
     revealWord: 'ARTIFICIAL INTELLIGENCE',
     question: 'One person in the team must draw the secret word on paper WITHOUT speaking, writing letters/numbers, or making sounds. The rest of the team must guess what it is.\n\nReveal the word below when everyone is ready — then draw! Take a photo of your drawing + your team reacting and upload it. Admin will rate your performance!',
+  },
+  // ── MOVIE EMOJI ──
+  {
+    id: 'movie_emoji',
+    icon: '🎬',
+    name: 'Emoji Movies',
+    category: 'Fun',
+    desc: 'Guess the movie from the emoji clues — can your team crack all 5?',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'movie_emoji',
+    emojiRounds: [
+      {
+        emojis: '🤠 🚀 🦕 📦 🧸 🚂',
+        options: ['Toy Story', 'Cars', 'A Bug\'s Life', 'Monsters, Inc.'],
+        answer: 'Toy Story',
+      },
+      {
+        emojis: '🏹 🔥 👱‍♀️ 🍞 🌹 💀 👑',
+        options: ['The Hunger Games', 'Brave', 'Divergent', 'Twilight'],
+        answer: 'The Hunger Games',
+      },
+      {
+        emojis: '🛡️ 🕷️ 🪓 🏹 🗽 💥 🛸',
+        options: ['The Avengers', 'Justice League', 'X-Men', 'Iron Man'],
+        answer: 'The Avengers',
+      },
+      {
+        emojis: '🛹 🕷️ 🔬 🦎 🌉 👴 💥',
+        options: ['The Amazing Spider-Man', 'Spider-Man', 'Spider-Man: Homecoming', 'Venom'],
+        answer: 'The Amazing Spider-Man',
+      },
+      {
+        emojis: '👴 🎈 🏠 🦜 🐕 🧒 🎒',
+        options: ['Up', 'Coco', 'Inside Out', 'Ratatouille'],
+        answer: 'Up',
+      },
+    ],
   },
   // ── FILM QUIZ ──
   {
