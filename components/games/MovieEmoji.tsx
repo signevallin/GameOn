@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { EmojiRound } from '@/lib/missions';
 
 type Props = {
@@ -8,28 +8,38 @@ type Props = {
   onFinish: (correct: boolean, pts: number) => void;
 };
 
+function normalize(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
-  const [correct, setCorrect] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [guess, setGuess] = useState('');
+  const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
+  const [correctCount, setCorrectCount] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function choose(opt: string) {
-    if (selected !== null) return;
-    const isCorrect = opt === rounds[idx].answer;
-    if (isCorrect) setCorrect(c => c + 1);
-    setSelected(opt);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [idx]);
+
+  function submit() {
+    if (result !== null || guess.trim() === '') return;
+    const isCorrect = normalize(guess) === normalize(rounds[idx].answer);
+    const newCorrect = correctCount + (isCorrect ? 1 : 0);
+    setResult(isCorrect ? 'correct' : 'wrong');
+    if (isCorrect) setCorrectCount(newCorrect);
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
-        const total = isCorrect ? correct + 1 : correct;
-        const pts = Math.round((total / rounds.length) * maxPts);
-        setSelected(null);
-        onFinish(total > 0, pts);
+        const pts = Math.round((newCorrect / rounds.length) * maxPts);
+        onFinish(newCorrect > 0, pts);
       } else {
-        setSelected(null);
         setIdx(i => i + 1);
+        setGuess('');
+        setResult(null);
       }
-    }, 1000);
+    }, 1200);
   }
 
   const r = rounds[idx];
@@ -41,36 +51,47 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
           ROUND {idx + 1} / {rounds.length}
         </div>
         <div style={{ fontSize: '12px', color: 'var(--accent)' }}>
-          {correct} correct
+          {correctCount} correct
         </div>
       </div>
 
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <div style={{
-          fontSize: '42px',
-          lineHeight: 1.5,
-          marginBottom: '12px',
-          wordBreak: 'break-word',
-        }}>
+        <div style={{ fontSize: '42px', lineHeight: 1.5, marginBottom: '12px', wordBreak: 'break-word' }}>
           {r.emojis}
         </div>
         <p style={{ fontSize: '13px', color: 'var(--muted)' }}>🎬 What movie is this?</p>
       </div>
 
-      <div key={`q-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {r.options.map((opt, i) => {
-          let cls = 'option-btn';
-          if (selected !== null) {
-            if (opt === r.answer) cls += ' correct';
-            else if (opt === selected) cls += ' wrong';
-          }
-          return (
-            <button key={i} className={cls} disabled={selected !== null} onClick={() => choose(opt)} style={{ textAlign: 'center' }}>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
+      {result !== null ? (
+        <div style={{
+          textAlign: 'center',
+          padding: '20px',
+          borderRadius: '12px',
+          background: result === 'correct' ? 'rgba(140,191,155,0.12)' : 'rgba(208,117,125,0.10)',
+          border: `1px solid ${result === 'correct' ? 'var(--accent3)' : 'var(--accent2)'}`,
+        }}>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>{result === 'correct' ? '✅' : '❌'}</div>
+          <div style={{ fontWeight: 800, fontSize: '16px', color: result === 'correct' ? 'var(--accent3)' : 'var(--accent2)' }}>
+            {result === 'correct' ? 'Correct!' : `Wrong — it was "${r.answer}"`}
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={guess}
+            onChange={e => setGuess(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+            placeholder="Type the movie name..."
+            style={{ flex: 1 }}
+            autoComplete="off"
+          />
+          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+            →
+          </button>
+        </div>
+      )}
     </>
   );
 }
