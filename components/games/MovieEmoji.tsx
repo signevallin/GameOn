@@ -9,7 +9,9 @@ type Props = {
 };
 
 function normalize(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return s.toLowerCase()
+    .replace(/^the\s+/, '')   // strip leading "the"
+    .replace(/[^a-z0-9]/g, '');
 }
 
 export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
@@ -23,9 +25,7 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
     inputRef.current?.focus();
   }, [idx]);
 
-  function submit() {
-    if (result !== null || guess.trim() === '') return;
-    const isCorrect = normalize(guess) === normalize(rounds[idx].answer);
+  function resolve(isCorrect: boolean) {
     const newCorrect = correctCount + (isCorrect ? 1 : 0);
     setResult(isCorrect ? 'correct' : 'wrong');
     if (isCorrect) setCorrectCount(newCorrect);
@@ -39,7 +39,18 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
         setGuess('');
         setResult(null);
       }
-    }, 1200);
+    }, 1500);
+  }
+
+  function submit() {
+    if (result !== null || guess.trim() === '') return;
+    resolve(normalize(guess) === normalize(rounds[idx].answer));
+  }
+
+  function pass() {
+    if (result !== null) return;
+    setGuess('');
+    resolve(false);
   }
 
   const r = rounds[idx];
@@ -76,21 +87,41 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={guess}
-            onChange={e => setGuess(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && submit()}
-            placeholder="Type the movie name..."
-            style={{ flex: 1 }}
-            autoComplete="off"
-          />
-          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
-            →
+        <>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={guess}
+              onChange={e => setGuess(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submit()}
+              placeholder="Type the movie name..."
+              style={{ flex: 1 }}
+              autoComplete="off"
+            />
+            <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+              →
+            </button>
+          </div>
+          <button
+            onClick={pass}
+            style={{
+              width: '100%',
+              padding: '10px',
+              border: '1px solid var(--border)',
+              borderRadius: '10px',
+              background: 'transparent',
+              color: 'var(--muted)',
+              fontSize: '12px',
+              fontFamily: "'Sora', sans-serif",
+              fontWeight: 700,
+              letterSpacing: '1px',
+              cursor: 'pointer',
+            }}
+          >
+            PASS →
           </button>
-        </div>
+        </>
       )}
     </>
   );
