@@ -29,6 +29,7 @@ import DuelTrivia from '@/components/games/DuelTrivia';
 import ScavengerHunt from '@/components/games/ScavengerHunt';
 import TriviaQuiz from '@/components/games/TriviaQuiz';
 import MovieEmoji from '@/components/games/MovieEmoji';
+import TextQuiz from '@/components/games/TextQuiz';
 
 type Props = {
   missionId: string;
@@ -210,6 +211,8 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
         return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'movie_emoji':
         return <MovieEmoji rounds={mission.emojiRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+      case 'text_quiz':
+        return <TextQuiz rounds={mission.textQuizRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'duel_trivia':
         return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'scavenger_hunt':

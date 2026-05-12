@@ -48,6 +48,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   movie_emoji:     'music_film',
 
   // Knowledge & Trivia
+  lidkoping_quiz:       'knowledge',
   trivia_fun:           'knowledge',
   true_false:           'knowledge',
   geo_guess:            'knowledge',

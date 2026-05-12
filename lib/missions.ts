@@ -26,7 +26,8 @@ export type MissionType =
   | 'duel_trivia'
   | 'scavenger_hunt'
   | 'trivia_quiz'
-  | 'movie_emoji';
+  | 'movie_emoji'
+  | 'text_quiz';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -71,6 +72,7 @@ export type Mission = {
   triviaRounds?: TriviaRound[];
   timelineItems?: TimelineItem[];
   closestWinsQuestions?: ClosestWinsQuestion[];
+  textQuizRounds?: { question: string; answer: string }[];
 };
 
 export const MISSIONS: Mission[] = [
@@ -205,6 +207,24 @@ export const MISSIONS: Mission[] = [
     difficulty: 'easy',
     maxPts: 350,
     type: 'reaction',
+  },
+  // ── LIDKÖPING QUIZ ──
+  {
+    id: 'lidkoping_quiz',
+    icon: '🏙️',
+    name: 'Lidköping',
+    category: 'Knowledge',
+    desc: 'How well do you know Lidköping? Five questions — answer in your own words!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'text_quiz',
+    textQuizRounds: [
+      { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan' },
+      { question: 'Vad kallas Lidan i folkmun?', answer: 'Älva' },
+      { question: 'Rörstrand har jubileum 2026. Hur många år firas?', answer: '300år' },
+      { question: 'Vad kallas den del av Gamla staden som finns kvar efter branden 1553?', answer: 'Limtorget' },
+      { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong' },
+    ],
   },
   {
     id: 'trivia_fun',
