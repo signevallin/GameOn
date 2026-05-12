@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-export type TextQuizRound = { question: string; answer: string };
+export type TextQuizRound = { question: string; answer: string; aliases?: string[] };
 
 type Props = {
   rounds: TextQuizRound[];
@@ -43,7 +43,10 @@ export default function TextQuiz({ rounds, maxPts, onFinish }: Props) {
 
   function submit() {
     if (result !== null || guess.trim() === '') return;
-    resolve(normalize(guess) === normalize(rounds[idx].answer));
+    const n = normalize(guess);
+    const r = rounds[idx];
+    const isCorrect = n === normalize(r.answer) || (r.aliases ?? []).some(a => n === normalize(a));
+    resolve(isCorrect);
   }
 
   function pass() {

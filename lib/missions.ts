@@ -72,7 +72,7 @@ export type Mission = {
   triviaRounds?: TriviaRound[];
   timelineItems?: TimelineItem[];
   closestWinsQuestions?: ClosestWinsQuestion[];
-  textQuizRounds?: { question: string; answer: string }[];
+  textQuizRounds?: { question: string; answer: string; aliases?: string[] }[];
 };
 
 export const MISSIONS: Mission[] = [
@@ -221,7 +221,7 @@ export const MISSIONS: Mission[] = [
     textQuizRounds: [
       { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan' },
       { question: 'Vad kallas Lidan i folkmun?', answer: 'Älva' },
-      { question: 'Rörstrand har jubileum 2026. Hur många år firas?', answer: '300år' },
+      { question: 'Rörstrand har jubileum 2026. Hur många år firas?', answer: '300år', aliases: ['300'] },
       { question: 'Vad kallas den del av Gamla staden som finns kvar efter branden 1553?', answer: 'Limtorget' },
       { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong' },
     ],
