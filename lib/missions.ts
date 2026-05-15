@@ -982,9 +982,9 @@ export const MISSIONS: Mission[] = [
         answer: 'Wise',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/bumble/FFD200',
-        options: ['Bumble', 'Tinder', 'Hinge', 'Badoo'],
-        answer: 'Bumble',
+        imageUrl: 'https://cdn.simpleicons.org/cashapp/00C244',
+        options: ['Cash App', 'Venmo', 'Zelle', 'PayPal'],
+        answer: 'Cash App',
       },
       {
         imageUrl: 'https://cdn.simpleicons.org/strava/FC4C02',
@@ -997,9 +997,9 @@ export const MISSIONS: Mission[] = [
         answer: 'Letterboxd',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/bereal/000000',
-        options: ['BeReal', 'Snapchat', 'Instagram', 'VSCO'],
-        answer: 'BeReal',
+        imageUrl: 'https://cdn.simpleicons.org/signal/3A76F0',
+        options: ['Signal', 'Telegram', 'WhatsApp', 'Viber'],
+        answer: 'Signal',
       },
       {
         imageUrl: 'https://cdn.simpleicons.org/lichess/000000',
