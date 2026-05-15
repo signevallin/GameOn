@@ -23,6 +23,7 @@ export type Team = {
     double_trouble_missions?: string[];
   };
   team_powerups_used: string[];
+  mission_answers: Record<string, string>;
 };
 
 export type Game = {

@@ -103,7 +103,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
       case 'hangman':
         return <Hangman word={mission.word!} hint={mission.hint!} onFinish={finish} />;
       case 'wouldyou':
-        return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} teamId={team.id} missionId={missionId} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
         return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'photo':

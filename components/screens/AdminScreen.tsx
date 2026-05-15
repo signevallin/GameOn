@@ -242,7 +242,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
-  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
+  const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
   const [rated, setRated] = useState<Set<string>>(new Set());
   const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
@@ -733,6 +734,7 @@ export default function AdminScreen({ onLogout }: Props) {
               </span>
             )}
           </button>
+          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>📈 Stats</button>
           {activeGame.status === 'active' && (
             <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups</button>
           )}
@@ -859,14 +861,32 @@ export default function AdminScreen({ onLogout }: Props) {
               <h2 style={{ fontSize: '18px' }}>Photo Submissions</h2>
               <span className="badge">{pendingPhotos.length} pending</span>
             </div>
-            {photos.length === 0 && scavengerSubs.length === 0
+
+            {/* Team filter */}
+            {teams.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <select
+                  value={photoTeamFilter}
+                  onChange={e => setPhotoTeamFilter(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontFamily: "'Sora', sans-serif", fontSize: '13px', width: '100%', cursor: 'pointer' }}
+                >
+                  <option value="all">All teams</option>
+                  {teams.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length === 0 &&
+             scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length === 0
               ? <div className="empty-state">No photos submitted yet.</div>
               : null}
 
             {/* Pending regular photos */}
-            {photos.filter(s => s.status !== 'rated' && !rated.has(s.id)).length > 0 && (
+            {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                {photos.filter(s => s.status !== 'rated' && !rated.has(s.id)).map(sub => {
+                {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
                   const mission = MISSIONS.find(m => m.id === sub.mission_id);
                   const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
                   const pointOptions = getPointOptions(missionMaxPts);
@@ -897,14 +917,14 @@ export default function AdminScreen({ onLogout }: Props) {
             )}
 
             {/* Pending scavenger photos */}
-            {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id)).length > 0 && (
+            {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
               <>
                 <div className="section-header" style={{ marginTop: '32px' }}>
                   <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
-                  <span className="badge">{scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id)).length} pending</span>
+                  <span className="badge">{scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} pending</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                  {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id)).map(sub => (
+                  {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
                     <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '14px' }}>📍</span>
@@ -931,18 +951,18 @@ export default function AdminScreen({ onLogout }: Props) {
             )}
 
             {/* Rated archive — regular + scavenger combined */}
-            {(photos.filter(s => s.status === 'rated' || rated.has(s.id)).length > 0 ||
-              scavengerSubs.filter(s => s.status === 'rated' || scavengerRated.has(s.id)).length > 0) && (
+            {(photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 ||
+              scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0) && (
               <>
                 <div className="section-header" style={{ marginTop: '28px' }}>
                   <h2 style={{ fontSize: '16px', color: 'var(--muted)' }}>✓ Rated</h2>
                   <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                    {photos.filter(s => s.status === 'rated' || rated.has(s.id)).length +
-                     scavengerSubs.filter(s => s.status === 'rated' || scavengerRated.has(s.id)).length} photos
+                    {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length +
+                     scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} photos
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
-                  {photos.filter(s => s.status === 'rated' || rated.has(s.id)).map(sub => {
+                  {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
                     const mission = MISSIONS.find(m => m.id === sub.mission_id);
                     return (
                       <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
@@ -959,7 +979,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       </div>
                     );
                   })}
-                  {scavengerSubs.filter(s => s.status === 'rated' || scavengerRated.has(s.id)).map(sub => (
+                  {scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
                     <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
                       <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '12px' }}>📍</span>
@@ -978,6 +998,156 @@ export default function AdminScreen({ onLogout }: Props) {
             )}
           </div>
         )}
+
+        {/* STATS */}
+        {tab === 'stats' && (() => {
+          const gameMissions = (activeGame.missions ?? [])
+            .map(id => MISSIONS.find(m => m.id === id))
+            .filter(Boolean) as typeof MISSIONS;
+
+          // 1. Mission completion count
+          const completionStats = gameMissions
+            .map(m => ({ m, count: teams.filter(t => t.completed?.includes(m.id)).length }))
+            .filter(x => x.count > 0)
+            .sort((a, b) => b.count - a.count);
+
+          // 2. Total points awarded per mission
+          const pointStats = gameMissions
+            .map(m => ({ m, total: teams.reduce((s, t) => s + (t.mission_scores?.[m.id] ?? 0), 0) }))
+            .filter(x => x.total > 0)
+            .sort((a, b) => b.total - a.total);
+
+          // 3. Would You answers
+          const wouldYouMissions = gameMissions.filter(m => m.type === 'wouldyou');
+          const wouldYouAnswers = wouldYouMissions.map(m => ({
+            m,
+            answers: teams
+              .filter(t => t.mission_answers?.[m.id])
+              .map(t => ({ team: t.name, answer: t.mission_answers[m.id] })),
+          })).filter(x => x.answers.length > 0);
+
+          // 4. Duel stolen points
+          const duelStats = teams
+            .map(t => ({ name: t.name, stolen: t.mission_scores?.['duel_trivia'] ?? 0 }))
+            .filter(x => x.stolen > 0)
+            .sort((a, b) => b.stolen - a.stolen);
+
+          // 5. Most power-up targeted teams (from settings powerupsUsed)
+          const puTargetCount: Record<string, number> = {};
+          for (const key of powerupsUsed) {
+            if (key.includes('_all') || key.startsWith('final_frenzy')) continue;
+            // Key format: 'type_uuid' — UUID is last 36 chars
+            const teamId = key.slice(-36);
+            const team = teams.find(t => t.id === teamId);
+            if (!team) continue;
+            puTargetCount[team.name] = (puTargetCount[team.name] ?? 0) + 1;
+          }
+          const puTargetStats = Object.entries(puTargetCount)
+            .sort((a, b) => b[1] - a[1]);
+
+          const statCard = (children: React.ReactNode) => (
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              {children}
+            </div>
+          );
+
+          const statTitle = (icon: string, label: string) => (
+            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--muted)', letterSpacing: '1px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>{icon}</span>{label}
+            </div>
+          );
+
+          const bar = (value: number, max: number, color = 'var(--accent)') => (
+            <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${max > 0 ? (value / max) * 100 : 0}%`, background: color, borderRadius: '2px' }} />
+            </div>
+          );
+
+          return (
+            <div className="fade-in">
+              <div className="section-header">
+                <h2 style={{ fontSize: '18px' }}>Statistics</h2>
+                <span className="badge">{teams.length} teams</span>
+              </div>
+
+              {/* 1. Mission completion */}
+              {statCard(<>
+                {statTitle('🏆', 'MOST COMPLETED MISSIONS')}
+                {completionStats.length === 0
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No completions yet.</div>
+                  : completionStats.map(({ m, count }) => (
+                    <div key={m.id} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                        <span>{m.icon} {m.name}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{count}/{teams.length} teams</span>
+                      </div>
+                      {bar(count, teams.length)}
+                    </div>
+                  ))}
+              </>)}
+
+              {/* 2. Points per mission */}
+              {statCard(<>
+                {statTitle('💰', 'MOST POINTS AWARDED')}
+                {pointStats.length === 0
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No points yet.</div>
+                  : pointStats.map(({ m, total }) => (
+                    <div key={m.id} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                        <span>{m.icon} {m.name}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--gold)' }}>{total} pts</span>
+                      </div>
+                      {bar(total, pointStats[0]?.total ?? 1, 'var(--gold)')}
+                    </div>
+                  ))}
+              </>)}
+
+              {/* 3. Would You answers */}
+              {statCard(<>
+                {statTitle('💬', 'WHO ON THE TEAM')}
+                {wouldYouAnswers.length === 0
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No answers submitted yet.</div>
+                  : wouldYouAnswers.map(({ m, answers }) => (
+                    <div key={m.id} style={{ marginBottom: '14px' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 700, marginBottom: '8px' }}>{m.question}</div>
+                      {answers.map(({ team, answer }) => (
+                        <div key={team} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                          <span style={{ color: 'var(--muted)' }}>{team}</span>
+                          <span style={{ fontWeight: 700 }}>{answer}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+              </>)}
+
+              {/* 4. Duel stolen */}
+              {statCard(<>
+                {statTitle('⚔️', 'DUEL — MOST POINTS STOLEN')}
+                {duelStats.length === 0
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No duels completed yet.</div>
+                  : duelStats.map(({ name, stolen }, i) => (
+                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+                      <span>{i === 0 ? '⚔️' : i === 1 ? '🗡️' : '•'} {name}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent2)' }}>+{stolen} pts</span>
+                    </div>
+                  ))}
+              </>)}
+
+              {/* 5. Power-up targets */}
+              {statCard(<>
+                {statTitle('🎯', 'MOST POWER-UP TARGETED')}
+                {puTargetStats.length === 0
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No power-ups used yet.</div>
+                  : puTargetStats.map(([name, count], i) => (
+                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+                      <span>{i === 0 ? '🎯' : i === 1 ? '💥' : '•'} {name}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{count}×</span>
+                    </div>
+                  ))}
+              </>)}
+            </div>
+          );
+        })()}
 
         {/* POWER-UPS */}
         {tab === 'powerups' && activeGame.status === 'active' && (

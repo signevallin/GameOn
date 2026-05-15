@@ -1,15 +1,22 @@
 'use client';
 import { useState } from 'react';
 
-type Props = { question: string; maxPts: number; onFinish: (correct: boolean, pts: number) => void };
+type Props = { question: string; maxPts: number; teamId: string; missionId: string; onFinish: (correct: boolean, pts: number) => void };
 
-export default function WouldYou({ question, maxPts, onFinish }: Props) {
+export default function WouldYou({ question, maxPts, teamId, missionId, onFinish }: Props) {
   const [voted, setVoted] = useState<string | null>(null);
   const [input, setInput] = useState('');
 
   function submit() {
     if (!input.trim()) return;
-    setVoted(input.trim());
+    const answer = input.trim();
+    setVoted(answer);
+    // Save answer silently — fire and forget
+    fetch('/api/team/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId, missionId, answer }),
+    }).catch(() => {/* ignore */});
   }
 
   if (voted) {
