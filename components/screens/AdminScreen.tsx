@@ -57,9 +57,17 @@ function NavCenter({ game }: { game: Game | null }) {
   );
 }
 
+type HotPotatoState = {
+  mission_id: string;
+  expires_at: string;
+  penalty_pts: number;
+  game_id: string;
+} | null;
+
 type PowerUpsCardProps = {
   teams: Team[];
   gameId: string;
+  gameMissionIds: string[];
   powerupsUsed: string[];
   puTargets: Record<string, string>;
   setPuTargets: (v: Record<string, string>) => void;
@@ -67,11 +75,43 @@ type PowerUpsCardProps = {
   setPuMessages: (v: string) => void;
   puLoading: string | null;
   onActivate: (type: string) => void;
+  // point steal
+  stealFrom: string;
+  setStealFrom: (v: string) => void;
+  stealTo: string;
+  setStealTo: (v: string) => void;
+  stealAmount: number;
+  setStealAmount: (v: number) => void;
+  onSteal: () => void;
+  stealLoading: boolean;
+  // hot potato
+  hotPotatoMissionId: string;
+  setHotPotatoMissionId: (v: string) => void;
+  onHotPotato: () => void;
+  hotPotatoLoading: boolean;
+  hotPotatoActive: HotPotatoState;
 };
 
+function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (!hotPotatoActive) { setSecondsLeft(null); return; }
+    const endTime = new Date(hotPotatoActive.expires_at).getTime();
+    const tick = () => setSecondsLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [hotPotatoActive]);
+  return secondsLeft;
+}
+
 function PowerUpsCard({
-  teams, gameId, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
+  teams, gameId: _gameId, gameMissionIds, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
+  stealFrom, setStealFrom, stealTo, setStealTo, stealAmount, setStealAmount, onSteal, stealLoading,
+  hotPotatoMissionId, setHotPotatoMissionId, onHotPotato, hotPotatoLoading, hotPotatoActive,
 }: PowerUpsCardProps) {
+  const hotPotatoSecondsLeft = useHotPotatoCountdown(hotPotatoActive);
+
   function isUsedKey(key: string) {
     return powerupsUsed.includes(key);
   }
@@ -108,6 +148,8 @@ function PowerUpsCard({
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
   const finalFrenzyLoading = puLoading === 'final_frenzy';
+
+  const hotPotatoMission = MISSIONS.find(m => m.id === hotPotatoActive?.mission_id);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -200,6 +242,126 @@ function PowerUpsCard({
           </div>
         );
       })}
+
+      {/* ── Point Steal ── */}
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ fontSize: '20px' }}>🎰</span>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Point Steal</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Steal points from one team and give them to another</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+          <select
+            value={stealFrom}
+            onChange={e => setStealFrom(e.target.value)}
+            style={{ ...selectStyle, flex: '1 1 140px' }}
+          >
+            <option value="">From team…</option>
+            {teams.map(t => (
+              <option key={t.id} value={t.id} disabled={t.id === stealTo}>{t.name}</option>
+            ))}
+          </select>
+          <select
+            value={stealTo}
+            onChange={e => setStealTo(e.target.value)}
+            style={{ ...selectStyle, flex: '1 1 140px' }}
+          >
+            <option value="">To team…</option>
+            {teams.map(t => (
+              <option key={t.id} value={t.id} disabled={t.id === stealFrom}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          {[100, 200, 300, 400, 500].map(pts => (
+            <button
+              key={pts}
+              onClick={() => setStealAmount(pts)}
+              style={{
+                padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
+                fontFamily: "'Sora', sans-serif", cursor: 'pointer',
+                border: stealAmount === pts ? '2px solid var(--accent)' : '1px solid var(--border)',
+                background: stealAmount === pts ? 'rgba(140,110,255,0.15)' : 'var(--surface)',
+                color: stealAmount === pts ? 'var(--accent)' : 'var(--text)',
+              }}
+            >
+              {pts}p
+            </button>
+          ))}
+        </div>
+        <button
+          className="btn btn-primary"
+          style={{ padding: '8px 20px', fontSize: '12px', background: 'var(--accent)', borderColor: 'var(--accent)' }}
+          disabled={!stealFrom || !stealTo || !stealAmount || stealLoading}
+          onClick={onSteal}
+        >
+          {stealLoading ? '...' : '🎰 STEAL'}
+        </button>
+      </div>
+
+      {/* ── Hot Potato ── */}
+      <div style={{
+        background: hotPotatoActive
+          ? 'linear-gradient(135deg, rgba(208,117,125,0.15) 0%, rgba(222,150,80,0.12) 100%)'
+          : 'var(--card)',
+        border: `1px solid ${hotPotatoActive ? 'rgba(208,117,125,0.6)' : 'var(--border)'}`,
+        borderRadius: '12px',
+        padding: '16px 20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '20px' }}>🥔</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Hot Potato</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 200 pts</div>
+          </div>
+          {hotPotatoActive && hotPotatoSecondsLeft !== null && (
+            <div style={{
+              background: hotPotatoSecondsLeft <= 30 ? 'var(--accent2)' : 'rgba(208,117,125,0.8)',
+              color: '#fff', borderRadius: '8px', padding: '4px 10px',
+              fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '14px',
+              letterSpacing: '1px', flexShrink: 0,
+              animation: hotPotatoSecondsLeft <= 30 ? 'pulse 0.5s infinite alternate' : 'none',
+            }}>
+              ⏱ {fmtTimer(hotPotatoSecondsLeft)}
+            </div>
+          )}
+        </div>
+
+        {hotPotatoActive ? (
+          <div style={{ fontSize: '13px', color: 'var(--muted)' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text)' }}>Active:</span>{' '}
+            {hotPotatoMission ? `${hotPotatoMission.icon} ${hotPotatoMission.name}` : hotPotatoActive.mission_id}
+            {hotPotatoSecondsLeft === 0 && (
+              <span style={{ color: 'var(--accent2)', marginLeft: '8px', fontWeight: 700 }}>⏰ Expired — resolving...</span>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={hotPotatoMissionId}
+              onChange={e => setHotPotatoMissionId(e.target.value)}
+              style={{ ...selectStyle }}
+            >
+              <option value="">Select mission…</option>
+              {gameMissionIds.map(id => {
+                const m = MISSIONS.find(x => x.id === id);
+                if (!m) return null;
+                return <option key={id} value={id}>{m.icon} {m.name}</option>;
+              })}
+            </select>
+            <button
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: 'var(--accent2)', borderColor: 'var(--accent2)' }}
+              disabled={!hotPotatoMissionId || hotPotatoLoading}
+              onClick={onHotPotato}
+            >
+              {hotPotatoLoading ? '...' : '🥔 ACTIVATE'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -254,6 +416,15 @@ export default function AdminScreen({ onLogout }: Props) {
   });
   const [puMessages, setPuMessages] = useState('');
   const [puLoading, setPuLoading] = useState<string | null>(null);
+  // Point Steal
+  const [stealFrom, setStealFrom] = useState('');
+  const [stealTo, setStealTo] = useState('');
+  const [stealAmount, setStealAmount] = useState(100);
+  const [stealLoading, setStealLoading] = useState(false);
+  // Hot Potato
+  const [hotPotatoMissionId, setHotPotatoMissionId] = useState('');
+  const [hotPotatoLoading, setHotPotatoLoading] = useState(false);
+  const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
 
   // Create form state
   const [gameName, setGameName] = useState('');
@@ -311,6 +482,7 @@ export default function AdminScreen({ onLogout }: Props) {
       });
     }
     if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
+    setHotPotatoActive(sd.hot_potato ?? null);
   }, []);
 
   useEffect(() => { loadGames(); }, [loadGames]);
@@ -362,6 +534,18 @@ export default function AdminScreen({ onLogout }: Props) {
       ));
       if (gd.game) applyGame(gd.game);
       if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
+
+      const hp = sd.hot_potato ?? null;
+      setHotPotatoActive(hp);
+
+      // Auto-resolve expired hot potato
+      if (hp && new Date(hp.expires_at) <= new Date()) {
+        await POST('/api/admin/powerup/resolve-hot-potato');
+        // Refresh settings after resolution
+        const freshSd = await POST('/api/settings').then(r => r.json());
+        if (freshSd.powerups_used) setPowerupsUsed(freshSd.powerups_used);
+        setHotPotatoActive(freshSd.hot_potato ?? null);
+      }
     }
     poll();
     const id = setInterval(poll, 5000);
@@ -434,6 +618,49 @@ export default function AdminScreen({ onLogout }: Props) {
     });
     setScavengerRated(r => new Set([...r, sub.id]));
     if (activeGame) loadGameData(activeGame);
+  }
+
+  async function activatePointSteal() {
+    if (!stealFrom || !stealTo || !stealAmount) return;
+    setStealLoading(true);
+    try {
+      const res = await POST('/api/admin/powerup', { type: 'point_steal', fromTeamId: stealFrom, toTeamId: stealTo, amount: stealAmount });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Point steal failed: ${err.error ?? res.statusText}`);
+        return;
+      }
+      setStealFrom('');
+      setStealTo('');
+      setStealAmount(100);
+    } finally {
+      setStealLoading(false);
+    }
+  }
+
+  async function activateHotPotato() {
+    if (!hotPotatoMissionId || !activeGame) return;
+    const mission = MISSIONS.find(m => m.id === hotPotatoMissionId);
+    if (!mission) return;
+    setHotPotatoLoading(true);
+    try {
+      const res = await POST('/api/admin/powerup', {
+        type: 'hot_potato',
+        missionId: hotPotatoMissionId,
+        missionName: mission.name,
+        gameId: activeGame.id,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Hot Potato failed: ${err.error ?? res.statusText}`);
+        return;
+      }
+      const data = await res.json();
+      setHotPotatoActive({ mission_id: hotPotatoMissionId, expires_at: data.expiresAt, penalty_pts: 200, game_id: activeGame.id });
+      setHotPotatoMissionId('');
+    } finally {
+      setHotPotatoLoading(false);
+    }
   }
 
   async function activatePowerup(type: string) {
@@ -1247,6 +1474,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <PowerUpsCard
               teams={teams}
               gameId={activeGame.id}
+              gameMissionIds={activeGame.missions}
               powerupsUsed={powerupsUsed}
               puTargets={puTargets}
               setPuTargets={setPuTargets}
@@ -1254,6 +1482,19 @@ export default function AdminScreen({ onLogout }: Props) {
               setPuMessages={setPuMessages}
               puLoading={puLoading}
               onActivate={activatePowerup}
+              stealFrom={stealFrom}
+              setStealFrom={setStealFrom}
+              stealTo={stealTo}
+              setStealTo={setStealTo}
+              stealAmount={stealAmount}
+              setStealAmount={setStealAmount}
+              onSteal={activatePointSteal}
+              stealLoading={stealLoading}
+              hotPotatoMissionId={hotPotatoMissionId}
+              setHotPotatoMissionId={setHotPotatoMissionId}
+              onHotPotato={activateHotPotato}
+              hotPotatoLoading={hotPotatoLoading}
+              hotPotatoActive={hotPotatoActive}
             />
           </div>
         )}

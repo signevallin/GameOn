@@ -14,22 +14,22 @@ function getSupabase() {
 export async function GET() {
   const { data, error } = await getSupabase()
     .from('settings')
-    .select('visible_missions, powerups_used')
+    .select('visible_missions, powerups_used, hot_potato')
     .eq('id', 1)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ visible_missions: data.visible_missions, powerups_used: data.powerups_used ?? [] });
+  return NextResponse.json({ visible_missions: data.visible_missions, powerups_used: data.powerups_used ?? [], hot_potato: data.hot_potato ?? null });
 }
 
 // POST – used by admin polling (POST is never cached by Vercel edge)
 export async function POST() {
   const { data, error } = await getSupabase()
     .from('settings')
-    .select('visible_missions, powerups_used')
+    .select('visible_missions, powerups_used, hot_potato')
     .eq('id', 1)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ visible_missions: data.visible_missions, powerups_used: data.powerups_used ?? [] });
+  return NextResponse.json({ visible_missions: data.visible_missions, powerups_used: data.powerups_used ?? [], hot_potato: data.hot_potato ?? null });
 }
