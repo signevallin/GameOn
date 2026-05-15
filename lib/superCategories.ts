@@ -84,7 +84,12 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   duel_trivia:       'knowledge',
 
   // Action & Creative
-  scavenger_hunt:    'action',
+  scavenger_hunt:       'action',
+  photo_ad_shot:        'action',
+  photo_mirror_selfie:  'action',
+  photo_shadow_selfie:  'action',
+  photo_colour_match:   'action',
+  photo_weird_sign:     'action',
 
   // GKN Aerospace
   gkn_trivia:        'gkn',
