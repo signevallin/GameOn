@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const { data: team, error: teamErr } = await supabase
     .from('teams')
-    .select('score, completed')
+    .select('score, completed, mission_scores')
     .eq('id', teamId)
     .single();
 
@@ -39,11 +39,13 @@ export async function POST(req: Request) {
     : { type: 'photo_rated', message: `Your photo for "${missionName}" was reviewed — unfortunately no points this time. Keep going! 💪` };
 
   if (!team.completed?.includes(missionId)) {
+    const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
     const { error: updateErr } = await supabase
       .from('teams')
       .update({
         score: (team.score ?? 0) + points,
         completed: [...(team.completed ?? []), missionId],
+        mission_scores: newMissionScores,
         pending_notification: notification,
         updated_at: new Date().toISOString(),
       })
