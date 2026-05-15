@@ -1446,11 +1446,11 @@ export const MISSIONS: Mission[] = [
     maxPts: 200,
     type: 'truefalse',
     statements: [
-      { text: 'GKN Aerospace manufactures complete, ready-to-fly aircraft.', answer: false },
-      { text: 'GKN Aerospace operates in more than 10 countries.', answer: true },
+      { text: "GKN Aerospace's site in Filton, UK was involved in the development of Concorde.", answer: true },
+      { text: 'The Airbus A350 was the first commercial aircraft to have a fuselage made primarily from carbon fibre.', answer: false },
       { text: 'Carbon fibre composite materials are lighter than aluminium.', answer: true },
       { text: 'GKN\'s industrial roots date all the way back to the 18th century.', answer: true },
-      { text: 'GKN Aerospace manufactures structural components for the Airbus A350.', answer: true },
+      { text: 'A carbon fibre composite component is typically around 3 times stronger than steel at the same weight.', answer: false },
     ],
   },
   {
