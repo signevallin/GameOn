@@ -686,7 +686,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {!showPowerups && (<>
 
             {/* ── TAB SWITCHER ── */}
-            {teams.length > 1 && !isLeaderboardHidden && (
+            {teams.length >= 1 && !isLeaderboardHidden && (
               <div style={{
                 display: 'flex',
                 background: 'var(--card)',
