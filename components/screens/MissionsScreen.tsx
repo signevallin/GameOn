@@ -252,6 +252,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
   const winner = sorted[0];
   const myRank = sorted.findIndex(t => t.id === team.id) + 1;
   const isWinner = winner?.id === team.id;
+  const hideResults = Boolean(game.hide_leaderboard);
 
   function bestMission(t: Team): { name: string; pts: number } | null {
     const scores = t.mission_scores as Record<string, number> | null;
@@ -267,6 +268,59 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
     ? formatElapsed(new Date(team.finished_at).getTime() - new Date(game.started_at).getTime())
     : null;
 
+  // ── Hidden results mode ───────────────────────────────────────────────────
+  if (hideResults) {
+    const best = bestMission(team);
+    return (
+      <>
+        <Confetti />
+        <div style={{ padding: '32px 20px 48px', maxWidth: '560px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '12px' }}>🏁</div>
+            <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>Game over!</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.6 }}>
+              Well played! The results will be announced shortly.
+            </p>
+            <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '40px', fontWeight: 800, color: 'var(--gold)' }}>{team.score}</span>
+              <span style={{ color: 'var(--muted)', fontSize: '16px' }}>pts</span>
+            </div>
+            {elapsedText && (
+              <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }}>
+                Finished in <strong style={{ color: 'var(--accent3)' }}>{elapsedText}</strong>
+              </div>
+            )}
+          </div>
+
+          <div style={{ padding: '20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', marginBottom: '32px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>YOUR GAME</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {[
+                { label: 'Score', value: `${team.score} pts`, color: 'var(--gold)' },
+                { label: 'Missions done', value: `${team.completed?.length ?? 0}`, color: 'var(--accent3)' },
+                { label: 'Best mission', value: best ? `${best.pts} pts` : '—', color: 'var(--text)' },
+                { label: 'Teams played', value: `${teams.length}`, color: 'var(--accent)' },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{ background: 'var(--surface)', borderRadius: '10px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>{label}</div>
+                  <div style={{ fontWeight: 800, fontSize: '16px', color }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={onLogout}
+            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px' }}
+          >
+            ↩ Leave & start new game
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  // ── Normal results mode ───────────────────────────────────────────────────
   return (
     <>
       {isWinner && <Confetti />}
@@ -451,6 +505,12 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [showPowerups, setShowPowerups] = useState(false);
   const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
 
+  // Hide leaderboard tab in last 5 minutes (or at end) if game.hide_leaderboard is on
+  const isLeaderboardHidden = Boolean(game.hide_leaderboard) && (secondsLeft !== null && secondsLeft <= 300);
+  useEffect(() => {
+    if (isLeaderboardHidden && activeTab === 'leaderboard') setActiveTab('missions');
+  }, [isLeaderboardHidden, activeTab]);
+
   // Freeze effect
   const effects = team.active_effects ?? {};
   const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until) : null;
@@ -610,7 +670,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {!showPowerups && (<>
 
             {/* ── TAB SWITCHER ── */}
-            {teams.length > 1 && (
+            {teams.length > 1 && !isLeaderboardHidden && (
               <div style={{
                 display: 'flex',
                 background: 'var(--card)',
@@ -647,7 +707,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             )}
 
             {/* ── LEADERBOARD TAB ── */}
-            {activeTab === 'leaderboard' && (
+            {activeTab === 'leaderboard' && !isLeaderboardHidden && (
               <div style={{ paddingTop: '16px' }}>
                 <LeaderboardView
                   teams={teams}

@@ -261,6 +261,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionMaxPts, setMissionMaxPts] = useState<Record<string, number>>(
     Object.fromEntries(MISSIONS.map(m => [m.id, m.maxPts]))
   );
+  const [hideLeaderboard, setHideLeaderboard] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -379,7 +380,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -569,6 +570,22 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ width: '100%', accentColor: 'var(--accent)' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
               <span>15 min</span><span>120 min</span>
+            </div>
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <div
+              onClick={() => setHideLeaderboard(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${hideLeaderboard ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>🙈 Hide leaderboard in last 5 min</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  Teams won&apos;t see the leaderboard in the last 5 minutes, and won&apos;t see final placements when the game ends.
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: hideLeaderboard ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: hideLeaderboard ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
             </div>
           </div>
         </div>

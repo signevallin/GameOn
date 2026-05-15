@@ -37,4 +37,5 @@ export type Game = {
   started_at: string | null;
   created_at: string;
   mission_max_pts: Record<string, number>;
+  hide_leaderboard?: boolean;
 };
