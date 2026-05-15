@@ -5,9 +5,13 @@ type Props = {
 
 export default function GameOnLogo({ size = 22 }: Props) {
   const iconSize = size >= 40 ? Math.round(size * 1.24) : size;
+  // Circle center is at y=12.6, radius 8 → bottom of ring at y=20.6.
+  // Add half stroke-width (1.3) → clip viewBox at y=22 so SVG bottom = ring bottom.
+  // Height is scaled proportionally so the circle stays perfectly round.
+  const iconHeight = Math.round(iconSize * 22 / 24);
   const gap = -Math.round(size * 0.10);
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'baseline', lineHeight: 1 }}>
+    <span style={{ display: 'inline-block', whiteSpace: 'nowrap', lineHeight: 1 }}>
       <span style={{
         fontFamily: "'Sora', sans-serif",
         fontWeight: 800,
@@ -15,16 +19,15 @@ export default function GameOnLogo({ size = 22 }: Props) {
         color: '#e0e7f3',
         letterSpacing: '-1px',
       }}>Game</span>
-      {/* Inline SVG power icon — renders identically across all browsers */}
       <svg
         width={iconSize}
-        height={iconSize}
-        viewBox="0 0 24 24"
+        height={iconHeight}
+        viewBox="0 0 24 22"
         fill="none"
         stroke="var(--accent)"
         strokeWidth={2.6}
         strokeLinecap="round"
-        style={{ display: 'inline-block', verticalAlign: 'baseline', marginBottom: `${-(size * 3.4 / 24)}px`, marginRight: `${gap}px` }}
+        style={{ display: 'inline-block', verticalAlign: 'baseline', marginRight: `${gap}px` }}
         aria-hidden="true"
       >
         <path d="M12 3v7" />
@@ -37,6 +40,6 @@ export default function GameOnLogo({ size = 22 }: Props) {
         color: 'var(--accent)',
         letterSpacing: '-1px',
       }}>n</span>
-    </div>
+    </span>
   );
 }
