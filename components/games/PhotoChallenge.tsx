@@ -9,9 +9,10 @@ type Props = {
   team: Team;
   onSubmitted: () => void;
   revealWord?: string;
+  hexColour?: string;
 };
 
-export default function PhotoChallenge({ question, missionId, team, onSubmitted, revealWord }: Props) {
+export default function PhotoChallenge({ question, missionId, team, onSubmitted, revealWord, hexColour }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -64,6 +65,40 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted,
   return (
     <>
       <div className="challenge-question">{question}</div>
+
+      {/* Colour swatch — only for colour match mission */}
+      {hexColour && (
+        <div style={{
+          marginBottom: '20px',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          border: '1px solid var(--border)',
+        }}>
+          <div style={{
+            height: '100px',
+            background: hexColour,
+          }} />
+          <div style={{
+            padding: '12px 16px',
+            background: 'var(--card)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}>
+            <div style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: hexColour,
+              border: '1px solid var(--border)',
+              flexShrink: 0,
+            }} />
+            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', letterSpacing: '1px', color: 'var(--text)' }}>
+              {hexColour}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Secret word box — only for missions with revealWord */}
       {revealWord && (

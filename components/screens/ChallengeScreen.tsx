@@ -126,6 +126,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], onD
             team={team}
             onSubmitted={() => setPhotoSubmitted(true)}
             revealWord={mission.revealWord}
+            hexColour={mission.hexColour}
           />
         );
       case 'pa_sparet':

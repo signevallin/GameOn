@@ -73,6 +73,7 @@ export type Mission = {
   timelineItems?: TimelineItem[];
   closestWinsQuestions?: ClosestWinsQuestion[];
   textQuizRounds?: { question: string; answer: string; aliases?: string[] }[];
+  hexColour?: string;
 };
 
 export const MISSIONS: Mission[] = [
@@ -1293,7 +1294,8 @@ export const MISSIONS: Mission[] = [
     difficulty: 'medium',
     maxPts: 5000,
     type: 'photo',
-    question: 'Find a physical object that matches this hex colour as closely as possible:\n\n🎨 #3D85C8\n(A medium cornflower blue)\n\nPlace the object against a neutral background if possible, and take a clear close-up photo. Admin will judge how close your colour match is for up to 5000 points!',
+    hexColour: '#3D85C8',
+    question: 'Find a physical object that matches this hex colour as closely as possible. Place the object against a neutral background if possible, and take a clear close-up photo. Admin will judge how close your colour match is for up to 5000 points!',
   },
   // ── WEIRDEST SIGN ──
   {
