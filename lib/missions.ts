@@ -629,9 +629,9 @@ export const MISSIONS: Mission[] = [
         answer: 'Grafana',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/slack',
-        options: ['Slack', 'Microsoft Teams', 'Zoom', 'WebEx'],
-        answer: 'Slack',
+        imageUrl: 'https://cdn.simpleicons.org/kubernetes/326CE5',
+        options: ['Kubernetes', 'Ansible', 'Terraform', 'OpenShift'],
+        answer: 'Kubernetes',
       },
     ],
   },
