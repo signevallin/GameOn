@@ -24,7 +24,7 @@ export default function GameOnLogo({ size = 22 }: Props) {
         stroke="var(--accent)"
         strokeWidth={2.6}
         strokeLinecap="round"
-        style={{ display: 'inline-block', verticalAlign: 'middle', marginBottom: `${size * 0.1}px`, marginRight: `${gap}px` }}
+        style={{ display: 'inline-block', verticalAlign: 'baseline', marginBottom: 0, marginRight: `${gap}px` }}
         aria-hidden="true"
       >
         <path d="M12 3v7" />
