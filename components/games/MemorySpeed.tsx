@@ -98,18 +98,18 @@ export default function MemorySpeed({ rounds, maxPts, onFinish }: Props) {
           <div style={{
             display: 'grid',
             gridTemplateColumns: round.items.length > 6 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
-            gap: '10px',
+            gap: round.items.length > 6 ? '6px' : '10px',
           }}>
             {round.items.map((item, i) => (
               <div key={i} style={{
-                padding: '14px 8px',
+                padding: round.items.length > 6 ? '8px 4px' : '14px 8px',
                 background: 'var(--card)',
                 border: '1px solid var(--border)',
                 borderRadius: '10px',
                 textAlign: 'center',
-                fontSize: '13px',
+                fontSize: round.items.length > 6 ? '11px' : '13px',
                 fontWeight: 600,
-                lineHeight: 1.4,
+                lineHeight: 1.3,
               }}>
                 {item}
               </div>
@@ -126,26 +126,26 @@ export default function MemorySpeed({ rounds, maxPts, onFinish }: Props) {
             <div style={{
               display: 'grid',
               gridTemplateColumns: round.items.length > 6 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)',
-              gap: '8px',
-              marginBottom: '24px',
+              gap: round.items.length > 6 ? '5px' : '8px',
+              marginBottom: round.items.length > 6 ? '14px' : '24px',
             }}>
               {remainingItems.map((item, i) => (
                 <div key={i} style={{
-                  padding: '12px 8px',
+                  padding: round.items.length > 6 ? '7px 4px' : '12px 8px',
                   background: 'var(--surface)',
                   border: '1px solid var(--border)',
                   borderRadius: '8px',
                   textAlign: 'center',
-                  fontSize: '12px',
+                  fontSize: round.items.length > 6 ? '11px' : '12px',
                   color: 'var(--muted)',
-                  lineHeight: 1.4,
+                  lineHeight: 1.3,
                 }}>
                   {item}
                 </div>
               ))}
               {/* Empty slot placeholder */}
               <div style={{
-                padding: '12px 8px',
+                padding: round.items.length > 6 ? '7px 4px' : '12px 8px',
                 background: 'rgba(208,117,125,0.08)',
                 border: '1px dashed var(--accent2)',
                 borderRadius: '8px',
