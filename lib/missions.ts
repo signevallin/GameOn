@@ -1431,7 +1431,7 @@ export const MISSIONS: Mission[] = [
       },
       {
         question: 'In 2025, GKN Aerospace acquired a foundry. What was its name?',
-        options: ['CPP', 'TPC', 'CPT', 'PCT'],
+        options: ['CPP', 'TPC', 'CPT', 'TCP'],
         answer: 'TPC',
       },
     ],
