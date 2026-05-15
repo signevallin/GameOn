@@ -505,16 +505,24 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [showPowerups, setShowPowerups] = useState(false);
   const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
 
-  // Hide leaderboard tab in last 5 minutes if game.hide_leaderboard is on.
-  // Only applies for games longer than 5 min, and only when there's genuinely ≤5 min left.
-  const totalGameSeconds = (game.duration_minutes ?? 45) * 60;
-  const isLeaderboardHidden =
-    Boolean(game.hide_leaderboard) &&
-    game.status === 'active' &&
-    secondsLeft !== null &&
-    secondsLeft > 0 &&
-    secondsLeft <= 300 &&
-    totalGameSeconds > 300;
+  // Hide leaderboard in last 5 min if game.hide_leaderboard is on.
+  // Uses a latch: starts false and can only flip to true once secondsLeft
+  // actually drops to ≤300. This guarantees it is never true at game start,
+  // regardless of polling glitches or short-duration test games.
+  const [lbHiddenLatch, setLbHiddenLatch] = useState(false);
+  useEffect(() => {
+    if (
+      Boolean(game.hide_leaderboard) &&
+      game.status === 'active' &&
+      secondsLeft !== null &&
+      secondsLeft > 0 &&
+      secondsLeft <= 300
+    ) {
+      setLbHiddenLatch(true);
+    }
+  }, [game.hide_leaderboard, game.status, secondsLeft]);
+  const isLeaderboardHidden = lbHiddenLatch;
+
   useEffect(() => {
     if (isLeaderboardHidden && activeTab === 'leaderboard') setActiveTab('missions');
   }, [isLeaderboardHidden, activeTab]);
