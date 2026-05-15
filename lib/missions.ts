@@ -383,57 +383,6 @@ export const MISSIONS: Mission[] = [
     ],
     answer: 'Dubai',
   },
-  // ── SOLVE THE CRIME ──
-  {
-    id: 'solve_crime',
-    icon: '🔍',
-    name: 'Solve the Crime',
-    category: 'Fun',
-    desc: 'Read the case carefully and figure out who stole the laptop! Extra info is on the printed paper.',
-    difficulty: 'hard',
-    maxPts: 450,
-    type: 'solve_crime',
-    crimeStory: `A company laptop worth 50,000 SEK disappeared from the office yesterday evening.
-
-Three employees were in the building that evening:
-
-🔴 Emma (HR Manager)
-"I left at exactly 5 PM and went straight home. My neighbour saw me arrive at 5:15 PM."
-
-🟡 Karl (Developer)
-"I worked until 9 PM, but I was in the break room the entire time with my headphones on. I never went near the laptop storage room."
-
-🟢 Sara (Accountant)
-"I had a client dinner and came back to the office at 7 PM to pick up some documents."
-
-— Physical evidence (see printed paper for full details) —
-• Security camera footage: someone in a distinctive blue jacket entered the laptop room at 7:30 PM.
-• A keycard log shows only one person re-entered the building after 6 PM.
-• Karl's colleague confirms he was in the break room all evening.
-• Emma's neighbour confirmed she arrived home at 5:15 PM and never left again.`,
-    crimeQuestions: [
-      {
-        question: 'Who stole the laptop?',
-        options: ['Emma', 'Karl', 'Sara', 'An unknown outsider'],
-        answer: 'Sara',
-      },
-      {
-        question: 'What time did the theft take place?',
-        options: ['5:00 PM', '5:15 PM', '7:30 PM', '9:00 PM'],
-        answer: '7:30 PM',
-      },
-      {
-        question: 'What was the key piece of evidence that identified the thief?',
-        options: [
-          "Karl's alibi in the break room",
-          "Emma's neighbour's testimony",
-          'The blue jacket caught on security camera',
-          'The keycard entry log',
-        ],
-        answer: 'The blue jacket caught on security camera',
-      },
-    ],
-  },
   // ── CELEBRITY QUIZ ──
   {
     id: 'celebrity_quiz',
@@ -639,50 +588,50 @@ Three employees were in the building that evening:
     icon: '🏢',
     name: 'Logo Quiz',
     category: 'IT',
-    desc: 'Recognize the company from its logo — how many can you get?',
-    difficulty: 'easy',
+    desc: 'Recognize the tech company from its logo — these are not the obvious ones!',
+    difficulty: 'hard',
     maxPts: 400,
     type: 'image_quiz' as const,
     imageRounds: [
       {
-        imageUrl: 'https://cdn.simpleicons.org/apple',
-        options: ['Apple', 'Google', 'Microsoft', 'Samsung'],
-        answer: 'Apple',
+        imageUrl: 'https://cdn.simpleicons.org/figma',
+        options: ['Figma', 'Sketch', 'Adobe XD', 'Canva'],
+        answer: 'Figma',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/spotify',
-        options: ['Spotify', 'Apple Music', 'Tidal', 'Deezer'],
-        answer: 'Spotify',
+        imageUrl: 'https://cdn.simpleicons.org/stripe',
+        options: ['Stripe', 'Klarna', 'Square', 'Adyen'],
+        answer: 'Stripe',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/netflix',
-        options: ['Netflix', 'HBO Max', 'Disney+', 'Amazon Prime'],
-        answer: 'Netflix',
+        imageUrl: 'https://cdn.simpleicons.org/docker',
+        options: ['Docker', 'Kubernetes', 'Red Hat', 'Rancher'],
+        answer: 'Docker',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/youtube',
-        options: ['YouTube', 'Vimeo', 'TikTok', 'Twitch'],
-        answer: 'YouTube',
+        imageUrl: 'https://cdn.simpleicons.org/notion',
+        options: ['Notion', 'Coda', 'Obsidian', 'Evernote'],
+        answer: 'Notion',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/github',
-        options: ['GitHub', 'GitLab', 'Bitbucket', 'Jira'],
-        answer: 'GitHub',
+        imageUrl: 'https://cdn.simpleicons.org/vercel',
+        options: ['Vercel', 'Netlify', 'Railway', 'Render'],
+        answer: 'Vercel',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/airbnb',
-        options: ['Airbnb', 'Booking.com', 'Expedia', 'Tripadvisor'],
-        answer: 'Airbnb',
+        imageUrl: 'https://cdn.simpleicons.org/mongodb',
+        options: ['MongoDB', 'Redis', 'CouchDB', 'Cassandra'],
+        answer: 'MongoDB',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/tesla',
-        options: ['Tesla', 'BMW', 'Mercedes-Benz', 'Audi'],
-        answer: 'Tesla',
+        imageUrl: 'https://cdn.simpleicons.org/grafana',
+        options: ['Grafana', 'Kibana', 'Datadog', 'Prometheus'],
+        answer: 'Grafana',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/ikea',
-        options: ['IKEA', 'H&M', 'Zara', 'Zalando'],
-        answer: 'IKEA',
+        imageUrl: 'https://cdn.simpleicons.org/slack',
+        options: ['Slack', 'Microsoft Teams', 'Zoom', 'WebEx'],
+        answer: 'Slack',
       },
     ],
   },
@@ -856,9 +805,9 @@ Three employees were in the building that evening:
         answer: 'Heath Ledger',
       },
       {
-        clue: '🎬 Which film features a sentient robot named WALL-E who falls in love with another robot named EVE?',
-        options: ['A.I. Artificial Intelligence', 'Interstellar', 'WALL-E', 'Short Circuit'],
-        answer: 'WALL-E',
+        clue: '🎬 Which 2014 Christopher Nolan film stars Matthew McConaughey as an astronaut who travels through a wormhole near Saturn in search of a new home for humanity?',
+        options: ['Gravity', 'Interstellar', 'The Martian', 'Ad Astra'],
+        answer: 'Interstellar',
       },
       {
         clue: '🎬 "I\'ll be back" — In which 1984 sci-fi film does Arnold Schwarzenegger play a killing machine sent back in time?',
@@ -959,50 +908,50 @@ Three employees were in the building that evening:
     icon: '🏳️',
     name: 'Flag Quiz',
     category: 'Fun',
-    desc: 'Recognize the country from its flag — 8 rounds!',
-    difficulty: 'medium',
+    desc: 'Can you tell these easily-confused flags apart? 8 rounds!',
+    difficulty: 'hard',
     maxPts: 400,
     type: 'image_quiz' as const,
     imageRounds: [
       {
-        imageUrl: 'https://flagcdn.com/w320/br.png',
-        options: ['Argentina', 'Brazil', 'Colombia', 'Venezuela'],
-        answer: 'Brazil',
+        imageUrl: 'https://flagcdn.com/w320/ie.png',
+        options: ['Ireland', 'Ivory Coast', 'Italy', 'Hungary'],
+        answer: 'Ireland',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/jp.png',
-        options: ['Japan', 'China', 'South Korea', 'Taiwan'],
-        answer: 'Japan',
+        imageUrl: 'https://flagcdn.com/w320/au.png',
+        options: ['Australia', 'New Zealand', 'Fiji', 'Tuvalu'],
+        answer: 'Australia',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/ca.png',
-        options: ['USA', 'Canada', 'Australia', 'New Zealand'],
-        answer: 'Canada',
+        imageUrl: 'https://flagcdn.com/w320/ro.png',
+        options: ['Romania', 'Chad', 'Andorra', 'Moldova'],
+        answer: 'Romania',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/no.png',
-        options: ['Denmark', 'Sweden', 'Norway', 'Finland'],
-        answer: 'Norway',
+        imageUrl: 'https://flagcdn.com/w320/co.png',
+        options: ['Colombia', 'Ecuador', 'Venezuela', 'Bolivia'],
+        answer: 'Colombia',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/kr.png',
-        options: ['China', 'Japan', 'Taiwan', 'South Korea'],
-        answer: 'South Korea',
+        imageUrl: 'https://flagcdn.com/w320/lu.png',
+        options: ['Luxembourg', 'Netherlands', 'France', 'Croatia'],
+        answer: 'Luxembourg',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/mx.png',
-        options: ['Mexico', 'Italy', 'Hungary', 'Bolivia'],
-        answer: 'Mexico',
+        imageUrl: 'https://flagcdn.com/w320/is.png',
+        options: ['Iceland', 'Norway', 'Denmark', 'Faroe Islands'],
+        answer: 'Iceland',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/za.png',
-        options: ['Jamaica', 'South Africa', 'Kenya', 'Zimbabwe'],
-        answer: 'South Africa',
+        imageUrl: 'https://flagcdn.com/w320/ml.png',
+        options: ['Mali', 'Senegal', 'Guinea', 'Cameroon'],
+        answer: 'Mali',
       },
       {
-        imageUrl: 'https://flagcdn.com/w320/pt.png',
-        options: ['Spain', 'Italy', 'Portugal', 'France'],
-        answer: 'Portugal',
+        imageUrl: 'https://flagcdn.com/w320/id.png',
+        options: ['Indonesia', 'Monaco', 'Poland', 'Singapore'],
+        answer: 'Indonesia',
       },
     ],
   },
@@ -1012,50 +961,50 @@ Three employees were in the building that evening:
     icon: '📱',
     name: 'App Icons',
     category: 'IT',
-    desc: 'Recognize the app from its icon — 8 rounds!',
-    difficulty: 'easy',
+    desc: 'Recognize the app from its icon — not your everyday apps!',
+    difficulty: 'hard',
     maxPts: 350,
     type: 'image_quiz' as const,
     imageRounds: [
       {
-        imageUrl: 'https://cdn.simpleicons.org/instagram/E4405F',
-        options: ['Snapchat', 'TikTok', 'Instagram', 'Pinterest'],
-        answer: 'Instagram',
+        imageUrl: 'https://cdn.simpleicons.org/revolut/0075EB',
+        options: ['Revolut', 'N26', 'Monzo', 'Wise'],
+        answer: 'Revolut',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/whatsapp/25D366',
-        options: ['WhatsApp', 'Telegram', 'Signal', 'WeChat'],
-        answer: 'WhatsApp',
+        imageUrl: 'https://cdn.simpleicons.org/threads/000000',
+        options: ['Threads', 'Mastodon', 'Bluesky', 'Twitter'],
+        answer: 'Threads',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/discord/5865F2',
-        options: ['Zoom', 'Teams', 'Slack', 'Discord'],
-        answer: 'Discord',
+        imageUrl: 'https://cdn.simpleicons.org/wise/9FE870',
+        options: ['Wise', 'Revolut', 'Payoneer', 'Skrill'],
+        answer: 'Wise',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/snapchat/FFFC00',
-        options: ['Snapchat', 'BeReal', 'Instagram', 'TikTok'],
-        answer: 'Snapchat',
+        imageUrl: 'https://cdn.simpleicons.org/bumble/FFD200',
+        options: ['Bumble', 'Tinder', 'Hinge', 'Badoo'],
+        answer: 'Bumble',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/reddit/FF4500',
-        options: ['Quora', 'Medium', 'Reddit', 'Stack Overflow'],
-        answer: 'Reddit',
+        imageUrl: 'https://cdn.simpleicons.org/strava/FC4C02',
+        options: ['Strava', 'Nike Run Club', 'Garmin Connect', 'MapMyRun'],
+        answer: 'Strava',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/duolingo/58CC02',
-        options: ['Duolingo', 'Spotify', 'Robinhood', 'Headspace'],
-        answer: 'Duolingo',
+        imageUrl: 'https://cdn.simpleicons.org/letterboxd/00AC00',
+        options: ['Letterboxd', 'IMDb', 'Rotten Tomatoes', 'Trakt'],
+        answer: 'Letterboxd',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/pinterest/E60023',
-        options: ['YouTube', 'Netflix', 'Vimeo', 'Pinterest'],
-        answer: 'Pinterest',
+        imageUrl: 'https://cdn.simpleicons.org/bereal/000000',
+        options: ['BeReal', 'Snapchat', 'Instagram', 'VSCO'],
+        answer: 'BeReal',
       },
       {
-        imageUrl: 'https://cdn.simpleicons.org/twitch/9146FF',
-        options: ['Twitch', 'Discord', 'Zoom', 'Skype'],
-        answer: 'Twitch',
+        imageUrl: 'https://cdn.simpleicons.org/lichess/000000',
+        options: ['Lichess', 'Chess.com', 'ChessKid', 'Maia Chess'],
+        answer: 'Lichess',
       },
     ],
   },
@@ -1142,34 +1091,34 @@ Three employees were in the building that evening:
     name: 'Brand Slogans',
     category: 'Fun',
     desc: 'Which brand does this slogan belong to? 5 rounds!',
-    difficulty: 'easy',
+    difficulty: 'medium',
     maxPts: 250,
     type: 'celebrity_quiz',
     celebRounds: [
       {
-        clue: '📣 Which brand uses the slogan:\n\n"Just Do It"',
-        options: ['Adidas', 'Under Armour', 'Puma', 'Nike'],
-        answer: 'Nike',
+        clue: '📣 Which brand uses the slogan:\n\n"The Ultimate Driving Machine"',
+        options: ['Mercedes-Benz', 'Audi', 'BMW', 'Volkswagen'],
+        answer: 'BMW',
       },
       {
-        clue: '📣 Which brand uses the slogan:\n\n"Think Different"',
-        options: ['Google', 'Apple', 'Microsoft', 'Samsung'],
-        answer: 'Apple',
+        clue: '📣 Which brand uses the slogan:\n\n"Open Happiness"',
+        options: ['Pepsi', 'Coca-Cola', 'Sprite', 'Dr Pepper'],
+        answer: 'Coca-Cola',
       },
       {
-        clue: '📣 Which brand uses the slogan:\n\n"I\'m Lovin\' It"',
-        options: ['Burger King', 'McDonald\'s', 'KFC', 'Subway'],
-        answer: 'McDonald\'s',
+        clue: '📣 Which brand uses the slogan:\n\n"Impossible Is Nothing"',
+        options: ['Nike', 'Puma', 'New Balance', 'Adidas'],
+        answer: 'Adidas',
       },
       {
-        clue: '📣 Which brand uses the slogan:\n\n"Because You\'re Worth It"',
-        options: ['Dove', 'Pantene', 'L\'Oréal', 'Garnier'],
-        answer: 'L\'Oréal',
+        clue: '📣 Which brand uses the slogan:\n\n"Melts in Your Mouth, Not in Your Hands"',
+        options: ["Hershey's", 'Skittles', "M&M's", "Reese's"],
+        answer: "M&M's",
       },
       {
-        clue: '📣 Which brand uses the slogan:\n\n"Finger Lickin\' Good"',
-        options: ['McDonald\'s', 'Popeyes', 'Subway', 'KFC'],
-        answer: 'KFC',
+        clue: '📣 Which brand uses the slogan:\n\n"Taste the Rainbow"',
+        options: ["M&M's", 'Starburst', 'Haribo', 'Skittles'],
+        answer: 'Skittles',
       },
     ],
   },
@@ -1249,49 +1198,6 @@ Three employees were in the building that evening:
       },
     ],
   },
-  // ── VISUAL IQ ──
-  {
-    id: 'visual_iq',
-    icon: '👁️',
-    name: 'Visual IQ',
-    category: 'Fun',
-    desc: 'Spot the pattern and find what comes next — 6 rounds!',
-    difficulty: 'medium',
-    maxPts: 350,
-    type: 'celebrity_quiz',
-    celebRounds: [
-      {
-        clue: '🔢 What comes next?\n\n2 → 4 → 8 → 16 → 32 → ?',
-        options: ['48', '56', '64', '60'],
-        answer: '64',
-      },
-      {
-        clue: '🎨 What comes next?\n\n🔴 🟡 🟢  🔴 🟡 🟢  🔴 🟡 ?',
-        options: ['🔴', '🟡', '🔵', '🟢'],
-        answer: '🟢',
-      },
-      {
-        clue: '🔢 What comes next in this famous sequence?\n\n1 → 1 → 2 → 3 → 5 → 8 → 13 → ?',
-        options: ['18', '20', '21', '24'],
-        answer: '21',
-      },
-      {
-        clue: '🎨 What comes next?\n\n🐣 🐥 🐔   🐣 🐥 🐔   🐣 ?',
-        options: ['🐔', '🐣', '🦆', '🐥'],
-        answer: '🐥',
-      },
-      {
-        clue: '🔢 What comes next?\n\n100 → 50 → 25 → 12.5 → ?',
-        options: ['6', '5', '8', '6.25'],
-        answer: '6.25',
-      },
-      {
-        clue: '🔢 What comes next?\n\n1 → 4 → 9 → 16 → 25 → ?',
-        options: ['30', '35', '36', '49'],
-        answer: '36',
-      },
-    ],
-  },
   // ── MEMORY SPEED ──
   {
     id: 'memory_speed',
@@ -1306,25 +1212,25 @@ Three employees were in the building that evening:
       {
         items: ['🍕 Pizza', '🚗 Car', '🌍 Globe', '🎸 Guitar', '💻 Laptop', '📱 Phone'],
         missing: '🚗 Car',
-        options: ['🚗 Car', '☕ Coffee', '🎯 Target', '🔑 Key'],
+        options: ['☕ Coffee', '🚗 Car', '🎯 Target', '🔑 Key'],
         memorizeSeconds: 8,
       },
       {
         items: ['🐘 Elephant', '🦁 Lion', '🐬 Dolphin', '🦊 Fox', '🐢 Turtle', '🦅 Eagle'],
         missing: '🦊 Fox',
-        options: ['🦊 Fox', '🐺 Wolf', '🦋 Butterfly', '🐸 Frog'],
+        options: ['🐺 Wolf', '🦋 Butterfly', '🦊 Fox', '🐸 Frog'],
         memorizeSeconds: 8,
       },
       {
         items: ['🍎 Apple', '🍊 Orange', '🍋 Lemon', '🍇 Grapes', '🍓 Strawberry', '🥝 Kiwi', '🍑 Peach', '🥭 Mango'],
         missing: '🍇 Grapes',
-        options: ['🍇 Grapes', '🍒 Cherry', '🍈 Melon', '🫐 Blueberry'],
+        options: ['🍒 Cherry', '🍈 Melon', '🫐 Blueberry', '🍇 Grapes'],
         memorizeSeconds: 10,
       },
       {
         items: ['🗼 Eiffel Tower', '🗽 Statue of Liberty', '🏯 Castle', '⛩️ Torii Gate', '🕌 Mosque', '🏛️ Parthenon', '🗿 Moai', '🕍 Synagogue'],
         missing: '🏯 Castle',
-        options: ['🏯 Castle', '⛪ Church', '🏟️ Stadium', '🏰 Palace'],
+        options: ['⛪ Church', '🏯 Castle', '🏟️ Stadium', '🏰 Palace'],
         memorizeSeconds: 10,
       },
     ],
@@ -1341,39 +1247,6 @@ Three employees were in the building that evening:
     type: 'photo',
     question: 'Your entire team must form a human sculpture/pose together representing the word:\n\n🗿 **TEAMWORK**\n\nNo props allowed — only your bodies! Hold the pose, take a team photo and upload it. Admin will judge your creativity and accuracy for up to 500 points!',
   },
-  // ── PIXEL REVEAL ──
-  {
-    id: 'pixel_reveal',
-    icon: '🔍',
-    name: 'Pixel Reveal',
-    category: 'Visual',
-    desc: 'A blurry image gradually sharpens — guess what it shows! The earlier you guess correctly, the more points you earn.',
-    difficulty: 'medium',
-    maxPts: 400,
-    type: 'pixel_reveal',
-  },
-  // ── ZOOM IN ──
-  {
-    id: 'zoom_in',
-    icon: '🔎',
-    name: 'Zoom In',
-    category: 'Visual',
-    desc: 'An extreme close-up zooms out step by step. Guess as early as possible for maximum points!',
-    difficulty: 'medium',
-    maxPts: 400,
-    type: 'zoom_in',
-  },
-  // ── SIMON SAYS ──
-  {
-    id: 'simon_says',
-    icon: '🔴',
-    name: 'Simon Says',
-    category: 'Action',
-    desc: 'Memorise and repeat the sequence of colours. Each level gets longer — complete 5 levels for full points!',
-    difficulty: 'medium',
-    maxPts: 450,
-    type: 'simon_says',
-  },
   // ── TIMELINE ──
   {
     id: 'timeline',
@@ -1384,6 +1257,13 @@ Three employees were in the building that evening:
     difficulty: 'medium',
     maxPts: 400,
     type: 'timeline',
+    timelineItems: [
+      { label: 'First Apple Macintosh computer released', year: 1984 },
+      { label: 'First text message (SMS) ever sent', year: 1992 },
+      { label: 'Google founded in a garage in California', year: 1998 },
+      { label: 'Wikipedia goes online', year: 2001 },
+      { label: 'YouTube launched', year: 2005 },
+    ],
   },
   // ── CLOSEST WINS ──
   {
