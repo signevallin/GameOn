@@ -336,7 +336,7 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'photo_movie_scene',
-    icon: '🎬',
+    icon: '🎥',
     name: 'Lights, Camera, Action!',
     category: 'Fun',
     desc: 'Recreate a famous movie scene – admin rates your performance!',
@@ -720,7 +720,7 @@ export const MISSIONS: Mission[] = [
   // ── PICTIONARY ──
   {
     id: 'pictionary',
-    icon: '🎨',
+    icon: '✏️',
     name: 'Pictionary',
     category: 'Fun',
     desc: 'One person draws, the rest guess — admin rates your teamwork!',
@@ -1286,7 +1286,7 @@ export const MISSIONS: Mission[] = [
   // ── COLOUR MATCH ──
   {
     id: 'photo_colour_match',
-    icon: '🎨',
+    icon: '🟦',
     name: 'Colour Match',
     category: 'Fun',
     desc: 'Find a real-world object matching this exact hex colour — the closer the match, the more points!',
@@ -1355,7 +1355,7 @@ export const MISSIONS: Mission[] = [
     category: 'Action',
     desc: 'Find and photograph 8 items from the list. Admin rates each photo — the more you find, the more points you earn!',
     difficulty: 'medium',
-    maxPts: 800,
+    maxPts: 5000,
     type: 'scavenger_hunt',
   },
 
@@ -1404,7 +1404,7 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'gkn_trivia',
-    icon: '✈️',
+    icon: '🔩',
     name: 'GKN Trivia',
     category: 'GKN Aerospace',
     desc: 'Test your knowledge about GKN Aerospace — four questions, one chance each!',
@@ -1453,7 +1453,7 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'gkn_closest',
-    icon: '🔢',
+    icon: '📊',
     name: 'Aviation Numbers',
     category: 'GKN Aerospace',
     desc: 'Guess aviation and GKN numbers as accurately as possible. The closer you are, the more points you earn!',
@@ -1468,7 +1468,7 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'gkn_pa_sparet',
-    icon: '🕵️',
+    icon: '🔍',
     name: 'Guess the Aircraft',
     category: 'GKN Aerospace',
     desc: 'Identify the aircraft from clues — fewer clues used means more points!',
@@ -1486,7 +1486,7 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'gkn_timeline',
-    icon: '📅',
+    icon: '⚙️',
     name: 'GKN History',
     category: 'GKN Aerospace',
     desc: 'Sort key milestones in GKN Aerospace\'s history into the correct chronological order.',
