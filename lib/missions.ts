@@ -1496,8 +1496,8 @@ export const MISSIONS: Mission[] = [
     maxPts: 400,
     type: 'timeline',
     timelineItems: [
-      { label: 'Guest, Keen & Nettlefolds (GKN) formed from merger of major British firms', year: 1902 },
       { label: 'Airbus A380 takes its maiden flight — GKN Aerospace supplied key structural components', year: 2005 },
+      { label: 'GKN Aerospace acquires Airbus\'s aerostructures facility in Filton, UK', year: 2009 },
       { label: 'GKN Aerospace acquires Volvo Aero, establishing a major site in Trollhättan, Sweden', year: 2012 },
       { label: 'GKN Aerospace acquires Fokker Technologies, expanding its composite footprint', year: 2015 },
       { label: 'Melrose Industries acquires GKN plc', year: 2018 },
