@@ -244,6 +244,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
+  const [qrExpanded, setQrExpanded] = useState(false);
   const [rated, setRated] = useState<Set<string>>(new Set());
   const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
@@ -677,8 +678,12 @@ export default function AdminScreen({ onLogout }: Props) {
         {/* GAME KEY + QR + START */}
         <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            {/* QR code */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0 }}>
+            {/* QR code — click to expand */}
+            <div
+              onClick={() => setQrExpanded(true)}
+              title="Click to enlarge"
+              style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
+            >
               <QRCodeSVG
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
                 size={100}
@@ -686,7 +691,32 @@ export default function AdminScreen({ onLogout }: Props) {
                 fgColor="#0f1724"
                 level="M"
               />
+              <div style={{ position: 'absolute', bottom: '4px', right: '6px', fontSize: '10px', color: '#aaa' }}>🔍</div>
             </div>
+
+            {/* QR expanded modal */}
+            {qrExpanded && (
+              <div
+                onClick={() => setQrExpanded(false)}
+                style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '32px' }}
+              >
+                <div style={{ background: '#fff', borderRadius: '20px', padding: '24px' }}>
+                  <QRCodeSVG
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
+                    size={280}
+                    bgColor="#ffffff"
+                    fgColor="#0f1724"
+                    level="M"
+                  />
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '36px', fontWeight: 700, color: '#fff', letterSpacing: '8px', marginBottom: '8px' }}>
+                    {activeGame.game_key}
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>Tap anywhere to close</p>
+                </div>
+              </div>
+            )}
             {/* Key + status */}
             <div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share with teams</p>
