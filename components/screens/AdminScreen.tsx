@@ -1005,17 +1005,19 @@ export default function AdminScreen({ onLogout }: Props) {
             .map(id => MISSIONS.find(m => m.id === id))
             .filter(Boolean) as typeof MISSIONS;
 
-          // 1. Mission completion count
+          // 1. Mission completion — top 10
           const completionStats = gameMissions
-            .map(m => ({ m, count: teams.filter(t => t.completed?.includes(m.id)).length }))
-            .filter(x => x.count > 0)
-            .sort((a, b) => b.count - a.count);
+            .map(m => ({ m, value: teams.filter(t => t.completed?.includes(m.id)).length }))
+            .filter(x => x.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10);
 
-          // 2. Total points awarded per mission
+          // 2. Total points per mission — top 10
           const pointStats = gameMissions
-            .map(m => ({ m, total: teams.reduce((s, t) => s + (t.mission_scores?.[m.id] ?? 0), 0) }))
-            .filter(x => x.total > 0)
-            .sort((a, b) => b.total - a.total);
+            .map(m => ({ m, value: teams.reduce((s, t) => s + (t.mission_scores?.[m.id] ?? 0), 0) }))
+            .filter(x => x.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10);
 
           // 3. Would You answers
           const wouldYouMissions = gameMissions.filter(m => m.type === 'wouldyou');
@@ -1026,24 +1028,19 @@ export default function AdminScreen({ onLogout }: Props) {
               .map(t => ({ team: t.name, answer: t.mission_answers[m.id] })),
           })).filter(x => x.answers.length > 0);
 
-          // 4. Duel stolen points
+          // 4. Duel stolen — top 3
           const duelStats = teams
-            .map(t => ({ name: t.name, stolen: t.mission_scores?.['duel_trivia'] ?? 0 }))
-            .filter(x => x.stolen > 0)
-            .sort((a, b) => b.stolen - a.stolen);
+            .map(t => ({ name: t.name, value: t.mission_scores?.['duel_trivia'] ?? 0 }))
+            .filter(x => x.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 3);
 
-          // 5. Most power-up targeted teams (from settings powerupsUsed)
-          const puTargetCount: Record<string, number> = {};
-          for (const key of powerupsUsed) {
-            if (key.includes('_all') || key.startsWith('final_frenzy')) continue;
-            // Key format: 'type_uuid' — UUID is last 36 chars
-            const teamId = key.slice(-36);
-            const team = teams.find(t => t.id === teamId);
-            if (!team) continue;
-            puTargetCount[team.name] = (puTargetCount[team.name] ?? 0) + 1;
-          }
-          const puTargetStats = Object.entries(puTargetCount)
-            .sort((a, b) => b[1] - a[1]);
+          // 5. Most targeted by other teams (powerups_received) — top 3
+          const puTargetStats = teams
+            .map(t => ({ name: t.name, value: t.powerups_received ?? 0 }))
+            .filter(x => x.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 3);
 
           const statCard = (children: React.ReactNode) => (
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
@@ -1052,16 +1049,40 @@ export default function AdminScreen({ onLogout }: Props) {
           );
 
           const statTitle = (icon: string, label: string) => (
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--muted)', letterSpacing: '1px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', letterSpacing: '1px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span>{icon}</span>{label}
             </div>
           );
 
-          const bar = (value: number, max: number, color = 'var(--accent)') => (
-            <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${max > 0 ? (value / max) * 100 : 0}%`, background: color, borderRadius: '2px' }} />
+          // Vertical bar chart with mission on X-axis
+          const BarChart = ({ data, maxValue, color, unit }: {
+            data: { m: typeof MISSIONS[0]; value: number }[];
+            maxValue: number;
+            color: string;
+            unit: string;
+          }) => (
+            <div style={{ overflowX: 'auto', paddingBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', minWidth: 'max-content', paddingTop: '8px' }}>
+                {data.map(({ m, value }) => {
+                  const heightPct = maxValue > 0 ? value / maxValue : 0;
+                  const barH = Math.max(4, Math.round(heightPct * 96));
+                  return (
+                    <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '58px', gap: '3px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 800, color, lineHeight: 1 }}>{value}{unit}</span>
+                      <div style={{ width: '100%', height: `${barH}px`, background: color, borderRadius: '4px 4px 0 0', opacity: 0.85 }} />
+                      <div style={{ width: '100%', height: '1px', background: 'var(--border)' }} />
+                      <span style={{ fontSize: '18px', lineHeight: 1 }}>{m.icon}</span>
+                      <span style={{ fontSize: '9px', color: 'var(--muted)', textAlign: 'center', lineHeight: 1.2, maxWidth: '58px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {m.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           );
+
+          const top3Medal = (i: number) => i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
 
           return (
             <div className="fade-in">
@@ -1070,36 +1091,20 @@ export default function AdminScreen({ onLogout }: Props) {
                 <span className="badge">{teams.length} teams</span>
               </div>
 
-              {/* 1. Mission completion */}
+              {/* 1. Mission completion bar chart */}
               {statCard(<>
-                {statTitle('🏆', 'MOST COMPLETED MISSIONS')}
+                {statTitle('🏆', 'MOST COMPLETED MISSIONS (TOP 10)')}
                 {completionStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No completions yet.</div>
-                  : completionStats.map(({ m, count }) => (
-                    <div key={m.id} style={{ marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                        <span>{m.icon} {m.name}</span>
-                        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{count}/{teams.length} teams</span>
-                      </div>
-                      {bar(count, teams.length)}
-                    </div>
-                  ))}
+                  : <BarChart data={completionStats} maxValue={teams.length} color="var(--accent)" unit={`/${teams.length}`} />}
               </>)}
 
-              {/* 2. Points per mission */}
+              {/* 2. Points per mission bar chart */}
               {statCard(<>
-                {statTitle('💰', 'MOST POINTS AWARDED')}
+                {statTitle('💰', 'MOST POINTS AWARDED (TOP 10)')}
                 {pointStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No points yet.</div>
-                  : pointStats.map(({ m, total }) => (
-                    <div key={m.id} style={{ marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                        <span>{m.icon} {m.name}</span>
-                        <span style={{ fontWeight: 700, color: 'var(--gold)' }}>{total} pts</span>
-                      </div>
-                      {bar(total, pointStats[0]?.total ?? 1, 'var(--gold)')}
-                    </div>
-                  ))}
+                  : <BarChart data={pointStats} maxValue={pointStats[0]?.value ?? 1} color="var(--gold)" unit=" pts" />}
               </>)}
 
               {/* 3. Would You answers */}
@@ -1120,28 +1125,28 @@ export default function AdminScreen({ onLogout }: Props) {
                   ))}
               </>)}
 
-              {/* 4. Duel stolen */}
+              {/* 4. Duel stolen — top 3 */}
               {statCard(<>
-                {statTitle('⚔️', 'DUEL — MOST POINTS STOLEN')}
+                {statTitle('⚔️', 'DUEL — MOST POINTS STOLEN (TOP 3)')}
                 {duelStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No duels completed yet.</div>
-                  : duelStats.map(({ name, stolen }, i) => (
-                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
-                      <span>{i === 0 ? '⚔️' : i === 1 ? '🗡️' : '•'} {name}</span>
-                      <span style={{ fontWeight: 700, color: 'var(--accent2)' }}>+{stolen} pts</span>
+                  : duelStats.map(({ name, value }, i) => (
+                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '9px 0', borderBottom: i < duelStats.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <span>{top3Medal(i)} {name}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--accent2)' }}>+{value} pts</span>
                     </div>
                   ))}
               </>)}
 
-              {/* 5. Power-up targets */}
+              {/* 5. Power-up targets — top 3 */}
               {statCard(<>
-                {statTitle('🎯', 'MOST POWER-UP TARGETED')}
+                {statTitle('🎯', 'MOST TARGETED BY OTHER TEAMS (TOP 3)')}
                 {puTargetStats.length === 0
-                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No power-ups used yet.</div>
-                  : puTargetStats.map(([name, count], i) => (
-                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
-                      <span>{i === 0 ? '🎯' : i === 1 ? '💥' : '•'} {name}</span>
-                      <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{count}×</span>
+                  ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No team power-ups used yet.</div>
+                  : puTargetStats.map(({ name, value }, i) => (
+                    <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '9px 0', borderBottom: i < puTargetStats.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <span>{top3Medal(i)} {name}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--accent)' }}>{value}× targeted</span>
                     </div>
                   ))}
               </>)}

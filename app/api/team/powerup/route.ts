@@ -68,6 +68,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, blocked: true, message: 'That team has a shield active! Your power-up was wasted. 🛡️' });
   }
 
+  // Count this hit against the target (for stats)
+  await supabase.from('teams')
+    .update({ powerups_received: (target.powerups_received ?? 0) + 1 })
+    .eq('id', targetTeamId);
+
   if (type === 'freeze') {
     const freezeUntil = new Date(Date.now() + 60 * 1000).toISOString();
     await supabase.from('teams').update({

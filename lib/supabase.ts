@@ -24,6 +24,7 @@ export type Team = {
   };
   team_powerups_used: string[];
   mission_answers: Record<string, string>;
+  powerups_received: number;
 };
 
 export type Game = {
