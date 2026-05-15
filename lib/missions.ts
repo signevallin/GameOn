@@ -1112,12 +1112,12 @@ export const MISSIONS: Mission[] = [
       },
       {
         clue: '📣 Which brand uses the slogan:\n\n"Melts in Your Mouth, Not in Your Hands"',
-        options: ["Hershey's", 'Skittles', "M&M's", "Reese's"],
+        options: ["Hershey's", 'Kit Kat', "M&M's", "Reese's"],
         answer: "M&M's",
       },
       {
         clue: '📣 Which brand uses the slogan:\n\n"Taste the Rainbow"',
-        options: ["M&M's", 'Starburst', 'Haribo', 'Skittles'],
+        options: ['Starburst', 'Haribo', 'Jolly Rancher', 'Skittles'],
         answer: 'Skittles',
       },
     ],
