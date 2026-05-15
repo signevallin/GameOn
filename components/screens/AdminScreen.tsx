@@ -245,6 +245,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
   const [qrExpanded, setQrExpanded] = useState(false);
+  const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
   const [rated, setRated] = useState<Set<string>>(new Set());
   const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
@@ -734,6 +735,25 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
               </div>
             )}
+            {/* Photo fullscreen modal */}
+            {photoModal && (
+              <div
+                onClick={() => setPhotoModal(null)}
+                style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '24px' }}
+              >
+                <img
+                  src={photoModal.url}
+                  alt={photoModal.label}
+                  style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '12px', objectFit: 'contain', boxShadow: '0 8px 48px rgba(0,0,0,0.6)' }}
+                  onClick={e => e.stopPropagation()}
+                />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontWeight: 700, fontSize: '15px', color: '#fff' }}>{photoModal.label}</div>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>Tap anywhere to close</p>
+                </div>
+              </div>
+            )}
+
             {/* Key + status */}
             <div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share with teams</p>
@@ -946,7 +966,10 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{sub.team_name}</div>
                         </div>
                       </div>
-                      <div style={{ height: '200px', overflow: 'hidden', flexShrink: 0 }}>
+                      <div
+                        style={{ height: '200px', overflow: 'hidden', flexShrink: 0, cursor: 'zoom-in' }}
+                        onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? sub.mission_id}` })}
+                      >
                         <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ padding: '10px 12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -980,7 +1003,10 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{sub.team_name}</div>
                         </div>
                       </div>
-                      <div style={{ height: '180px', overflow: 'hidden', flexShrink: 0 }}>
+                      <div
+                        style={{ height: '180px', overflow: 'hidden', flexShrink: 0, cursor: 'zoom-in' }}
+                        onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${sub.item_label}` })}
+                      >
                         <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ padding: '10px 12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -1020,7 +1046,10 @@ export default function AdminScreen({ onLogout }: Props) {
                           </div>
                           <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
                         </div>
-                        <div style={{ height: '140px', overflow: 'hidden' }}>
+                        <div
+                          style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                          onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? sub.mission_id}` })}
+                        >
                           <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                         </div>
                       </div>
@@ -1035,7 +1064,10 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                         <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
                       </div>
-                      <div style={{ height: '140px', overflow: 'hidden' }}>
+                      <div
+                        style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                        onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${sub.item_label}` })}
+                      >
                         <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                     </div>
