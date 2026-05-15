@@ -1062,15 +1062,19 @@ export default function AdminScreen({ onLogout }: Props) {
             unit: string;
           }) => (
             <div style={{ overflowX: 'auto', paddingBottom: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', minWidth: 'max-content', paddingTop: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', minWidth: 'max-content' }}>
                 {data.map(({ m, value }) => {
-                  const heightPct = maxValue > 0 ? value / maxValue : 0;
-                  const barH = Math.max(4, Math.round(heightPct * 96));
+                  const barH = maxValue > 0 ? Math.max(4, Math.round((value / maxValue) * 96)) : 4;
                   return (
                     <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '58px', gap: '3px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 800, color, lineHeight: 1 }}>{value}{unit}</span>
-                      <div style={{ width: '100%', height: `${barH}px`, background: color, borderRadius: '4px 4px 0 0', opacity: 0.85 }} />
+                      {/* Fixed-height bar area — all bars share the same 116px container */}
+                      <div style={{ height: '116px', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: '3px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 800, color, lineHeight: 1 }}>{value}{unit}</span>
+                        <div style={{ width: '100%', height: `${barH}px`, background: color, borderRadius: '4px 4px 0 0', opacity: 0.85 }} />
+                      </div>
+                      {/* Baseline */}
                       <div style={{ width: '100%', height: '1px', background: 'var(--border)' }} />
+                      {/* Labels below — don't affect bar height */}
                       <span style={{ fontSize: '18px', lineHeight: 1 }}>{m.icon}</span>
                       <span style={{ fontSize: '9px', color: 'var(--muted)', textAlign: 'center', lineHeight: 1.2, maxWidth: '58px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                         {m.name}
