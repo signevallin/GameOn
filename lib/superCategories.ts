@@ -28,7 +28,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   anagram:         'tech',
 
   // Logic & Mind
-  memory:          'logic',
+  memory:          'tech',
   sequence:        'logic',
   puzzle:          'logic',
   snabb_matte:     'logic',

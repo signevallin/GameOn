@@ -22,12 +22,15 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+button { touch-action: manipulation; }
+
 body {
   font-family: 'Sora', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 body::before {
@@ -52,6 +55,26 @@ body::after {
 
 /* ── ANIMATIONS ── */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-28px); }
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: scale(0.96); }
+}
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes urgentPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(208,117,125,0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(208,117,125,0); }
+}
 @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
 @keyframes pulse { to { opacity: 0.6; } }
 @keyframes coinFlip {
@@ -143,8 +166,11 @@ h2 {
   cursor: pointer;
   border: none;
   min-height: 44px;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.1s;
+  touch-action: manipulation;
 }
+
+.btn:active { transform: scale(0.95); opacity: 0.85; }
 
 .btn:focus-visible {
   outline: 2px solid var(--accent);
@@ -210,13 +236,14 @@ input[type="range"].color-slider::-moz-range-track {
 }
 
 /* ── FORMS ── */
-input[type=text], input[type=password] {
+input[type=text], input[type=password], input[type=number], input[type=email],
+textarea, select {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text);
   font-family: 'Sora', sans-serif;
-  font-size: 15px;
+  font-size: 16px; /* 16px minimum prevents iOS auto-zoom on focus */
   padding: 14px 16px;
   width: 100%;
   outline: none;
@@ -348,6 +375,29 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(117,171,20
   color: var(--accent3);
   letter-spacing: 1px;
 }
+
+/* ── SKELETON LOADING ── */
+.skeleton { background: var(--border); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
+
+/* ── MISSION CARD ACTIVE FEEDBACK ── */
+.mission-card { touch-action: manipulation; }
+.mission-card:active { transform: scale(0.97); box-shadow: none !important; }
+
+/* ── SCORE DELTA BADGE ── */
+.score-delta {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  color: var(--accent3);
+  font-weight: 800;
+  font-size: 13px;
+  animation: floatUp 1.4s ease forwards;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── URGENT PULSE (Hot Potato timer) ── */
+.urgent-pulse { animation: urgentPulse 0.8s ease-in-out infinite; }
 
 .mission-icon { font-size: 36px; margin-bottom: 16px; display: block; }
 

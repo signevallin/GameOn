@@ -38,7 +38,7 @@ export default function TimelineSort({ maxPts, items, onFinish }: Props) {
     const pts = Math.round(maxPts * correct / TIMELINE_ITEMS.length);
     setCorrectCount(correct);
     setSubmitted(true);
-    setTimeout(() => onFinish(correct === TIMELINE_ITEMS.length, pts), 2200);
+    setTimeout(() => onFinish(correct > 0, pts), 2200);
   }
 
   if (submitted) {

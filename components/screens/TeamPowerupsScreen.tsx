@@ -16,6 +16,8 @@ const POWERUPS: PowerUp[] = [
   { id: 'freeze',        icon: '❄️', label: 'Freeze',          desc: 'Lock a rival team for 60 seconds.',                                       color: '#7ec8e3',        offensive: true  },
   { id: 'double_trouble',icon: '😈', label: 'Double Trouble',  desc: 'Force a rival to complete 2 assigned missions before playing freely.',     color: 'var(--accent2)', offensive: true  },
   { id: 'all_in',        icon: '🎲', label: 'All In',          desc: 'Gamble 30% of your points against a rival — coin flip decides the winner.',color: 'var(--gold)',    offensive: true  },
+  { id: 'point_steal',  icon: '🎰', label: 'Point Steal',     desc: 'Steal 500 points from a rival team. (Blocked by shield)',                  color: 'var(--gold)',    offensive: true  },
+  { id: 'robin_hood',   icon: '🏹', label: 'Robin Hood',      desc: 'Steal 300 pts from a rich team — automatically given to the poorest team.',  color: 'var(--accent3)', offensive: true  },
 ];
 
 type Props = {

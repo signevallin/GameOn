@@ -22,8 +22,9 @@ export async function POST(req: Request) {
   if (team.completed?.includes(missionId)) return NextResponse.json({ error: 'Already completed.' }, { status: 409 });
 
   const prevScores = (team.mission_scores as Record<string, number>) ?? {};
-  const finalPts = team.double_points ? (points ?? 0) * 2 : (points ?? 0);
   const effects = (team.active_effects as Record<string, unknown>) ?? {};
+  const isFinalFrenzy = effects.final_frenzy === true;
+  const finalPts = (team.double_points || isFinalFrenzy) ? (points ?? 0) * 2 : (points ?? 0);
 
   const updatePayload: Record<string, unknown> = {
     score: (team.score ?? 0) + finalPts,
@@ -32,7 +33,8 @@ export async function POST(req: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  if (team.double_points) {
+  // Only reset double_points if it was a one-time power-up, not Final Frenzy
+  if (team.double_points && !isFinalFrenzy) {
     updatePayload.double_points = false;
   }
 

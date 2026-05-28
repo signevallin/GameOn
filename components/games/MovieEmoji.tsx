@@ -42,9 +42,15 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
     }, 1500);
   }
 
+  function isCorrectAnswer(g: string, round: EmojiRound) {
+    const n = normalize(g);
+    if (n === normalize(round.answer)) return true;
+    return (round.aliases ?? []).some(a => n === normalize(a));
+  }
+
   function submit() {
     if (result !== null || guess.trim() === '') return;
-    resolve(normalize(guess) === normalize(rounds[idx].answer));
+    resolve(isCorrectAnswer(guess, rounds[idx]));
   }
 
   function pass() {

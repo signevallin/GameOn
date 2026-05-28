@@ -71,6 +71,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   onDismiss: () => void;
 }) {
   const [loading, setLoading] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
 
   async function ack() {
     setLoading(true);
@@ -81,7 +82,10 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
         body: JSON.stringify({ teamId }),
         cache: 'no-store',
       });
-      if (res.ok) onDismiss();
+      if (res.ok) {
+        setDismissing(true);
+        setTimeout(onDismiss, 220);
+      }
     } finally {
       setLoading(false);
     }
@@ -92,9 +96,13 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
     double_points:   { emoji: '🎯', title: 'POWER-UP!',              btnLabel: "LET'S GO!", color: 'var(--accent3)' },
     final_frenzy:    { emoji: '🔥', title: 'FINAL FRENZY!',          btnLabel: "LET'S GO!", color: 'var(--gold)' },
     fake_hint:       { emoji: '🔍', title: 'SECRET TIP',             btnLabel: 'OK',        color: 'var(--accent)' },
-    photo_rated:     { emoji: '📸', title: 'PHOTO RATED!',           btnLabel: 'NICE!',     color: 'var(--accent3)' },
-    powerup_self:    { emoji: '⚡', title: 'POWER-UP ACTIVATED!',    btnLabel: "LET'S GO!", color: 'var(--accent3)' },
-    powerup_received:{ emoji: '😈', title: 'INCOMING ATTACK!',       btnLabel: 'DAMN IT!',  color: 'var(--accent2)' },
+    photo_rated:        { emoji: '📸', title: 'PHOTO RATED!',           btnLabel: 'NICE!',        color: 'var(--accent3)' },
+    powerup_self:       { emoji: '⚡', title: 'POWER-UP ACTIVATED!',    btnLabel: "LET'S GO!",    color: 'var(--accent3)' },
+    powerup_received:   { emoji: '😈', title: 'INCOMING ATTACK!',       btnLabel: 'DAMN IT!',     color: 'var(--accent2)' },
+    point_steal_from:   { emoji: '😱', title: 'POINT STEAL!',           btnLabel: 'NO WAY!',      color: 'var(--accent2)' },
+    point_steal_to:     { emoji: '🤑', title: 'POINT STEAL!',           btnLabel: "YESSS!",       color: 'var(--accent3)' },
+    hot_potato:         { emoji: '💣', title: 'TIME BOMB!',              btnLabel: "LET'S GO!",    color: 'var(--gold)' },
+    hot_potato_penalty: { emoji: '💥', title: "BOOM! TIME'S UP!",        btnLabel: 'DAMN IT!',     color: 'var(--accent2)' },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
@@ -105,6 +113,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
       background: 'rgba(0,0,0,0.75)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px',
+      ...(dismissing ? { animation: 'fadeOut 0.22s ease forwards' } : {}),
     }}>
       <div style={{
         background: 'var(--card)',
@@ -114,6 +123,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
         maxWidth: '380px',
         width: '100%',
         textAlign: 'center',
+        animation: 'popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards',
       }}>
         <div style={{ fontSize: '56px', marginBottom: '16px' }}>{cfg.emoji}</div>
         <h2 style={{ color: cfg.color, marginBottom: '16px', letterSpacing: '2px' }}>{cfg.title}</h2>
@@ -184,13 +194,14 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
           const barPct = maxScore > 0 ? Math.max(4, Math.round((t.score / maxScore) * 100)) : 4;
           const barColor = i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--muted)';
 
+          const isFirst = i === 0;
           return (
             <div
               key={t.id}
               style={{
-                padding: '12px 14px',
-                background: 'var(--card)',
-                border: `1px solid ${isMe ? 'var(--accent)' : 'var(--border)'}`,
+                padding: isFirst ? '16px 18px' : '12px 14px',
+                background: isFirst ? 'rgba(222,187,107,0.06)' : 'var(--card)',
+                border: isFirst ? '2px solid var(--gold)' : `1px solid ${isMe ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: '12px',
               }}
             >
@@ -206,9 +217,9 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontWeight: 700, fontSize: '14px',
+                    fontWeight: 700, fontSize: isFirst ? '16px' : '14px',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    color: isMe ? 'var(--accent)' : 'var(--text)',
+                    color: isMe ? 'var(--accent)' : isFirst ? 'var(--gold)' : 'var(--text)',
                   }}>
                     {t.name}{isMe ? ' · you' : ''}
                   </div>
@@ -217,7 +228,7 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
                   </div>
                 </div>
 
-                <div style={{ fontWeight: 800, fontSize: '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: isFirst ? '20px' : '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
                   {t.score}
                 </div>
               </div>
@@ -241,6 +252,10 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 }
 
 // ── End screen ────────────────────────────────────────────────────────────────
+function confirmLogout(onLogout: () => void) {
+  if (window.confirm('Are you sure you want to log out?')) onLogout();
+}
+
 function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[]; game: Game; onLogout: () => void }) {
   const sorted = [...teams].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
@@ -310,7 +325,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
           </div>
 
           <button
-            onClick={onLogout}
+            onClick={() => confirmLogout(onLogout)}
             style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px' }}
           >
             ↩ Leave & start new game
@@ -430,7 +445,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Logout / new game */}
         <button
-          onClick={onLogout}
+          onClick={() => confirmLogout(onLogout)}
           style={{
             width: '100%',
             padding: '14px',
@@ -505,6 +520,38 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [showPowerups, setShowPowerups] = useState(false);
   const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
 
+  // Score count-up animation
+  const [displayScore, setDisplayScore] = useState(team.score ?? 0);
+  const [scoreDelta, setScoreDelta] = useState<number | null>(null);
+  const prevScoreRef = useRef(team.score ?? 0);
+
+  useEffect(() => {
+    const newScore = team.score ?? 0;
+    const oldScore = prevScoreRef.current;
+    if (newScore === oldScore) return;
+    prevScoreRef.current = newScore;
+
+    if (newScore > oldScore) {
+      setScoreDelta(newScore - oldScore);
+      setTimeout(() => setScoreDelta(null), 1500);
+    }
+
+    // Animate displayScore from oldScore to newScore over ~600ms
+    const duration = 600;
+    const startTime = performance.now();
+    const startVal = oldScore;
+    const endVal = newScore;
+
+    function step(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(startVal + (endVal - startVal) * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }, [team.score]);
+
   // Hide leaderboard in last 5 min if game.hide_leaderboard is on.
   // Uses a latch: starts false and can only flip to true once secondsLeft
   // actually drops to ≤300. This guarantees it is never true at game start,
@@ -544,7 +591,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
-  const totalPowerups = 4; // shield, freeze, double_trouble, all_in
+  const totalPowerups = 6; // shield, freeze, double_trouble, all_in, point_steal, robin_hood
   const usedPowerups = (team.team_powerups_used ?? []).length;
   const availablePowerups = totalPowerups - usedPowerups;
   const alreadyFinished = Boolean(team.finished_at);
@@ -639,9 +686,14 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
 
         {/* Col 3: score */}
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
-          ⭐ {team.score}
-        </span>
+        <div style={{ position: 'relative', display: 'inline-flex', justifyContent: 'center' }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            ⭐ {displayScore}
+          </span>
+          {scoreDelta !== null && (
+            <span className="score-delta">+{scoreDelta}</span>
+          )}
+        </div>
 
         {/* Col 4: timer */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -867,18 +919,47 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             ) : (
               /* ── MISSION LIST VIEW ── */
               <>
-                <div style={{ padding: '16px 0 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* ── Category header with breadcrumb ── */}
+                <div style={{ padding: '14px 0 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', padding: '0', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '4px' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '10px',
+                      color: 'var(--text)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontFamily: "'Sora', sans-serif",
+                      fontWeight: 700,
+                      padding: '10px 14px',
+                      minHeight: '44px',
+                      flexShrink: 0,
+                      transition: 'background 0.15s, border-color 0.15s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--card)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                   >
                     ← Back
                   </button>
-                  <span style={{ color: 'var(--border)' }}>|</span>
-                  <span style={{ fontSize: '16px' }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
-                  <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text)' }}>
-                    {SUPER_CATEGORIES[selectedCategory].label}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>Missions</span>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
+                    <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
+                    <span style={{
+                      fontWeight: 800,
+                      fontSize: '15px',
+                      color: SUPER_CATEGORIES[selectedCategory].color,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {SUPER_CATEGORIES[selectedCategory].label}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="missions-grid" style={{ paddingBottom: '40px' }}>
@@ -912,7 +993,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── LOGOUT AT BOTTOM ── */}
             <div style={{ padding: '8px 0 40px', textAlign: 'center' }}>
               <button
-                onClick={onLogout}
+                onClick={() => confirmLogout(onLogout)}
                 style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", letterSpacing: '0.5px', padding: '8px 16px' }}
               >
                 Log out

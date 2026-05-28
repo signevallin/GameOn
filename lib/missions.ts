@@ -33,7 +33,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
 export type CrimeQuestion = { question: string; options: string[]; answer: string };
 export type CelebRound = { clue: string; options: string[]; answer: string };
-export type EmojiRound = { emojis: string; options: string[]; answer: string };
+export type EmojiRound = { emojis: string; options: string[]; answer: string; aliases?: string[] };
 export type CodeClue = { digits: [number, number, number]; hint: string };
 export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
 export type ImageRound = { imageUrl: string; options: string[]; answer: string };
@@ -220,11 +220,11 @@ export const MISSIONS: Mission[] = [
     maxPts: 400,
     type: 'text_quiz',
     textQuizRounds: [
-      { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan' },
+      { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan', aliases: ['Handelsplatsen vid Lidan', 'En handelsplats vid Lidan', 'Handelsplats vid lidan', 'Handelsplatsen vid lidan'] },
       { question: 'Vad kallas Lidan i folkmun?', answer: 'Älva' },
       { question: 'Rörstrand har jubileum 2026. Hur många år firas?', answer: '300år', aliases: ['300'] },
       { question: 'Vad kallas den del av Gamla staden som finns kvar efter branden 1553?', answer: 'Limtorget' },
-      { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong' },
+      { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong', aliases: ['Jakt', 'Jaktpaviljongen'] },
     ],
   },
   {
@@ -771,6 +771,7 @@ export const MISSIONS: Mission[] = [
         emojis: '🐉 👦 🦷 🛡️ ⚔️ 🇳🇴 🦾',
         options: ['How to Train Your Dragon', 'Brave', 'The Hobbit', 'Eragon'],
         answer: 'How to Train Your Dragon',
+        aliases: ['Draktränaren'],
       },
     ],
   },
@@ -1449,7 +1450,7 @@ export const MISSIONS: Mission[] = [
       { text: "GKN Aerospace's site in Filton, UK was involved in the development of Concorde.", answer: true },
       { text: 'The Airbus A350 was the first commercial aircraft to have a fuselage made primarily from carbon fibre.', answer: false },
       { text: 'Carbon fibre composite materials are lighter than aluminium.', answer: true },
-      { text: 'GKN\'s industrial roots date all the way back to the 18th century.', answer: true },
+      { text: 'GKN Aerospace manufactures the cockpit windows for the Boeing 787 Dreamliner.', answer: true },
       { text: 'A carbon fibre composite component is typically around 3 times stronger than steel at the same weight.', answer: false },
     ],
   },

@@ -11,7 +11,7 @@ function getSupabase() {
   );
 }
 
-const VALID_TYPES = ['freeze', 'double_trouble', 'shield', 'all_in', 'point_steal', 'robin_hood'] as const;
+const VALID_TYPES = ['freeze', 'double_trouble', 'shield', 'all_in', 'point_steal'] as const;
 type PowerUpType = typeof VALID_TYPES[number];
 
 export async function POST(req: Request) {
@@ -161,44 +161,6 @@ export async function POST(req: Request) {
     }).eq('id', senderTeamId);
 
     return NextResponse.json({ ok: true, stolen, resultMessage: `🤑 You stole ${stolen} pts from ${target.name}!` });
-  }
-
-  if (type === 'robin_hood') {
-    const targetScore = target.score ?? 0;
-    const stolen = Math.min(300, targetScore);
-
-    // Find the poorest team (lowest score, excluding sender and target)
-    const { data: allTeams } = await supabase
-      .from('teams')
-      .select('id, name, score')
-      .eq('game_id', sender.game_id)
-      .neq('id', senderTeamId)
-      .neq('id', targetTeamId);
-
-    const poorest = (allTeams ?? []).sort((a, b) => (a.score ?? 0) - (b.score ?? 0))[0];
-
-    // Deduct from target
-    await supabase.from('teams').update({
-      score: Math.max(0, targetScore - stolen),
-      pending_notification: { type: 'point_steal_from', message: `🏹 ROBIN HOOD! ${stolen} points were stolen from your team and given to the poorest team!` },
-    }).eq('id', targetTeamId);
-
-    // Give to poorest team (or sender if no other team exists)
-    const recipientId = poorest?.id ?? senderTeamId;
-    const recipientName = poorest?.name ?? sender.name;
-    const recipientScore = poorest?.score ?? (sender.score ?? 0);
-    await supabase.from('teams').update({
-      score: recipientScore + stolen,
-      pending_notification: { type: 'point_steal_to', message: `🏹 ROBIN HOOD! You received ${stolen} stolen points!` },
-    }).eq('id', recipientId);
-
-    // Mark sender as used
-    await supabase.from('teams').update({
-      team_powerups_used: [...usedPowerups, type],
-      pending_notification: { type: 'powerup_self', message: `🏹 Robin Hood activated! Stole ${stolen} pts from ${target.name} and gave them to ${recipientName}!` },
-    }).eq('id', senderTeamId);
-
-    return NextResponse.json({ ok: true, stolen, resultMessage: `🏹 Stole ${stolen} pts from ${target.name} and gave to ${recipientName}!` });
   }
 
   // Mark sender powerup as used
