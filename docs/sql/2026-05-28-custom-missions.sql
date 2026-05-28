@@ -7,7 +7,7 @@ CREATE TABLE custom_missions (
   category_name TEXT NOT NULL DEFAULT 'My Missions',
   name          TEXT NOT NULL,
   icon          TEXT NOT NULL DEFAULT '⭐',
-  desc          TEXT NOT NULL DEFAULT '',
+  "desc"        TEXT NOT NULL DEFAULT '',
   difficulty    TEXT NOT NULL DEFAULT 'medium'
                   CHECK (difficulty IN ('easy','medium','hard')),
   max_pts       INT  NOT NULL DEFAULT 500,
