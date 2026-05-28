@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Team, Game } from '@/lib/supabase';
+import { Team, Game, CustomMission } from '@/lib/supabase';
+import { toMission } from '@/lib/custom-missions';
+import { Mission } from '@/lib/missions';
 import { supabase } from '@/lib/supabase';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
@@ -19,6 +21,7 @@ export default function Home() {
   const [activeMission, setActiveMission] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [customMissions, setCustomMissions] = useState<Mission[]>([]);
 
   // Refs so the polling interval always reads the latest values without
   // needing to be in the dependency array (which would restart the interval).
@@ -105,9 +108,10 @@ export default function Home() {
     }
   }, [screen, team, game, hydrated]);
 
-  function handleTeamLogin(t: Team, g: Game) {
+  function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = []) {
     setTeam(t);
     setGame(g);
+    setCustomMissions(cms.map(toMission));
     setScreen('missions');
   }
 
@@ -165,6 +169,7 @@ export default function Home() {
         team={team}
         game={game}
         teams={teams}
+        customMissions={customMissions}
         onSelectMission={handleSelectMission}
         onLogout={handleLogout}
         onTeamUpdate={setTeam}
@@ -180,6 +185,7 @@ export default function Home() {
         team={team}
         game={game}
         teams={teams}
+        customMissions={customMissions}
         onDone={handleChallengeDone}
         onBack={() => setScreen('missions')}
       />

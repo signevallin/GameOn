@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const QrScanner = dynamic(() => import('@/components/QrScanner'), { ssr: false });
 
 type Props = {
-  onTeamLogin: (team: Team, game: Game) => void;
+  onTeamLogin: (team: Team, game: Game, customMissions?: import('@/lib/supabase').CustomMission[]) => void;
   onAdminLogin: () => void;
 };
 
@@ -41,7 +41,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
-      onTeamLogin(data.team, data.game);
+      onTeamLogin(data.team, data.game, data.customMissions ?? []);
     } catch {
       setError('Network error. Try again.');
     } finally {
