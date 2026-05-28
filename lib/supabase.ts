@@ -47,3 +47,18 @@ export type Game = {
     game_id: string;
   } | null;
 };
+
+export type CustomMission = {
+  id: string;
+  user_id: string;
+  category_name: string;
+  name: string;
+  icon: string;
+  desc: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  max_pts: number;
+  type: string;
+  data: Record<string, unknown>;
+  sort_order: number;
+  created_at: string;
+};
