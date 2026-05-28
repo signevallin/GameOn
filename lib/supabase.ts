@@ -38,4 +38,12 @@ export type Game = {
   created_at: string;
   mission_max_pts: Record<string, number>;
   hide_leaderboard?: boolean;
+  user_id?: string;
+  powerups_used?: string[];
+  hot_potato?: {
+    mission_id: string;
+    expires_at: string;
+    penalty_pts: number;
+    game_id: string;
+  } | null;
 };
