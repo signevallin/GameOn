@@ -36,12 +36,13 @@ type Props = {
   team: Team;
   game: Game;
   teams?: Team[];
+  customMissions?: Mission[];
   onDone: (updatedTeam: Team, pts: number, correct: boolean, elapsed: number) => void;
   onBack: () => void;
 };
 
-export default function ChallengeScreen({ missionId, team, game, teams = [], onDone, onBack }: Props) {
-  const mission = MISSIONS.find(m => m.id === missionId)!;
+export default function ChallengeScreen({ missionId, team, game, teams = [], customMissions = [], onDone, onBack }: Props) {
+  const mission = (MISSIONS.find(m => m.id === missionId) ?? customMissions.find(m => m.id === missionId))!;
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
