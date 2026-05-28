@@ -370,7 +370,10 @@ export default function AdminScreen({ onLogout }: Props) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setAuthToken(session?.access_token ?? null);
-      setIsSuperAdmin(session?.user?.app_metadata?.role === 'superadmin');
+    });
+    // Use getUser() for fresh server-side data (not cached JWT)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsSuperAdmin(user?.app_metadata?.role === 'superadmin');
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthToken(session?.access_token ?? null);
