@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Team, Game } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
 import ChallengeScreen from '@/components/screens/ChallengeScreen';
@@ -26,22 +27,30 @@ export default function Home() {
   teamRef.current = team;
   gameRef.current = game;
 
-  // ── Restore session from localStorage on first mount ──
+  // ── Restore session on first mount ──
   useEffect(() => {
-    try {
-      const savedScreen = localStorage.getItem('gameon_screen') as Screen | null;
-      const savedTeam = localStorage.getItem('gameon_team');
-      const savedGame = localStorage.getItem('gameon_game');
-
-      if (savedScreen === 'admin') {
-        setScreen('admin');
-      } else if (savedScreen === 'missions' && savedTeam && savedGame) {
-        setTeam(JSON.parse(savedTeam));
-        setGame(JSON.parse(savedGame));
-        setScreen('missions');
-      }
-    } catch { /* corrupted storage – start fresh */ }
-    setHydrated(true);
+    async function restoreSession() {
+      try {
+        // 1. Check for Supabase admin session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setScreen('admin');
+          setHydrated(true);
+          return;
+        }
+        // 2. Fall back to localStorage for team session
+        const savedScreen = localStorage.getItem('gameon_screen') as Screen | null;
+        const savedTeam = localStorage.getItem('gameon_team');
+        const savedGame = localStorage.getItem('gameon_game');
+        if (savedScreen === 'missions' && savedTeam && savedGame) {
+          setTeam(JSON.parse(savedTeam));
+          setGame(JSON.parse(savedGame));
+          setScreen('missions');
+        }
+      } catch { /* corrupted storage – start fresh */ }
+      setHydrated(true);
+    }
+    restoreSession();
   }, []);
 
   // ── Master polling loop: runs whenever team is on the missions screen ──
@@ -54,39 +63,24 @@ export default function Home() {
       const g = gameRef.current;
       if (!t || !g) return;
       try {
-      // Use POST so Vercel edge never caches the response
-      const [gameRes, teamRes, teamsRes] = await Promise.all([
-        fetch('/api/game', {
+        // Single combined request — replaces 3 separate API calls
+        const res = await fetch('/api/poll', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: g.game_key }),
+          body: JSON.stringify({ teamId: t.id, gameId: g.id, gameKey: g.game_key }),
           cache: 'no-store',
-        }),
-        fetch('/api/team/status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ teamId: t.id }),
-          cache: 'no-store',
-        }),
-        fetch('/api/team/list', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ gameId: g.id }),
-          cache: 'no-store',
-        }),
-      ]);
-      const [gameData, teamData, teamsData] = await Promise.all([gameRes.json(), teamRes.json(), teamsRes.json()]);
-      if (gameData.error) console.error('[poll/game]', gameData.error);
-      if (teamData.error) console.error('[poll/team]', teamData.error);
-      if (gameData.game) setGame(gameData.game);
-      if (teamData.team) setTeam(teamData.team);
-      if (teamsData.teams) setTeams(teamsData.teams);
+        });
+        const data = await res.json();
+        if (data.error) { console.error('[poll]', data.error); return; }
+        if (data.game) setGame(data.game);
+        if (data.team) setTeam(data.team);
+        if (data.teams) setTeams(data.teams);
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
-    // Poll immediately, then every 3 seconds
+    // Poll immediately, then every 5 seconds (reduced from 3s for scalability)
     refresh();
-    const id = setInterval(refresh, 3000);
+    const id = setInterval(refresh, 5000);
     return () => clearInterval(id);
   // Only restart when the session itself changes (login/logout), not on every state update.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,7 +90,8 @@ export default function Home() {
   useEffect(() => {
     if (!hydrated) return;
     if (screen === 'admin') {
-      localStorage.setItem('gameon_screen', 'admin');
+      // Admin session managed by Supabase Auth — no localStorage needed
+      localStorage.removeItem('gameon_screen');
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
     } else if ((screen === 'missions' || screen === 'challenge' || screen === 'result') && team && game) {
@@ -129,13 +124,36 @@ export default function Home() {
     setScreen('result');
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    await supabase.auth.signOut().catch(() => {});
     setTeam(null);
     setGame(null);
     setScreen('login');
   }
 
-  if (!hydrated) return null;
+  if (!hydrated) return (
+    <div>
+      {/* Skeleton nav */}
+      <div className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', alignItems: 'center', gap: '4px' }}>
+        <div className="skeleton" style={{ height: '14px', width: '80px', borderRadius: '6px' }} />
+        <div className="skeleton" style={{ height: '24px', width: '72px', borderRadius: '20px', margin: '0 auto' }} />
+        <div className="skeleton" style={{ height: '14px', width: '48px', borderRadius: '6px', margin: '0 auto' }} />
+        <div className="skeleton" style={{ height: '14px', width: '56px', borderRadius: '6px', marginLeft: 'auto' }} />
+      </div>
+      <div className="container">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '32px' }}>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="skeleton" style={{ height: '120px', borderRadius: '14px' }} />
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="skeleton" style={{ height: '88px', borderRadius: '12px' }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   if (screen === 'login') {
     return <LoginScreen onTeamLogin={handleTeamLogin} onAdminLogin={handleAdminLogin} />;
