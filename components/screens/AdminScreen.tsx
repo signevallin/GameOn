@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MISSIONS } from '@/lib/missions';
-import { Team, Game } from '@/lib/supabase';
+import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
@@ -75,15 +75,6 @@ type PowerUpsCardProps = {
   setPuMessages: (v: string) => void;
   puLoading: string | null;
   onActivate: (type: string) => void;
-  // point steal
-  stealFrom: string;
-  setStealFrom: (v: string) => void;
-  stealTo: string;
-  setStealTo: (v: string) => void;
-  stealAmount: number;
-  setStealAmount: (v: number) => void;
-  onSteal: () => void;
-  stealLoading: boolean;
   // hot potato
   hotPotatoMissionId: string;
   setHotPotatoMissionId: (v: string) => void;
@@ -107,7 +98,6 @@ function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
 
 function PowerUpsCard({
   teams, gameId: _gameId, gameMissionIds, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
-  stealFrom, setStealFrom, stealTo, setStealTo, stealAmount, setStealAmount, onSteal, stealLoading,
   hotPotatoMissionId, setHotPotatoMissionId, onHotPotato, hotPotatoLoading, hotPotatoActive,
 }: PowerUpsCardProps) {
   const hotPotatoSecondsLeft = useHotPotatoCountdown(hotPotatoActive);
@@ -143,7 +133,7 @@ function PowerUpsCard({
   const POWERS = [
     { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
     { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
-    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: false },
+    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: true },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
@@ -167,15 +157,21 @@ function PowerUpsCard({
             <div style={{ fontSize: '14px', fontWeight: 800, color: finalFrenzyUsed ? 'var(--muted)' : 'var(--accent2)' }}>Final Frenzy</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>Doubles all points for ALL teams instantly</div>
           </div>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--surface)', borderRadius: '4px', padding: '2px 7px', border: '1px solid var(--border)', flexShrink: 0 }}>ALL TEAMS</span>
-          <button
-            className="btn btn-primary"
-            style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: finalFrenzyUsed ? 'var(--surface)' : 'var(--accent2)', borderColor: finalFrenzyUsed ? 'var(--border)' : 'var(--accent2)' }}
-            disabled={finalFrenzyUsed || finalFrenzyLoading}
-            onClick={() => onActivate('final_frenzy')}
-          >
-            {finalFrenzyLoading ? '...' : finalFrenzyUsed ? '✓ ACTIVATED' : 'ACTIVATE'}
-          </button>
+          {finalFrenzyUsed ? (
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent3)', background: 'rgba(140,191,155,0.12)', borderRadius: '6px', padding: '6px 12px', border: '1px solid var(--accent3)', flexShrink: 0 }}>✓ ACTIVATED</span>
+          ) : (
+            <>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--surface)', borderRadius: '4px', padding: '2px 7px', border: '1px solid var(--border)', flexShrink: 0 }}>ALL TEAMS</span>
+              <button
+                className="btn btn-primary"
+                style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: 'var(--accent2)', borderColor: 'var(--accent2)' }}
+                disabled={finalFrenzyLoading}
+                onClick={() => onActivate('final_frenzy')}
+              >
+                {finalFrenzyLoading ? '...' : 'ACTIVATE'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -243,65 +239,7 @@ function PowerUpsCard({
         );
       })}
 
-      {/* ── Point Steal ── */}
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <span style={{ fontSize: '20px' }}>🎰</span>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Point Steal</div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Steal points from one team and give them to another</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-          <select
-            value={stealFrom}
-            onChange={e => setStealFrom(e.target.value)}
-            style={{ ...selectStyle, flex: '1 1 140px' }}
-          >
-            <option value="">From team…</option>
-            {teams.map(t => (
-              <option key={t.id} value={t.id} disabled={t.id === stealTo}>{t.name}</option>
-            ))}
-          </select>
-          <select
-            value={stealTo}
-            onChange={e => setStealTo(e.target.value)}
-            style={{ ...selectStyle, flex: '1 1 140px' }}
-          >
-            <option value="">To team…</option>
-            {teams.map(t => (
-              <option key={t.id} value={t.id} disabled={t.id === stealFrom}>{t.name}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-          {[100, 200, 300, 400, 500].map(pts => (
-            <button
-              key={pts}
-              onClick={() => setStealAmount(pts)}
-              style={{
-                padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
-                fontFamily: "'Sora', sans-serif", cursor: 'pointer',
-                border: stealAmount === pts ? '2px solid var(--accent)' : '1px solid var(--border)',
-                background: stealAmount === pts ? 'rgba(140,110,255,0.15)' : 'var(--surface)',
-                color: stealAmount === pts ? 'var(--accent)' : 'var(--text)',
-              }}
-            >
-              {pts}p
-            </button>
-          ))}
-        </div>
-        <button
-          className="btn btn-primary"
-          style={{ padding: '8px 20px', fontSize: '12px', background: 'var(--accent)', borderColor: 'var(--accent)' }}
-          disabled={!stealFrom || !stealTo || !stealAmount || stealLoading}
-          onClick={onSteal}
-        >
-          {stealLoading ? '...' : '🎰 STEAL'}
-        </button>
-      </div>
-
-      {/* ── Hot Potato ── */}
+      {/* ── Time Bomb ── */}
       <div style={{
         background: hotPotatoActive
           ? 'linear-gradient(135deg, rgba(208,117,125,0.15) 0%, rgba(222,150,80,0.12) 100%)'
@@ -311,19 +249,22 @@ function PowerUpsCard({
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '20px' }}>🥔</span>
+          <span style={{ fontSize: '20px' }}>💣</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Hot Potato</div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 200 pts</div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Time Bomb</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 500 pts</div>
           </div>
           {hotPotatoActive && hotPotatoSecondsLeft !== null && (
-            <div style={{
-              background: hotPotatoSecondsLeft <= 30 ? 'var(--accent2)' : 'rgba(208,117,125,0.8)',
-              color: '#fff', borderRadius: '8px', padding: '4px 10px',
-              fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '14px',
-              letterSpacing: '1px', flexShrink: 0,
-              animation: hotPotatoSecondsLeft <= 30 ? 'pulse 0.5s infinite alternate' : 'none',
-            }}>
+            <div
+              className={hotPotatoSecondsLeft <= 60 ? 'urgent-pulse' : ''}
+              style={{
+                background: hotPotatoSecondsLeft <= 30 ? 'var(--accent2)' : 'rgba(208,117,125,0.8)',
+                color: '#fff', borderRadius: '8px', padding: '4px 10px',
+                fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '14px',
+                letterSpacing: '1px', flexShrink: 0,
+                animation: hotPotatoSecondsLeft <= 30 ? 'pulse 0.5s infinite alternate' : hotPotatoSecondsLeft <= 60 ? undefined : 'none',
+              }}
+            >
               ⏱ {fmtTimer(hotPotatoSecondsLeft)}
             </div>
           )}
@@ -357,7 +298,7 @@ function PowerUpsCard({
               disabled={!hotPotatoMissionId || hotPotatoLoading}
               onClick={onHotPotato}
             >
-              {hotPotatoLoading ? '...' : '🥔 ACTIVATE'}
+              {hotPotatoLoading ? '...' : '💣 ACTIVATE'}
             </button>
           </div>
         )}
@@ -404,7 +345,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
-  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats' | 'customers'>('leaderboard');
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
   const [qrExpanded, setQrExpanded] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
@@ -416,15 +357,27 @@ export default function AdminScreen({ onLogout }: Props) {
   });
   const [puMessages, setPuMessages] = useState('');
   const [puLoading, setPuLoading] = useState<string | null>(null);
-  // Point Steal
-  const [stealFrom, setStealFrom] = useState('');
-  const [stealTo, setStealTo] = useState('');
-  const [stealAmount, setStealAmount] = useState(100);
-  const [stealLoading, setStealLoading] = useState(false);
-  // Hot Potato
+  // Time Bomb
   const [hotPotatoMissionId, setHotPotatoMissionId] = useState('');
   const [hotPotatoLoading, setHotPotatoLoading] = useState(false);
   const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
+
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
+
+  // Load auth token on mount and subscribe to changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthToken(session?.access_token ?? null);
+      setIsSuperAdmin(session?.user?.app_metadata?.role === 'superadmin');
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthToken(session?.access_token ?? null);
+      setIsSuperAdmin(session?.user?.app_metadata?.role === 'superadmin');
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Create form state
   const [gameName, setGameName] = useState('');
@@ -443,18 +396,21 @@ export default function AdminScreen({ onLogout }: Props) {
   // Polls that started BEFORE a command are discarded to prevent race conditions.
   const lastCommandAtRef = useRef(0);
 
-  const POST = (url: string, body?: object) => fetch(url, {
+  const POST = useCallback((url: string, body?: object) => fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+    },
     body: JSON.stringify(body ?? {}),
     cache: 'no-store',
-  });
+  }), [authToken]);
 
   const loadGames = useCallback(async () => {
     const res = await POST('/api/admin/game', { action: 'list' });
     const data = await res.json();
     if (data.games) setGames(data.games);
-  }, []);
+  }, [POST]);
 
   const loadGameData = useCallback(async (game: Game) => {
     const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
@@ -462,7 +418,7 @@ export default function AdminScreen({ onLogout }: Props) {
       POST('/api/admin/photos'),
       POST('/api/scavenger/submissions'),
       POST('/api/game', { key: game.game_key }),
-      POST('/api/settings'),
+      POST('/api/settings', { gameId: game.id }),
     ]);
     const [td, pd, scvd, gd, sd] = await Promise.all([
       teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
@@ -483,7 +439,7 @@ export default function AdminScreen({ onLogout }: Props) {
     }
     if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     setHotPotatoActive(sd.hot_potato ?? null);
-  }, []);
+  }, [POST]);
 
   useEffect(() => { loadGames(); }, [loadGames]);
 
@@ -517,7 +473,7 @@ export default function AdminScreen({ onLogout }: Props) {
         POST('/api/admin/photos'),
         POST('/api/scavenger/submissions'),
         POST('/api/game', { key: gameKey }),
-        POST('/api/settings'),
+        POST('/api/settings', { gameId }),
       ]);
       const [td, pd, scvd, gd, sd] = await Promise.all([
         teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
@@ -540,9 +496,9 @@ export default function AdminScreen({ onLogout }: Props) {
 
       // Auto-resolve expired hot potato
       if (hp && new Date(hp.expires_at) <= new Date()) {
-        await POST('/api/admin/powerup/resolve-hot-potato');
+        await POST('/api/admin/powerup/resolve-hot-potato', { gameId });
         // Refresh settings after resolution
-        const freshSd = await POST('/api/settings').then(r => r.json());
+        const freshSd = await POST('/api/settings', { gameId }).then(r => r.json());
         if (freshSd.powerups_used) setPowerupsUsed(freshSd.powerups_used);
         setHotPotatoActive(freshSd.hot_potato ?? null);
       }
@@ -620,24 +576,6 @@ export default function AdminScreen({ onLogout }: Props) {
     if (activeGame) loadGameData(activeGame);
   }
 
-  async function activatePointSteal() {
-    if (!stealFrom || !stealTo || !stealAmount) return;
-    setStealLoading(true);
-    try {
-      const res = await POST('/api/admin/powerup', { type: 'point_steal', fromTeamId: stealFrom, toTeamId: stealTo, amount: stealAmount });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Point steal failed: ${err.error ?? res.statusText}`);
-        return;
-      }
-      setStealFrom('');
-      setStealTo('');
-      setStealAmount(100);
-    } finally {
-      setStealLoading(false);
-    }
-  }
-
   async function activateHotPotato() {
     if (!hotPotatoMissionId || !activeGame) return;
     const mission = MISSIONS.find(m => m.id === hotPotatoMissionId);
@@ -652,11 +590,11 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Hot Potato failed: ${err.error ?? res.statusText}`);
+        alert(`Time Bomb failed: ${err.error ?? res.statusText}`);
         return;
       }
       const data = await res.json();
-      setHotPotatoActive({ mission_id: hotPotatoMissionId, expires_at: data.expiresAt, penalty_pts: 200, game_id: activeGame.id });
+      setHotPotatoActive({ mission_id: hotPotatoMissionId, expires_at: data.expiresAt, penalty_pts: 500, game_id: activeGame.id });
       setHotPotatoMissionId('');
     } finally {
       setHotPotatoLoading(false);
@@ -681,11 +619,17 @@ export default function AdminScreen({ onLogout }: Props) {
         alert(`Power-up failed: ${err.error ?? res.statusText}`);
         return;
       }
-      const sd = await POST('/api/settings').then(r => r.json());
+      const sd = await POST('/api/settings', { gameId: activeGame?.id }).then(r => r.json());
       if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     } finally {
       setPuLoading(null);
     }
+  }
+
+  async function loadCustomers() {
+    const res = await POST('/api/admin/superadmin/users');
+    const data = await res.json();
+    if (data.users) setCustomers(data.users);
   }
 
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
@@ -1031,6 +975,9 @@ export default function AdminScreen({ onLogout }: Props) {
           <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>📈 Stats</button>
           {activeGame.status === 'active' && (
             <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups</button>
+          )}
+          {isSuperAdmin && (
+            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadCustomers(); }}>👥 Customers</button>
           )}
         </div>
 
@@ -1482,20 +1429,47 @@ export default function AdminScreen({ onLogout }: Props) {
               setPuMessages={setPuMessages}
               puLoading={puLoading}
               onActivate={activatePowerup}
-              stealFrom={stealFrom}
-              setStealFrom={setStealFrom}
-              stealTo={stealTo}
-              setStealTo={setStealTo}
-              stealAmount={stealAmount}
-              setStealAmount={setStealAmount}
-              onSteal={activatePointSteal}
-              stealLoading={stealLoading}
               hotPotatoMissionId={hotPotatoMissionId}
               setHotPotatoMissionId={setHotPotatoMissionId}
               onHotPotato={activateHotPotato}
               hotPotatoLoading={hotPotatoLoading}
               hotPotatoActive={hotPotatoActive}
             />
+          </div>
+        )}
+
+        {/* CUSTOMERS — super-admin only */}
+        {tab === 'customers' && isSuperAdmin && (
+          <div className="fade-in">
+            <div className="section-header">
+              <h2 style={{ fontSize: '18px' }}>Customers</h2>
+              <span className="badge">{customers.length} accounts</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {customers.length === 0 && (
+                <div className="empty-state">No customers yet.</div>
+              )}
+              {customers.map(c => (
+                <div key={c.id} style={{
+                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px',
+                  padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '14px', color: c.is_super_admin ? 'var(--gold)' : 'var(--text)' }}>
+                      {c.email}{c.is_super_admin ? ' ⭐' : ''}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                      Joined {new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {c.last_sign_in_at && ` · Last login ${new Date(c.last_sign_in_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--accent)' }}>{c.game_count}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>game{c.game_count !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
