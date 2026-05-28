@@ -1,5 +1,7 @@
+// app/api/admin/teams/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +12,10 @@ function getSupabase() {
   );
 }
 
-// POST – used by admin polling (POST is never cached by Vercel edge)
 export async function POST(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
   const { gameId } = await req.json();
   let query = getSupabase().from('teams').select('*').order('score', { ascending: false });
   if (gameId) query = query.eq('game_id', gameId);
@@ -20,8 +24,10 @@ export async function POST(req: Request) {
   return NextResponse.json({ teams: data });
 }
 
-// GET – kept for compatibility
 export async function GET(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
   const { searchParams } = new URL(req.url);
   const gameId = searchParams.get('gameId');
   let query = getSupabase().from('teams').select('*').order('score', { ascending: false });

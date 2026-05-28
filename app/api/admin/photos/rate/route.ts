@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
+import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
