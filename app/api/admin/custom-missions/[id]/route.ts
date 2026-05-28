@@ -27,18 +27,22 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   const { name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
 
+  if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
+
+  // Only include fields that were explicitly provided
+  const updateFields: Record<string, unknown> = {};
+  if (name !== undefined) updateFields.name = name.trim();
+  if (icon !== undefined) updateFields.icon = icon;
+  if (desc !== undefined) updateFields.desc = desc;
+  if (difficulty !== undefined) updateFields.difficulty = difficulty;
+  if (max_pts !== undefined) updateFields.max_pts = max_pts;
+  if (type !== undefined) updateFields.type = type;
+  if (data !== undefined) updateFields.data = data;
+  if (sort_order !== undefined) updateFields.sort_order = sort_order;
+
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
-    .update({
-      name: name?.trim(),
-      icon,
-      desc,
-      difficulty,
-      max_pts,
-      type,
-      data,
-      sort_order,
-    })
+    .update(updateFields)
     .eq('id', id)
     .select()
     .single();
