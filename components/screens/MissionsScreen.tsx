@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { MISSIONS } from '@/lib/missions';
+import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
@@ -475,6 +475,7 @@ type Props = {
   onLogout: () => void;
   onTeamUpdate: (team: Team) => void;
   onGameUpdate: (game: Game) => void;
+  customMissions?: Mission[];
 };
 
 const DIFF_CLS: Record<string, string>   = { easy: 'tag-easy', medium: 'tag-medium', hard: 'tag-hard' };
@@ -510,7 +511,7 @@ function formatElapsed(ms: number) {
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate }: Props) {
+export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, customMissions = [] }: Props) {
   const secondsLeft = useCountdown(game);
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
@@ -590,6 +591,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   }, [team.pending_notification]);
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
+  const visibleCustomMissions = customMissions.filter(m => game.missions.includes(m.id));
   const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
   const totalPowerups = 6; // shield, freeze, double_trouble, all_in, point_steal, robin_hood
   const usedPowerups = (team.team_powerups_used ?? []).length;
@@ -628,6 +630,15 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
     const doneMissions = missions.filter(m => team.completed?.includes(m.id));
     return { key, missions, minPts, maxPts, done: doneMissions.length };
   }).filter(Boolean) as { key: SuperCategoryKey; missions: typeof visibleMissions; minPts: number; maxPts: number; done: number }[];
+
+  const customCategoryName = visibleCustomMissions[0]?.category ?? null;
+  const customCategoryDone = visibleCustomMissions.filter(m => team.completed?.includes(m.id)).length;
+  const customMinPts = visibleCustomMissions.length
+    ? Math.min(...visibleCustomMissions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts))
+    : 0;
+  const customMaxPts = visibleCustomMissions.length
+    ? Math.max(...visibleCustomMissions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts))
+    : 0;
 
   return (
     <>
@@ -879,6 +890,27 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                       </div>
                     );
                   })}
+
+                  {/* ── Custom category ── */}
+                  {visibleCustomMissions.length > 0 && customCategoryName && selectedCategory === null && (
+                    <div
+                      className="card"
+                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1 }}
+                      onClick={() => setSelectedCategory('__custom__' as SuperCategoryKey)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '24px' }}>⭐</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#9b59b6' }}>{customCategoryName.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{customMinPts}–{customMaxPts} pts</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 800, fontSize: '16px', color: '#9b59b6' }}>{customCategoryDone}/{visibleCustomMissions.length}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--muted)' }}>done</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* We're done */}
@@ -948,42 +980,90 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
                     <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>Missions</span>
                     <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
-                    <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
-                    <span style={{
-                      fontWeight: 800,
-                      fontSize: '15px',
-                      color: SUPER_CATEGORIES[selectedCategory].color,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {SUPER_CATEGORIES[selectedCategory].label}
-                    </span>
+                    {selectedCategory !== ('__custom__' as SuperCategoryKey) ? (
+                      <>
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
+                        <span style={{
+                          fontWeight: 800,
+                          fontSize: '15px',
+                          color: SUPER_CATEGORIES[selectedCategory].color,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {SUPER_CATEGORIES[selectedCategory].label}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>⭐</span>
+                        <span style={{
+                          fontWeight: 800,
+                          fontSize: '15px',
+                          color: '#9b59b6',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {customCategoryName ?? 'Custom'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <div className="missions-grid" style={{ paddingBottom: '40px' }}>
-                  {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
-                    const done = team.completed?.includes(m.id);
-                    const blocked = isFrozen;
-                    return (
-                      <div
-                        key={m.id}
-                        className={`mission-card${done ? ' done' : ''}`}
-                        style={{ opacity: blocked && !done ? 0.45 : 1 }}
-                        onClick={() => !done && !blocked && onSelectMission(m.id)}
-                      >
-                        <span className="mission-icon">{m.icon}</span>
-                        <div className="mission-name">{m.name}</div>
-                        <div className="mission-desc">{m.desc}</div>
-                        <div className="mission-meta">
-                          <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
-                          <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
+                {/* Standard category missions */}
+                {selectedCategory !== ('__custom__' as SuperCategoryKey) && (
+                  <div className="missions-grid" style={{ paddingBottom: '40px' }}>
+                    {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
+                      const done = team.completed?.includes(m.id);
+                      const blocked = isFrozen;
+                      return (
+                        <div
+                          key={m.id}
+                          className={`mission-card${done ? ' done' : ''}`}
+                          style={{ opacity: blocked && !done ? 0.45 : 1 }}
+                          onClick={() => !done && !blocked && onSelectMission(m.id)}
+                        >
+                          <span className="mission-icon">{m.icon}</span>
+                          <div className="mission-name">{m.name}</div>
+                          <div className="mission-desc">{m.desc}</div>
+                          <div className="mission-meta">
+                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
+                            <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── Custom category missions list ── */}
+                {selectedCategory === ('__custom__' as SuperCategoryKey) && visibleCustomMissions.length > 0 && (
+                  <div className="missions-grid" style={{ paddingBottom: '40px' }}>
+                    {visibleCustomMissions.map(m => {
+                      const done = team.completed?.includes(m.id);
+                      const pts = game.mission_max_pts?.[m.id] ?? m.maxPts;
+                      return (
+                        <div
+                          key={m.id}
+                          className="card"
+                          style={{ cursor: done ? 'default' : 'pointer', opacity: done ? 0.5 : 1, borderColor: done ? 'var(--border)' : '#9b59b6' }}
+                          onClick={() => !done && onSelectMission(m.id)}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '24px' }}>{m.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '14px' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {pts} pts</div>
+                            </div>
+                            {done && <span style={{ fontSize: '18px' }}>✅</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </>
             )}
             </>)}{/* closes double_trouble false-branch and ternary */}
