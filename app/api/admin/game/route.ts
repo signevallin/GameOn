@@ -1,5 +1,7 @@
+// app/api/admin/game/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,40 +19,42 @@ function adminClient() {
   );
 }
 
-// GET – list all games (kept for compatibility)
-export async function GET() {
-  const { data, error } = await adminClient()
-    .from('games')
-    .select('*')
-    .order('created_at', { ascending: false });
+export async function GET(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
 
+  let query = adminClient().from('games').select('*').order('created_at', { ascending: false });
+  if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
+
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ games: data }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }
 
-// POST – either list games (action:'list') or create a new game
 export async function POST(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
   const body = await req.json();
 
-  // action:'list' – fetch all games (POST is never cached by Vercel edge)
   if (body.action === 'list') {
-    const { data, error } = await adminClient()
-      .from('games')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    let query = adminClient().from('games').select('*').order('created_at', { ascending: false });
+    if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
+    const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ games: data });
   }
 
-  // action:'delete' – delete a game and all its teams/photo submissions
   if (body.action === 'delete') {
     const { gameId } = body;
     if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
 
-    // Get team IDs first so we can cascade-delete photo submissions
-    const { data: gameTeams } = await adminClient()
-      .from('teams').select('id').eq('game_id', gameId);
+    // Verify ownership
+    const { data: game } = await adminClient().from('games').select('user_id').eq('id', gameId).single();
+    if (!game) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
+    if (!admin.isSuperAdmin && game.user_id !== admin.userId) return unauthorizedResponse();
+
+    const { data: gameTeams } = await adminClient().from('teams').select('id').eq('game_id', gameId);
     const teamIds = (gameTeams ?? []).map((t: { id: string }) => t.id);
     if (teamIds.length) {
       await adminClient().from('photo_submissions').delete().in('team_id', teamIds);
@@ -61,34 +65,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // default – create a new game
+  // Create game
   const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard } = body;
-  if (!missions?.length) {
-    return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
-  }
+  if (!missions?.length) return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
 
-  let game_key = generateKey();
+  let key = '';
   let attempts = 0;
   while (attempts < 10) {
-    const { data } = await adminClient().from('games').select('id').eq('game_key', game_key).single();
-    if (!data) break;
-    game_key = generateKey();
+    key = generateKey();
+    const { data: existing } = await adminClient().from('games').select('id').eq('game_key', key).single();
+    if (!existing) break;
     attempts++;
   }
 
-  const { data, error } = await adminClient()
+  const { data: game, error } = await adminClient()
     .from('games')
     .insert({
-      name: name || `Game ${game_key}`,
+      game_key: key,
+      name: name?.trim() || null,
       missions,
-      duration_minutes: duration_minutes || 45,
-      game_key,
+      duration_minutes: duration_minutes ?? 45,
       mission_max_pts: mission_max_pts ?? {},
       hide_leaderboard: hide_leaderboard ?? false,
+      status: 'draft',
+      user_id: admin.userId,
+      powerups_used: [],
     })
     .select()
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ game: data });
+  return NextResponse.json({ game });
 }
