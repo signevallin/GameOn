@@ -308,7 +308,35 @@ function PowerUpsCard({
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions';
+
+type MissionFormData = {
+  name: string;
+  icon: string;
+  desc: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  maxPts: number;
+  type: string;
+  // trivia_quiz
+  triviaRounds: { question: string; options: [string, string, string, string]; answer: string }[];
+  // truefalse
+  statements: { text: string; answer: boolean }[];
+  // closest_wins
+  closestQuestions: { q: string; answer: string; unit: string; hint: string }[];
+  // pa_sparet
+  clues: string[];
+  paAnswer: string;
+  // timeline
+  timelineItems: { label: string; year: string }[];
+  // photo
+  photoPrompt: string;
+};
+
+const EMPTY_FORM: MissionFormData = {
+  name: '', icon: '⭐', desc: '', difficulty: 'medium', maxPts: 500, type: '',
+  triviaRounds: [], statements: [], closestQuestions: [],
+  clues: [], paAnswer: '', timelineItems: [], photoPrompt: '',
+};
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
@@ -366,6 +394,14 @@ export default function AdminScreen({ onLogout }: Props) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
+  const [customCategoryName, setCustomCategoryName] = useState('My Missions');
+  const [categoryNameSaving, setCategoryNameSaving] = useState(false);
+  const [showMissionForm, setShowMissionForm] = useState(false);
+  const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
+  const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
+  const [missionFormError, setMissionFormError] = useState('');
+  const [missionSaving, setMissionSaving] = useState(false);
+  const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
 
   // Load auth token on mount and subscribe to changes
   useEffect(() => {
@@ -640,7 +676,10 @@ export default function AdminScreen({ onLogout }: Props) {
   async function loadAdminCustomMissions() {
     const res = await POST('/api/admin/custom-missions');
     const data = await res.json();
-    if (data.missions) setAdminCustomMissions(data.missions);
+    if (data.missions) {
+      setAdminCustomMissions(data.missions);
+      if (data.missions.length > 0) setCustomCategoryName(data.missions[0].category_name);
+    }
   }
 
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
@@ -664,7 +703,10 @@ export default function AdminScreen({ onLogout }: Props) {
       <div className="container fade-in">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
           <h2>Your Games</h2>
-          <button className="btn btn-primary" onClick={() => setView('create')}>+ NEW GAME</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+            <button className="btn btn-primary" onClick={() => setView('create')}>+ NEW GAME</button>
+          </div>
         </div>
         {games.length === 0 ? (
           <div className="empty-state" style={{ paddingTop: '80px' }}>
@@ -725,6 +767,367 @@ export default function AdminScreen({ onLogout }: Props) {
       </div>
     </>
   );
+
+  // ── MY MISSIONS ──
+  if (view === 'missions') {
+    async function saveCategoryName() {
+      if (!customCategoryName.trim()) return;
+      setCategoryNameSaving(true);
+      await POST('/api/admin/custom-missions/category', { category_name: customCategoryName.trim() });
+      setCategoryNameSaving(false);
+      loadAdminCustomMissions();
+    }
+
+    function openNewForm() {
+      setEditingMissionId(null);
+      setMissionForm(EMPTY_FORM);
+      setMissionFormError('');
+      setShowMissionForm(true);
+    }
+
+    function openEditForm(cm: import('@/lib/supabase').CustomMission) {
+      setEditingMissionId(cm.id);
+      const d = cm.data as Record<string, unknown>;
+      setMissionForm({
+        name: cm.name,
+        icon: cm.icon,
+        desc: cm.desc,
+        difficulty: cm.difficulty,
+        maxPts: cm.max_pts,
+        type: cm.type,
+        triviaRounds: cm.type === 'trivia_quiz' ? (d.rounds as MissionFormData['triviaRounds']) ?? [] : [],
+        statements: cm.type === 'truefalse' ? (d.statements as MissionFormData['statements']) ?? [] : [],
+        closestQuestions: cm.type === 'closest_wins'
+          ? ((d.questions as { q: string; answer: number; unit: string; hint: string }[]) ?? []).map(q => ({ ...q, answer: String(q.answer) }))
+          : [],
+        clues: cm.type === 'pa_sparet' ? (d.clues as string[]) ?? [] : [],
+        paAnswer: cm.type === 'pa_sparet' ? (d.answer as string) ?? '' : '',
+        timelineItems: cm.type === 'timeline'
+          ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
+          : [],
+        photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
+      });
+      setMissionFormError('');
+      setShowMissionForm(true);
+    }
+
+    async function saveMission() {
+      const { validateMissionData, buildMissionData } = await import('@/lib/custom-missions');
+      const validationError = validateMissionData(missionForm.type, {
+        triviaRounds: missionForm.triviaRounds,
+        statements: missionForm.statements,
+        closestQuestions: missionForm.closestQuestions,
+        clues: missionForm.clues,
+        paAnswer: missionForm.paAnswer,
+        timelineItems: missionForm.timelineItems,
+        photoPrompt: missionForm.photoPrompt,
+      });
+      if (validationError) { setMissionFormError(validationError); return; }
+
+      setMissionSaving(true);
+      setMissionFormError('');
+      const data = buildMissionData(missionForm.type, {
+        triviaRounds: missionForm.triviaRounds,
+        statements: missionForm.statements,
+        closestQuestions: missionForm.closestQuestions,
+        clues: missionForm.clues,
+        paAnswer: missionForm.paAnswer,
+        timelineItems: missionForm.timelineItems,
+        photoPrompt: missionForm.photoPrompt,
+      });
+      const payload = {
+        category_name: customCategoryName,
+        name: missionForm.name.trim(),
+        icon: missionForm.icon || '⭐',
+        desc: missionForm.desc,
+        difficulty: missionForm.difficulty,
+        max_pts: missionForm.maxPts,
+        type: missionForm.type,
+        data,
+      };
+
+      if (editingMissionId) {
+        await fetch(`/api/admin/custom-missions/${editingMissionId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await POST('/api/admin/custom-missions', { ...payload, sort_order: adminCustomMissions.length });
+      }
+      setMissionSaving(false);
+      setShowMissionForm(false);
+      setEditingMissionId(null);
+      loadAdminCustomMissions();
+    }
+
+    async function deleteMission(id: string) {
+      setDeletingMissionId(id);
+      await fetch(`/api/admin/custom-missions/${id}`, {
+        method: 'DELETE',
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+      });
+      setDeletingMissionId(null);
+      loadAdminCustomMissions();
+    }
+
+    const setF = (patch: Partial<MissionFormData>) => setMissionForm(prev => ({ ...prev, ...patch }));
+    const inputStyle = { width: '100%', padding: '8px 12px', fontSize: '13px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontFamily: "'Sora', sans-serif" };
+    const labelStyle = { fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--muted)', display: 'block', marginBottom: '4px' };
+
+    return (
+      <>
+        <nav className="nav">
+          <div className="nav-brand"><GameOnLogo size={22} /></div>
+          <NavCenter game={null} />
+          <div className="nav-right">
+            <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
+          </div>
+        </nav>
+        <div className="container fade-in">
+          <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); }}>← Back</button>
+            <h2 style={{ margin: 0 }}>My Missions</h2>
+          </div>
+
+          {/* Category name */}
+          <div className="card" style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>CATEGORY NAME (shown to teams)</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={customCategoryName}
+                onChange={e => setCustomCategoryName(e.target.value)}
+                placeholder="e.g. Volvo Cars"
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button
+                className="btn btn-primary"
+                style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
+                disabled={categoryNameSaving || !customCategoryName.trim()}
+                onClick={saveCategoryName}
+              >
+                {categoryNameSaving ? '...' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          {/* Mission list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            {adminCustomMissions.length === 0 && !showMissionForm && (
+              <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px', fontSize: '14px' }}>
+                No missions yet. Add your first one below.
+              </div>
+            )}
+            {adminCustomMissions.map(cm => (
+              <div key={cm.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '22px' }}>{cm.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{cm.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{cm.type.replace('_', ' ')} · {cm.difficulty} · {cm.max_pts} pts</div>
+                </div>
+                <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => openEditForm(cm)}>Edit</button>
+                <button
+                  className="btn btn-ghost"
+                  style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--accent3)' }}
+                  disabled={deletingMissionId === cm.id}
+                  onClick={() => deleteMission(cm.id)}
+                >
+                  {deletingMissionId === cm.id ? '...' : 'Delete'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add / Edit form */}
+          {!showMissionForm && (
+            <button className="btn btn-primary" style={{ width: '100%', padding: '12px' }} onClick={openNewForm}>+ Add Mission</button>
+          )}
+
+          {showMissionForm && (
+            <div className="card" style={{ marginBottom: '32px' }}>
+              <h3 style={{ marginBottom: '20px', fontSize: '16px' }}>{editingMissionId ? 'Edit Mission' : 'New Mission'}</h3>
+
+              {/* Base fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={labelStyle}>NAME</label>
+                  <input type="text" value={missionForm.name} onChange={e => setF({ name: e.target.value })} placeholder="Mission name" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>ICON</label>
+                  <input type="text" value={missionForm.icon} onChange={e => setF({ icon: e.target.value })} placeholder="⭐" style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={labelStyle}>DESCRIPTION</label>
+                <input type="text" value={missionForm.desc} onChange={e => setF({ desc: e.target.value })} placeholder="What teams see before starting" style={inputStyle} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={labelStyle}>DIFFICULTY</label>
+                  <select value={missionForm.difficulty} onChange={e => setF({ difficulty: e.target.value as MissionFormData['difficulty'] })} style={inputStyle}>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>MAX PTS</label>
+                  <input type="number" value={missionForm.maxPts} min={0} max={9999} step={50} onChange={e => setF({ maxPts: Number(e.target.value) })} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>TYPE</label>
+                  <select value={missionForm.type} onChange={e => setF({ type: e.target.value })} style={inputStyle}>
+                    <option value="">Select type…</option>
+                    <option value="trivia_quiz">Trivia Quiz</option>
+                    <option value="truefalse">True / False</option>
+                    <option value="closest_wins">Closest Wins</option>
+                    <option value="pa_sparet">På Spåret</option>
+                    <option value="timeline">Timeline</option>
+                    <option value="photo">Photo</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* ── Type-specific fields ── */}
+
+              {missionForm.type === 'photo' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>WHAT SHOULD TEAMS PHOTOGRAPH?</label>
+                  <input type="text" value={missionForm.photoPrompt} onChange={e => setF({ photoPrompt: e.target.value })} placeholder="e.g. A selfie in front of our logo" style={inputStyle} />
+                </div>
+              )}
+
+              {missionForm.type === 'pa_sparet' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>CLUES (revealed one at a time, most points for first clue)</label>
+                  {missionForm.clues.map((clue, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                      <input type="text" value={clue} onChange={e => { const c = [...missionForm.clues]; c[i] = e.target.value; setF({ clues: c }); }} placeholder={`Clue ${i + 1}`} style={{ ...inputStyle, flex: 1 }} />
+                      <button onClick={() => setF({ clues: missionForm.clues.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px', marginBottom: '10px' }} onClick={() => setF({ clues: [...missionForm.clues, ''] })}>+ Add clue</button>
+                  <label style={labelStyle}>ANSWER</label>
+                  <input type="text" value={missionForm.paAnswer} onChange={e => setF({ paAnswer: e.target.value })} placeholder="The correct answer" style={inputStyle} />
+                </div>
+              )}
+
+              {missionForm.type === 'truefalse' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>STATEMENTS</label>
+                  {missionForm.statements.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                      <input type="text" value={s.text} onChange={e => { const arr = [...missionForm.statements]; arr[i] = { ...arr[i], text: e.target.value }; setF({ statements: arr }); }} placeholder="Statement text" style={{ ...inputStyle, flex: 1 }} />
+                      <select value={s.answer ? 'true' : 'false'} onChange={e => { const arr = [...missionForm.statements]; arr[i] = { ...arr[i], answer: e.target.value === 'true' }; setF({ statements: arr }); }} style={{ ...inputStyle, width: '90px', flexShrink: 0 }}>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                      <button onClick={() => setF({ statements: missionForm.statements.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ statements: [...missionForm.statements, { text: '', answer: true }] })}>+ Add statement</button>
+                </div>
+              )}
+
+              {missionForm.type === 'closest_wins' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>QUESTIONS</label>
+                  {missionForm.closestQuestions.map((q, i) => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Question {i + 1}</span>
+                        <button onClick={() => setF({ closestQuestions: missionForm.closestQuestions.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px' }}>×</button>
+                      </div>
+                      <input type="text" value={q.q} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], q: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Question" style={{ ...inputStyle, marginBottom: '6px' }} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        <input type="number" value={q.answer} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], answer: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Correct answer (number)" style={inputStyle} />
+                        <input type="text" value={q.unit} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], unit: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Unit (e.g. employees)" style={inputStyle} />
+                      </div>
+                      <input type="text" value={q.hint} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], hint: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Hint" style={{ ...inputStyle, marginTop: '6px' }} />
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ closestQuestions: [...missionForm.closestQuestions, { q: '', answer: '', unit: '', hint: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {missionForm.type === 'timeline' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>EVENTS (teams will sort these chronologically)</label>
+                  {missionForm.timelineItems.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                      <input type="text" value={item.label} onChange={e => { const arr = [...missionForm.timelineItems]; arr[i] = { ...arr[i], label: e.target.value }; setF({ timelineItems: arr }); }} placeholder="Event label" style={{ ...inputStyle, flex: 1 }} />
+                      <input type="number" value={item.year} onChange={e => { const arr = [...missionForm.timelineItems]; arr[i] = { ...arr[i], year: e.target.value }; setF({ timelineItems: arr }); }} placeholder="Year" style={{ ...inputStyle, width: '90px', flexShrink: 0 }} />
+                      <button onClick={() => setF({ timelineItems: missionForm.timelineItems.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ timelineItems: [...missionForm.timelineItems, { label: '', year: '' }] })}>+ Add event</button>
+                </div>
+              )}
+
+              {missionForm.type === 'trivia_quiz' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>QUESTIONS</label>
+                  {missionForm.triviaRounds.map((round, i) => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Question {i + 1}</span>
+                        <button onClick={() => setF({ triviaRounds: missionForm.triviaRounds.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px' }}>×</button>
+                      </div>
+                      <input type="text" value={round.question} onChange={e => { const arr = [...missionForm.triviaRounds]; arr[i] = { ...arr[i], question: e.target.value }; setF({ triviaRounds: arr }); }} placeholder="Question" style={{ ...inputStyle, marginBottom: '8px' }} />
+                      {([0, 1, 2, 3] as const).map(oi => (
+                        <div key={oi} style={{ display: 'flex', gap: '8px', marginBottom: '4px', alignItems: 'center' }}>
+                          <input
+                            type="radio"
+                            name={`correct-${i}`}
+                            checked={round.answer === round.options[oi]}
+                            onChange={() => { const arr = [...missionForm.triviaRounds]; arr[i] = { ...arr[i], answer: arr[i].options[oi] }; setF({ triviaRounds: arr }); }}
+                            style={{ flexShrink: 0 }}
+                          />
+                          <input
+                            type="text"
+                            value={round.options[oi] ?? ''}
+                            onChange={e => {
+                              const arr = [...missionForm.triviaRounds];
+                              const opts: [string, string, string, string] = [...arr[i].options] as [string, string, string, string];
+                              opts[oi] = e.target.value;
+                              const newAnswer = arr[i].answer === arr[i].options[oi] ? e.target.value : arr[i].answer;
+                              arr[i] = { ...arr[i], options: opts, answer: newAnswer };
+                              setF({ triviaRounds: arr });
+                            }}
+                            placeholder={`Option ${oi + 1}`}
+                            style={{ ...inputStyle, flex: 1 }}
+                          />
+                        </div>
+                      ))}
+                      <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '4px' }}>Select the radio button next to the correct option</div>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ triviaRounds: [...missionForm.triviaRounds, { question: '', options: ['', '', '', ''], answer: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {missionFormError && (
+                <p style={{ color: 'var(--accent3)', fontSize: '13px', marginBottom: '12px' }}>{missionFormError}</p>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} disabled={missionSaving || !missionForm.name.trim() || !missionForm.type} onClick={saveMission}>
+                  {missionSaving ? 'Saving…' : editingMissionId ? 'Save Changes' : 'Add Mission'}
+                </button>
+                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); }}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
 
   // ── CREATE GAME ──
   if (view === 'create') return (
