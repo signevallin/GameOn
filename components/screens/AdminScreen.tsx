@@ -365,6 +365,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
+  const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
 
   // Load auth token on mount and subscribe to changes
   useEffect(() => {
@@ -374,6 +375,7 @@ export default function AdminScreen({ onLogout }: Props) {
     // Use getUser() for fresh server-side data (not cached JWT)
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsSuperAdmin(user?.app_metadata?.role === 'superadmin');
+      loadAdminCustomMissions();
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthToken(session?.access_token ?? null);
@@ -635,6 +637,12 @@ export default function AdminScreen({ onLogout }: Props) {
     if (data.users) setCustomers(data.users);
   }
 
+  async function loadAdminCustomMissions() {
+    const res = await POST('/api/admin/custom-missions');
+    const data = await res.json();
+    if (data.missions) setAdminCustomMissions(data.missions);
+  }
+
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
   const sorted = [...teams].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
@@ -775,6 +783,7 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => {
+              if (catKey === 'gkn' && !isSuperAdmin) return null;
               const cat = SUPER_CATEGORIES[catKey];
               const catMissions = MISSIONS.filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey);
               if (catMissions.length === 0) return null;
@@ -838,6 +847,57 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
               );
             })}
+            {/* ── Custom missions ── */}
+            {adminCustomMissions.length > 0 && (() => {
+              const catName = adminCustomMissions[0].category_name;
+              const allOn = adminCustomMissions.every(m => selectedMissions.includes(m.id));
+              return (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
+                      ⭐ {catName.toUpperCase()}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const ids = adminCustomMissions.map(m => m.id);
+                        setSelectedMissions(prev => allOn
+                          ? prev.filter(x => !ids.includes(x))
+                          : [...new Set([...prev, ...ids])]);
+                      }}
+                      style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      {allOn ? 'Deselect all' : 'Select all'}
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {adminCustomMissions.map(m => {
+                      const on = selectedMissions.includes(m.id);
+                      const pts = missionMaxPts[m.id] ?? m.max_pts;
+                      return (
+                        <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? '#9b59b6' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45 }}>
+                          <div
+                            onClick={() => {
+                              setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
+                              if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                          >
+                            <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
+                            </div>
+                            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? '#9b59b6' : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                              <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
