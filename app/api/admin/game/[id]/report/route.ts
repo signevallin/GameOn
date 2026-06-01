@@ -19,11 +19,17 @@ function getSupabase() {
 }
 
 async function toBase64(url: string): Promise<string> {
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Failed to fetch image at ${url}: ${res.status}`);
-  const buffer = await res.arrayBuffer();
-  const contentType = res.headers.get('content-type') ?? 'image/jpeg';
-  return `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    if (!res.ok) throw new Error(`Failed to fetch image at ${url}: ${res.status}`);
+    const buffer = await res.arrayBuffer();
+    const contentType = res.headers.get('content-type') ?? 'image/jpeg';
+    return `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function GET(
@@ -50,10 +56,15 @@ export async function GET(
   }
 
   // 2. Fetch teams sorted by score desc, then finished_at asc
-  const { data: rawTeams } = await supabase
+  const { data: rawTeams, error: teamsErr } = await supabase
     .from('teams')
     .select('id, name, score, completed, mission_scores, finished_at')
     .eq('game_id', params.id);
+
+  if (teamsErr) {
+    console.error('[report] teams fetch error:', teamsErr);
+    return NextResponse.json({ error: 'Failed to fetch teams.' }, { status: 500 });
+  }
 
   const teams = (rawTeams ?? []).sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
@@ -131,13 +142,9 @@ export async function GET(
     missionMap,
   };
 
-  let pdfBuffer: ArrayBuffer;
+  let buffer: Buffer;
   try {
-    const nodeBuffer = await renderToBuffer(buildReport(data));
-    pdfBuffer = nodeBuffer.buffer.slice(
-      nodeBuffer.byteOffset,
-      nodeBuffer.byteOffset + nodeBuffer.byteLength
-    ) as ArrayBuffer;
+    buffer = await renderToBuffer(buildReport(data));
   } catch (err) {
     console.error('[report] PDF render error:', err);
     return NextResponse.json({ error: 'PDF generation failed.' }, { status: 500 });
@@ -148,7 +155,7 @@ export async function GET(
     .replace(/[^a-zA-Z0-9-]/g, '')
     .toLowerCase() || 'report';
 
-  return new Response(pdfBuffer, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${slug}-report.pdf"`,
