@@ -392,6 +392,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
@@ -593,13 +594,15 @@ export default function AdminScreen({ onLogout }: Props) {
   async function downloadReport() {
     if (!activeGame || !authToken) return;
     setReportLoading(true);
+    setReportError(null);
     try {
       const res = await fetch(`/api/admin/game/${activeGame.id}/report`, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('[report] failed:', err);
+        const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[report] failed:', body);
+        setReportError('Kunde inte generera rapporten. Försök igen.');
         return;
       }
       const blob = await res.blob();
@@ -613,6 +616,7 @@ export default function AdminScreen({ onLogout }: Props) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('[report] network error:', err);
+      setReportError('Nätverksfel. Kontrollera anslutningen och försök igen.');
     } finally {
       setReportLoading(false);
     }
@@ -1453,14 +1457,21 @@ export default function AdminScreen({ onLogout }: Props) {
               </button>
             )}
             {activeGame.status === 'finished' && (
-              <button
-                className="btn btn-ghost"
-                disabled={reportLoading}
-                onClick={downloadReport}
-                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
-              >
-                {reportLoading ? '⏳ Genererar…' : '📄 Ladda ner rapport'}
-              </button>
+              <>
+                <button
+                  className="btn btn-ghost"
+                  disabled={reportLoading}
+                  onClick={downloadReport}
+                  style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                >
+                  {reportLoading ? '⏳ Genererar…' : '📄 Ladda ner rapport'}
+                </button>
+                {reportError && (
+                  <p style={{ color: 'var(--danger, #e74c3c)', fontSize: '12px', margin: '4px 0 0' }}>
+                    {reportError}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
