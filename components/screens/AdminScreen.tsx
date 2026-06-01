@@ -391,6 +391,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
 
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
@@ -587,6 +588,34 @@ export default function AdminScreen({ onLogout }: Props) {
     // This intentionally bypasses applyGame so a restart can go from
     // finished → draft without the status-priority guard blocking it.
     if (data.game) setActiveGame(data.game);
+  }
+
+  async function downloadReport() {
+    if (!activeGame || !authToken) return;
+    setReportLoading(true);
+    try {
+      const res = await fetch(`/api/admin/game/${activeGame.id}/report`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[report] failed:', err);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${activeGame.name.replace(/\s+/g, '-')}-report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('[report] network error:', err);
+    } finally {
+      setReportLoading(false);
+    }
   }
 
   async function deleteGame(gameId: string) {
@@ -1421,6 +1450,16 @@ export default function AdminScreen({ onLogout }: Props) {
                 style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
                 title="Reset game to Draft so you can start it again">
                 ↺ RESTART
+              </button>
+            )}
+            {activeGame.status === 'finished' && (
+              <button
+                className="btn btn-ghost"
+                disabled={reportLoading}
+                onClick={downloadReport}
+                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+              >
+                {reportLoading ? '⏳ Genererar…' : '📄 Ladda ner rapport'}
               </button>
             )}
           </div>
