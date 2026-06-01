@@ -53,7 +53,7 @@ export type ReportData = {
 function formatDate(iso: string): string {
   const d = new Date(iso);
   const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 function formatDuration(totalSeconds: number): string {
