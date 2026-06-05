@@ -2,24 +2,26 @@
 // SERVER-ONLY — imported only from API routes. Never import in client components.
 import React from 'react';
 import {
-  Document, Page, Text, View, Image, Svg, Line, Path,
+  Document, Page, Text, View, Image, Svg, Circle, Line, Path,
   StyleSheet,
 } from '@react-pdf/renderer';
 
 // ── Colors ────────────────────────────────────────────────────────────────
 const C = {
-  bg: '#0f0f14',
-  card: '#1a1a2e',
-  accent: '#6c63ff',
-  gold: '#f5c518',
-  text: '#ffffff',
-  muted: '#888888',
-  row: '#12121e',
+  bg:     '#0D1520',
+  card:   '#162030',
+  accent: '#7CBDD4',
+  gold:   '#DEBB6B',
+  text:   '#DCE4EE',
+  muted:  '#8FA8C0',
+  green:  '#8CBF9B',
+  orange: '#D4875A',
+  row:    '#111C2A',
 };
 
 const TEAM_COLORS = [
-  '#6c63ff', '#f5c518', '#e74c3c', '#2ecc71',
-  '#e67e22', '#1abc9c', '#e91e8c', '#3498db',
+  '#7CBDD4', '#DEBB6B', '#D4875A', '#8CBF9B',
+  '#A68FD4', '#E091B8', '#6BBFA8', '#A8C8D4',
 ];
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -89,7 +91,7 @@ const shared = StyleSheet.create({
     fontSize: 11,
   },
   heading: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Helvetica-Bold',
     color: C.accent,
     letterSpacing: 2,
@@ -102,24 +104,41 @@ const shared = StyleSheet.create({
     right: 40,
     fontSize: 9,
     color: C.muted,
-    textAlign: 'center',
   },
 });
 
 function Footer() {
-  return <Text style={shared.footer}>Powered by GameOn</Text>;
+  return (
+    <View style={[shared.footer, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
+      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
+      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
+      <Text style={{ fontSize: 9, color: C.muted }}> · Powered by GameOn</Text>
+    </View>
+  );
 }
 
 // ── Page 1: Cover ─────────────────────────────────────────────────────────
 function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: number }) {
   return (
     <Page size="A4" style={shared.page}>
+      {/* Radial glow behind wordmark */}
+      <Svg width={300} height={300} style={{ position: 'absolute', top: 160, left: 147 }}>
+        <Circle cx={150} cy={150} r={170} fill={C.accent} fillOpacity={0.04} />
+        <Circle cx={150} cy={150} r={110} fill={C.accent} fillOpacity={0.05} />
+        <Circle cx={150} cy={150} r={60}  fill={C.accent} fillOpacity={0.07} />
+      </Svg>
+
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 9, color: C.muted, letterSpacing: 3, marginBottom: 16 }}>
-          GAME REPORT
-        </Text>
+        {/* Label */}
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: 20 }}>
+          <Text style={{ fontSize: 9, color: C.muted, letterSpacing: 3 }}>GAME REPORT BY </Text>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
+        </View>
+
+        {/* Game name */}
         <Text style={{
-          fontSize: 34,
+          fontSize: 30,
           fontFamily: 'Helvetica-Bold',
           color: C.text,
           textAlign: 'center',
@@ -127,6 +146,8 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
         }}>
           {game.name}
         </Text>
+
+        {/* Info card */}
         <View style={{
           backgroundColor: C.card,
           borderRadius: 8,
@@ -134,10 +155,10 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
           paddingHorizontal: 32,
           alignItems: 'center',
         }}>
-          <Text style={{ color: C.muted, fontSize: 13, marginBottom: 6 }}>
+          <Text style={{ color: C.muted, fontSize: 12, marginBottom: 5 }}>
             {formatDate(game.started_at)}
           </Text>
-          <Text style={{ color: C.muted, fontSize: 13 }}>
+          <Text style={{ color: C.muted, fontSize: 12 }}>
             {game.duration_minutes} minuter · {teamCount} lag
           </Text>
         </View>
