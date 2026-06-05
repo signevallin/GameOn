@@ -45,6 +45,8 @@ TONE: Friendly, helpful, and concise. Answer in 1-3 sentences when possible. Nev
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
 export async function POST(req: NextRequest) {
   try {
     const { messages }: { messages: Message[] } = await req.json();
@@ -53,7 +55,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'messages required' }, { status: 400 });
     }
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    if (!messages.every(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')) {
+      return NextResponse.json({ error: 'invalid message format' }, { status: 400 });
+    }
 
     const response = await client.messages.create({
       model: 'claude-3-5-haiku-20241022',
