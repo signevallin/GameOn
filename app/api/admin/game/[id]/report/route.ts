@@ -130,6 +130,18 @@ export async function GET(
     .sort((a, b) => a.order - b.order)
     .map(({ teamName, base64, pointsAwarded }) => ({ teamName, base64, pointsAwarded }));
 
+  // 6b. Compute per-mission stats from teams data
+  const missionStats: Record<string, { completed: number; totalScore: number; topScore: number }> = {};
+  for (const team of teams) {
+    for (const mId of (team.completed ?? [])) {
+      const pts = (team.mission_scores ?? {})[mId] ?? 0;
+      if (!missionStats[mId]) missionStats[mId] = { completed: 0, totalScore: 0, topScore: 0 };
+      missionStats[mId].completed += 1;
+      missionStats[mId].totalScore += pts;
+      if (pts > missionStats[mId].topScore) missionStats[mId].topScore = pts;
+    }
+  }
+
   // 7. Render PDF
   const data: ReportData = {
     game: {
@@ -140,6 +152,8 @@ export async function GET(
     teams,
     photos: reportPhotos,
     missionMap,
+    teamCount: teams.length,
+    missionStats,
   };
 
   let buffer: Buffer;

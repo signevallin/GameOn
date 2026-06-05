@@ -38,6 +38,12 @@ export type ReportPhoto = {
   pointsAwarded: number;
 };
 
+export type MissionStat = {
+  completed: number;   // number of teams that completed this mission
+  totalScore: number;  // sum of all scores across all teams
+  topScore: number;    // highest single score for this mission
+};
+
 export type ReportData = {
   game: {
     name: string;
@@ -47,6 +53,8 @@ export type ReportData = {
   teams: ReportTeam[];   // sorted by score desc
   photos: ReportPhoto[];
   missionMap: Record<string, { name: string; icon: string }>;
+  teamCount: number;
+  missionStats: Record<string, MissionStat>;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
