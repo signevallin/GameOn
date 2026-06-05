@@ -862,7 +862,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 </div>
 
                 {/* Category cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', paddingBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridAutoRows: '1fr', gap: '12px', paddingBottom: '24px' }}>
                   {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
                     const cat = SUPER_CATEGORIES[key];
                     const allCatDone = done === missions.length;
@@ -879,6 +879,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           transition: 'all 0.2s',
                           position: 'relative',
                           overflow: 'hidden',
+                          minHeight: '120px',
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
