@@ -675,22 +675,30 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: availablePowerups > 0 ? 'rgba(255,200,0,0.12)' : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${availablePowerups > 0 ? 'var(--gold)' : 'var(--border)'}`,
+                gap: '5px',
+                background: availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${availablePowerups > 0 ? 'rgba(255,200,0,0.6)' : 'var(--border)'}`,
                 borderRadius: '20px',
-                padding: '4px 8px 4px 6px',
+                padding: '5px 10px 5px 8px',
                 cursor: 'pointer',
                 color: availablePowerups > 0 ? 'var(--gold)' : 'var(--muted)',
                 fontFamily: "'Sora', sans-serif",
                 fontWeight: 700,
                 fontSize: '11px',
                 lineHeight: 1,
-                transition: 'all 0.2s',
+                transition: 'all 0.15s',
                 whiteSpace: 'nowrap',
+                boxShadow: availablePowerups > 0 ? '0 2px 8px rgba(255,200,0,0.2)' : 'none',
+                WebkitTapHighlightColor: 'transparent',
               }}
+              onMouseEnter={e => { if (availablePowerups > 0) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,200,0,0.28)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)'; }}
+              onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)'; }}
+              onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+              onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.28)' : 'rgba(255,255,255,0.06)'; }}
+              onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)'; }}
             >
-              <span style={{ fontSize: '13px', lineHeight: 1 }}>⚡</span>
+              <span style={{ fontSize: '14px', lineHeight: 1 }}>⚡</span>
               <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
