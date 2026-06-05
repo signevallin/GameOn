@@ -394,6 +394,9 @@ export default function AdminScreen({ onLogout }: Props) {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
   const [customCategoryName, setCustomCategoryName] = useState('My Missions');
@@ -404,11 +407,19 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionFormError, setMissionFormError] = useState('');
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
 
   // Load auth token on mount and subscribe to changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setAuthToken(session?.access_token ?? null);
+      // Load subscription plan once we have a token
+      if (session?.access_token) {
+        fetch('/api/admin/subscription', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
+      }
     });
     // Use getUser() for fresh server-side data (not cached JWT)
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -563,7 +574,7 @@ export default function AdminScreen({ onLogout }: Props) {
     }
     const res = await fetch('/api/admin/game', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard }),
     });
     const data = await res.json();
@@ -581,7 +592,7 @@ export default function AdminScreen({ onLogout }: Props) {
     lastCommandAtRef.current = Date.now();
     const res = await fetch('/api/admin/game/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ gameId: activeGame.id, action }),
     });
     const data = await res.json();
@@ -633,7 +644,7 @@ export default function AdminScreen({ onLogout }: Props) {
   async function ratePhoto(sub: PhotoSubmission, pts: number) {
     await fetch('/api/admin/photos/rate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, points: pts }),
     });
     setRated(r => new Set([...r, sub.id]));
@@ -643,7 +654,7 @@ export default function AdminScreen({ onLogout }: Props) {
   async function rateScavengerPhoto(sub: ScavengerSubmission, pts: number) {
     await fetch('/api/scavenger/review', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, itemLabel: sub.item_label, points: pts }),
     });
     setScavengerRated(r => new Set([...r, sub.id]));
@@ -664,7 +675,7 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Time Bomb failed: ${err.error ?? res.statusText}`);
+        showToast(`Time Bomb failed: ${err.error ?? res.statusText}`, 'error');
         return;
       }
       const data = await res.json();
@@ -690,11 +701,12 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Power-up failed: ${err.error ?? res.statusText}`);
+        showToast(`Power-up failed: ${err.error ?? res.statusText}`, 'error');
         return;
       }
       const sd = await POST('/api/settings', { gameId: activeGame?.id }).then(r => r.json());
       if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
+      showToast('Power-up activated ✓');
     } finally {
       setPuLoading(null);
     }
@@ -706,8 +718,55 @@ export default function AdminScreen({ onLogout }: Props) {
     if (data.users) setCustomers(data.users);
   }
 
+  async function handlePortal() {
+    setPortalLoading(true);
+    try {
+      const res = await POST('/api/admin/portal');
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  async function handleUpgrade(targetPlan: 'pro' | 'studio') {
+    setUpgradeLoading(true);
+    try {
+      const res = await POST('/api/stripe/checkout', { plan: targetPlan });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    const id = Math.random().toString(36).slice(2);
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
+  }
+
   async function loadAdminCustomMissions() {
-    const res = await POST('/api/admin/custom-missions');
+    const res = await fetch('/api/admin/custom-missions', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      cache: 'no-store',
+    });
     const data = await res.json();
     if (data.missions) {
       setAdminCustomMissions(data.missions);
@@ -729,7 +788,26 @@ export default function AdminScreen({ onLogout }: Props) {
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
-        <div className="nav-right">
+        <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {plan === 'free' ? (
+            <button
+              className="btn btn-primary"
+              style={{ padding: '7px 14px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', borderRadius: '8px', cursor: upgradeLoading ? 'not-allowed' : 'pointer', opacity: upgradeLoading ? 0.7 : 1, whiteSpace: 'nowrap' }}
+              onClick={() => handleUpgrade('pro')}
+              disabled={upgradeLoading}
+            >
+              {upgradeLoading ? '...' : '⚡ UPGRADE'}
+            </button>
+          ) : (
+            <button
+              className="btn btn-ghost"
+              style={{ padding: '7px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--accent)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '8px', cursor: portalLoading ? 'not-allowed' : 'pointer', opacity: portalLoading ? 0.7 : 1, whiteSpace: 'nowrap' }}
+              onClick={handlePortal}
+              disabled={portalLoading}
+            >
+              {portalLoading ? '...' : plan === 'studio' ? '✦ Studio' : '⚡ Pro'}
+            </button>
+          )}
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
         </div>
       </nav>
@@ -737,10 +815,21 @@ export default function AdminScreen({ onLogout }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
           <h2>Your Games</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+            {plan === 'free' ? (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
+            ) : (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+            )}
             <button className="btn btn-primary" onClick={() => setView('create')}>+ NEW GAME</button>
           </div>
         </div>
+        {plan === 'free' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.15)', borderRadius: '10px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1 }}>
+              <span style={{ color: '#DCE4EE', fontWeight: 700 }}>Starter plan</span> — max 5 teams per game · <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade to Pro →</span>
+            </span>
+          </div>
+        )}
         {games.length === 0 ? (
           <div className="empty-state" style={{ paddingTop: '80px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
@@ -880,7 +969,7 @@ export default function AdminScreen({ onLogout }: Props) {
       };
 
       if (editingMissionId) {
-        await fetch(`/api/admin/custom-missions/${editingMissionId}`, {
+        const res = await fetch(`/api/admin/custom-missions/${editingMissionId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -888,12 +977,25 @@ export default function AdminScreen({ onLogout }: Props) {
           },
           body: JSON.stringify(payload),
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setMissionFormError(err.error ?? 'Could not save mission. Try again.');
+          setMissionSaving(false);
+          return;
+        }
       } else {
-        await POST('/api/admin/custom-missions', { ...payload, sort_order: adminCustomMissions.length });
+        const res = await POST('/api/admin/custom-missions', { ...payload, sort_order: adminCustomMissions.length });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setMissionFormError(err.error ?? 'Could not save mission. Try again.');
+          setMissionSaving(false);
+          return;
+        }
       }
       setMissionSaving(false);
       setShowMissionForm(false);
       setEditingMissionId(null);
+      showToast('Mission saved ✓');
       loadAdminCustomMissions();
     }
 
@@ -1458,14 +1560,26 @@ export default function AdminScreen({ onLogout }: Props) {
             )}
             {activeGame.status === 'finished' && (
               <>
-                <button
-                  className="btn btn-ghost"
-                  disabled={reportLoading}
-                  onClick={downloadReport}
-                  style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
-                >
-                  {reportLoading ? '⏳ Genererar…' : '📄 Ladda ner rapport'}
-                </button>
+                {plan === 'free' ? (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => handleUpgrade('pro')}
+                    disabled={upgradeLoading}
+                    title="Upgrade to Pro to download PDF reports"
+                    style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                  >
+                    🔒 Download Report (Pro)
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-ghost"
+                    disabled={reportLoading}
+                    onClick={downloadReport}
+                    style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                  >
+                    {reportLoading ? '⏳ Generating…' : '📄 Download Report'}
+                  </button>
+                )}
                 {reportError && (
                   <p style={{ color: 'var(--danger, #e74c3c)', fontSize: '12px', margin: '4px 0 0' }}>
                     {reportError}
@@ -1490,7 +1604,7 @@ export default function AdminScreen({ onLogout }: Props) {
           </button>
           <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>📈 Stats</button>
           {activeGame.status === 'active' && (
-            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups</button>
+            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups{plan === 'free' ? ' 🔒' : ''}</button>
           )}
           {isSuperAdmin && (
             <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadCustomers(); }}>👥 Customers</button>
@@ -1934,6 +2048,16 @@ export default function AdminScreen({ onLogout }: Props) {
               <h2 style={{ fontSize: '18px' }}>Power-ups</h2>
               <span className="badge">{teams.length} teams</span>
             </div>
+            {plan === 'free' && (
+              <div style={{ background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '12px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚡</div>
+                <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: 'var(--text)' }}>Power-ups ingår i Pro</div>
+                <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px' }}>Sabotage, dubbelpoäng, falsk ledtråd och mer — uppgradera för att aktivera dem live under spelet.</div>
+                <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', fontWeight: 800 }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>
+                  {upgradeLoading ? '...' : '⚡ Upgrade to Pro'}
+                </button>
+              </div>
+            )}
             <PowerUpsCard
               teams={teams}
               gameId={activeGame.id}
@@ -1989,6 +2113,26 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         )}
       </div>
+      {/* ── Toast notifications ── */}
+      {toasts.length > 0 && (
+        <div style={{ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 9999, pointerEvents: 'none', alignItems: 'center' }}>
+          {toasts.map(t => (
+            <div key={t.id} style={{
+              background: t.type === 'error' ? 'rgba(42,10,10,0.95)' : 'rgba(22,32,48,0.95)',
+              border: `1px solid ${t.type === 'error' ? 'rgba(255,100,100,0.35)' : 'rgba(124,189,212,0.35)'}`,
+              color: t.type === 'error' ? '#ff8888' : '#DCE4EE',
+              padding: '11px 20px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+              whiteSpace: 'nowrap',
+            }}>
+              {t.msg}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

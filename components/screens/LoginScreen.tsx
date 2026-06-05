@@ -13,7 +13,8 @@ type Props = {
 
 export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
   const [mode, setMode] = useState<'team' | 'admin'>('team');
-  const [adminMode, setAdminMode] = useState<'login' | 'register'>('login');
+  const [adminMode, setAdminMode] = useState<'login' | 'register' | 'reset'>('login');
+  const [resetSent, setResetSent] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [gameKey, setGameKey] = useState('');
   const [email, setEmail] = useState('');
@@ -79,6 +80,23 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) { setError('Account created! Please log in.'); setAdminMode('login'); return; }
       onAdminLogin();
+    } catch {
+      setError('Network error. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePasswordReset() {
+    setError('');
+    if (!email.trim()) { setError('Enter your email.'); return; }
+    setLoading(true);
+    try {
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/play?reset=true`,
+      });
+      if (authError) { setError(authError.message); return; }
+      setResetSent(true);
     } catch {
       setError('Network error. Try again.');
     } finally {
@@ -157,7 +175,16 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                     </svg>
                   </button>
                 </div>
-                {error && mode === 'team' && <p className="error-msg">{error}</p>}
+                {error && mode === 'team' && (
+                  error.includes('5-team limit') ? (
+                    <div style={{ marginTop: '12px', padding: '14px 16px', background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '10px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#7CBDD4', marginBottom: '4px' }}>Game is full 🔒</p>
+                      <p style={{ fontSize: '12px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.5 }}>This game has reached the 5-team limit on the free plan. Ask the organiser to upgrade to Pro for unlimited teams.</p>
+                    </div>
+                  ) : (
+                    <p className="error-msg">{error}</p>
+                  )
+                )}
               </div>
               {showScanner && (
                 <QrScanner
@@ -171,66 +198,113 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
             </>
           ) : (
             <>
-              {/* Login / Register toggle */}
-              <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: '8px', padding: '3px', gap: '3px', marginBottom: '20px' }}>
-                {(['login', 'register'] as const).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => { setAdminMode(m); setError(''); }}
-                    style={{
-                      flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                      fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px',
-                      letterSpacing: '0.5px',
-                      background: adminMode === m ? 'var(--accent)' : 'transparent',
-                      color: adminMode === m ? 'var(--bg)' : 'var(--muted)',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {m === 'login' ? 'LOG IN' : 'REGISTER'}
-                  </button>
-                ))}
-              </div>
+              {adminMode === 'reset' ? (
+                <>
+                  {resetSent ? (
+                    <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                      <p style={{ fontSize: '28px', marginBottom: '12px' }}>📬</p>
+                      <p style={{ fontWeight: 700, color: '#DCE4EE', marginBottom: '8px' }}>Check your email</p>
+                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.6 }}>We sent a reset link to <strong>{email}</strong>. Click it to set a new password.</p>
+                      <button type="button" onClick={() => { setAdminMode('login'); setResetSent(false); }} style={{ marginTop: '20px', background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>← Back to login</button>
+                    </div>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', marginBottom: '20px' }}>Enter your email and we'll send you a reset link.</p>
+                      <div className="form-group">
+                        <label className="form-label">Email</label>
+                        <input
+                          type="email"
+                          placeholder="you@example.com"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handlePasswordReset()}
+                        />
+                      </div>
+                      {error && <p className="error-msg" style={{ marginBottom: '12px' }}>{error}</p>}
+                      <button className="btn btn-primary btn-full" onClick={handlePasswordReset} disabled={loading}>
+                        {loading ? '...' : 'SEND RESET LINK →'}
+                      </button>
+                      <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                        <button type="button" onClick={() => { setAdminMode('login'); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--muted, #8FA8C0)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>← Back to login</button>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Login / Register toggle */}
+                  <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: '8px', padding: '3px', gap: '3px', marginBottom: '20px' }}>
+                    {(['login', 'register'] as const).map(m => (
+                      <button
+                        key={m}
+                        onClick={() => { setAdminMode(m); setError(''); }}
+                        style={{
+                          flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                          fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '12px',
+                          letterSpacing: '0.5px',
+                          background: adminMode === m ? 'var(--accent)' : 'transparent',
+                          color: adminMode === m ? 'var(--bg)' : 'var(--muted)',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {m === 'login' ? 'LOG IN' : 'REGISTER'}
+                      </button>
+                    ))}
+                  </div>
 
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && (adminMode === 'login' ? handleAdminLogin() : handleAdminRegister())}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && (adminMode === 'login' ? handleAdminLogin() : handleAdminRegister())}
-                />
-              </div>
-              {adminMode === 'register' && (
-                <div className="form-group">
-                  <label className="form-label">Confirm Password</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleAdminRegister()}
-                  />
-                </div>
+                  <div className="form-group">
+                    <label className="form-label">Email</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && (adminMode === 'login' ? handleAdminLogin() : handleAdminRegister())}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && (adminMode === 'login' ? handleAdminLogin() : handleAdminRegister())}
+                    />
+                  </div>
+                  {adminMode === 'login' && (
+                    <div style={{ textAlign: 'right', marginTop: '-8px', marginBottom: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setAdminMode('reset'); setError(''); setResetSent(false); }}
+                        style={{ background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: "'Sora', sans-serif" }}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+                  {adminMode === 'register' && (
+                    <div className="form-group">
+                      <label className="form-label">Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleAdminRegister()}
+                      />
+                    </div>
+                  )}
+                  {error && mode === 'admin' && <p className="error-msg" style={{ marginBottom: '12px' }}>{error}</p>}
+                  <button
+                    className="btn btn-primary btn-full"
+                    onClick={adminMode === 'login' ? handleAdminLogin : handleAdminRegister}
+                    disabled={loading}
+                  >
+                    {loading ? '...' : adminMode === 'login' ? 'LOG IN →' : 'CREATE ACCOUNT →'}
+                  </button>
+                </>
               )}
-              {error && mode === 'admin' && <p className="error-msg" style={{ marginBottom: '12px' }}>{error}</p>}
-              <button
-                className="btn btn-primary btn-full"
-                onClick={adminMode === 'login' ? handleAdminLogin : handleAdminRegister}
-                disabled={loading}
-              >
-                {loading ? '...' : adminMode === 'login' ? 'LOG IN →' : 'CREATE ACCOUNT →'}
-              </button>
             </>
           )}
         </div>

@@ -40,6 +40,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ team: teamResult.data, game, customMissions });
   }
 
+  // ── Enforce free-plan team limit ──────────────────────────────────────────
+  if (game.user_id) {
+    const { getSubscription } = await import('@/lib/subscription');
+    const sub = await getSubscription(game.user_id);
+    if (sub.plan === 'free') {
+      const { count } = await supabase
+        .from('teams')
+        .select('id', { count: 'exact', head: true })
+        .eq('game_id', game.id);
+      if ((count ?? 0) >= 5) {
+        return NextResponse.json(
+          { error: 'This game has reached the 5-team limit on the free plan. The organiser needs to upgrade to Pro.' },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   // New team — create it
   const { data: team, error: teamErr } = await supabase
     .from('teams')
