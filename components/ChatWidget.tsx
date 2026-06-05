@@ -8,6 +8,8 @@ const WELCOME: Message = {
   content: "Hi! I can answer questions about GameOn — features, pricing, or how to get started. What would you like to know?",
 };
 
+const ERROR_MSG = "Sorry, something went wrong. Email us at hello@playgameon.app";
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
@@ -34,13 +36,14 @@ export default function ChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next.slice(-10) }),
       });
+      if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
-      const reply = data.reply || "Sorry, something went wrong. Email us at hello@playgameon.app";
+      const reply = data.reply || ERROR_MSG;
       setMessages(m => [...m, { role: 'assistant', content: reply }]);
     } catch {
-      setMessages(m => [...m, { role: 'assistant', content: "Sorry, something went wrong. Email us at hello@playgameon.app" }]);
+      setMessages(m => [...m, { role: 'assistant', content: ERROR_MSG }]);
     } finally {
       setLoading(false);
     }
