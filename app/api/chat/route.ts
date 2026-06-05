@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await client.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-haiku-4-5',
       max_tokens: 512,
       system: SYSTEM_PROMPT,
       messages: messages.slice(-10), // last 10 messages to keep cost low

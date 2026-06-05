@@ -391,6 +391,9 @@ export default function AdminScreen({ onLogout }: Props) {
   const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
 
   const [authToken, setAuthToken] = useState<string | null>(null);
+  // Ref so closures (polling interval, startOrStop) always read the latest token
+  // without needing to be in useCallback/useEffect dependency arrays.
+  const authTokenRef = useRef<string | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -412,12 +415,14 @@ export default function AdminScreen({ onLogout }: Props) {
   // Load auth token on mount and subscribe to changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthToken(session?.access_token ?? null);
+      const token = session?.access_token ?? null;
+      authTokenRef.current = token;
+      setAuthToken(token);
       // Load subscription plan once we have a token
-      if (session?.access_token) {
+      if (token) {
         fetch('/api/admin/subscription', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
       }
     });
@@ -427,7 +432,9 @@ export default function AdminScreen({ onLogout }: Props) {
       loadAdminCustomMissions();
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthToken(session?.access_token ?? null);
+      const token = session?.access_token ?? null;
+      authTokenRef.current = token;
+      setAuthToken(token);
       setIsSuperAdmin(session?.user?.app_metadata?.role === 'superadmin');
     });
     return () => subscription.unsubscribe();
@@ -519,15 +526,30 @@ export default function AdminScreen({ onLogout }: Props) {
       });
     }
 
+    // Helper that always reads the latest token from the ref — avoids stale closure bug
+    // when the interval is set up before getSession() resolves.
+    function postWithAuth(url: string, body?: object) {
+      const token = authTokenRef.current;
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body ?? {}),
+        cache: 'no-store',
+      });
+    }
+
     async function poll() {
       const pollStartedAt = Date.now();
 
       const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
-        POST('/api/admin/teams', { gameId }),
-        POST('/api/admin/photos'),
-        POST('/api/scavenger/submissions'),
-        POST('/api/game', { key: gameKey }),
-        POST('/api/settings', { gameId }),
+        postWithAuth('/api/admin/teams', { gameId }),
+        postWithAuth('/api/admin/photos'),
+        postWithAuth('/api/scavenger/submissions'),
+        postWithAuth('/api/game', { key: gameKey }),
+        postWithAuth('/api/settings', { gameId }),
       ]);
       const [td, pd, scvd, gd, sd] = await Promise.all([
         teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
@@ -550,9 +572,9 @@ export default function AdminScreen({ onLogout }: Props) {
 
       // Auto-resolve expired hot potato
       if (hp && new Date(hp.expires_at) <= new Date()) {
-        await POST('/api/admin/powerup/resolve-hot-potato', { gameId });
+        await postWithAuth('/api/admin/powerup/resolve-hot-potato', { gameId });
         // Refresh settings after resolution
-        const freshSd = await POST('/api/settings', { gameId }).then(r => r.json());
+        const freshSd = await postWithAuth('/api/settings', { gameId }).then(r => r.json());
         if (freshSd.powerups_used) setPowerupsUsed(freshSd.powerups_used);
         setHotPotatoActive(freshSd.hot_potato ?? null);
       }
@@ -590,9 +612,10 @@ export default function AdminScreen({ onLogout }: Props) {
     // Stamp the command time BEFORE the fetch so any poll in-flight right now
     // (which started before this stamp) gets discarded when it returns.
     lastCommandAtRef.current = Date.now();
+    const token = authTokenRef.current;
     const res = await fetch('/api/admin/game/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+      headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
       body: JSON.stringify({ gameId: activeGame.id, action }),
     });
     const data = await res.json();
