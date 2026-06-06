@@ -404,6 +404,16 @@ export default function AdminScreen({ onLogout }: Props) {
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
+  // Analytics state
+  type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
+  type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; games: AnalyticsGame[] };
+  type AnalyticsMissionStat = { id: string; name: string; gameCount: number; completedCount: number; totalTeams: number; completionRate: number };
+  type AnalyticsKPIs = { totalGames: number; finishedGames: number; activeCustomers: number; activeCustomers30d: number; completionRate: number; avgTeamsPerGame: number; totalTeams: number };
+  type AnalyticsData = { kpis: AnalyticsKPIs; customers: AnalyticsCustomer[]; missionStats: AnalyticsMissionStat[] };
+
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
   const [customCategoryName, setCustomCategoryName] = useState('My Missions');
   const [categoryNameSaving, setCategoryNameSaving] = useState(false);
@@ -742,6 +752,17 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await POST('/api/admin/superadmin/users');
     const data = await res.json();
     if (data.users) setCustomers(data.users);
+  }
+
+  async function loadAnalytics() {
+    setAnalyticsLoading(true);
+    try {
+      const res = await POST('/api/admin/superadmin/analytics');
+      const data = await res.json();
+      if (data.kpis) setAnalytics(data);
+    } finally {
+      setAnalyticsLoading(false);
+    }
   }
 
   async function handlePortal() {
@@ -1633,7 +1654,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups{plan === 'free' ? ' 🔒' : ''}</button>
           )}
           {isSuperAdmin && (
-            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadCustomers(); }}>👥 Customers</button>
+            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadAnalytics(); }}>📊 Analytics</button>
           )}
         </div>
 
@@ -2131,38 +2152,165 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         )}
 
-        {/* CUSTOMERS — super-admin only */}
+        {/* ANALYTICS — super-admin only */}
         {tab === 'customers' && isSuperAdmin && (
           <div className="fade-in">
             <div className="section-header">
-              <h2 style={{ fontSize: '18px' }}>Customers</h2>
-              <span className="badge">{customers.length} accounts</span>
+              <h2 style={{ fontSize: '18px' }}>Analytics</h2>
+              {analytics && <span className="badge">{analytics.kpis.totalGames} spel</span>}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {customers.length === 0 && (
-                <div className="empty-state">No customers yet.</div>
-              )}
-              {customers.map(c => (
-                <div key={c.id} style={{
-                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px',
-                  padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '14px', color: c.is_super_admin ? 'var(--gold)' : 'var(--text)' }}>
-                      {c.email}{c.is_super_admin ? ' ⭐' : ''}
+
+            {analyticsLoading && (
+              <div className="empty-state">Laddar analytics...</div>
+            )}
+
+            {!analyticsLoading && !analytics && (
+              <div className="empty-state">Ingen data ännu.</div>
+            )}
+
+            {analytics && (() => {
+              const { kpis, customers: analyticsCustomers, missionStats } = analytics;
+
+              function rateColor(rate: number) {
+                if (rate >= 0.8) return 'var(--accent3)';
+                if (rate >= 0.5) return 'var(--gold)';
+                return 'var(--accent2)';
+              }
+
+              return (
+                <>
+                  {/* ── KPI Cards ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Totalt spel</div>
+                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.totalGames}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} avslutade</div>
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
-                      Joined {new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      {c.last_sign_in_at && ` · Last login ${new Date(c.last_sign_in_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`}
+                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Aktiva kunder</div>
+                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.activeCustomers}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.activeCustomers30d} aktiva senaste 30d</div>
+                    </div>
+                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Spelklar-rate</div>
+                      <div style={{ fontSize: '28px', fontWeight: 800, color: rateColor(kpis.completionRate) }}>{Math.round(kpis.completionRate * 100)}%</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>spel som slutförts</div>
+                    </div>
+                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Snitt lag/spel</div>
+                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.avgTeamsPerGame}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>totalt {kpis.totalTeams} lag</div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--accent)' }}>{c.game_count}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>game{c.game_count !== 1 ? 's' : ''}</div>
+
+                  {/* ── Two-column layout ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+
+                    {/* Left: Customer list */}
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                        Kunder ({analyticsCustomers.length})
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {analyticsCustomers.length === 0 && (
+                          <div className="empty-state">Inga kunder ännu.</div>
+                        )}
+                        {analyticsCustomers.map(c => (
+                          <div key={c.id}>
+                            <div
+                              onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)}
+                              style={{
+                                background: 'var(--card)', border: '1px solid var(--border)', borderRadius: expandedCustomer === c.id ? '12px 12px 0 0' : '12px',
+                                padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
+                              }}
+                            >
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {c.email}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                                  {c.lastActive ? new Date(c.lastActive).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Inget spel'}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)' }}>{c.gameCount}</div>
+                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>spel</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--muted)' }}>{c.avgTeams}</div>
+                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>lag/spel</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: '13px', fontWeight: 700, color: rateColor(c.completionRate) }}>{Math.round(c.completionRate * 100)}%</div>
+                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>klar</div>
+                                </div>
+                                <div style={{ color: 'var(--muted)', fontSize: '12px' }}>{expandedCustomer === c.id ? '▲' : '▼'}</div>
+                              </div>
+                            </div>
+                            {expandedCustomer === c.id && (
+                              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '6px 0' }}>
+                                {c.games.length === 0 && (
+                                  <div style={{ padding: '12px 14px', fontSize: '12px', color: 'var(--muted)' }}>Inga spel.</div>
+                                )}
+                                {c.games.map(g => (
+                                  <div key={g.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', gap: '10px', borderBottom: '1px solid var(--border)' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {g.name ?? '(namnlöst)'}
+                                      </div>
+                                      <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '1px' }}>
+                                        {g.startedAt ? new Date(g.startedAt).toLocaleDateString('sv-SE') : '—'}
+                                      </div>
+                                    </div>
+                                    <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{g.teamCount} lag</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--accent)', flexShrink: 0, fontWeight: 700 }}>{g.topScore}p</div>
+                                    <div style={{ fontSize: '11px', flexShrink: 0, color: g.finished ? 'var(--accent3)' : 'var(--muted)' }}>
+                                      {g.finished ? '✓' : '—'}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Mission rankings */}
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                        Uppdragsranking
+                      </div>
+                      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px', gap: '8px', padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          <div>Uppdrag</div>
+                          <div style={{ textAlign: 'right' }}>Spel</div>
+                          <div style={{ textAlign: 'right' }}>Klarade</div>
+                        </div>
+                        {missionStats.length === 0 && (
+                          <div style={{ padding: '16px 14px', fontSize: '12px', color: 'var(--muted)' }}>Ingen data.</div>
+                        )}
+                        {missionStats.map(m => (
+                          <div key={m.id} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px', gap: '8px', alignItems: 'center', marginBottom: '5px' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                              <div style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'right' }}>{m.gameCount}</div>
+                              <div style={{ fontSize: '12px', fontWeight: 700, color: rateColor(m.completionRate), textAlign: 'right' }}>{Math.round(m.completionRate * 100)}%</div>
+                            </div>
+                            <div style={{ height: '3px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${Math.round(m.completionRate * 100)}%`, background: rateColor(m.completionRate), borderRadius: '2px' }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
-                </div>
-              ))}
-            </div>
+                </>
+              );
+            })()}
+
           </div>
         )}
       </div>
