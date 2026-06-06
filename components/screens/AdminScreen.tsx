@@ -375,6 +375,9 @@ export default function AdminScreen({ onLogout }: Props) {
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats' | 'customers'>('leaderboard');
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
+  const [visiblePendingCount, setVisiblePendingCount] = useState(10);
+  const [visibleScavengerCount, setVisibleScavengerCount] = useState(10);
+  const [visibleRatedCount, setVisibleRatedCount] = useState(20);
   const [qrExpanded, setQrExpanded] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
   const [rated, setRated] = useState<Set<string>>(new Set());
@@ -1761,7 +1764,7 @@ export default function AdminScreen({ onLogout }: Props) {
               <div style={{ marginBottom: '20px' }}>
                 <select
                   value={photoTeamFilter}
-                  onChange={e => setPhotoTeamFilter(e.target.value)}
+                  onChange={e => { setPhotoTeamFilter(e.target.value); setVisiblePendingCount(10); setVisibleScavengerCount(10); setVisibleRatedCount(20); }}
                   style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontFamily: "'Sora', sans-serif", fontSize: '13px', width: '100%', cursor: 'pointer' }}
                 >
                   <option value="all">All teams</option>
@@ -1778,9 +1781,12 @@ export default function AdminScreen({ onLogout }: Props) {
               : null}
 
             {/* Pending regular photos */}
-            {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
+            {(() => {
+              const pendingFiltered = photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              return pendingFiltered.length > 0 && (
+              <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
+                {pendingFiltered.slice(0, visiblePendingCount).map(sub => {
                   const mission = MISSIONS.find(m => m.id === sub.mission_id);
                   const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
                   const pointOptions = getPointOptions(missionMaxPts);
@@ -1811,17 +1817,27 @@ export default function AdminScreen({ onLogout }: Props) {
                   );
                 })}
               </div>
-            )}
+              {pendingFiltered.length > visiblePendingCount && (
+                <button onClick={() => setVisiblePendingCount(n => n + 10)}
+                  style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                  Visa 10 till ({pendingFiltered.length - visiblePendingCount} kvar)
+                </button>
+              )}
+              </>
+              );
+            })()}
 
             {/* Pending scavenger photos */}
-            {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
+            {(() => {
+              const scavFiltered = scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              return scavFiltered.length > 0 && (
               <>
                 <div className="section-header" style={{ marginTop: '32px' }}>
                   <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
-                  <span className="badge">{scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} pending</span>
+                  <span className="badge">{scavFiltered.length} pending</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                  {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
+                  {scavFiltered.slice(0, visibleScavengerCount).map(sub => (
                     <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '14px' }}>📍</span>
@@ -1847,61 +1863,75 @@ export default function AdminScreen({ onLogout }: Props) {
                     </div>
                   ))}
                 </div>
+                {scavFiltered.length > visibleScavengerCount && (
+                  <button onClick={() => setVisibleScavengerCount(n => n + 10)}
+                    style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                    Visa 10 till ({scavFiltered.length - visibleScavengerCount} kvar)
+                  </button>
+                )}
               </>
-            )}
+              );
+            })()}
 
             {/* Rated archive — regular + scavenger combined */}
-            {(photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 ||
-              scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0) && (
+            {(() => {
+              const ratedRegular = photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              const ratedScav = scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              const allRated = [...ratedRegular.map(s => ({ ...s, _type: 'regular' as const })), ...ratedScav.map(s => ({ ...s, _type: 'scavenger' as const }))];
+              return allRated.length > 0 && (
               <>
                 <div className="section-header" style={{ marginTop: '28px' }}>
                   <h2 style={{ fontSize: '16px', color: 'var(--muted)' }}>✓ Rated</h2>
-                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                    {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length +
-                     scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} photos
-                  </span>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{allRated.length} photos</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
-                  {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
-                    const mission = MISSIONS.find(m => m.id === sub.mission_id);
-                    return (
-                      <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
-                        <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '12px' }}>{mission?.icon ?? '📸'}</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                  {allRated.slice(0, visibleRatedCount).map(sub => {
+                    if (sub._type === 'regular') {
+                      const mission = MISSIONS.find(m => m.id === (sub as typeof ratedRegular[0]).mission_id);
+                      return (
+                        <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
+                          <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '12px' }}>{mission?.icon ?? '📸'}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                            </div>
+                            <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {(sub as typeof ratedRegular[0]).points_awarded ?? 0}p</span>
                           </div>
-                          <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
+                          <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                            onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? (sub as typeof ratedRegular[0]).mission_id}` })}>
+                            <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          </div>
                         </div>
-                        <div
-                          style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
-                          onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? sub.mission_id}` })}
-                        >
-                          <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      );
+                    } else {
+                      const s = sub as typeof ratedScav[0];
+                      return (
+                        <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
+                          <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '12px' }}>📍</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                            </div>
+                            <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {s.points_awarded ?? 0}p</span>
+                          </div>
+                          <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                            onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${s.item_label}` })}>
+                            <img src={sub.photo_url} alt={s.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          </div>
                         </div>
-                      </div>
-                    );
+                      );
+                    }
                   })}
-                  {scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
-                    <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '12px' }}>📍</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
-                        </div>
-                        <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
-                      </div>
-                      <div
-                        style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
-                        onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${sub.item_label}` })}
-                      >
-                        <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
+                {allRated.length > visibleRatedCount && (
+                  <button onClick={() => setVisibleRatedCount(n => n + 20)}
+                    style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                    Visa 20 till ({allRated.length - visibleRatedCount} kvar)
+                  </button>
+                )}
               </>
-            )}
+              );
+            })()}
           </div>
         )}
 
