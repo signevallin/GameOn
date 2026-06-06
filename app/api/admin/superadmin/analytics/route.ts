@@ -81,6 +81,9 @@ export async function POST(req: Request) {
   if (gamesResult.error) {
     return NextResponse.json({ error: gamesResult.error.message }, { status: 500 });
   }
+  if (teamsResult.error) {
+    return NextResponse.json({ error: teamsResult.error.message }, { status: 500 });
+  }
 
   const users = usersResult.data.users;
   const games = gamesResult.data ?? [];
