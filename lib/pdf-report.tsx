@@ -79,6 +79,12 @@ function medalOrRank(rank: number): string {
   return String(rank);
 }
 
+function rateColor(rate: number): string {
+  if (rate >= 75) return C.green;   // #8CBF9B
+  if (rate >= 40) return C.accent;  // #7CBDD4
+  return C.orange;                   // #D4875A
+}
+
 // ── Shared styles ─────────────────────────────────────────────────────────
 const shared = StyleSheet.create({
   page: {
@@ -223,7 +229,108 @@ function StandingsPage({ teams }: { teams: ReportTeam[] }) {
   );
 }
 
-// ── Page 3: Best Mission Per Team ─────────────────────────────────────────
+// ── Page 3: Mission Analytics ─────────────────────────────────────────────
+function MissionAnalyticsPage({
+  missionStats,
+  missionMap,
+  teamCount,
+}: {
+  missionStats: ReportData['missionStats'];
+  missionMap: ReportData['missionMap'];
+  teamCount: number;
+}) {
+  // Sort by completion rate desc, skip zero-completion missions
+  const rows = Object.entries(missionStats)
+    .filter(([, s]) => s.completed > 0)
+    .map(([mId, s]) => {
+      const rate = Math.round((s.completed / (teamCount || 1)) * 100);
+      const avg  = Math.round(s.totalScore / s.completed);
+      const m    = missionMap[mId];
+      return {
+        mId,
+        label:     m ? `${m.icon} ${m.name}` : mId,
+        shortName: m ? (m.name.length > 18 ? m.name.slice(0, 17) + '…' : m.name) : mId,
+        completed: s.completed,
+        rate,
+        avg,
+        top: s.topScore,
+      };
+    })
+    .sort((a, b) => b.rate - a.rate);
+
+  return (
+    <Page size="A4" style={shared.page}>
+      <Text style={shared.heading}>MISSION ANALYTICS</Text>
+      <Text style={{ fontSize: 9, color: C.muted, marginBottom: 12 }}>
+        Sorterat efter completion rate
+      </Text>
+
+      {rows.length === 0 ? (
+        <Text style={{ color: C.muted, fontSize: 11 }}>Inga uppdrag klarades under detta spel.</Text>
+      ) : (
+        <>
+          {/* ── Table header ── */}
+          <View style={{
+            flexDirection: 'row',
+            paddingBottom: 8,
+            borderBottomColor: C.accent,
+            borderBottomWidth: 1,
+            marginBottom: 2,
+          }}>
+            <Text style={{ flex: 2, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold' }}>UPPDRAG</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'center' }}>KLARADE</Text>
+            <Text style={{ width: 50, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'center' }}>RATE</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>SNITT</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>TOPP</Text>
+          </View>
+
+          {/* ── Table rows ── */}
+          {rows.map((r, i) => {
+            const color = rateColor(r.rate);
+            return (
+              <View key={r.mId} style={{
+                flexDirection: 'row',
+                paddingVertical: 7,
+                paddingHorizontal: 2,
+                backgroundColor: i % 2 === 0 ? C.row : 'transparent',
+                alignItems: 'center',
+              }}>
+                <Text style={{ flex: 2, fontSize: 10, color: C.text }}>{r.label}</Text>
+                <Text style={{ width: 55, fontSize: 10, textAlign: 'center', color }}>{r.completed}/{teamCount}</Text>
+                <Text style={{ width: 50, fontSize: 10, textAlign: 'center', fontFamily: 'Helvetica-Bold', color }}>{r.rate}%</Text>
+                <Text style={{ width: 55, fontSize: 10, textAlign: 'right', color: C.muted }}>{r.avg}</Text>
+                <Text style={{ width: 55, fontSize: 10, textAlign: 'right', fontFamily: 'Helvetica-Bold', color: C.gold }}>{r.top}</Text>
+              </View>
+            );
+          })}
+
+          {/* ── Progress bars ── */}
+          <Text style={{ fontSize: 8, color: C.muted, letterSpacing: 1.5, marginTop: 20, marginBottom: 8 }}>
+            COMPLETION RATE
+          </Text>
+          {rows.map(r => {
+            const color = rateColor(r.rate);
+            return (
+              <View key={`bar-${r.mId}`} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                <Text style={{ width: 110, fontSize: 8, color: C.muted }}>{r.shortName}</Text>
+                <View style={{ flex: 1, height: 5, backgroundColor: '#1C2D40', borderRadius: 3 }}>
+                  <View style={{ width: `${r.rate}%`, height: 5, backgroundColor: color, borderRadius: 3 }} />
+                </View>
+                <Text style={{ width: 36, fontSize: 8, fontFamily: 'Helvetica-Bold', color, textAlign: 'right' }}>
+                  {r.rate}%
+                </Text>
+              </View>
+            );
+          })}
+        </>
+      )}
+
+      <Footer />
+    </Page>
+  );
+}
+
+// ── Page 4: Best Mission Per Team ─────────────────────────────────────────
 function BestMissionPage({
   teams,
   missionMap,
@@ -417,6 +524,11 @@ export function buildReport(data: ReportData): React.ReactElement {
     <Document>
       <CoverPage game={data.game} teamCount={data.teamCount} />
       <StandingsPage teams={data.teams} />
+      <MissionAnalyticsPage
+        missionStats={data.missionStats}
+        missionMap={data.missionMap}
+        teamCount={data.teamCount}
+      />
       <BestMissionPage teams={data.teams} missionMap={data.missionMap} />
       <FunStatsPage teams={data.teams} game={data.game} missionMap={data.missionMap} />
       {data.photos.length > 0 && <PhotosPage photos={data.photos} />}
