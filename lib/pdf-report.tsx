@@ -73,10 +73,33 @@ function formatDuration(totalSeconds: number): string {
 }
 
 function medalOrRank(rank: number): string {
-  if (rank === 1) return '🥇';
-  if (rank === 2) return '🥈';
-  if (rank === 3) return '🥉';
+  // No emojis — Helvetica has no emoji glyphs
   return String(rank);
+}
+
+// Power-button SVG matching the GameOn logo mark
+function PowerButton({ size = 11, color = C.accent }: { size?: number; color?: string }) {
+  const cx = size / 2, cy = size / 2;
+  const r = size * 0.38;
+  const gap = 38 * (Math.PI / 180); // gap half-angle in radians
+  const lx = +(cx - r * Math.sin(gap)).toFixed(2);
+  const ly = +(cy - r * Math.cos(gap)).toFixed(2);
+  const rx = +(cx + r * Math.sin(gap)).toFixed(2);
+  const sw = +(size * 0.13).toFixed(2);
+  const stemTop = +(cy - r - size * 0.06).toFixed(2);
+  return (
+    <Svg width={size} height={size} style={{ marginRight: 1 }}>
+      {/* Arc: from right gap point, large-arc counterclockwise to left gap point */}
+      <Path
+        d={`M ${rx} ${ly} A ${r} ${r} 0 1 0 ${lx} ${ly}`}
+        stroke={color}
+        strokeWidth={sw}
+        fill="none"
+      />
+      {/* Stem from near top down to centre */}
+      <Line x1={cx} y1={stemTop} x2={cx} y2={cy} stroke={color} strokeWidth={sw} />
+    </Svg>
+  );
 }
 
 function rateColor(rate: number): string {
@@ -117,7 +140,8 @@ function Footer() {
   return (
     <View style={[shared.footer, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
       <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
-      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
+      <PowerButton size={9} color={C.accent} />
+      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>n</Text>
       <Text style={{ fontSize: 9, color: C.muted }}> · Powered by GameOn</Text>
     </View>
   );
@@ -136,10 +160,11 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
 
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* Label */}
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
           <Text style={{ fontSize: 9, color: C.muted, letterSpacing: 3 }}>GAME REPORT BY </Text>
           <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
-          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
+          <PowerButton size={9} color={C.accent} />
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>n</Text>
         </View>
 
         {/* Game name */}
@@ -202,7 +227,12 @@ function StandingsPage({ teams }: { teams: ReportTeam[] }) {
           backgroundColor: i % 2 === 0 ? C.row : 'transparent',
           alignItems: 'center',
         }}>
-          <Text style={{ width: 44, fontSize: 13 }}>{medalOrRank(i + 1)}</Text>
+          <Text style={{
+            width: 44,
+            fontSize: 11,
+            fontFamily: i < 3 ? 'Helvetica-Bold' : 'Helvetica',
+            color: i === 0 ? C.gold : i === 1 ? '#B0C8D8' : i === 2 ? '#C8A870' : C.muted,
+          }}>{medalOrRank(i + 1)}</Text>
           <Text style={{
             flex: 1,
             fontFamily: i < 3 ? 'Helvetica-Bold' : 'Helvetica',
@@ -248,7 +278,7 @@ function MissionAnalyticsPage({
       const m    = missionMap[mId];
       return {
         mId,
-        label:     m ? `${m.icon} ${m.name}` : mId,
+        label:     m ? m.name : mId,
         shortName: m ? (m.name.length > 18 ? m.name.slice(0, 17) + '…' : m.name) : mId,
         completed: s.completed,
         rate,
@@ -346,7 +376,7 @@ function BestMissionPage({
       const m = missionMap[mId];
       return {
         teamName: t.name,
-        missionLabel: m ? `${m.icon} ${m.name}` : mId,
+        missionLabel: m ? m.name : mId,
         pts,
       };
     })
@@ -420,27 +450,24 @@ function FunStatsPage({
     for (const [mId, pts] of Object.entries(t.mission_scores)) {
       if (!bestPerf || pts > bestPerf.pts) {
         const m = missionMap[mId];
-        bestPerf = { teamName: t.name, missionLabel: m ? `${m.icon} ${m.name}` : mId, pts };
+        bestPerf = { teamName: t.name, missionLabel: m ? m.name : mId, pts };
       }
     }
   }
 
   const cards = [
     {
-      emoji: '🏃',
-      title: 'Snabbaste lag',
+      title: 'SNABBASTE LAG',
       main: fastest?.name ?? '–',
       sub: fastest ? formatDuration(fastest.secs) : 'Inget lag klart',
     },
     {
-      emoji: '📋',
-      title: 'Mest aktiva lag',
+      title: 'MEST AKTIVA LAG',
       main: mostActive?.name ?? '–',
-      sub: `${mostActive?.completed.length ?? 0} uppdrag`,
+      sub: `${(mostActive?.completed ?? []).length} uppdrag`,
     },
     {
-      emoji: '⚡',
-      title: 'Bästa enskilda prestation',
+      title: 'BÄSTA PRESTATION',
       main: bestPerf?.teamName ?? '–',
       sub: bestPerf ? `${bestPerf.missionLabel} · ${bestPerf.pts} pts` : '–',
     },
@@ -455,13 +482,12 @@ function FunStatsPage({
             flex: 1,
             backgroundColor: C.card,
             borderRadius: 8,
-            paddingVertical: 20,
+            paddingVertical: 24,
             paddingHorizontal: 14,
             alignItems: 'center',
           }}>
-            <Text style={{ fontSize: 24, marginBottom: 8 }}>{card.emoji}</Text>
-            <Text style={{ fontSize: 8, color: C.muted, textAlign: 'center', letterSpacing: 1, marginBottom: 8 }}>
-              {card.title.toUpperCase()}
+            <Text style={{ fontSize: 8, color: C.muted, textAlign: 'center', letterSpacing: 1.5, marginBottom: 10 }}>
+              {card.title}
             </Text>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 13, color: C.accent, textAlign: 'center', marginBottom: 6 }}>
               {card.main}
