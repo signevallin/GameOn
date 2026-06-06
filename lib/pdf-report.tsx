@@ -77,30 +77,6 @@ function medalOrRank(rank: number): string {
   return String(rank);
 }
 
-// Power-button SVG matching the GameOn logo mark
-function PowerButton({ size = 11, color = C.accent }: { size?: number; color?: string }) {
-  const cx = size / 2, cy = size / 2;
-  const r = size * 0.38;
-  const gap = 38 * (Math.PI / 180); // gap half-angle in radians
-  const lx = +(cx - r * Math.sin(gap)).toFixed(2);
-  const ly = +(cy - r * Math.cos(gap)).toFixed(2);
-  const rx = +(cx + r * Math.sin(gap)).toFixed(2);
-  const sw = +(size * 0.13).toFixed(2);
-  const stemTop = +(cy - r - size * 0.06).toFixed(2);
-  return (
-    <Svg width={size} height={size} style={{ marginRight: 1 }}>
-      {/* Arc: from right gap point, large-arc counterclockwise to left gap point */}
-      <Path
-        d={`M ${rx} ${ly} A ${r} ${r} 0 1 0 ${lx} ${ly}`}
-        stroke={color}
-        strokeWidth={sw}
-        fill="none"
-      />
-      {/* Stem from near top down to centre */}
-      <Line x1={cx} y1={stemTop} x2={cx} y2={cy} stroke={color} strokeWidth={sw} />
-    </Svg>
-  );
-}
 
 function rateColor(rate: number): string {
   if (rate >= 75) return C.green;   // #8CBF9B
@@ -140,8 +116,7 @@ function Footer() {
   return (
     <View style={[shared.footer, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
       <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
-      <PowerButton size={9} color={C.accent} />
-      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>n</Text>
+      <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
       <Text style={{ fontSize: 9, color: C.muted }}> · Powered by GameOn</Text>
     </View>
   );
@@ -163,8 +138,7 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
           <Text style={{ fontSize: 9, color: C.muted, letterSpacing: 3 }}>GAME REPORT BY </Text>
           <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
-          <PowerButton size={9} color={C.accent} />
-          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>n</Text>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
         </View>
 
         {/* Game name */}
