@@ -403,7 +403,6 @@ export default function AdminScreen({ onLogout }: Props) {
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
-  const [customers, setCustomers] = useState<{ id: string; email: string; created_at: string; last_sign_in_at: string | null; game_count: number; is_super_admin: boolean }[]>([]);
   // Analytics state
   type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
   type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; games: AnalyticsGame[] };
@@ -748,18 +747,14 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
-  async function loadCustomers() {
-    const res = await POST('/api/admin/superadmin/users');
-    const data = await res.json();
-    if (data.users) setCustomers(data.users);
-  }
-
   async function loadAnalytics() {
     setAnalyticsLoading(true);
     try {
       const res = await POST('/api/admin/superadmin/analytics');
       const data = await res.json();
       if (data.kpis) setAnalytics(data);
+    } catch (err) {
+      console.error('Failed to load analytics:', err);
     } finally {
       setAnalyticsLoading(false);
     }
