@@ -223,86 +223,7 @@ function StandingsPage({ teams }: { teams: ReportTeam[] }) {
   );
 }
 
-// ── Page 3: Score Progression Chart ───────────────────────────────────────
-function ScoreChartPage({ teams }: { teams: ReportTeam[] }) {
-  const maxMissions = Math.max(...teams.map(t => t.completed.length), 1);
-  const maxScore = Math.max(...teams.map(t => t.score), 1);
-
-  // Build cumulative score arrays
-  const curves = teams.map(t => {
-    const pts: number[] = [0];
-    let cum = 0;
-    for (const id of t.completed) {
-      cum += t.mission_scores[id] ?? 0;
-      pts.push(cum);
-    }
-    while (pts.length <= maxMissions) pts.push(cum);
-    return pts;
-  });
-
-  // Chart dimensions (SVG units = pt)
-  const W = 515, H = 240, PX = 30, PY = 16;
-  const plotW = W - PX * 2;
-  const plotH = H - PY * 2;
-
-  const toX = (step: number) => PX + (step / maxMissions) * plotW;
-  const toY = (score: number) => PY + plotH - (score / maxScore) * plotH;
-
-  const buildPath = (pts: number[]) =>
-    pts.map((s, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(s).toFixed(1)}`).join(' ');
-
-  return (
-    <Page size="A4" style={shared.page}>
-      <Text style={shared.heading}>SCORE PROGRESSION</Text>
-      <Text style={{ fontSize: 9, color: C.muted, marginBottom: 10 }}>
-        Based on order missions were completed
-      </Text>
-
-      <Svg width={W} height={H}>
-        {/* Y-axis */}
-        <Line
-          x1={PX} y1={PY} x2={PX} y2={PY + plotH}
-          stroke={C.muted} strokeWidth={0.5}
-        />
-        {/* X-axis */}
-        <Line
-          x1={PX} y1={PY + plotH} x2={PX + plotW} y2={PY + plotH}
-          stroke={C.muted} strokeWidth={0.5}
-        />
-        {/* Lines per team */}
-        {curves.map((pts, i) => (
-          <Path
-            key={i}
-            d={buildPath(pts)}
-            stroke={TEAM_COLORS[i] ?? '#555555'}
-            strokeWidth={1.5}
-            fill="none"
-          />
-        ))}
-      </Svg>
-
-      {/* Legend */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 4 }}>
-        {teams.map((t, i) => (
-          <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 14, marginBottom: 4 }}>
-            <View style={{
-              width: 14,
-              height: 4,
-              backgroundColor: TEAM_COLORS[i] ?? '#555555',
-              borderRadius: 2,
-              marginRight: 5,
-            }} />
-            <Text style={{ fontSize: 9, color: C.text }}>{t.name}</Text>
-          </View>
-        ))}
-      </View>
-
-      <Footer />
-    </Page>
-  );
-}
-
-// ── Page 4: Best Mission Per Team ─────────────────────────────────────────
+// ── Page 3: Best Mission Per Team ─────────────────────────────────────────
 function BestMissionPage({
   teams,
   missionMap,
@@ -312,7 +233,7 @@ function BestMissionPage({
 }) {
   const rows = teams
     .map(t => {
-      const entries = Object.entries(t.mission_scores);
+      const entries = Object.entries(t.mission_scores ?? {});
       if (entries.length === 0) return null;
       const [mId, pts] = entries.sort((a, b) => b[1] - a[1])[0];
       const m = missionMap[mId];
@@ -348,7 +269,7 @@ function BestMissionPage({
           paddingHorizontal: 2,
           backgroundColor: i % 2 === 0 ? C.row : 'transparent',
         }}>
-          <Text style={{ flex: 1 }}>{r.teamName}</Text>
+          <Text style={{ flex: 1, color: C.text }}>{r.teamName}</Text>
           <Text style={{ flex: 2, color: C.muted }}>{r.missionLabel}</Text>
           <Text style={{ width: 60, textAlign: 'right', fontFamily: 'Helvetica-Bold', color: C.accent }}>
             {r.pts}
@@ -474,7 +395,7 @@ function PhotosPage({ photos }: { photos: ReportPhoto[] }) {
                 paddingVertical: 6,
                 paddingHorizontal: 10,
               }}>
-                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>{photo.teamName}</Text>
+                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.text }}>{photo.teamName}</Text>
                 <Text style={{ fontSize: 10, color: C.accent, fontFamily: 'Helvetica-Bold' }}>
                   {photo.pointsAwarded} pts
                 </Text>
@@ -494,9 +415,8 @@ function PhotosPage({ photos }: { photos: ReportPhoto[] }) {
 export function buildReport(data: ReportData): React.ReactElement {
   return (
     <Document>
-      <CoverPage game={data.game} teamCount={data.teams.length} />
+      <CoverPage game={data.game} teamCount={data.teamCount} />
       <StandingsPage teams={data.teams} />
-      <ScoreChartPage teams={data.teams} />
       <BestMissionPage teams={data.teams} missionMap={data.missionMap} />
       <FunStatsPage teams={data.teams} game={data.game} missionMap={data.missionMap} />
       {data.photos.length > 0 && <PhotosPage photos={data.photos} />}
