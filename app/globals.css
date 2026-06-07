@@ -640,6 +640,158 @@ pre {
 
 .admin-tab.active { background: var(--accent); color: #0a0e19; }
 
+/* ── MOBILE ADMIN (< 768px) ── */
+@media (max-width: 767px) {
+  /* Hide desktop tab bar */
+  .admin-tabs { display: none; }
+
+  /* Add bottom padding so content isn't hidden behind bottom nav */
+  .container { padding-bottom: 80px; }
+
+  /* Fixed bottom navigation */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: stretch;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .mobile-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+  }
+
+  .mobile-bottom-nav-item .mobile-nav-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .mobile-bottom-nav-item .mobile-nav-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+  }
+
+  .mobile-bottom-nav-item.active .mobile-nav-label {
+    color: var(--accent);
+  }
+
+  .mobile-bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+  }
+
+  /* Floating action button */
+  .mobile-fab {
+    position: fixed;
+    bottom: 72px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #5aa3bd);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0a0e19;
+    box-shadow: 0 4px 16px rgba(124, 189, 212, 0.45);
+    z-index: 101;
+    line-height: 1;
+  }
+
+  /* More sheet overlay */
+  .mobile-more-sheet {
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 16px;
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-more-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    width: 100%;
+    text-align: left;
+    font-family: 'Sora', sans-serif;
+  }
+
+  /* Game key font size — prevent overflow on narrow screens */
+  .mobile-game-key {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(28px, 8vw, 48px);
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: clamp(3px, 1.5vw, 8px);
+    line-height: 1;
+  }
+
+  /* Photo grid — single column on phones */
+  .mobile-photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)) !important;
+  }
+
+  /* KPI cards — 2 columns on mobile instead of 4 */
+  .mobile-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Analytics 2-col — stack to 1 col on mobile */
+  .mobile-analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Nav bar — hide text on ghost buttons to save space */
+  .mobile-nav-text-hide {
+    display: none;
+  }
+}
+
 .leaderboard { display: flex; flex-direction: column; gap: 8px; }
 
 .lb-row {
