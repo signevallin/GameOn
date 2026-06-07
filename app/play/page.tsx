@@ -4,6 +4,7 @@ import { Team, Game, CustomMission } from '@/lib/supabase';
 import { toMission } from '@/lib/custom-missions';
 import { Mission } from '@/lib/missions';
 import { supabase } from '@/lib/supabase';
+import { initI18n } from '@/lib/i18n';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
 import ChallengeScreen from '@/components/screens/ChallengeScreen';
@@ -70,6 +71,12 @@ export default function Home() {
       }
     });
     return () => authSub.unsubscribe();
+  }, []);
+
+  // ── Initialize i18n ──
+  useEffect(() => {
+    const savedLang = typeof window !== 'undefined' ? localStorage.getItem('gameon_lang') ?? 'en' : 'en';
+    initI18n(savedLang).catch(() => {});
   }, []);
 
   // ── Master polling loop: runs whenever team is on the missions screen ──
@@ -167,10 +174,14 @@ export default function Home() {
     }
   }
 
-  function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = []) {
+  async function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = []) {
     setTeam(t);
     setGame(g);
     setCustomMissions(cms.map(toMission));
+    // Initialize i18n with player's saved language, falling back to game default
+    const savedLang = localStorage.getItem('gameon_lang');
+    const lang = savedLang ?? (g as { language?: string }).language ?? 'en';
+    await initI18n(lang);
     setScreen('missions');
   }
 
