@@ -1017,13 +1017,12 @@ export default function AdminScreen({ onLogout }: Props) {
               {portalLoading ? '...' : plan === 'studio' ? '✦ Studio' : '⚡ Pro'}
             </button>
           )}
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
         </div>
       </nav>
       <div className="container fade-in">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
-          <h2>Your Games</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px', flexWrap: 'wrap', gap: '12px' }}>
+          <h2 style={{ margin: 0 }}>Your Games</h2>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {plan === 'free' ? (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
             ) : (
@@ -1055,88 +1054,94 @@ export default function AdminScreen({ onLogout }: Props) {
               const isConfirming = confirmDeleteId === g.id;
               const isDeleting = deletingId === g.id;
               return (
-                <div key={g.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 24px', background: 'var(--card)', border: `1px solid ${isConfirming ? 'var(--accent2)' : 'var(--border)'}`, borderRadius: '12px', transition: 'all 0.2s' }}>
+                <div key={g.id} className={`admin-game-card${isConfirming ? ' confirming' : ''}`}>
                   {/* Clickable info area */}
-                  <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => { if (!isConfirming) { setActiveGame(g); setView('dashboard'); } }}>
-                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{g.name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
-                      {g.missions.length} missions · {g.duration_minutes} min
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--border)', marginTop: '4px', letterSpacing: '0.5px' }}>
+                  <div className="admin-game-card-info" onClick={() => { if (!isConfirming) { setActiveGame(g); setView('dashboard'); } }}>
+                    <h3>{g.name}</h3>
+                    <div className="meta">{g.missions.length} missions · {g.duration_minutes} min</div>
+                    <div className="date">
                       {g.started_at
                         ? `▶ ${new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
                         : `Created ${new Date(g.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       }
                     </div>
                   </div>
-                  <div style={{ fontFamily: "'Sora', sans-serif", letterSpacing: '3px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{g.game_key}</div>
-                  <div style={{ fontSize: '13px', color: statusColor, fontWeight: 700 }}>{statusLabel}</div>
 
-                  {/* Delete / confirm */}
-                  {isConfirming ? (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: '12px', color: 'var(--accent2)', fontWeight: 600 }}>Delete?</span>
-                      <button onClick={() => deleteGame(g.id)} disabled={isDeleting}
-                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
-                        {isDeleting ? '...' : 'YES'}
-                      </button>
-                      <button onClick={() => setConfirmDeleteId(null)}
-                        style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
-                        NO
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button
-                          onClick={e => { e.stopPropagation(); setSaveTemplateId(g.id); setSaveTemplateName(g.name || 'My Template'); setSaveTemplateIcon('🎮'); }}
-                          title="Save as template"
-                          style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', lineHeight: 1, flexShrink: 0, fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
-                        >
-                          Save as template
+                  {/* Key + status + actions — stacks below info on mobile */}
+                  <div className="admin-game-card-bottom">
+                    <div className="admin-game-key">{g.game_key}</div>
+                    <div className="admin-game-status" style={{ color: statusColor }}>{statusLabel}</div>
+
+                    {/* Delete / confirm */}
+                    {isConfirming ? (
+                      <div className="admin-game-confirm">
+                        <span style={{ fontSize: '12px', color: 'var(--accent2)', fontWeight: 600 }}>Delete?</span>
+                        <button onClick={() => deleteGame(g.id)} disabled={isDeleting}
+                          style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                          {isDeleting ? '...' : 'YES'}
                         </button>
-                        <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
-                          title="Delete game"
-                          style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
-                          🗑
+                        <button onClick={() => setConfirmDeleteId(null)}
+                          style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                          NO
                         </button>
                       </div>
-                      {saveTemplateId === g.id && (
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
-                          <input
-                            value={saveTemplateIcon}
-                            onChange={e => setSaveTemplateIcon(e.target.value)}
-                            style={{ width: '36px', padding: '5px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '16px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
-                          />
-                          <input
-                            value={saveTemplateName}
-                            onChange={e => setSaveTemplateName(e.target.value)}
-                            placeholder="Template name"
-                            style={{ width: '150px', padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif" }}
-                          />
+                    ) : (
+                      <div className="admin-game-actions">
+                        <div className="admin-game-actions-row">
                           <button
-                            onClick={() => saveAsTemplate(g.missions, saveTemplateName, saveTemplateIcon)}
-                            disabled={saveTemplateLoading || !saveTemplateName.trim()}
-                            style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                            onClick={e => { e.stopPropagation(); setSaveTemplateId(g.id); setSaveTemplateName(g.name || 'My Template'); setSaveTemplateIcon('🎮'); }}
+                            title="Save as template"
+                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', lineHeight: 1, flexShrink: 0, fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
                           >
-                            {saveTemplateLoading ? '...' : 'SAVE'}
+                            Save as template
                           </button>
-                          <button
-                            onClick={() => setSaveTemplateId(null)}
-                            style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
-                          >
-                            ✕
+                          <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
+                            title="Delete game"
+                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
+                            🗑
                           </button>
                         </div>
-                      )}
-                    </div>
-                  )}
+                        {saveTemplateId === g.id && (
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+                            <input
+                              value={saveTemplateIcon}
+                              onChange={e => setSaveTemplateIcon(e.target.value)}
+                              style={{ width: '36px', padding: '5px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '16px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
+                            />
+                            <input
+                              value={saveTemplateName}
+                              onChange={e => setSaveTemplateName(e.target.value)}
+                              placeholder="Template name"
+                              style={{ width: '140px', padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif" }}
+                            />
+                            <button
+                              onClick={() => saveAsTemplate(g.missions, saveTemplateName, saveTemplateIcon)}
+                              disabled={saveTemplateLoading || !saveTemplateName.trim()}
+                              style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                            >
+                              {saveTemplateLoading ? '...' : 'SAVE'}
+                            </button>
+                            <button
+                              onClick={() => setSaveTemplateId(null)}
+                              style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* Log out — bottom of page */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0 32px' }}>
+          <button className="btn btn-ghost" style={{ padding: '10px 24px', fontSize: '13px', color: 'var(--muted)' }} onClick={onLogout}>LOG OUT</button>
+        </div>
       </div>
     </>
   );
