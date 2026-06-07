@@ -217,7 +217,6 @@ function buildOverlay(
 
 export default function PresentPage({ params }: { params: { gameKey: string } }) {
   const [data, setData] = useState<PresentData | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notFound, setNotFound] = useState(false);
   const prevNotifications = useRef<Record<string, string>>({});
   const [overlay, setOverlay] = useState<{ emoji: string; title: string; subtitle: string } | null>(null);
@@ -247,7 +246,6 @@ export default function PresentPage({ params }: { params: { gameKey: string } })
       if (!res.ok) return;
       const json: PresentData = await res.json();
       setData(json);
-      setLastUpdated(new Date());
 
       for (const team of json.teams) {
         const notif = team.pending_notification;
@@ -307,16 +305,9 @@ export default function PresentPage({ params }: { params: { gameKey: string } })
       }}>
         <GameOnLogo size={28} />
         <span style={{ fontWeight: 800, fontSize: '22px', letterSpacing: '-.03em' }}>{game.name}</span>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: '160px' }}>
-          <span style={{ fontWeight: 700, fontSize: '20px', color: game.status === 'finished' ? '#8FA8C0' : '#7CBDD4', letterSpacing: '1px' }}>
-            {game.status === 'draft' ? ui.waiting : `⏱ ${timer}`}
-          </span>
-          {lastUpdated && (
-            <span style={{ fontSize: '10px', color: '#4a5e75', letterSpacing: '.04em' }}>
-              {lastUpdated.toLocaleTimeString('sv-SE')}
-            </span>
-          )}
-        </div>
+        <span style={{ fontWeight: 700, fontSize: '20px', color: game.status === 'finished' ? '#8FA8C0' : '#8cbf9b', letterSpacing: '1px', minWidth: '160px', textAlign: 'right' }}>
+          {game.status === 'draft' ? ui.waiting : `⏱ ${timer}`}
+        </span>
       </div>
 
       {/* MAIN CONTENT */}
