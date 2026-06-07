@@ -67,6 +67,16 @@ export async function POST(req: Request) {
         scoringFocus: game.ai_photo_instructions,
       });
 
+      // Re-check: if admin already rated while AI was processing, skip
+      const { data: currentSub } = await supabase
+        .from('scavenger_submissions')
+        .select('status')
+        .eq('team_id', teamId)
+        .eq('mission_id', missionId)
+        .eq('item_id', itemId)
+        .single();
+      if (currentSub?.status === 'rated') return;
+
       // Mark submission as AI-rated
       await supabase
         .from('scavenger_submissions')

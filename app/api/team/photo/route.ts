@@ -88,6 +88,14 @@ export async function POST(req: Request) {
         scoringFocus: game.ai_photo_instructions,
       });
 
+      // Re-check: if admin already rated this while AI was processing, skip team update
+      const { data: currentSub } = await supabase
+        .from('photo_submissions')
+        .select('status')
+        .eq('id', insertedSub.id)
+        .single();
+      if (currentSub?.status === 'rated') return;
+
       // Mark submission as AI-rated
       await supabase
         .from('photo_submissions')
