@@ -2342,7 +2342,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups{plan === 'free' ? ' 🔒' : ''}</button>
           )}
           {isSuperAdmin && (
-            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadAnalytics(); }}>📊 Analytics</button>
+            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadAnalytics(); }}>👥 Analytics</button>
           )}
         </div>
 
@@ -3130,7 +3130,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     className="mobile-more-sheet-item"
                     onClick={() => { setTab('customers'); loadAnalytics(); setMobileMoreOpen(false); }}
                   >
-                    📊 Analytics
+                    👥 Analytics
                   </button>
                 )}
               </div>
