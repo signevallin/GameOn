@@ -31,15 +31,17 @@ type PresentData = {
 
 function useTimer(game: Game | null): string {
   const [display, setDisplay] = useState('');
+  const status = game?.status ?? null;
+  const startedAt = game?.started_at ?? null;
+  const durationMinutes = game?.duration_minutes ?? 0;
 
   useEffect(() => {
-    if (!game) return;
+    if (!status) return;
 
     function compute() {
-      if (!game) return;
-      if (game.status === 'finished') { setDisplay('Avslutat'); return; }
-      if (game.status === 'draft' || !game.started_at) { setDisplay(''); return; }
-      const end = new Date(game.started_at).getTime() + game.duration_minutes * 60 * 1000;
+      if (status === 'finished') { setDisplay('Avslutat'); return; }
+      if (status === 'draft' || !startedAt) { setDisplay(''); return; }
+      const end = new Date(startedAt).getTime() + durationMinutes * 60 * 1000;
       const diff = Math.max(0, end - Date.now());
       if (diff === 0) { setDisplay('Avslutat'); return; }
       const m = Math.floor(diff / 60000);
@@ -50,7 +52,7 @@ function useTimer(game: Game | null): string {
     compute();
     const id = setInterval(compute, 1000);
     return () => clearInterval(id);
-  }, [game]);
+  }, [status, startedAt, durationMinutes]);
 
   return display;
 }
@@ -96,6 +98,9 @@ export default function PresentPage({ params }: { params: { gameKey: string } })
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
+
+  // Clear overlay timer on unmount
+  useEffect(() => () => { if (overlayTimer.current) clearTimeout(overlayTimer.current); }, []);
 
   const showOverlay = useCallback((emoji: string, title: string, subtitle: string) => {
     if (overlayTimer.current) clearTimeout(overlayTimer.current);
