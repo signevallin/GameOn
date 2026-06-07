@@ -20,7 +20,7 @@ export async function POST(
 
   const { data: game, error: gameErr } = await supabase
     .from('games')
-    .select('id, name, status, started_at, duration_minutes')
+    .select('id, name, status, started_at, duration_minutes, language')
     .eq('game_key', gameKey)
     .single();
 
@@ -51,6 +51,7 @@ export async function POST(
         status: game.status,
         started_at: game.started_at,
         duration_minutes: game.duration_minutes,
+        language: game.language ?? 'en',
       },
       teams: teams ?? [],
       photos: photos ?? [],
