@@ -54,7 +54,8 @@ export async function POST(req: Request) {
         score: Math.max(0, (team.score ?? 0) - hp.penalty_pts),
         pending_notification: {
           type: 'hot_potato_penalty',
-          message: `💥 BOOM! You didn't complete the Time Bomb mission in time. -${hp.penalty_pts} points!`,
+          msgKey: 'hot_potato_penalty_msg',
+          params: { penalty: hp.penalty_pts },
         },
         updated_at: now.toISOString(),
       }).eq('id', team.id);

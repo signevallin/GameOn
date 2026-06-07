@@ -7,7 +7,7 @@ import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/li
 import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
 import LanguagePicker from '@/components/LanguagePicker';
 
-type Notification = { type: string; message: string };
+type Notification = { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> };
 
 // ── Confetti ──────────────────────────────────────────────────────────────────
 const CONFETTI_COLORS = ['#00e5ff', '#8cf5b5', '#debb6b', '#d0757d', '#b084cc', '#ff9f43'];
@@ -131,7 +131,9 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
         <div style={{ fontSize: '56px', marginBottom: '16px' }}>{cfg.emoji}</div>
         <h2 style={{ color: cfg.color, marginBottom: '16px', letterSpacing: '2px' }}>{cfg.title}</h2>
         <p style={{ fontSize: '15px', color: 'var(--text)', marginBottom: '32px', lineHeight: 1.6 }}>
-          {notification.message}
+          {notification.msgKey
+            ? t(`notifications.${notification.msgKey}`, notification.params ?? {})
+            : notification.message}
         </p>
         <button
           className="btn btn-primary"

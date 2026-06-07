@@ -14,10 +14,10 @@ function getSupabase() {
   );
 }
 
-const MESSAGES: Record<string, string> = {
-  sabotage: '💻 YOU HAVE BEEN HACKED! -100 points deducted from your team',
-  double_points: '🎯 POWER-UP! Double points on your next mission!',
-  final_frenzy: '🔥 FINAL FRENZY ACTIVATED! All points are now doubled!',
+const MSG_KEYS: Record<string, string> = {
+  sabotage: 'sabotage_msg',
+  double_points: 'double_points_msg',
+  final_frenzy: 'final_frenzy_msg',
 };
 
 const VALID_TYPES = ['sabotage', 'double_points', 'fake_hint', 'final_frenzy', 'hot_potato'];
@@ -68,7 +68,8 @@ export async function POST(req: Request) {
         await supabase.from('teams').update({
           pending_notification: {
             type: 'hot_potato',
-            message: `💣 TIME BOMB! Complete '${missionLabel}' within 3 minutes or lose 500 points!`,
+            msgKey: 'hot_potato_msg',
+            params: { mission: missionLabel, penalty: 500 },
           },
           updated_at: new Date().toISOString(),
         }).eq('id', t.id);
@@ -102,7 +103,9 @@ export async function POST(req: Request) {
 
     if (teamsErr || !allTeams) return NextResponse.json({ error: 'Could not load teams.' }, { status: 500 });
 
-    const notification = { type, message: MESSAGES[type] ?? message };
+    const notification = MSG_KEYS[type]
+      ? { type, msgKey: MSG_KEYS[type], params: type === 'sabotage' ? { penalty: 100 } : {} }
+      : { type, message: message ?? '' };
 
     const updates = allTeams.map(t => {
       const update: Record<string, unknown> = {
@@ -153,10 +156,11 @@ export async function POST(req: Request) {
     }
   }
 
-  const notification = {
-    type,
-    message: type === 'fake_hint' ? message.trim() : MESSAGES[type],
-  };
+  const notification = type === 'fake_hint'
+    ? { type, message: message.trim() }
+    : MSG_KEYS[type]
+      ? { type, msgKey: MSG_KEYS[type], params: type === 'sabotage' ? { penalty: 100 } : {} }
+      : { type, message: '' };
 
   const teamUpdate: Record<string, unknown> = {
     pending_notification: notification,

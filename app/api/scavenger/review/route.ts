@@ -55,8 +55,8 @@ export async function POST(req: Request) {
   const missionName = mission ? `${mission.icon} ${mission.name}` : 'Scavenger Hunt';
 
   const notification = points > 0
-    ? { type: 'photo_rated', message: `Your photo for "${itemLabel}" in ${missionName} was rated! You earned ${points} points! 🎉` }
-    : { type: 'photo_rated', message: `Your photo for "${itemLabel}" was reviewed — unfortunately no points this time. Keep going! 💪` };
+    ? { type: 'photo_rated', msgKey: 'photo_rated_earned_item', params: { item: itemLabel ?? '', mission: missionName, points } }
+    : { type: 'photo_rated', msgKey: 'photo_rated_no_points', params: { mission: missionName } };
 
   const alreadyCompleted = team.completed?.includes(missionId);
 

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     await supabase.from('teams').update({
       active_effects: { ...effects, shield_until: shieldUntil },
       team_powerups_used: [...usedPowerups, type],
-      pending_notification: { type: 'powerup_self', message: `🛡️ Shield activated! You are immune to sabotage for 2 minutes.` },
+      pending_notification: { type: 'powerup_self', msgKey: 'shield_msg', params: {} },
     }).eq('id', senderTeamId);
 
     return NextResponse.json({ ok: true });
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const freezeUntil = new Date(Date.now() + 60 * 1000).toISOString();
     await supabase.from('teams').update({
       active_effects: { ...targetEffects, freeze_until: freezeUntil },
-      pending_notification: { type: 'powerup_received', message: `❄️ You have been FROZEN! You can't do anything for 60 seconds.` },
+      pending_notification: { type: 'powerup_received', msgKey: 'frozen_msg', params: {} },
     }).eq('id', targetTeamId);
   }
 
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         double_trouble_remaining: 2,
         double_trouble_missions: penaltyIds,
       },
-      pending_notification: { type: 'powerup_received', message: `😈 DOUBLE TROUBLE! You must complete 2 assigned missions before you can play freely again.` },
+      pending_notification: { type: 'powerup_received', msgKey: 'double_trouble_msg', params: {} },
     }).eq('id', targetTeamId);
   }
 
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       }).eq('id', senderTeamId);
       await supabase.from('teams').update({
         score: newTargetScore,
-        pending_notification: { type: 'powerup_received', message: `🎲 ALL IN! Another team gambled against you — and won! They took ${prize} pts (30%) from you.` },
+        pending_notification: { type: 'powerup_received', msgKey: 'all_in_lost_msg', params: { prize } },
       }).eq('id', targetTeamId);
 
       // Mark sender used + attach result
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
       }).eq('id', senderTeamId);
       await supabase.from('teams').update({
         score: newTargetScore,
-        pending_notification: { type: 'powerup_self', message: `🎲 ALL IN backfired on your rival! They gambled against you and lost — you gained ${wager} pts!` },
+        pending_notification: { type: 'powerup_self', msgKey: 'all_in_won_msg', params: { wager } },
       }).eq('id', targetTeamId);
 
       // Mark sender used + attach result
@@ -151,13 +151,13 @@ export async function POST(req: Request) {
 
     await supabase.from('teams').update({
       score: Math.max(0, targetScore - stolen),
-      pending_notification: { type: 'point_steal_from', message: `😱 POINT STEAL! ${stolen} points were stolen from your team!` },
+      pending_notification: { type: 'point_steal_from', msgKey: 'point_steal_from_msg', params: { stolen } },
     }).eq('id', targetTeamId);
 
     await supabase.from('teams').update({
       score: senderScore + stolen,
       team_powerups_used: [...usedPowerups, type],
-      pending_notification: { type: 'point_steal_to', message: `🤑 You stole ${stolen} pts from ${target.name}!` },
+      pending_notification: { type: 'point_steal_to', msgKey: 'point_steal_to_msg', params: { stolen, target: target.name } },
     }).eq('id', senderTeamId);
 
     return NextResponse.json({ ok: true, stolen, resultMessage: `🤑 You stole ${stolen} pts from ${target.name}!` });
@@ -180,7 +180,7 @@ export async function POST(req: Request) {
     // Deduct from target
     await supabase.from('teams').update({
       score: Math.max(0, targetScore - stolen),
-      pending_notification: { type: 'point_steal_from', message: `🏹 ROBIN HOOD! ${stolen} points were stolen from your team and given to the poorest team!` },
+      pending_notification: { type: 'point_steal_from', msgKey: 'robin_hood_from_msg', params: { stolen } },
     }).eq('id', targetTeamId);
 
     // Give to poorest team (or sender if no other team exists)
@@ -189,13 +189,13 @@ export async function POST(req: Request) {
     const recipientScore = poorest?.score ?? (sender.score ?? 0);
     await supabase.from('teams').update({
       score: recipientScore + stolen,
-      pending_notification: { type: 'point_steal_to', message: `🏹 ROBIN HOOD! You received ${stolen} stolen points!` },
+      pending_notification: { type: 'point_steal_to', msgKey: 'robin_hood_to_msg', params: { stolen } },
     }).eq('id', recipientId);
 
     // Mark sender as used
     await supabase.from('teams').update({
       team_powerups_used: [...usedPowerups, type],
-      pending_notification: { type: 'powerup_self', message: `🏹 Robin Hood activated! Stole ${stolen} pts from ${target.name} and gave them to ${recipientName}!` },
+      pending_notification: { type: 'powerup_self', msgKey: 'robin_hood_self_msg', params: { stolen, target: target.name, recipient: recipientName } },
     }).eq('id', senderTeamId);
 
     return NextResponse.json({ ok: true, stolen, resultMessage: `🏹 Stole ${stolen} pts from ${target.name} and gave to ${recipientName}!` });
