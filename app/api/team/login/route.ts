@@ -1,6 +1,7 @@
 // app/api/team/login/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { translateMission } from '@/lib/translate';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,17 @@ export async function POST(req: Request) {
       : Promise.resolve({ data: [] }),
   ]);
 
-  const customMissions = customMissionsResult.data ?? [];
+  let customMissions = customMissionsResult.data ?? [];
+
+  // Translate custom missions if game language is not English
+  if (customMissions.length > 0 && game.language && game.language !== 'en') {
+    customMissions = await Promise.all(
+      customMissions.map(async (m: { id: string; name: string; desc: string; [key: string]: unknown }) => {
+        const translated = await translateMission(m.id, game.language as string, m.name, m.desc ?? '', supabase);
+        return { ...m, name: translated.name, desc: translated.desc };
+      })
+    );
+  }
 
   if (teamResult.data) {
     // Team already exists — return as-is (preserve score and completed missions)
