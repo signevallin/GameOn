@@ -406,6 +406,10 @@ export default function AdminScreen({ onLogout }: Props) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [templates, setTemplates] = useState<GameTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [saveTemplateId, setSaveTemplateId] = useState<string | null>(null);
+  const [saveTemplateName, setSaveTemplateName] = useState('');
+  const [saveTemplateIcon, setSaveTemplateIcon] = useState('🎮');
+  const [saveTemplateLoading, setSaveTemplateLoading] = useState(false);
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -782,6 +786,31 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
+  async function saveAsTemplate(missionIds: string[], name: string, icon: string) {
+    setSaveTemplateLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ name, icon, missionIds, isBuiltin: false }),
+      });
+      if (!res.ok) throw new Error('Failed to save template');
+      setSaveTemplateId(null);
+      setSaveTemplateName('');
+      setSaveTemplateIcon('🎮');
+      showToast('Template saved!');
+    } catch (err) {
+      console.error('Failed to save template:', err);
+      showToast('Failed to save template', 'error');
+    } finally {
+      setSaveTemplateLoading(false);
+    }
+  }
+
   async function handlePortal() {
     setPortalLoading(true);
     try {
@@ -939,11 +968,50 @@ export default function AdminScreen({ onLogout }: Props) {
                       </button>
                     </div>
                   ) : (
-                    <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
-                      title="Delete game"
-                      style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
-                      🗑
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          onClick={e => { e.stopPropagation(); setSaveTemplateId(g.id); setSaveTemplateName(g.name || 'My Template'); setSaveTemplateIcon('🎮'); }}
+                          title="Save as template"
+                          style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', lineHeight: 1, flexShrink: 0, fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
+                        >
+                          Save as template
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
+                          title="Delete game"
+                          style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
+                          🗑
+                        </button>
+                      </div>
+                      {saveTemplateId === g.id && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                          <input
+                            value={saveTemplateIcon}
+                            onChange={e => setSaveTemplateIcon(e.target.value)}
+                            style={{ width: '36px', padding: '5px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '16px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
+                          />
+                          <input
+                            value={saveTemplateName}
+                            onChange={e => setSaveTemplateName(e.target.value)}
+                            placeholder="Template name"
+                            style={{ width: '150px', padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif" }}
+                          />
+                          <button
+                            onClick={() => saveAsTemplate(g.missions, saveTemplateName, saveTemplateIcon)}
+                            disabled={saveTemplateLoading || !saveTemplateName.trim()}
+                            style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            {saveTemplateLoading ? '...' : 'SAVE'}
+                          </button>
+                          <button
+                            onClick={() => setSaveTemplateId(null)}
+                            style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               );
