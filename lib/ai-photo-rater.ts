@@ -41,6 +41,7 @@ export async function ratePhoto(params: {
   scoringFocus?: string | null;
 }): Promise<number> {
   const { photoUrl, missionDescription, maxPts, scoringFocus } = params;
+  if (maxPts <= 0) throw new Error('maxPts must be a positive number');
   const validPts = getValidPoints(maxPts);
 
   const promptLines = [
@@ -61,7 +62,7 @@ export async function ratePhoto(params: {
   ];
 
   const response = await client.messages.create({
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-3-haiku-20240307', // Haiku 3: fast (~500ms) and cost-effective for vision tasks
     max_tokens: 64,
     messages: [
       {
@@ -80,7 +81,8 @@ export async function ratePhoto(params: {
     ],
   });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '';
+  const firstBlock = response.content[0];
+  const text = firstBlock?.type === 'text' ? firstBlock.text.trim() : '';
   const match = text.match(/"points"\s*:\s*(\d+(?:\.\d+)?)/);
   if (!match) throw new Error(`Unexpected AI response: ${text}`);
 
