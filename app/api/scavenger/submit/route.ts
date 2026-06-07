@@ -89,9 +89,9 @@ export async function POST(req: Request) {
         ? { type: 'photo_rated', message: `Your photo for "${itemLabel}" in ${missionName} was rated by AI! You earned ${points} points! ✨` }
         : { type: 'photo_rated', message: `Your photo for "${itemLabel}" was reviewed — unfortunately no points this time. Keep going! 💪` };
 
-      const alreadyCompleted = team.completed?.includes(missionId);
+      const alreadyRated = (team.mission_scores as Record<string, number> | null)?.[missionId] !== undefined;
 
-      if (!alreadyCompleted) {
+      if (!alreadyRated) {
         const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
         await supabase.from('teams').update({
           score: (team.score ?? 0) + points,
