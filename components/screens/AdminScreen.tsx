@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
@@ -374,6 +375,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats' | 'customers'>('leaderboard');
+  const isMobile = useIsMobile();
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
   const [visiblePendingCount, setVisiblePendingCount] = useState(10);
   const [visibleScavengerCount, setVisibleScavengerCount] = useState(10);
@@ -1506,7 +1509,7 @@ export default function AdminScreen({ onLogout }: Props) {
         </div>
       </nav>
 
-      <div className="container fade-in">
+      <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
         {/* GAME KEY + QR + START */}
         <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -2328,6 +2331,87 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      {isMobile && (
+        <>
+          {/* More sheet overlay */}
+          {mobileMoreOpen && (
+            <>
+              <div
+                style={{ position: 'fixed', inset: 0, zIndex: 98 }}
+                onClick={() => setMobileMoreOpen(false)}
+              />
+              <div className="mobile-more-sheet">
+                <button
+                  className="mobile-more-sheet-item"
+                  onClick={() => { setTab('progress'); setMobileMoreOpen(false); }}
+                >
+                  📊 Progress
+                </button>
+                <button
+                  className="mobile-more-sheet-item"
+                  onClick={() => { setTab('stats'); setMobileMoreOpen(false); }}
+                >
+                  📈 Stats
+                </button>
+                {isSuperAdmin && (
+                  <button
+                    className="mobile-more-sheet-item"
+                    onClick={() => { setTab('customers'); loadAnalytics(); setMobileMoreOpen(false); }}
+                  >
+                    📊 Analytics
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* FAB — create new game */}
+          <button
+            className="mobile-fab"
+            onClick={() => setView('create')}
+            aria-label="Create new game"
+          >
+            +
+          </button>
+
+          {/* Bottom navigation */}
+          <nav className="mobile-bottom-nav">
+            <button
+              className={`mobile-bottom-nav-item${tab === 'leaderboard' ? ' active' : ''}`}
+              onClick={() => { setTab('leaderboard'); setMobileMoreOpen(false); }}
+            >
+              <span className="mobile-nav-icon">🏆</span>
+              <span className="mobile-nav-label">Leaderboard</span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${tab === 'photos' ? ' active' : ''}`}
+              onClick={() => { setTab('photos'); setMobileMoreOpen(false); }}
+              style={{ position: 'relative' }}
+            >
+              <span className="mobile-nav-icon">📸</span>
+              <span className="mobile-nav-label">
+                Photos{totalPendingPhotos > 0 ? ` · ${totalPendingPhotos}` : ''}
+              </span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${tab === 'powerups' ? ' active' : ''}`}
+              onClick={() => { setTab('powerups'); setMobileMoreOpen(false); }}
+            >
+              <span className="mobile-nav-icon">⚡</span>
+              <span className="mobile-nav-label">Power-ups</span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${mobileMoreOpen ? ' active' : ''}`}
+              onClick={() => setMobileMoreOpen(o => !o)}
+            >
+              <span className="mobile-nav-icon" style={{ letterSpacing: '-2px' }}>···</span>
+              <span className="mobile-nav-label">More</span>
+            </button>
+          </nav>
+        </>
       )}
     </>
   );
