@@ -190,7 +190,7 @@ function useTimer(game: Game | null): string {
       if (diff === 0) { setDisplay(ui.finished); return; }
       const m = Math.floor(diff / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setDisplay(`${m}:${String(s).padStart(2, '0')} ${ui.timeLeft}`);
+      setDisplay(`${m}:${String(s).padStart(2, '0')}`);
     }
 
     compute();
