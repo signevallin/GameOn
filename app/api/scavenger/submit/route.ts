@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       // Add points to team
       const { data: team } = await supabase
         .from('teams')
-        .select('score, completed, pending_notification')
+        .select('score, completed, mission_scores, pending_notification')
         .eq('id', teamId)
         .single();
 
@@ -91,16 +91,18 @@ export async function POST(req: Request) {
 
       const alreadyCompleted = team.completed?.includes(missionId);
 
-      await supabase.from('teams').update({
-        score: (team.score ?? 0) + points,
-        completed: alreadyCompleted
-          ? team.completed
-          : points > 0
+      if (!alreadyCompleted) {
+        const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
+        await supabase.from('teams').update({
+          score: (team.score ?? 0) + points,
+          completed: points > 0
             ? [...(team.completed ?? []), missionId]
-            : team.completed,
-        pending_notification: notification,
-        updated_at: new Date().toISOString(),
-      }).eq('id', teamId);
+            : (team.completed ?? []),
+          mission_scores: newMissionScores,
+          pending_notification: notification,
+          updated_at: new Date().toISOString(),
+        }).eq('id', teamId);
+      }
     } catch (err) {
       console.error('[ai-photo-rating] Failed to auto-rate scavenger photo:', err);
     }
