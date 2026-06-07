@@ -2340,10 +2340,12 @@ export default function AdminScreen({ onLogout }: Props) {
           {mobileMoreOpen && (
             <>
               <div
+                role="presentation"
                 style={{ position: 'fixed', inset: 0, zIndex: 98 }}
                 onClick={() => setMobileMoreOpen(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setMobileMoreOpen(false); }}
               />
-              <div className="mobile-more-sheet">
+              <div className="mobile-more-sheet" role="dialog" aria-label="More options">
                 <button
                   className="mobile-more-sheet-item"
                   onClick={() => { setTab('progress'); setMobileMoreOpen(false); }}
@@ -2371,7 +2373,7 @@ export default function AdminScreen({ onLogout }: Props) {
           {/* FAB — create new game */}
           <button
             className="mobile-fab"
-            onClick={() => setView('create')}
+            onClick={() => { setMobileMoreOpen(false); setView('create'); }}
             aria-label="Create new game"
           >
             +
@@ -2406,6 +2408,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <button
               className={`mobile-bottom-nav-item${mobileMoreOpen ? ' active' : ''}`}
               onClick={() => setMobileMoreOpen(o => !o)}
+              aria-expanded={mobileMoreOpen}
             >
               <span className="mobile-nav-icon" style={{ letterSpacing: '-2px' }}>···</span>
               <span className="mobile-nav-label">More</span>
