@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Team } from '@/lib/supabase';
 
 type PowerUp = {
@@ -11,14 +12,6 @@ type PowerUp = {
   offensive: boolean;
 };
 
-const POWERUPS: PowerUp[] = [
-  { id: 'shield',        icon: '🛡️', label: 'Shield',          desc: 'Immune to sabotage & attacks for 2 minutes.',                             color: 'var(--accent)',  offensive: false },
-  { id: 'freeze',        icon: '❄️', label: 'Freeze',          desc: 'Lock a rival team for 60 seconds.',                                       color: '#7ec8e3',        offensive: true  },
-  { id: 'double_trouble',icon: '😈', label: 'Double Trouble',  desc: 'Force a rival to complete 2 assigned missions before playing freely.',     color: 'var(--accent2)', offensive: true  },
-  { id: 'all_in',        icon: '🎲', label: 'All In',          desc: 'Gamble 30% of your points against a rival — coin flip decides the winner.',color: 'var(--gold)',    offensive: true  },
-  { id: 'point_steal',  icon: '🎰', label: 'Point Steal',     desc: 'Steal 500 points from a rival team. (Blocked by shield)',                  color: 'var(--gold)',    offensive: true  },
-  { id: 'robin_hood',   icon: '🏹', label: 'Robin Hood',      desc: 'Steal 300 pts from a rich team — automatically given to the poorest team.',  color: 'var(--accent3)', offensive: true  },
-];
 
 type Props = {
   team: Team;
@@ -28,6 +21,17 @@ type Props = {
 };
 
 export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }: Props) {
+  const { t } = useTranslation();
+
+  const POWERUPS: PowerUp[] = [
+    { id: 'shield',         icon: '🛡️', label: t('powerups.shield_label'),         desc: t('powerups.shield_desc'),         color: 'var(--accent)',  offensive: false },
+    { id: 'freeze',         icon: '❄️', label: t('powerups.freeze_label'),          desc: t('powerups.freeze_desc'),          color: '#7ec8e3',        offensive: true  },
+    { id: 'double_trouble', icon: '😈', label: t('powerups.double_trouble_label'),  desc: t('powerups.double_trouble_desc'),  color: 'var(--accent2)', offensive: true  },
+    { id: 'all_in',         icon: '🎲', label: t('powerups.all_in_label'),          desc: t('powerups.all_in_desc'),          color: 'var(--gold)',    offensive: true  },
+    { id: 'point_steal',    icon: '🎰', label: t('powerups.point_steal_label'),     desc: t('powerups.point_steal_desc'),     color: 'var(--gold)',    offensive: true  },
+    { id: 'robin_hood',     icon: '🏹', label: t('powerups.robin_hood_label'),      desc: t('powerups.robin_hood_desc'),      color: 'var(--accent3)', offensive: true  },
+  ];
+
   const [selected, setSelected] = useState<PowerUp | null>(null);
   const [targetId, setTargetId] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -101,7 +105,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
         setTargetId('');
       }
     } catch {
-      setFeedback({ msg: 'Network error, try again.', ok: false });
+      setFeedback({ msg: t('powerups.networkError'), ok: false });
     } finally {
       setLoading(false);
     }
@@ -155,7 +159,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
           {/* Label */}
           {coinPhase === 'spinning' ? (
             <p style={{ color: 'var(--muted)', fontSize: '14px', letterSpacing: '2px', fontWeight: 700 }}>
-              FLIPPING…
+              {t('powerups.flipping')}
             </p>
           ) : (
             <div style={{ textAlign: 'center', animation: 'coinResultFadeIn 0.4s ease forwards' }}>
@@ -164,7 +168,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                 color: coinPhase === 'win' ? 'var(--gold)' : 'var(--accent2)',
                 marginBottom: '8px',
               }}>
-                {coinPhase === 'win' ? 'YOU WON!' : 'YOU LOST…'}
+                {coinPhase === 'win' ? t('powerups.youWon') : t('powerups.youLost')}
               </div>
               <div style={{ fontSize: '14px', color: 'var(--muted)' }}>{coinMsg}</div>
             </div>
@@ -173,14 +177,14 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}>
-          ← Back
+          {t('powerups.backButton')}
         </button>
         <span style={{ color: 'var(--border)' }}>|</span>
-        <span style={{ fontWeight: 800, fontSize: '18px' }}>⚡ Power-Ups</span>
+        <span style={{ fontWeight: 800, fontSize: '18px' }}>{t('powerups.title')}</span>
       </div>
 
       <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '24px' }}>
-        Each power-up can only be used once. Choose wisely!
+        {t('powerups.desc')}
       </p>
 
       {feedback && (
@@ -223,12 +227,12 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: '14px', color: isUsed ? 'var(--muted)' : pu.color, marginBottom: '3px' }}>
                     {pu.label}
-                    {pu.offensive && !isUsed && <span style={{ marginLeft: '6px', fontSize: '10px', color: 'var(--muted)', fontWeight: 400 }}>OFFENSIVE</span>}
+                    {pu.offensive && !isUsed && <span style={{ marginLeft: '6px', fontSize: '10px', color: 'var(--muted)', fontWeight: 400 }}>{t('powerups.offensiveTag')}</span>}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{pu.desc}</div>
                 </div>
                 {isUsed
-                  ? <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>USED</span>
+                  ? <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>{t('powerups.usedTag')}</span>
                   : <span style={{ fontSize: '16px', color: pu.color, flexShrink: 0 }}>{isSelected ? '▾' : '▸'}</span>
                 }
               </div>
@@ -238,18 +242,18 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                 <div style={{ background: 'var(--surface)', border: `1px solid ${pu.color}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pu.offensive && (
                     <div>
-                      <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>SELECT TARGET TEAM</label>
+                      <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '2px', display: 'block', marginBottom: '8px' }}>{t('powerups.selectTargetLabel')}</label>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {rivals.length === 0 && <p style={{ fontSize: '13px', color: 'var(--muted)' }}>No other teams in this game.</p>}
-                        {rivals.map(t => (
+                        {rivals.length === 0 && <p style={{ fontSize: '13px', color: 'var(--muted)' }}>{t('powerups.noTeams')}</p>}
+                        {rivals.map(tt => (
                           <button
-                            key={t.id}
-                            onClick={() => setTargetId(t.id)}
+                            key={tt.id}
+                            onClick={() => setTargetId(tt.id)}
                             style={{
                               padding: '10px 14px',
                               borderRadius: '8px',
-                              border: `1px solid ${targetId === t.id ? pu.color : 'var(--border)'}`,
-                              background: targetId === t.id ? `color-mix(in srgb, ${pu.color} 12%, var(--card))` : 'var(--card)',
+                              border: `1px solid ${targetId === tt.id ? pu.color : 'var(--border)'}`,
+                              background: targetId === tt.id ? `color-mix(in srgb, ${pu.color} 12%, var(--card))` : 'var(--card)',
                               color: 'var(--text)',
                               fontFamily: "'Sora', sans-serif",
                               fontWeight: 700,
@@ -260,8 +264,8 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                               justifyContent: 'space-between',
                             }}
                           >
-                            <span>{t.name}</span>
-                            <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t.score} pts</span>
+                            <span>{tt.name}</span>
+                            <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('powerups.ptsValue', { pts: tt.score })}</span>
                           </button>
                         ))}
                       </div>
@@ -274,7 +278,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                     disabled={loading || (pu.offensive && !targetId)}
                     style={{ background: pu.color, borderColor: pu.color }}
                   >
-                    {loading ? '...' : pu.offensive ? `${pu.icon} Send ${pu.label}` : `${pu.icon} Activate ${pu.label}`}
+                    {loading ? '...' : pu.offensive ? t('powerups.sendLabel', { icon: pu.icon, label: pu.label }) : t('powerups.activateLabel', { icon: pu.icon, label: pu.label })}
                   </button>
                 </div>
               )}

@@ -1,0 +1,238 @@
+{
+  "code_quiz": {
+    "name": "Énigme codée",
+    "desc": "Quel est le résultat de ce code ? Réfléchissez bien !"
+  },
+  "binary": {
+    "name": "Décodeur binaire",
+    "desc": "Convertir un nombre binaire en un nombre décimal."
+  },
+  "bug_hunt": {
+    "name": "Chasse aux insectes",
+    "desc": "Trouvez le bug dans le code."
+  },
+  "terminal": {
+    "name": "Guru des terminaux",
+    "desc": "Quelle commande permet d'accomplir la tâche ?"
+  },
+  "memory": {
+    "name": "Match de mémoire",
+    "desc": "Associez les termes informatiques à leurs définitions."
+  },
+  "emoji_rebus": {
+    "name": "Rébus d'émojis",
+    "desc": "Quel concept informatique se cache dans les emojis ? 5 manches !"
+  },
+  "sequence": {
+    "name": "Logique séquentielle",
+    "desc": "Quel est le chiffre suivant dans la séquence numérique ?"
+  },
+  "reaction": {
+    "name": "Test de réaction",
+    "desc": "Cliquez aussi vite que possible lorsqu'il clignote !"
+  },
+  "lidkoping_quiz": {
+    "name": "Lidköping",
+    "desc": "Connaissez-vous bien Lidköping ? Cinq questions — répondez avec vos propres mots !"
+  },
+  "trivia_fun": {
+    "name": "Quiz amusant",
+    "desc": "Culture générale – 5 questions amusantes !"
+  },
+  "typerace": {
+    "name": "Type de course",
+    "desc": "Saisissez le texte aussi vite et aussi précisément que possible !"
+  },
+  "wordguess": {
+    "name": "Deviner le mot",
+    "desc": "Le pendu – devinez le mot lettre par lettre !"
+  },
+  "wouldyou": {
+    "name": "Qui dans l'équipe...?",
+    "desc": "Votez pour le membre de VOTRE équipe qui correspond le mieux au profil recherché !"
+  },
+  "color_memory": {
+    "name": "Mémoire des couleurs",
+    "desc": "Une couleur apparaît brièvement pendant 5 secondes, puis on la mélange à nouveau à l'aide de trois curseurs. Votre mémoire est-elle infaillible ?"
+  },
+  "true_false": {
+    "name": "Vrai ou faux",
+    "desc": "Affirmations amusantes – vraies ou fausses ?"
+  },
+  "photo_bubble": {
+    "name": "Défi des bulles",
+    "desc": "Selfie d'équipe – faites la plus grosse bulle Hubba Bubba ! L'administrateur note votre photo."
+  },
+  "photo_movie_scene": {
+    "name": "Lumières, caméra, action !",
+    "desc": "Recréez une scène de film célèbre – l'administrateur évalue votre performance !"
+  },
+  "pa_sparet": {
+    "name": "Devinez la personne",
+    "desc": "Devinez la personnalité célèbre à partir d'indices – moins d'indices = plus de points !"
+  },
+  "pa_sparet_destination": {
+    "name": "Devinez la destination",
+    "desc": "Devinez la destination du voyage à partir d'indices – moins d'indices = plus de points !"
+  },
+  "celebrity_quiz": {
+    "name": "Quiz sur les célébrités",
+    "desc": "Devinez de quelle personnalité célèbre il s'agit – 4 manches !"
+  },
+  "music_emoji": {
+    "name": "Chansons Emoji",
+    "desc": "Devinez la chanson à partir des emojis – 5 manches !"
+  },
+  "mix_drinks": {
+    "name": "Mélangez les boissons",
+    "desc": "Connaissez-vous vos cocktails ? Identifiez les ingrédients – 3 manches !"
+  },
+  "food_ingredients": {
+    "name": "Qu'y a-t-il dans le plat ?",
+    "desc": "Identifiez les ingrédients clés des plats classiques – 4 manches !"
+  },
+  "crack_code": {
+    "name": "Déchiffrez le code",
+    "desc": "Utilisez les cinq indices pour déduire le code secret à 3 chiffres du cadenas !"
+  },
+  "enigma_cipher": {
+    "name": "Chiffre énigmatique",
+    "desc": "Décodez le message intercepté à l'aide du chiffrement de César !"
+  },
+  "music_quiz": {
+    "name": "Nommez cette chanson",
+    "desc": "Écoutez des extraits et devinez l'artiste et la chanson, puis triez-les par année de sortie !"
+  },
+  "logo_quiz": {
+    "name": "Quiz sur les logos",
+    "desc": "Reconnaissez l'entreprise technologique grâce à son logo — ce ne sont pas les plus évidents !"
+  },
+  "geo_guess": {
+    "name": "GeoGuess",
+    "desc": "Identifiez le monument — dans quel pays se trouve-t-il ?"
+  },
+  "finish_lyrics": {
+    "name": "Terminez les paroles",
+    "desc": "Complétez le vers suivant de ces chansons emblématiques !"
+  },
+  "pictionary": {
+    "name": "Pictionary",
+    "desc": "Une personne dessine, les autres devinent — l'administrateur évalue votre travail d'équipe !"
+  },
+  "movie_emoji": {
+    "name": "Films Emoji",
+    "desc": "Devinez le film à partir des indices en emojis — votre équipe parviendra-t-elle à tous les trouver ?"
+  },
+  "film_quiz": {
+    "name": "Quiz de cinéma",
+    "desc": "Citations, scènes et anecdotes cultes du cinéma — 6 rounds !"
+  },
+  "anagram": {
+    "name": "Anagramme",
+    "desc": "Déchiffrez les lettres pour révéler le mot caché « IT » — tapez votre réponse !"
+  },
+  "snabb_matte": {
+    "name": "Calculs rapides",
+    "desc": "Calcul mental contre la montre — 4 manches, calculatrice interdite !"
+  },
+  "svara_ord": {
+    "name": "Concours d'orthographe",
+    "desc": "Quelle est l'orthographe correcte ? 5 mots réputés difficiles !"
+  },
+  "flag_quiz": {
+    "name": "Quiz sur les drapeaux",
+    "desc": "Saurez-vous distinguer ces drapeaux facilement confondus ? 8 manches !"
+  },
+  "app_icons": {
+    "name": "Icônes d'application",
+    "desc": "Reconnaissez l'application grâce à son icône — ce n'est pas une application ordinaire !"
+  },
+  "vem_sa_det": {
+    "name": "Qui a dit ça ?",
+    "desc": "Associez la citation célèbre à la bonne personne — 5 manches !"
+  },
+  "sport_quiz": {
+    "name": "Quiz sportif",
+    "desc": "Records, légendes et moments iconiques du sport — 5 rounds !"
+  },
+  "slogans": {
+    "name": "Slogans de marque",
+    "desc": "À quelle marque appartient ce slogan ? 5 rounds !"
+  },
+  "gissa_aret": {
+    "name": "Devinez l'année",
+    "desc": "Quand cela s'est-il produit ? Testez vos connaissances sur les moments historiques — 5 manches !"
+  },
+  "spot_error": {
+    "name": "Repérez l'erreur",
+    "desc": "Chaque affirmation contient une erreur délibérée — saurez-vous la trouver ?"
+  },
+  "memory_speed": {
+    "name": "Vitesse de la mémoire",
+    "desc": "Mémorisez les éléments, puis repérez celui qui manque !"
+  },
+  "human_statue": {
+    "name": "Statue humaine",
+    "desc": "Créez une sculpture humaine — l'administrateur évalue votre pose !"
+  },
+  "photo_ad_shot": {
+    "name": "Photo publicitaire",
+    "desc": "Trouvez un produit et prenez la photo publicitaire la plus professionnelle possible — l'administrateur l'évalue !"
+  },
+  "photo_mirror_selfie": {
+    "name": "Selfie dans le miroir",
+    "desc": "Photo d'équipe dans un miroir — personne ne peut apparaître directement sur la photo, seulement en reflet !"
+  },
+  "photo_shadow_selfie": {
+    "name": "Selfie de l'ombre",
+    "desc": "Combinez vos ombres pour former une forme reconnaissable, puis photographiez-la !"
+  },
+  "photo_colour_match": {
+    "name": "Correspondance des couleurs",
+    "desc": "Trouvez un objet du monde réel correspondant exactement à cette couleur hexagonale — plus la correspondance est proche, plus vous gagnez de points !"
+  },
+  "photo_weird_sign": {
+    "name": "Le signe le plus bizarre",
+    "desc": "Trouvez et photographiez le panneau le plus étrange, le plus drôle ou le plus insolite que vous puissiez trouver — l'administrateur l'évalue !"
+  },
+  "timeline": {
+    "name": "Chronologie",
+    "desc": "Classez 5 événements historiques dans le bon ordre chronologique. Chaque événement correctement placé rapporte des points !"
+  },
+  "closest_wins": {
+    "name": "Victoires les plus serrées",
+    "desc": "Proposez des nombres aussi proches que possible de la bonne réponse. La précision est récompensée : plus vous vous rapprochez de la bonne réponse, plus vous gagnez de points !"
+  },
+  "duel_trivia": {
+    "name": "Quiz sur les duels",
+    "desc": "Défiez une équipe rivale ! Répondez correctement à des questions de culture générale pour leur voler 10 % de leurs points par bonne réponse (maximum 30 %)."
+  },
+  "scavenger_hunt": {
+    "name": "Chasse au trésor",
+    "desc": "Trouvez et photographiez 8 objets de la liste. L'administrateur évalue chaque photo ; plus vous en trouvez, plus vous gagnez de points !"
+  },
+  "gkn_aircraft_quiz": {
+    "name": "Repérez l'avion",
+    "desc": "Saurez-vous identifier l'avion sur la photo ? Répondez vite pour marquer un maximum de points !"
+  },
+  "gkn_trivia": {
+    "name": "Quiz GKN",
+    "desc": "Testez vos connaissances sur GKN Aerospace — quatre questions, une seule chance par question !"
+  },
+  "gkn_truefalse": {
+    "name": "Aviation Vrai ou faux",
+    "desc": "Vrai ou faux ? Testez vos connaissances sur GKN Aerospace et l'aviation."
+  },
+  "gkn_closest": {
+    "name": "Numéros d'aviation",
+    "desc": "Devinez les numéros d'aviation et de GKN avec la plus grande précision possible. Plus votre réponse est proche de la réalité, plus vous gagnez de points !"
+  },
+  "gkn_pa_sparet": {
+    "name": "Devinez l'avion",
+    "desc": "Identifiez l'avion à partir des indices — moins d'indices utilisés signifie plus de points !"
+  },
+  "gkn_timeline": {
+    "name": "Histoire de GKN",
+    "desc": "Classez les étapes clés de l'histoire de GKN Aerospace dans le bon ordre chronologique."
+  }
+}

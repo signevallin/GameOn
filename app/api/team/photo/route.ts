@@ -1,5 +1,6 @@
 // app/api/team/photo/route.ts
 import { NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 import { ratePhoto as aiRatePhoto } from '@/lib/ai-photo-rater';
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Respond to player immediately — AI rating happens after
-  // Fire-and-forget pattern: we await inline but errors are caught and swallowed
-  // so the player's submission is never blocked by AI latency.
-  (async () => {
+  // Respond to player immediately — AI rating happens after.
+  // waitUntil keeps the serverless function alive until the promise resolves,
+  // preventing Vercel from terminating it after the response is sent.
+  waitUntil((async () => {
     try {
       // Get game settings via team → game
       const { data: teamRow } = await supabase
@@ -132,7 +133,7 @@ export async function POST(req: Request) {
       console.error('[ai-photo-rating] Failed to auto-rate photo:', err);
       // Submission stays as 'pending' — admin can rate manually
     }
-  })();
+  })());
 
   return NextResponse.json({ ok: true });
 }

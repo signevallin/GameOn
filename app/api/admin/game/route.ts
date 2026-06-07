@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   }
 
   // Create game
-  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions } = body;
+  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language } = body;
   if (!missions?.length) return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
 
   let key = '';
@@ -89,6 +89,7 @@ export async function POST(req: Request) {
       hide_leaderboard: hide_leaderboard ?? false,
       ai_photo_rating: ai_photo_rating ?? false,
       ai_photo_instructions: ai_photo_instructions ?? null,
+      language: language ?? 'en',
       status: 'draft',
       user_id: admin.userId,
       powerups_used: [],

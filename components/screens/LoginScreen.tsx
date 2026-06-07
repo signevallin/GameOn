@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import dynamic from 'next/dynamic';
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'team' | 'admin'>('team');
   const [adminMode, setAdminMode] = useState<'login' | 'register' | 'reset'>('login');
   const [resetSent, setResetSent] = useState(false);
@@ -31,8 +33,8 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
 
   async function handleTeamLogin() {
     setError('');
-    if (!teamName.trim()) { setError('Enter a team name.'); return; }
-    if (!gameKey.trim()) { setError('Enter the game key.'); return; }
+    if (!teamName.trim()) { setError(t('login.errTeamName')); return; }
+    if (!gameKey.trim()) { setError(t('login.errGameKey')); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/team/login', {
@@ -44,7 +46,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
       if (!res.ok) { setError(data.error); return; }
       onTeamLogin(data.team, data.game, data.customMissions ?? []);
     } catch {
-      setError('Network error. Try again.');
+      setError(t('login.errNetwork'));
     } finally {
       setLoading(false);
     }
@@ -52,15 +54,15 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
 
   async function handleAdminLogin() {
     setError('');
-    if (!email.trim()) { setError('Enter your email.'); return; }
-    if (!password) { setError('Enter your password.'); return; }
+    if (!email.trim()) { setError(t('login.errEnterEmail')); return; }
+    if (!password) { setError(t('login.errEnterPassword')); return; }
     setLoading(true);
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (authError) { setError(authError.message); return; }
       onAdminLogin();
     } catch {
-      setError('Network error. Try again.');
+      setError(t('login.errNetwork'));
     } finally {
       setLoading(false);
     }
@@ -68,20 +70,20 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
 
   async function handleAdminRegister() {
     setError('');
-    if (!email.trim()) { setError('Enter your email.'); return; }
-    if (!password) { setError('Enter a password.'); return; }
-    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (!email.trim()) { setError(t('login.errEnterEmail')); return; }
+    if (!password) { setError(t('login.errEnterPasswordNew')); return; }
+    if (password !== confirmPassword) { setError(t('login.errPasswordMatch')); return; }
+    if (password.length < 6) { setError(t('login.errPasswordLength')); return; }
     setLoading(true);
     try {
       const { error: authError } = await supabase.auth.signUp({ email: email.trim(), password });
       if (authError) { setError(authError.message); return; }
       // Auto-sign in after register
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (signInError) { setError('Account created! Please log in.'); setAdminMode('login'); return; }
+      if (signInError) { setError(t('login.errAccountCreated')); setAdminMode('login'); return; }
       onAdminLogin();
     } catch {
-      setError('Network error. Try again.');
+      setError(t('login.errNetwork'));
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
 
   async function handlePasswordReset() {
     setError('');
-    if (!email.trim()) { setError('Enter your email.'); return; }
+    if (!email.trim()) { setError(t('login.errEnterEmail')); return; }
     setLoading(true);
     try {
       const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
@@ -98,7 +100,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
       if (authError) { setError(authError.message); return; }
       setResetSent(true);
     } catch {
-      setError('Network error. Try again.');
+      setError(t('login.errNetwork'));
     } finally {
       setLoading(false);
     }
@@ -109,15 +111,15 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
       <div style={{ width: '100%', maxWidth: '480px', padding: '20px', position: 'relative', zIndex: 1 }} className="fade-in">
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <GameOnLogo size={58} />
-          <p style={{ color: 'var(--muted)', marginTop: '12px', fontSize: '14px' }}>Select your role to log in</p>
+          <p style={{ color: 'var(--muted)', marginTop: '12px', fontSize: '14px' }}>{t('login.role')}</p>
         </div>
 
         <div className="login-tabs">
           <button className={`tab-btn${mode === 'team' ? ' active' : ''}`} onClick={() => { setMode('team'); setError(''); }}>
-            🧑‍💻 TEAM
+            {t('login.tabTeam')}
           </button>
           <button className={`tab-btn${mode === 'admin' ? ' active' : ''}`} onClick={() => { setMode('admin'); setError(''); }}>
-            🛡️ ADMIN
+            {t('login.tabAdmin')}
           </button>
         </div>
 
@@ -125,10 +127,10 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
           {mode === 'team' ? (
             <>
               <div className="form-group">
-                <label className="form-label">Team Name</label>
+                <label className="form-label">{t('login.teamNameLabel')}</label>
                 <input
                   type="text"
-                  placeholder="E.g. Team Frontend"
+                  placeholder={t('login.teamNamePlaceholder')}
                   maxLength={20}
                   value={teamName}
                   onChange={e => setTeamName(e.target.value)}
@@ -136,11 +138,11 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Game Key (from the organiser)</label>
+                <label className="form-label">{t('login.gameKeyLabel')}</label>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
                   <input
                     type="text"
-                    placeholder="E.g. X7K2P9"
+                    placeholder={t('login.gameKeyPlaceholder')}
                     maxLength={6}
                     value={gameKey}
                     onChange={e => setGameKey(e.target.value.toUpperCase())}
@@ -178,8 +180,8 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                 {error && mode === 'team' && (
                   error.includes('5-team limit') ? (
                     <div style={{ marginTop: '12px', padding: '14px 16px', background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '10px' }}>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#7CBDD4', marginBottom: '4px' }}>Game is full 🔒</p>
-                      <p style={{ fontSize: '12px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.5 }}>This game has reached the 5-team limit on the free plan. Ask the organiser to upgrade to Pro for unlimited teams.</p>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#7CBDD4', marginBottom: '4px' }}>{t('login.errFreePlanTitle')}</p>
+                      <p style={{ fontSize: '12px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.5 }}>{t('login.errFreePlanBody')}</p>
                     </div>
                   ) : (
                     <p className="error-msg">{error}</p>
@@ -193,7 +195,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                 />
               )}
               <button className="btn btn-primary btn-full" onClick={handleTeamLogin} disabled={loading}>
-                {loading ? 'JOINING...' : 'JOIN GAME →'}
+                {loading ? t('login.joiningButton') : t('login.joinButton')}
               </button>
             </>
           ) : (
@@ -203,18 +205,18 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                   {resetSent ? (
                     <div style={{ textAlign: 'center', padding: '16px 0' }}>
                       <p style={{ fontSize: '28px', marginBottom: '12px' }}>📬</p>
-                      <p style={{ fontWeight: 700, color: '#DCE4EE', marginBottom: '8px' }}>Check your email</p>
-                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.6 }}>We sent a reset link to <strong>{email}</strong>. Click it to set a new password.</p>
-                      <button type="button" onClick={() => { setAdminMode('login'); setResetSent(false); }} style={{ marginTop: '20px', background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>← Back to login</button>
+                      <p style={{ fontWeight: 700, color: '#DCE4EE', marginBottom: '8px' }}>{t('login.checkEmailTitle')}</p>
+                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.6 }}>{t('login.checkEmailDesc', { email })}</p>
+                      <button type="button" onClick={() => { setAdminMode('login'); setResetSent(false); }} style={{ marginTop: '20px', background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>{t('login.backToLogin')}</button>
                     </div>
                   ) : (
                     <>
-                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', marginBottom: '20px' }}>Enter your email and we'll send you a reset link.</p>
+                      <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', marginBottom: '20px' }}>{t('login.resetEmailDesc')}</p>
                       <div className="form-group">
-                        <label className="form-label">Email</label>
+                        <label className="form-label">{t('login.emailLabel')}</label>
                         <input
                           type="email"
-                          placeholder="you@example.com"
+                          placeholder={t('login.emailPlaceholder')}
                           value={email}
                           onChange={e => setEmail(e.target.value)}
                           onKeyDown={e => e.key === 'Enter' && handlePasswordReset()}
@@ -222,10 +224,10 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                       </div>
                       {error && <p className="error-msg" style={{ marginBottom: '12px' }}>{error}</p>}
                       <button className="btn btn-primary btn-full" onClick={handlePasswordReset} disabled={loading}>
-                        {loading ? '...' : 'SEND RESET LINK →'}
+                        {loading ? '...' : t('login.sendResetButton')}
                       </button>
                       <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                        <button type="button" onClick={() => { setAdminMode('login'); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--muted, #8FA8C0)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>← Back to login</button>
+                        <button type="button" onClick={() => { setAdminMode('login'); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--muted, #8FA8C0)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>{t('login.backToLogin')}</button>
                       </div>
                     </>
                   )}
@@ -253,17 +255,17 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Email</label>
+                    <label className="form-label">{t('login.emailLabel')}</label>
                     <input
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={t('login.emailPlaceholder')}
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && (adminMode === 'login' ? handleAdminLogin() : handleAdminRegister())}
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Password</label>
+                    <label className="form-label">{t('login.passwordLabel')}</label>
                     <input
                       type="password"
                       placeholder="••••••••"
@@ -279,13 +281,13 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                         onClick={() => { setAdminMode('reset'); setError(''); setResetSent(false); }}
                         style={{ background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: "'Sora', sans-serif" }}
                       >
-                        Forgot password?
+                        {t('login.forgotPassword')}
                       </button>
                     </div>
                   )}
                   {adminMode === 'register' && (
                     <div className="form-group">
-                      <label className="form-label">Confirm Password</label>
+                      <label className="form-label">{t('login.confirmPasswordLabel')}</label>
                       <input
                         type="password"
                         placeholder="••••••••"
@@ -301,7 +303,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                     onClick={adminMode === 'login' ? handleAdminLogin : handleAdminRegister}
                     disabled={loading}
                   >
-                    {loading ? '...' : adminMode === 'login' ? 'LOG IN →' : 'CREATE ACCOUNT →'}
+                    {loading ? '...' : adminMode === 'login' ? t('login.logInButton') : t('login.registerButton')}
                   </button>
                 </>
               )}

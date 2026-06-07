@@ -486,6 +486,7 @@ export default function AdminScreen({ onLogout }: Props) {
     Object.fromEntries(MISSIONS.map(m => [m.id, m.maxPts]))
   );
   const [hideLeaderboard, setHideLeaderboard] = useState(false);
+  const [gameLanguage, setGameLanguage] = useState('en');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -647,7 +648,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -1842,6 +1843,38 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
               </div>
             )}
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div style={{ padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
+              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '8px' }}>
+                🌐 Game language
+              </div>
+              <select
+                value={gameLanguage}
+                onChange={e => setGameLanguage(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '7px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--text)',
+                  fontSize: '13px',
+                  fontFamily: "'Sora', sans-serif",
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="en">🇬🇧 English</option>
+                <option value="sv">🇸🇪 Svenska</option>
+                <option value="no">🇳🇴 Norsk</option>
+                <option value="da">🇩🇰 Dansk</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="fr">🇫🇷 Français</option>
+              </select>
+              <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px' }}>
+                Players see the game UI in this language. They can override it for themselves.
+              </div>
+            </div>
           </div>
         </div>
 

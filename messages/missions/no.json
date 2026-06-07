@@ -1,0 +1,238 @@
+{
+  "code_quiz": {
+    "name": "Kodegåte",
+    "desc": "Hva gir koden ut? Tenk nøye!"
+  },
+  "binary": {
+    "name": "Binær dekoder",
+    "desc": "Konverter binært tall til desimaltall."
+  },
+  "bug_hunt": {
+    "name": "Insektjakt",
+    "desc": "Finn feilen i koden."
+  },
+  "terminal": {
+    "name": "Terminalguru",
+    "desc": "Hvilken kommando får jobben gjort?"
+  },
+  "memory": {
+    "name": "Minnematch",
+    "desc": "Koble IT-termer med definisjonene deres."
+  },
+  "emoji_rebus": {
+    "name": "Emoji-rebus",
+    "desc": "Hvilket IT-konsept skjuler seg i emojiene? 5 runder!"
+  },
+  "sequence": {
+    "name": "Sekvenslogikk",
+    "desc": "Hva kommer videre i tallrekken?"
+  },
+  "reaction": {
+    "name": "Reaksjonstest",
+    "desc": "Klikk så fort du kan når det blinker!"
+  },
+  "lidkoping_quiz": {
+    "name": "Lidköping",
+    "desc": "Hvor godt kjenner du Lidköping? Fem spørsmål – svar med dine egne ord!"
+  },
+  "trivia_fun": {
+    "name": "Morsom trivia",
+    "desc": "Allmennkunnskap – 5 morsomme spørsmål!"
+  },
+  "typerace": {
+    "name": "Type Rase",
+    "desc": "Skriv teksten så raskt og nøyaktig som mulig!"
+  },
+  "wordguess": {
+    "name": "Ordgjetting",
+    "desc": "Hangman – gjett ordet bokstav for bokstav!"
+  },
+  "wouldyou": {
+    "name": "Hvem på laget...?",
+    "desc": "Stem på hvem som passer best i DITT lag!"
+  },
+  "color_memory": {
+    "name": "Fargeminne",
+    "desc": "En farge blinker i 5 sekunder – og blander den deretter tilbake med tre glidebrytere. Hvor skarp er hukommelsen din?"
+  },
+  "true_false": {
+    "name": "Sant eller usant",
+    "desc": "Morsomme påstander – sant eller usant?"
+  },
+  "photo_bubble": {
+    "name": "Bobleutfordring",
+    "desc": "Lagselfie – blås den største Hubba Bubba-boblen! Admin vurderer bildet ditt."
+  },
+  "photo_movie_scene": {
+    "name": "Lys, kamera, action!",
+    "desc": "Gjenskap en kjent filmscene – administrator vurderer prestasjonen din!"
+  },
+  "pa_sparet": {
+    "name": "Gjett personen",
+    "desc": "Gjett den berømte personen ut fra ledetråder – færre ledetråder = flere poeng!"
+  },
+  "pa_sparet_destination": {
+    "name": "Gjett destinasjonen",
+    "desc": "Gjett reisemålet ut fra ledetråder – færre ledetråder = flere poeng!"
+  },
+  "celebrity_quiz": {
+    "name": "Kjendisquiz",
+    "desc": "Gjett hvilken kjent person som blir beskrevet – 4 runder!"
+  },
+  "music_emoji": {
+    "name": "Emoji-sanger",
+    "desc": "Gjett sangen fra emojiene – 5 runder!"
+  },
+  "mix_drinks": {
+    "name": "Bland drikkene",
+    "desc": "Kjenner du cocktailene dine? Identifiser ingrediensene – 3 runder!"
+  },
+  "food_ingredients": {
+    "name": "Hva er i retten?",
+    "desc": "Identifiser hovedingrediensene i klassiske retter – 4 runder!"
+  },
+  "crack_code": {
+    "name": "Knekk koden",
+    "desc": "Bruk de fem ledetrådene til å utlede den hemmelige 3-sifrede låsekoden!"
+  },
+  "enigma_cipher": {
+    "name": "Enigma-chiffer",
+    "desc": "Dekod den avlyttede meldingen ved hjelp av Cæsar-chifferet!"
+  },
+  "music_quiz": {
+    "name": "Navngi melodien",
+    "desc": "Lytt til klipp og gjett artist + sang – sorter dem deretter etter utgivelsesår!"
+  },
+  "logo_quiz": {
+    "name": "Logoquiz",
+    "desc": "Kjenn igjen teknologiselskapet fra logoen – dette er ikke de åpenbare!"
+  },
+  "geo_guess": {
+    "name": "GeoGuess",
+    "desc": "Kjenner du igjen landemerket – hvilket land ligger det i?"
+  },
+  "finish_lyrics": {
+    "name": "Fullfør teksten",
+    "desc": "Fullfør neste linje med disse ikoniske sangene!"
+  },
+  "pictionary": {
+    "name": "Pictionary",
+    "desc": "Én person tegner, resten gjetter – administratoren vurderer samarbeidet deres!"
+  },
+  "movie_emoji": {
+    "name": "Emoji-filmer",
+    "desc": "Gjett filmen fra emoji-ledetrådene – klarer laget ditt å løse alle fem?"
+  },
+  "film_quiz": {
+    "name": "Filmquiz",
+    "desc": "Ikoniske filmsitater, scener og fakta – 6 runder!"
+  },
+  "anagram": {
+    "name": "Anagram",
+    "desc": "Sett bokstavene i riktig rekkefølge for å avsløre det skjulte IT-ordet – skriv svaret ditt!"
+  },
+  "snabb_matte": {
+    "name": "Rask matematikk",
+    "desc": "Hoderegning mot klokken – 4 runder, ingen kalkulator tillatt!"
+  },
+  "svara_ord": {
+    "name": "Stavekonkurranse",
+    "desc": "Hvilken er riktig stavemåte? 5 notorisk vanskelige ord!"
+  },
+  "flag_quiz": {
+    "name": "Flaggquiz",
+    "desc": "Klarer du å skille disse lett forvekslede flaggene fra hverandre? 8 runder!"
+  },
+  "app_icons": {
+    "name": "Appikoner",
+    "desc": "Gjenkjenn appen fra ikonet – ikke dine vanlige apper!"
+  },
+  "vem_sa_det": {
+    "name": "Hvem sa det?",
+    "desc": "Match det berømte sitatet med riktig person – 5 runder!"
+  },
+  "sport_quiz": {
+    "name": "Sportsquiz",
+    "desc": "Rekorder, legender og ikoniske øyeblikk innen sport – 5 runder!"
+  },
+  "slogans": {
+    "name": "Merkeslagord",
+    "desc": "Hvilket merke tilhører dette slagordet? 5 runder!"
+  },
+  "gissa_aret": {
+    "name": "Gjett året",
+    "desc": "Når skjedde det? Test kunnskapen din om historiske øyeblikk – 5 runder!"
+  },
+  "spot_error": {
+    "name": "Finn feilen",
+    "desc": "Hver påstand har én bevisst feil – kan du finne den?"
+  },
+  "memory_speed": {
+    "name": "Minnehastighet",
+    "desc": "Memorer gjenstandene – og finn deretter den manglende!"
+  },
+  "human_statue": {
+    "name": "Menneskestatue",
+    "desc": "Lag en menneskeskulptur – administrator vurderer posituren din!"
+  },
+  "photo_ad_shot": {
+    "name": "Annonsebilde",
+    "desc": "Finn et produkt og ta det mest profesjonelle bildet av en produktannonse du kan – administratoren vurderer det!"
+  },
+  "photo_mirror_selfie": {
+    "name": "Speilselfie",
+    "desc": "Lagbilde i et speil – ingen kan vises direkte i bildet, bare som en refleksjon!"
+  },
+  "photo_shadow_selfie": {
+    "name": "Skyggeselfie",
+    "desc": "Kombiner skyggene dine for å danne en gjenkjennelig form – og fotografer den deretter!"
+  },
+  "photo_colour_match": {
+    "name": "Fargematch",
+    "desc": "Finn et objekt fra den virkelige verden som matcher nøyaktig denne heksagonfargen – jo nærmere samsvar, desto flere poeng!"
+  },
+  "photo_weird_sign": {
+    "name": "Det rareste skiltet",
+    "desc": "Finn og fotografer det merkeligste, morsomste eller mest uvanlige skiltet du kan – administratoren vurderer det!"
+  },
+  "timeline": {
+    "name": "Tidslinje",
+    "desc": "Sorter 5 historiske hendelser i riktig kronologisk rekkefølge. Hver riktig plasserte hendelse gir poeng!"
+  },
+  "closest_wins": {
+    "name": "Nærmeste seire",
+    "desc": "Gjett tall så nært det riktige svaret som mulig. Presisjon belønnes – jo nærmere, desto flere poeng!"
+  },
+  "duel_trivia": {
+    "name": "Duell-trivia",
+    "desc": "Utfordre et rivaliserende lag! Svar riktig på trivia-spørsmål for å stjele 10 % av poengene deres per riktig svar (maks 30 %)."
+  },
+  "scavenger_hunt": {
+    "name": "Skattejakt",
+    "desc": "Finn og fotografer 8 elementer fra listen. Admin vurderer hvert bilde – jo flere du finner, desto flere poeng tjener du!"
+  },
+  "gkn_aircraft_quiz": {
+    "name": "Finn flyet",
+    "desc": "Kan du identifisere flyet fra bildet? Gjett raskt for maksimalt antall poeng!"
+  },
+  "gkn_trivia": {
+    "name": "GKN-trivia",
+    "desc": "Test kunnskapen din om GKN Aerospace – fire spørsmål, én sjanse per spørsmål!"
+  },
+  "gkn_truefalse": {
+    "name": "Luftfart Sant eller usant",
+    "desc": "Sant eller usant? Test kunnskapen din om GKN Aerospace og luftfart."
+  },
+  "gkn_closest": {
+    "name": "Luftfartsnumre",
+    "desc": "Gjett luftfarts- og GKN-tallene så nøyaktig som mulig. Jo nærmere du er, desto flere poeng tjener du!"
+  },
+  "gkn_pa_sparet": {
+    "name": "Gjett flyet",
+    "desc": "Identifiser flyet fra ledetråder – færre ledetråder betyr flere poeng!"
+  },
+  "gkn_timeline": {
+    "name": "GKN-historie",
+    "desc": "Sorter viktige milepæler i GKN Aerospaces historie i riktig kronologisk rekkefølge."
+  }
+}
