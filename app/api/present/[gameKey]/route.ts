@@ -43,14 +43,17 @@ export async function GET(
     .order('created_at', { ascending: false })
     .limit(20);
 
-  return NextResponse.json({
-    game: {
-      name: game.name,
-      status: game.status,
-      started_at: game.started_at,
-      duration_minutes: game.duration_minutes,
+  return NextResponse.json(
+    {
+      game: {
+        name: game.name,
+        status: game.status,
+        started_at: game.started_at,
+        duration_minutes: game.duration_minutes,
+      },
+      teams: teams ?? [],
+      photos: photos ?? [],
     },
-    teams: teams ?? [],
-    photos: photos ?? [],
-  });
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
+  );
 }
