@@ -2173,10 +2173,21 @@ export default function AdminScreen({ onLogout }: Props) {
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={activeGame} />
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
           <ProfileMenu />
         </div>
       </nav>
+
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '8px 0' }}>
+        <div className="container" style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <button
+            className="btn btn-ghost"
+            style={{ padding: '4px 0', fontSize: '13px', color: 'var(--muted)', fontWeight: 600 }}
+            onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
+          >
+            ← Games
+          </button>
+        </div>
+      </div>
 
       <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
         {/* GAME KEY + QR + START */}
