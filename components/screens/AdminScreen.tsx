@@ -2183,9 +2183,10 @@ export default function AdminScreen({ onLogout }: Props) {
       <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
         {!isMobile && (
           <button
-            className="btn btn-ghost"
-            style={{ padding: '4px 0', fontSize: '13px', color: 'var(--muted)', fontWeight: 600, marginTop: '16px' }}
             onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
+            style={{ background: 'none', border: 'none', padding: '4px 0', marginTop: '16px', fontSize: '13px', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.7 }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
           >
             ← Games
           </button>
