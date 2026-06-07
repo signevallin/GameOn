@@ -943,7 +943,10 @@ export default function AdminScreen({ onLogout }: Props) {
       const res = await POST('/api/admin/portal');
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+      } else if (res.status === 404) {
+        // No Stripe customer yet — send to upgrade flow instead
+        handleUpgrade('pro');
       } else {
         showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
       }
