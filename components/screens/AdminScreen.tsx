@@ -346,7 +346,7 @@ const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 type PhotoSubmission = {
   id: string; team_id: string; team_name: string;
   mission_id: string; photo_url: string; status: string;
-  points_awarded: number | null; created_at: string;
+  points_awarded: number | null; ai_rated?: boolean; created_at: string;
 };
 
 type ScavengerSubmission = {
@@ -354,7 +354,7 @@ type ScavengerSubmission = {
   game_id: string; mission_id: string;
   item_id: string; item_label: string;
   photo_url: string; status: string;
-  points_awarded: number | null; created_at: string;
+  points_awarded: number | null; ai_rated?: boolean; created_at: string;
 };
 function getPointOptions(maxPts: number): number[] {
   const steps = 5;

@@ -38,6 +38,8 @@ export type Game = {
   created_at: string;
   mission_max_pts: Record<string, number>;
   hide_leaderboard?: boolean;
+  ai_photo_rating?: boolean;
+  ai_photo_instructions?: string | null;
   user_id?: string;
   powerups_used?: string[];
   hot_potato?: {
