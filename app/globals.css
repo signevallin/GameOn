@@ -645,9 +645,6 @@ pre {
   /* Hide desktop tab bar */
   .admin-tabs { display: none; }
 
-  /* Add bottom padding so content isn't hidden behind bottom nav */
-  .container { padding-bottom: 80px; }
-
   /* Fixed bottom navigation */
   .mobile-bottom-nav {
     position: fixed;
@@ -731,7 +728,7 @@ pre {
   /* More sheet overlay */
   .mobile-more-sheet {
     position: fixed;
-    bottom: 60px;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     background: var(--surface);
