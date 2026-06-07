@@ -410,6 +410,16 @@ export default function AdminScreen({ onLogout }: Props) {
   const [saveTemplateName, setSaveTemplateName] = useState('');
   const [saveTemplateIcon, setSaveTemplateIcon] = useState('🎮');
   const [saveTemplateLoading, setSaveTemplateLoading] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editTemplateName, setEditTemplateName] = useState('');
+  const [editTemplateIcon, setEditTemplateIcon] = useState('');
+  const [editTemplateMissions, setEditTemplateMissions] = useState<string[]>([]);
+  const [editTemplateLoading, setEditTemplateLoading] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateIcon, setNewTemplateIcon] = useState('🎮');
+  const [newTemplateMissions, setNewTemplateMissions] = useState<string[]>([]);
+  const [showNewTemplateForm, setShowNewTemplateForm] = useState(false);
+  const [manageTemplatesLoading, setManageTemplatesLoading] = useState(false);
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -811,6 +821,64 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
+  async function updateBuiltinTemplate(id: string, name: string, icon: string, missionIds: string[]) {
+    setEditTemplateLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(`/api/admin/templates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ name, icon, missionIds }),
+      });
+      if (!res.ok) throw new Error('Failed to update template');
+      const { template } = await res.json();
+      setTemplates(prev => prev.map(t => t.id === id ? template : t));
+      setEditingTemplateId(null);
+    } catch (err) {
+      console.error('Failed to update template:', err);
+    } finally {
+      setEditTemplateLoading(false);
+    }
+  }
+
+  async function deleteBuiltinTemplate(id: string) {
+    const session = (await supabase.auth.getSession()).data.session;
+    await fetch(`/api/admin/templates/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
+    setTemplates(prev => prev.filter(t => t.id !== id));
+  }
+
+  async function createBuiltinTemplate(name: string, icon: string, missionIds: string[]) {
+    setManageTemplatesLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ name, icon, missionIds, isBuiltin: true }),
+      });
+      if (!res.ok) throw new Error('Failed to create template');
+      const { template } = await res.json();
+      setTemplates(prev => [template, ...prev.filter(t => t.isBuiltin), ...prev.filter(t => !t.isBuiltin)]);
+      setShowNewTemplateForm(false);
+      setNewTemplateName('');
+      setNewTemplateIcon('🎮');
+      setNewTemplateMissions([]);
+    } catch (err) {
+      console.error('Failed to create template:', err);
+    } finally {
+      setManageTemplatesLoading(false);
+    }
+  }
+
   async function handlePortal() {
     setPortalLoading(true);
     try {
@@ -912,6 +980,9 @@ export default function AdminScreen({ onLogout }: Props) {
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
             ) : (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+            )}
+            {isSuperAdmin && (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}>⚙️ Templates</button>
             )}
             <button className="btn btn-primary" onClick={() => { loadTemplates(); setView('templates'); }}>+ NEW GAME</button>
           </div>
@@ -1395,6 +1466,155 @@ export default function AdminScreen({ onLogout }: Props) {
       </>
     );
   }
+
+  if (view === 'manage-templates') return (
+    <>
+      <nav className="nav" style={{ position: 'relative' }}>
+        <div className="nav-brand"><GameOnLogo size={22} /></div>
+        <div className="nav-right">
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}>← BACK</button>
+        </div>
+      </nav>
+      <div className="container fade-in" style={{ maxWidth: '680px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
+          <div>
+            <h2 style={{ margin: '0 0 4px' }}>Manage Templates</h2>
+            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Edit built-in templates visible to all admins</p>
+          </div>
+          <button className="btn btn-primary" onClick={() => setShowNewTemplateForm(true)} style={{ fontSize: '13px' }}>+ NEW TEMPLATE</button>
+        </div>
+
+        {/* New template form */}
+        {showNewTemplateForm && (
+          <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px', color: 'var(--text)' }}>New built-in template</div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <input
+                value={newTemplateIcon}
+                onChange={e => setNewTemplateIcon(e.target.value)}
+                style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
+              />
+              <input
+                value={newTemplateName}
+                onChange={e => setNewTemplateName(e.target.value)}
+                placeholder="Template name"
+                style={{ flex: 1, padding: '7px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+              />
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
+              Select missions ({newTemplateMissions.length} selected)
+            </div>
+            <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+              {MISSIONS.map(m => {
+                const on = newTemplateMissions.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setNewTemplateMissions(prev => on ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                    style={{ padding: '4px 8px', borderRadius: '6px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, background: on ? 'rgba(124,189,212,0.12)' : 'transparent', color: on ? 'var(--accent)' : 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {m.icon} {m.name}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => createBuiltinTemplate(newTemplateName, newTemplateIcon, newTemplateMissions)}
+                disabled={manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
+                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+              >
+                {manageTemplatesLoading ? 'Saving...' : 'CREATE'}
+              </button>
+              <button
+                onClick={() => { setShowNewTemplateForm(false); setNewTemplateName(''); setNewTemplateIcon('🎮'); setNewTemplateMissions([]); }}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Built-in template list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {templates.filter(t => t.isBuiltin).map(t => (
+            <div key={t.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: `1px solid ${editingTemplateId === t.id ? 'var(--accent)' : 'var(--border)'}`, borderRadius: editingTemplateId === t.id ? '12px 12px 0 0' : '12px' }}>
+                <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.missionIds.length} missions</div>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => { setEditingTemplateId(t.id); setEditTemplateName(t.name); setEditTemplateIcon(t.icon); setEditTemplateMissions([...t.missionIds]); }}
+                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => { if (confirm(`Delete "${t.name}"?`)) deleteBuiltinTemplate(t.id); }}
+                    style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: '#ef4444', fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+
+              {/* Inline edit form */}
+              {editingTemplateId === t.id && (
+                <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      value={editTemplateIcon}
+                      onChange={e => setEditTemplateIcon(e.target.value)}
+                      style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
+                    />
+                    <input
+                      value={editTemplateName}
+                      onChange={e => setEditTemplateName(e.target.value)}
+                      style={{ flex: 1, padding: '7px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>Missions ({editTemplateMissions.length} selected)</div>
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+                    {MISSIONS.map(m => {
+                      const on = editTemplateMissions.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => setEditTemplateMissions(prev => on ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                          style={{ padding: '4px 8px', borderRadius: '6px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, background: on ? 'rgba(124,189,212,0.12)' : 'transparent', color: on ? 'var(--accent)' : 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                        >
+                          {m.icon} {m.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => updateBuiltinTemplate(t.id, editTemplateName, editTemplateIcon, editTemplateMissions)}
+                      disabled={editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
+                      style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      {editTemplateLoading ? 'Saving...' : 'SAVE'}
+                    </button>
+                    <button
+                      onClick={() => setEditingTemplateId(null)}
+                      style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
 
   if (view === 'templates') return (
     <>
