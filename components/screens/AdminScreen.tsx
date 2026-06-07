@@ -429,6 +429,10 @@ export default function AdminScreen({ onLogout }: Props) {
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   // Analytics state
   type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
   type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; games: AnalyticsGame[] };
@@ -467,6 +471,8 @@ export default function AdminScreen({ onLogout }: Props) {
     // Use getUser() for fresh server-side data (not cached JWT)
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsSuperAdmin(user?.app_metadata?.role === 'superadmin');
+      setUserEmail(user?.email ?? '');
+      setUserName(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '');
       loadAdminCustomMissions();
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -991,6 +997,149 @@ export default function AdminScreen({ onLogout }: Props) {
     return fa - fb;
   });
 
+  async function handleChangePassword() {
+    if (!userEmail) return;
+    await supabase.auth.resetPasswordForEmail(userEmail, {
+      redirectTo: `${window.location.origin}/admin`,
+    });
+    setResetSent(true);
+    setTimeout(() => setResetSent(false), 5000);
+  }
+
+  const planLabel = plan === 'studio' ? '✦ Studio' : plan === 'pro' ? '⚡ Pro' : 'Starter';
+  const initials = userName
+    ? userName.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+    : userEmail?.[0]?.toUpperCase() ?? '?';
+
+  function ProfileMenu() {
+    return (
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => setShowProfile(p => !p)}
+          style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: showProfile ? 'var(--accent)' : 'rgba(124,189,212,0.15)',
+            border: '1px solid rgba(124,189,212,0.3)',
+            color: showProfile ? '#0a0e19' : 'var(--accent)',
+            fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Sora', sans-serif", letterSpacing: '0.5px',
+            transition: 'background 0.15s, color 0.15s',
+            flexShrink: 0,
+          }}
+          aria-label="Profile"
+        >
+          {initials}
+        </button>
+        {showProfile && (
+          <>
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+              onClick={() => setShowProfile(false)}
+            />
+            <div style={{
+              position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+              width: 280, background: 'var(--surface)',
+              border: '1px solid var(--border)', borderRadius: '12px',
+              zIndex: 1000, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              overflow: 'hidden',
+            }}>
+              {/* Header */}
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+                {userName && <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '2px' }}>{userName}</div>}
+                <div style={{ fontSize: '13px', color: 'var(--muted)', wordBreak: 'break-all' }}>{userEmail}</div>
+                <div style={{ marginTop: '8px' }}>
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px',
+                    padding: '3px 8px', borderRadius: '20px',
+                    background: plan === 'free' ? 'rgba(255,255,255,0.06)' : 'rgba(124,189,212,0.12)',
+                    color: plan === 'free' ? 'var(--muted)' : 'var(--accent)',
+                    border: `1px solid ${plan === 'free' ? 'var(--border)' : 'rgba(124,189,212,0.3)'}`,
+                  }}>{planLabel}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ padding: '8px' }}>
+                <button
+                  onClick={() => { handleChangePassword(); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ fontSize: '16px' }}>🔑</span>
+                  <span>{resetSent ? 'Reset link sent to your email!' : 'Change password'}</span>
+                </button>
+
+                {plan === 'free' ? (
+                  <button
+                    onClick={() => { setShowProfile(false); handleUpgrade('pro'); }}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '8px',
+                      background: 'transparent', border: 'none', cursor: upgradeLoading ? 'not-allowed' : 'pointer',
+                      color: 'var(--accent)', fontSize: '13px', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      fontFamily: "'Sora', sans-serif", fontWeight: 600,
+                      opacity: upgradeLoading ? 0.6 : 1,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    disabled={upgradeLoading}
+                  >
+                    <span style={{ fontSize: '16px' }}>⚡</span>
+                    <span>{upgradeLoading ? 'Loading...' : 'Upgrade to Pro'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setShowProfile(false); handlePortal(); }}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '8px',
+                      background: 'transparent', border: 'none', cursor: portalLoading ? 'not-allowed' : 'pointer',
+                      color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      fontFamily: "'Sora', sans-serif",
+                      opacity: portalLoading ? 0.6 : 1,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    disabled={portalLoading}
+                  >
+                    <span style={{ fontSize: '16px' }}>💳</span>
+                    <span>{portalLoading ? 'Loading...' : 'Manage subscription'}</span>
+                  </button>
+                )}
+
+                <div style={{ height: '1px', background: 'var(--border)', margin: '8px 4px' }} />
+
+                <button
+                  onClick={() => { setShowProfile(false); onLogout(); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--muted)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ fontSize: '16px' }}>→</span>
+                  <span>Log out</span>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   // ── GAMES LIST ──
   if (view === 'games') return (
     <>
@@ -998,7 +1147,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
         <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {plan === 'free' ? (
+          {plan === 'free' && (
             <button
               className="btn btn-primary"
               style={{ padding: '7px 14px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', borderRadius: '8px', cursor: upgradeLoading ? 'not-allowed' : 'pointer', opacity: upgradeLoading ? 0.7 : 1, whiteSpace: 'nowrap' }}
@@ -1007,16 +1156,8 @@ export default function AdminScreen({ onLogout }: Props) {
             >
               {upgradeLoading ? '...' : '⚡ UPGRADE'}
             </button>
-          ) : (
-            <button
-              className="btn btn-ghost"
-              style={{ padding: '7px 14px', fontSize: '11px', fontWeight: 600, color: 'var(--accent)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '8px', cursor: portalLoading ? 'not-allowed' : 'pointer', opacity: portalLoading ? 0.7 : 1, whiteSpace: 'nowrap' }}
-              onClick={handlePortal}
-              disabled={portalLoading}
-            >
-              {portalLoading ? '...' : plan === 'studio' ? '✦ Studio' : '⚡ Pro'}
-            </button>
           )}
+          <ProfileMenu />
         </div>
       </nav>
       <div className="container fade-in">
@@ -1138,10 +1279,7 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         )}
 
-        {/* Log out — bottom of page */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0 32px' }}>
-          <button className="btn btn-ghost" style={{ padding: '10px 24px', fontSize: '13px', color: 'var(--muted)' }} onClick={onLogout}>LOG OUT</button>
-        </div>
+        <div style={{ paddingBottom: '32px' }} />
       </div>
     </>
   );
@@ -1275,7 +1413,7 @@ export default function AdminScreen({ onLogout }: Props) {
           <div className="nav-brand"><GameOnLogo size={22} /></div>
           <NavCenter game={null} />
           <div className="nav-right">
-            <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
+            <ProfileMenu />
           </div>
         </nav>
         <div className="container fade-in">
@@ -2032,7 +2170,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <NavCenter game={activeGame} />
         <div className="nav-right">
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
+          <ProfileMenu />
         </div>
       </nav>
 
