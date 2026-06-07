@@ -61,8 +61,17 @@ export async function ratePhoto(params: {
     'Respond with ONLY valid JSON: {"points": <integer>}',
   ];
 
+  // Fetch and base64-encode the image so it works with all model versions.
+  const imgRes = await fetch(photoUrl);
+  if (!imgRes.ok) throw new Error(`Failed to fetch photo: ${imgRes.status}`);
+  const imgBuffer = await imgRes.arrayBuffer();
+  const imgBase64 = Buffer.from(imgBuffer).toString('base64');
+  const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg';
+  const mediaType = (['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const)
+    .find(t => t === contentType) ?? 'image/jpeg';
+
   const response = await client.messages.create({
-    model: 'claude-3-haiku-20240307', // Haiku 3: fast (~500ms) and cost-effective for vision tasks
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 64,
     messages: [
       {
@@ -70,7 +79,7 @@ export async function ratePhoto(params: {
         content: [
           {
             type: 'image',
-            source: { type: 'url', url: photoUrl },
+            source: { type: 'base64', media_type: mediaType, data: imgBase64 },
           },
           {
             type: 'text',
