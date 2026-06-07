@@ -2181,13 +2181,15 @@ export default function AdminScreen({ onLogout }: Props) {
       </nav>
 
       <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
-        <button
-          className="btn btn-ghost"
-          style={{ padding: '4px 0', fontSize: '13px', color: 'var(--muted)', fontWeight: 600, marginTop: '16px' }}
-          onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
-        >
-          ← Games
-        </button>
+        {!isMobile && (
+          <button
+            className="btn btn-ghost"
+            style={{ padding: '4px 0', fontSize: '13px', color: 'var(--muted)', fontWeight: 600, marginTop: '16px' }}
+            onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
+          >
+            ← Games
+          </button>
+        )}
         {/* GAME KEY + QR + START */}
         <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -3136,6 +3138,13 @@ export default function AdminScreen({ onLogout }: Props) {
 
           {/* Bottom navigation */}
           <nav className="mobile-bottom-nav">
+            <button
+              className="mobile-bottom-nav-item"
+              onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
+            >
+              <span className="mobile-nav-icon">🎮</span>
+              <span className="mobile-nav-label">Games</span>
+            </button>
             <button
               className={`mobile-bottom-nav-item${tab === 'leaderboard' ? ' active' : ''}`}
               onClick={() => { setTab('leaderboard'); setMobileMoreOpen(false); }}
