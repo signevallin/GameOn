@@ -40,7 +40,7 @@ const UI: Record<Lang, {
 
 const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: (p: Record<string, string | number>, team: string) => string }>> = {
   en: {
-    frozen_msg:             { emoji: '❄️', title: 'FROZEN!',          subtitle: (_, t) => `${t} froze another team` },
+    frozen_msg:             { emoji: '❄️', title: 'FROZEN!',          subtitle: (_, t) => `${t} has been frozen!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',  subtitle: (_, t) => `${t} must complete extra missions` },
     shield_msg:             { emoji: '🛡️', title: 'SHIELD ACTIVE!',   subtitle: (_, t) => `${t} is protected` },
     all_in_lost_msg:        { emoji: '🎲', title: 'BET LOST!',        subtitle: (p, t) => `${t} lost ${p.wager ?? ''} pts` },
@@ -60,7 +60,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
     hot_potato_penalty_msg: { emoji: '🥔', title: 'HOT POTATO!',      subtitle: (_, t) => `${t} got burned` },
   },
   sv: {
-    frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} frös ett annat lag` },
+    frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} har frysts!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',     subtitle: (_, t) => `${t} måste slutföra extrauppdrag` },
     shield_msg:             { emoji: '🛡️', title: 'SKÖLD AKTIVERAD!',    subtitle: (_, t) => `${t} skyddade sig` },
     all_in_lost_msg:        { emoji: '🎲', title: 'GAMBLADE BORT!',      subtitle: (p, t) => `${t} förlorade ${p.wager ?? ''} poäng` },
@@ -80,7 +80,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
     hot_potato_penalty_msg: { emoji: '🥔', title: 'HET POTATIS!',         subtitle: (_, t) => `${t} brändes av potatisen` },
   },
   no: {
-    frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} frøs et annet lag` },
+    frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} har blitt fryst!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',     subtitle: (_, t) => `${t} må fullføre ekstraoppdrag` },
     shield_msg:             { emoji: '🛡️', title: 'SKJOLD AKTIVERT!',    subtitle: (_, t) => `${t} beskyttet seg` },
     all_in_lost_msg:        { emoji: '🎲', title: 'TAPTE INNSATSEN!',    subtitle: (p, t) => `${t} tapte ${p.wager ?? ''} poeng` },
@@ -100,7 +100,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
     hot_potato_penalty_msg: { emoji: '🥔', title: 'VARM POTET!',          subtitle: (_, t) => `${t} ble brent av poteten` },
   },
   da: {
-    frozen_msg:             { emoji: '❄️', title: 'FROSSET!',            subtitle: (_, t) => `${t} frøs et andet hold` },
+    frozen_msg:             { emoji: '❄️', title: 'FROSSET!',            subtitle: (_, t) => `${t} er blevet frosset!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',     subtitle: (_, t) => `${t} skal gennemføre ekstraopgaver` },
     shield_msg:             { emoji: '🛡️', title: 'SKJOLD AKTIVERET!',   subtitle: (_, t) => `${t} beskyttede sig` },
     all_in_lost_msg:        { emoji: '🎲', title: 'TABTE INDSATSEN!',    subtitle: (p, t) => `${t} tabte ${p.wager ?? ''} point` },
@@ -120,7 +120,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
     hot_potato_penalty_msg: { emoji: '🥔', title: 'VARM KARTOFFEL!',      subtitle: (_, t) => `${t} blev brændt af kartoflen` },
   },
   de: {
-    frozen_msg:             { emoji: '❄️', title: 'EINGEFROREN!',        subtitle: (_, t) => `${t} hat ein anderes Team eingefroren` },
+    frozen_msg:             { emoji: '❄️', title: 'EINGEFROREN!',        subtitle: (_, t) => `${t} wurde eingefroren!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',     subtitle: (_, t) => `${t} muss Extra-Aufgaben erledigen` },
     shield_msg:             { emoji: '🛡️', title: 'SCHILD AKTIV!',       subtitle: (_, t) => `${t} ist geschützt` },
     all_in_lost_msg:        { emoji: '🎲', title: 'VERLOREN!',           subtitle: (p, t) => `${t} verlor ${p.wager ?? ''} Punkte` },
@@ -140,7 +140,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
     hot_potato_penalty_msg: { emoji: '🥔', title: 'HEISSE KARTOFFEL!',    subtitle: (_, t) => `${t} wurde verbrannt` },
   },
   fr: {
-    frozen_msg:             { emoji: '❄️', title: 'GELÉ!',               subtitle: (_, t) => `${t} a gelé une autre équipe` },
+    frozen_msg:             { emoji: '❄️', title: 'GELÉ!',               subtitle: (_, t) => `${t} a été gelé!` },
     double_trouble_msg:     { emoji: '😈', title: 'DOUBLE TROUBLE!',     subtitle: (_, t) => `${t} doit accomplir des missions supplémentaires` },
     shield_msg:             { emoji: '🛡️', title: 'BOUCLIER ACTIF!',     subtitle: (_, t) => `${t} est protégé` },
     all_in_lost_msg:        { emoji: '🎲', title: 'PARI PERDU!',         subtitle: (p, t) => `${t} a perdu ${p.wager ?? ''} pts` },
