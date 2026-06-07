@@ -27,10 +27,17 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (!admin.isSuperAdmin && game.user_id !== admin.userId)
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
   const updates: Record<string, unknown> = {};
-  if (body.ai_photo_rating !== undefined) updates.ai_photo_rating = body.ai_photo_rating;
-  if (body.ai_photo_instructions !== undefined) updates.ai_photo_instructions = body.ai_photo_instructions;
+  if (typeof body.ai_photo_rating === 'boolean') updates.ai_photo_rating = body.ai_photo_rating;
+  if (body.ai_photo_instructions === null || (typeof body.ai_photo_instructions === 'string' && body.ai_photo_instructions.length <= 2000)) {
+    updates.ai_photo_instructions = body.ai_photo_instructions;
+  }
 
   if (Object.keys(updates).length === 0)
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
