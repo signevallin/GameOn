@@ -5,7 +5,6 @@ import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
-import LanguagePicker from '@/components/LanguagePicker';
 
 type Notification = { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> };
 
@@ -731,10 +730,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
           )}
         </div>
 
-        {/* Col 5: language picker */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <LanguagePicker />
-        </div>
       </nav>
 
       <div className="container fade-in">

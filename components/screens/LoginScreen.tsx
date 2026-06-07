@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import dynamic from 'next/dynamic';
+import LanguagePicker from '@/components/LanguagePicker';
 
 const QrScanner = dynamic(() => import('@/components/QrScanner'), { ssr: false });
 
@@ -108,6 +109,9 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 10 }}>
+        <LanguagePicker />
+      </div>
       <div style={{ width: '100%', maxWidth: '480px', padding: '20px', position: 'relative', zIndex: 1 }} className="fade-in">
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <GameOnLogo size={58} />
