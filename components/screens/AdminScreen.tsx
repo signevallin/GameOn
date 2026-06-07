@@ -2266,6 +2266,16 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {(activeGame.status === 'active' || activeGame.status === 'finished') && (
+              <button
+                className="btn btn-ghost"
+                onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
+                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                title="Open presenter view (for projector or TV)"
+              >
+                📺 Presenter
+              </button>
+            )}
             {activeGame.status === 'draft' && (
               <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: '15px', padding: '14px 28px' }}>
                 ▶ START GAME
