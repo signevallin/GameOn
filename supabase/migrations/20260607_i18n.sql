@@ -14,3 +14,6 @@ create table if not exists public.mission_translations (
   created_at  timestamptz not null default now(),
   unique(mission_id, language)
 );
+
+create index if not exists idx_mission_translations_mission_id
+  on public.mission_translations(mission_id);
