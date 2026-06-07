@@ -52,7 +52,9 @@ export async function POST(req: Request) {
       .from('teams')
       .update({
         score: (team.score ?? 0) + points,
-        completed: [...(team.completed ?? []), missionId],
+        completed: points > 0
+          ? [...(team.completed ?? []), missionId]
+          : (team.completed ?? []),
         mission_scores: newMissionScores,
         pending_notification: notification,
         updated_at: new Date().toISOString(),
