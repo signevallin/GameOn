@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Mission, calcPoints, MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import MultipleChoice from '@/components/games/MultipleChoice';
@@ -42,6 +43,8 @@ type Props = {
 };
 
 export default function ChallengeScreen({ missionId, team, game, teams = [], customMissions = [], onDone, onBack }: Props) {
+  const { t } = useTranslation();
+  const { t: tMissions } = useTranslation('missions');
   const mission = (MISSIONS.find(m => m.id === missionId) ?? customMissions.find(m => m.id === missionId))!;
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
   const [elapsed, setElapsed] = useState(0);
@@ -112,11 +115,11 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
           return (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <div style={{ fontSize: '56px', marginBottom: '16px' }}>⏳</div>
-              <h2 style={{ marginBottom: '12px' }}>Photo submitted!</h2>
+              <h2 style={{ marginBottom: '12px' }}>{t('challenge.photoSubmittedTitle')}</h2>
               <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px' }}>
-                Admin will review and rate your photo. Points will be added to your score once rated — go do other missions!
+                {t('challenge.photoWaiting')}
               </p>
-              <button className="btn btn-primary" onClick={onBack}>← BACK TO MISSIONS</button>
+              <button className="btn btn-primary" onClick={onBack}>{t('challenge.backToMissionsBtn')}</button>
             </div>
           );
         }
@@ -136,7 +139,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
             clues={mission.clues!}
             answer={mission.answer!}
             maxPts={effectiveMaxPts}
-            placeholder={mission.id === 'pa_sparet_destination' ? 'Which city or place?' : 'Who is this person?'}
+            placeholder={mission.id === 'pa_sparet_destination' ? t('challenge.paSparet_city') : t('challenge.paSparet_person')}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
@@ -227,11 +230,11 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   return (
     <>
       <nav className="nav">
-        <div className="nav-brand">{mission.icon} {mission.name}</div>
+        <div className="nav-brand">{mission.icon} {tMissions(`${mission.id}.name`, { defaultValue: mission.name })}</div>
         <div className="nav-right">
-          <span className="nav-score">⭐ {team.score} pts</span>
+          <span className="nav-score">⭐ {team.score} {t('challenge.ptsLabel')}</span>
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onBack}>
-            ← MISSIONS
+            {t('challenge.backToMissions')}
           </button>
         </div>
       </nav>
@@ -239,11 +242,11 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       <div className="challenge-wrap fade-in">
         <div className="challenge-header">
           <div>
-            <h2>{mission.name}</h2>
-            <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '14px' }}>{mission.desc}</p>
+            <h2>{tMissions(`${mission.id}.name`, { defaultValue: mission.name })}</h2>
+            <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '14px' }}>{tMissions(`${mission.id}.desc`, { defaultValue: mission.desc ?? '' })}</p>
           </div>
           <div className="timer-box">
-            <div className="timer-label">Time</div>
+            <div className="timer-label">{t('challenge.timerLabel')}</div>
             <div className={`timer-value${elapsed > 60 ? ' urgent' : ''}`}>{display}</div>
           </div>
         </div>
