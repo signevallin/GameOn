@@ -189,13 +189,16 @@ function PowerUpsCard({
 
         return (
           <div key={type} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
-              <span style={{ fontSize: '14px', fontWeight: 700, flex: '0 0 auto' }}>{label}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
+                <span style={{ fontSize: '14px', fontWeight: 700 }}>{label}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <select
                 value={selectedTeamId}
                 onChange={e => setTarget(type, e.target.value)}
-                style={selectStyle}
+                style={{ ...selectStyle, flex: 1 }}
                 disabled={allUsed}
               >
                 <option value="">Select team…</option>
@@ -219,6 +222,7 @@ function PowerUpsCard({
               >
                 {isLoading ? '...' : isAllSelected ? `${btn} ALL` : btn}
               </button>
+              </div>
             </div>
             {type === 'fake_hint' && (
               <input
