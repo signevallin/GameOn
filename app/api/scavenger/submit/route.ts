@@ -1,5 +1,8 @@
+// app/api/scavenger/submit/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { MISSIONS } from '@/lib/missions';
+import { ratePhoto as aiRatePhoto } from '@/lib/ai-photo-rater';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,17 +18,105 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
   }
 
-  // Upsert so a team can replace a previously submitted photo for the same item
   const { error } = await supabase
     .from('scavenger_submissions')
     .upsert(
-      { team_id: teamId, team_name: teamName, game_id: gameId, mission_id: missionId, item_id: itemId, item_label: itemLabel, photo_url: photoUrl, status: 'pending', points_awarded: null },
+      {
+        team_id: teamId,
+        team_name: teamName,
+        game_id: gameId,
+        mission_id: missionId,
+        item_id: itemId,
+        item_label: itemLabel,
+        photo_url: photoUrl,
+        status: 'pending',
+        points_awarded: null,
+        ai_rated: false,
+      },
       { onConflict: 'team_id,mission_id,item_id', ignoreDuplicates: false }
     );
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Attempt AI rating after responding to player
+  (async () => {
+    try {
+      const { data: game } = await supabase
+        .from('games')
+        .select('ai_photo_rating, ai_photo_instructions, mission_max_pts')
+        .eq('id', gameId)
+        .single();
+
+      if (!game?.ai_photo_rating) return;
+
+      const missionDescription =
+        `Scavenger Hunt — teams must photograph: ${itemLabel ?? 'the required item'}. Did they find it?`;
+
+      const mission = MISSIONS.find(m => m.id === missionId);
+      const maxPts =
+        (game.mission_max_pts as Record<string, number>)?.[missionId] ??
+        mission?.maxPts ??
+        500;
+
+      const points = await aiRatePhoto({
+        photoUrl,
+        missionDescription,
+        maxPts,
+        scoringFocus: game.ai_photo_instructions,
+      });
+
+      // Re-check: if admin already rated while AI was processing, skip
+      const { data: currentSub } = await supabase
+        .from('scavenger_submissions')
+        .select('status')
+        .eq('team_id', teamId)
+        .eq('mission_id', missionId)
+        .eq('item_id', itemId)
+        .single();
+      if (currentSub?.status === 'rated') return;
+
+      // Mark submission as AI-rated
+      await supabase
+        .from('scavenger_submissions')
+        .update({ status: 'rated', points_awarded: points, ai_rated: true })
+        .eq('team_id', teamId)
+        .eq('mission_id', missionId)
+        .eq('item_id', itemId);
+
+      // Add points to team
+      const { data: team } = await supabase
+        .from('teams')
+        .select('score, completed, mission_scores, pending_notification')
+        .eq('id', teamId)
+        .single();
+
+      if (!team) return;
+
+      const missionName = mission ? `${mission.icon} ${mission.name}` : 'Scavenger Hunt';
+      const notification = points > 0
+        ? { type: 'photo_rated', message: `Your photo for "${itemLabel}" in ${missionName} was rated by AI! You earned ${points} points! ✨` }
+        : { type: 'photo_rated', message: `Your photo for "${itemLabel}" was reviewed — unfortunately no points this time. Keep going! 💪` };
+
+      const alreadyRated = (team.mission_scores as Record<string, number> | null)?.[missionId] !== undefined;
+
+      if (!alreadyRated) {
+        const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
+        await supabase.from('teams').update({
+          score: (team.score ?? 0) + points,
+          completed: points > 0
+            ? [...(team.completed ?? []), missionId]
+            : (team.completed ?? []),
+          mission_scores: newMissionScores,
+          pending_notification: notification,
+          updated_at: new Date().toISOString(),
+        }).eq('id', teamId);
+      }
+    } catch (err) {
+      console.error('[ai-photo-rating] Failed to auto-rate scavenger photo:', err);
+    }
+  })();
 
   return NextResponse.json({ ok: true });
 }
