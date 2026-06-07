@@ -1574,7 +1574,7 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* Key + status */}
             <div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share with teams</p>
-              <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
+              <div className="mobile-game-key" style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
                 {activeGame.game_key}
               </div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
@@ -1804,7 +1804,7 @@ export default function AdminScreen({ onLogout }: Props) {
               const pendingFiltered = photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
               return pendingFiltered.length > 0 && (
               <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+              <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                 {pendingFiltered.slice(0, visiblePendingCount).map(sub => {
                   const mission = MISSIONS.find(m => m.id === sub.mission_id);
                   const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
@@ -1903,7 +1903,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   <h2 style={{ fontSize: '16px', color: 'var(--muted)' }}>✓ Rated</h2>
                   <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{allRated.length} photos</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
+                <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
                   {allRated.slice(0, visibleRatedCount).map(sub => {
                     if (sub._type === 'regular') {
                       const mission = MISSIONS.find(m => m.id === (sub as typeof ratedRegular[0]).mission_id);
@@ -2178,7 +2178,7 @@ export default function AdminScreen({ onLogout }: Props) {
               return (
                 <>
                   {/* ── KPI Cards ── */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                  <div className="mobile-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
                     <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Totalt spel</div>
                       <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.totalGames}</div>
@@ -2202,7 +2202,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   </div>
 
                   {/* ── Two-column layout ── */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+                  <div className="mobile-analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
 
                     {/* Left: Customer list */}
                     <div>
