@@ -885,7 +885,7 @@ pre {
 .admin-game-card-info { flex: 1; min-width: 0; cursor: pointer; }
 .admin-game-card-info h3 { font-weight: 700; font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .admin-game-card-info .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.admin-game-card-info .date { font-size: 11px; color: var(--border); margin-top: 4px; letter-spacing: 0.5px; }
+.admin-game-card-info .date { font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
 .admin-game-key { font-family: 'Sora', sans-serif; letter-spacing: 3px; font-size: 18px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
 .admin-game-status { font-size: 13px; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
 .admin-game-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
