@@ -1,5 +1,6 @@
 // app/api/scavenger/submit/route.ts
 import { NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 import { ratePhoto as aiRatePhoto } from '@/lib/ai-photo-rater';
@@ -40,8 +41,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Attempt AI rating after responding to player
-  (async () => {
+  // waitUntil keeps the serverless function alive until AI rating completes.
+  waitUntil((async () => {
     try {
       const { data: game } = await supabase
         .from('games')
@@ -116,7 +117,7 @@ export async function POST(req: Request) {
     } catch (err) {
       console.error('[ai-photo-rating] Failed to auto-rate scavenger photo:', err);
     }
-  })();
+  })());
 
   return NextResponse.json({ ok: true });
 }
