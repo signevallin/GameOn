@@ -420,6 +420,12 @@ export default function AdminScreen({ onLogout }: Props) {
   const [newTemplateMissions, setNewTemplateMissions] = useState<string[]>([]);
   const [showNewTemplateForm, setShowNewTemplateForm] = useState(false);
   const [manageTemplatesLoading, setManageTemplatesLoading] = useState(false);
+  // AI photo rating
+  const [aiPhotoRating, setAiPhotoRating] = useState(false);
+  const [aiPhotoInstructions, setAiPhotoInstructions] = useState('');
+  const [aiRatingEnabled, setAiRatingEnabled] = useState(false);
+  const [aiRatingInstructions, setAiRatingInstructions] = useState('');
+  const [overridingPhotoId, setOverridingPhotoId] = useState<string | null>(null);
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -617,6 +623,14 @@ export default function AdminScreen({ onLogout }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGameId]);
 
+  // Sync AI rating live-toggle state when switching to a different game
+  useEffect(() => {
+    if (activeGame) {
+      setAiRatingEnabled(activeGame.ai_photo_rating ?? false);
+      setAiRatingInstructions(activeGame.ai_photo_instructions ?? '');
+    }
+  }, [activeGameId]);
+
   async function createGame() {
     if (!selectedMissions.length) { setCreateError('Select at least one mission.'); return; }
     setCreating(true); setCreateError('');
@@ -629,7 +643,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -777,6 +791,26 @@ export default function AdminScreen({ onLogout }: Props) {
       console.error('Failed to load analytics:', err);
     } finally {
       setAnalyticsLoading(false);
+    }
+  }
+
+  async function toggleAiRating(enabled: boolean) {
+    if (!activeGame || !authToken) return;
+    setAiRatingEnabled(enabled);
+    const res = await fetch(`/api/admin/game/${activeGame.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        ai_photo_rating: enabled,
+        ai_photo_instructions: aiRatingInstructions,
+      }),
+    });
+    if (!res.ok) {
+      setAiRatingEnabled(!enabled); // revert on failure
+      showToast('Failed to update AI rating setting', 'error');
     }
   }
 
@@ -1648,7 +1682,7 @@ export default function AdminScreen({ onLogout }: Props) {
               {templates.filter(t => t.isBuiltin).map(t => (
                 <button
                   key={t.id}
-                  onClick={() => { setSelectedMissions(t.missionIds); setView('create'); }}
+                  onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
@@ -1677,7 +1711,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
                   >
                     <button
-                      onClick={() => { setSelectedMissions(t.missionIds); setView('create'); }}
+                      onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
                       style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
                     >
                       <span style={{ fontSize: '24px', flexShrink: 0 }}>{t.icon}</span>
@@ -1708,7 +1742,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
             {/* Blank game */}
             <button
-              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setView('create'); }}
+              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
               style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
@@ -1770,6 +1804,39 @@ export default function AdminScreen({ onLogout }: Props) {
                 <div style={{ position: 'absolute', top: '2px', left: hideLeaderboard ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
               </div>
             </div>
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div
+              onClick={() => setAiPhotoRating(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${aiPhotoRating ? 'var(--accent)' : 'var(--border)'}`, borderRadius: aiPhotoRating ? '10px 10px 0 0' : '10px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>✨ AI photo rating</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  Photos rated automatically by AI — you can override anytime
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiPhotoRating ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: aiPhotoRating ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+            {aiPhotoRating && (
+              <div style={{ padding: '12px 14px', background: 'var(--surface)', border: `1px solid var(--accent)`, borderTop: 'none', borderRadius: '0 0 10px 10px' }} onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
+                  Scoring focus <span style={{ fontWeight: 400, textTransform: 'none' as const, letterSpacing: 0 }}>(optional)</span>
+                </div>
+                <input
+                  type="text"
+                  value={aiPhotoInstructions}
+                  onChange={e => setAiPhotoInstructions(e.target.value)}
+                  placeholder="e.g. Reward creativity and humor extra highly"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif", boxSizing: 'border-box' as const }}
+                />
+                <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '5px' }}>
+                  Passed to the AI as extra context when rating photos
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -2191,9 +2258,40 @@ export default function AdminScreen({ onLogout }: Props) {
         {tab === 'photos' && (
           <div className="fade-in">
             <div className="section-header">
-              <h2 style={{ fontSize: '18px' }}>Photo Submissions</h2>
-              <span className="badge">{pendingPhotos.length} pending</span>
+              <div>
+                <h2 style={{ fontSize: '18px', margin: 0 }}>Photo Submissions</h2>
+                <span className="badge" style={{ marginTop: '4px' }}>{pendingPhotos.length} pending</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>AI rating</span>
+                <div
+                  onClick={() => toggleAiRating(!aiRatingEnabled)}
+                  style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiRatingEnabled ? 'var(--accent)' : 'var(--border)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+                >
+                  <div style={{ position: 'absolute', top: '2px', left: aiRatingEnabled ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: aiRatingEnabled ? 'var(--accent)' : 'var(--muted)' }}>
+                  {aiRatingEnabled ? 'ON' : 'OFF'}
+                </span>
+              </div>
             </div>
+
+            {/* AI info card */}
+            {aiRatingEnabled && (
+              <div style={{ background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span>✨</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>AI rating is on</span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Photos are rated automatically when submitted</div>
+                {aiRatingInstructions && (
+                  <div style={{ marginTop: '8px', background: 'var(--surface)', borderRadius: '6px', padding: '6px 10px', fontSize: '11px' }}>
+                    <span style={{ color: 'var(--muted)', marginRight: '4px' }}>Focus:</span>
+                    <span style={{ fontStyle: 'italic', color: 'var(--text)' }}>{aiRatingInstructions}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Team filter */}
             {teams.length > 0 && (
@@ -2331,12 +2429,35 @@ export default function AdminScreen({ onLogout }: Props) {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
                             </div>
-                            <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {(sub as typeof ratedRegular[0]).points_awarded ?? 0}p</span>
+                            <span style={{
+                              background: (sub as typeof ratedRegular[0]).ai_rated ? 'rgba(124,189,212,0.15)' : 'transparent',
+                              borderRadius: '4px',
+                              padding: (sub as typeof ratedRegular[0]).ai_rated ? '2px 5px' : '0',
+                              color: (sub as typeof ratedRegular[0]).ai_rated ? 'var(--accent)' : 'var(--accent3)',
+                              fontWeight: 700, fontSize: '11px', flexShrink: 0,
+                            }}>
+                              {(sub as typeof ratedRegular[0]).ai_rated ? '✨' : '✓'} {(sub as typeof ratedRegular[0]).points_awarded ?? 0}p
+                            </span>
                           </div>
                           <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
                             onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? (sub as typeof ratedRegular[0]).mission_id}` })}>
                             <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           </div>
+                          {overridingPhotoId === sub.id ? (
+                            <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                              {getPointOptions(activeGame.mission_max_pts?.[(sub as typeof ratedRegular[0]).mission_id] ?? MISSIONS.find(m => m.id === (sub as typeof ratedRegular[0]).mission_id)?.maxPts ?? 500).map(pts => (
+                                <button key={pts} onClick={() => { ratePhoto(sub as PhotoSubmission, pts); setOverridingPhotoId(null); }}
+                                  style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? 'var(--accent)' : 'var(--surface)', color: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? '#0a0e19' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '11px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}>✕</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
+                              {(sub as typeof ratedRegular[0]).ai_rated ? 'Override ✨' : '✏️ Change'}
+                            </button>
+                          )}
                         </div>
                       );
                     } else {
@@ -2348,12 +2469,35 @@ export default function AdminScreen({ onLogout }: Props) {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
                             </div>
-                            <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {s.points_awarded ?? 0}p</span>
+                            <span style={{
+                              background: s.ai_rated ? 'rgba(124,189,212,0.15)' : 'transparent',
+                              borderRadius: '4px',
+                              padding: s.ai_rated ? '2px 5px' : '0',
+                              color: s.ai_rated ? 'var(--accent)' : 'var(--accent3)',
+                              fontWeight: 700, fontSize: '11px', flexShrink: 0,
+                            }}>
+                              {s.ai_rated ? '✨' : '✓'} {s.points_awarded ?? 0}p
+                            </span>
                           </div>
                           <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
                             onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${s.item_label}` })}>
                             <img src={sub.photo_url} alt={s.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           </div>
+                          {overridingPhotoId === sub.id ? (
+                            <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                              {getPointOptions(activeGame.mission_max_pts?.[(sub as typeof ratedScav[0]).mission_id] ?? 500).map(pts => (
+                                <button key={pts} onClick={() => { rateScavengerPhoto(sub as ScavengerSubmission, pts); setOverridingPhotoId(null); }}
+                                  style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: pts === (s.points_awarded ?? 0) ? 'var(--accent)' : 'var(--surface)', color: pts === (s.points_awarded ?? 0) ? '#0a0e19' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '11px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}>✕</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
+                              {s.ai_rated ? 'Override ✨' : '✏️ Change'}
+                            </button>
+                          )}
                         </div>
                       );
                     }
