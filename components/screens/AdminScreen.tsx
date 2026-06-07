@@ -624,11 +624,15 @@ export default function AdminScreen({ onLogout }: Props) {
   }, [activeGameId]);
 
   // Sync AI rating live-toggle state when switching to a different game
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Intentionally keyed on activeGameId (not activeGame object) — avoids re-running on every
+  // poll cycle. Matches the polling useEffect pattern above.
   useEffect(() => {
     if (activeGame) {
       setAiRatingEnabled(activeGame.ai_photo_rating ?? false);
       setAiRatingInstructions(activeGame.ai_photo_instructions ?? '');
     }
+    setOverridingPhotoId(null);
   }, [activeGameId]);
 
   async function createGame() {
@@ -796,6 +800,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function toggleAiRating(enabled: boolean) {
     if (!activeGame || !authToken) return;
+    if (aiRatingEnabled === enabled) return; // prevent double-toggle
     setAiRatingEnabled(enabled);
     const res = await fetch(`/api/admin/game/${activeGame.id}`, {
       method: 'PATCH',
