@@ -2,7 +2,7 @@
   "login": {
     "role": "Välj din roll för att logga in",
     "tabTeam": "🧑‍💻 LAG",
-    "tabAdmin": "🛡️ ADMINISTRATÖR",
+    "tabAdmin": "🛡️ ADMIN",
     "teamNameLabel": "Lagnamn",
     "teamNamePlaceholder": "T.ex. Team Frontend",
     "gameKeyLabel": "Spelnyckel (från arrangören)",
