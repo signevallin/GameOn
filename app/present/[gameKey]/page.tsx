@@ -111,7 +111,7 @@ export default function PresentPage({ params }: { params: { gameKey: string } })
 
   const poll = useCallback(async () => {
     try {
-      const res = await fetch(`/api/present/${params.gameKey}`, { cache: 'no-store' });
+      const res = await fetch(`/api/present/${params.gameKey}`, { method: 'POST' });
       if (res.status === 404) { setNotFound(true); return; }
       if (!res.ok) return;
       const json: PresentData = await res.json();

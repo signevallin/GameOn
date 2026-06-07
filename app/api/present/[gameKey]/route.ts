@@ -10,7 +10,8 @@ function getSupabase() {
   );
 }
 
-export async function GET(
+// POST – used by presenter polling (POST is never cached by Vercel edge)
+export async function POST(
   _req: Request,
   { params }: { params: { gameKey: string } }
 ) {
