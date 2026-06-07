@@ -6,6 +6,7 @@ import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
+import type { GameTemplate } from '@/lib/templates';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -309,7 +310,7 @@ function PowerUpsCard({
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard' | 'missions';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates';
 
 type MissionFormData = {
   name: string;
@@ -403,6 +404,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [templates, setTemplates] = useState<GameTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -763,6 +766,22 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
+  async function loadTemplates() {
+    setTemplatesLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      const data = await res.json();
+      setTemplates(data.templates || []);
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }
+
   async function handlePortal() {
     setPortalLoading(true);
     try {
@@ -865,7 +884,7 @@ export default function AdminScreen({ onLogout }: Props) {
             ) : (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
             )}
-            <button className="btn btn-primary" onClick={() => setView('create')}>+ NEW GAME</button>
+            <button className="btn btn-primary" onClick={() => { loadTemplates(); setView('templates'); }}>+ NEW GAME</button>
           </div>
         </div>
         {plan === 'free' && (
@@ -1308,6 +1327,108 @@ export default function AdminScreen({ onLogout }: Props) {
       </>
     );
   }
+
+  if (view === 'templates') return (
+    <>
+      <nav className="nav" style={{ position: 'relative' }}>
+        <div className="nav-brand"><GameOnLogo size={22} /></div>
+        <div className="nav-right">
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setView('games')}>← BACK</button>
+        </div>
+      </nav>
+      <div className="container fade-in" style={{ maxWidth: '680px' }}>
+        <div style={{ padding: '32px 0 24px' }}>
+          <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
+        </div>
+
+        {templatesLoading ? (
+          <div style={{ color: 'var(--muted)', fontSize: '14px', padding: '40px 0', textAlign: 'center' }}>Loading templates...</div>
+        ) : (
+          <>
+            {/* Built-in templates */}
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>Built-in templates</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+              {templates.filter(t => t.isBuiltin).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { setSelectedMissions(t.missionIds); setView('create'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <span style={{ fontSize: '28px', flexShrink: 0 }}>{t.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions{t.description ? ` · ${t.description}` : ''}</div>
+                  </div>
+                  <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+                </button>
+              ))}
+            </div>
+
+            {/* My templates */}
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>My templates</div>
+            {templates.filter(t => !t.isBuiltin).length === 0 ? (
+              <div style={{ background: 'var(--card)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '24px', textAlign: 'center', color: 'var(--muted)', fontSize: '13px', marginBottom: '24px' }}>
+                No saved templates yet — save a game as a template from the games list
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+                {templates.filter(t => !t.isBuiltin).map(t => (
+                  <div
+                    key={t.id}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                  >
+                    <button
+                      onClick={() => { setSelectedMissions(t.missionIds); setView('create'); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+                    >
+                      <span style={{ fontSize: '24px', flexShrink: 0 }}>{t.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions</div>
+                      </div>
+                      <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const session = (await supabase.auth.getSession()).data.session;
+                        await fetch(`/api/admin/templates/${t.id}`, {
+                          method: 'DELETE',
+                          headers: { Authorization: `Bearer ${session?.access_token}` },
+                        });
+                        setTemplates(prev => prev.filter(x => x.id !== t.id));
+                      }}
+                      title="Delete template"
+                      style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}
+                    >
+                      🗑
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Blank game */}
+            <button
+              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setView('create'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <span style={{ fontSize: '28px', flexShrink: 0 }}>✏️</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>Blank game</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Choose missions manually</div>
+              </div>
+              <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+            </button>
+          </>
+        )}
+      </div>
+    </>
+  );
 
   // ── CREATE GAME ──
   if (view === 'create') return (
