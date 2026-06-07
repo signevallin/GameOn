@@ -412,7 +412,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [saveTemplateLoading, setSaveTemplateLoading] = useState(false);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [editTemplateName, setEditTemplateName] = useState('');
-  const [editTemplateIcon, setEditTemplateIcon] = useState('');
+  const [editTemplateIcon, setEditTemplateIcon] = useState('🎮');
   const [editTemplateMissions, setEditTemplateMissions] = useState<string[]>([]);
   const [editTemplateLoading, setEditTemplateLoading] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
@@ -837,8 +837,10 @@ export default function AdminScreen({ onLogout }: Props) {
       const { template } = await res.json();
       setTemplates(prev => prev.map(t => t.id === id ? template : t));
       setEditingTemplateId(null);
+      showToast('Template updated');
     } catch (err) {
       console.error('Failed to update template:', err);
+      showToast('Failed to update template');
     } finally {
       setEditTemplateLoading(false);
     }
@@ -846,11 +848,16 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function deleteBuiltinTemplate(id: string) {
     const session = (await supabase.auth.getSession()).data.session;
-    await fetch(`/api/admin/templates/${id}`, {
+    const res = await fetch(`/api/admin/templates/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${session?.access_token}` },
     });
+    if (!res.ok) {
+      showToast('Failed to delete template');
+      return;
+    }
     setTemplates(prev => prev.filter(t => t.id !== id));
+    showToast('Template deleted');
   }
 
   async function createBuiltinTemplate(name: string, icon: string, missionIds: string[]) {
@@ -867,13 +874,14 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) throw new Error('Failed to create template');
       const { template } = await res.json();
-      setTemplates(prev => [template, ...prev.filter(t => t.isBuiltin), ...prev.filter(t => !t.isBuiltin)]);
+      setTemplates(prev => [template, ...prev]);
       setShowNewTemplateForm(false);
       setNewTemplateName('');
       setNewTemplateIcon('🎮');
       setNewTemplateMissions([]);
     } catch (err) {
       console.error('Failed to create template:', err);
+      showToast('Failed to create template');
     } finally {
       setManageTemplatesLoading(false);
     }
@@ -1522,7 +1530,7 @@ export default function AdminScreen({ onLogout }: Props) {
               <button
                 onClick={() => createBuiltinTemplate(newTemplateName, newTemplateIcon, newTemplateMissions)}
                 disabled={manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
-                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
               >
                 {manageTemplatesLoading ? 'Saving...' : 'CREATE'}
               </button>
@@ -1596,7 +1604,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <button
                       onClick={() => updateBuiltinTemplate(t.id, editTemplateName, editTemplateIcon, editTemplateMissions)}
                       disabled={editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
-                      style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                      style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
                     >
                       {editTemplateLoading ? 'Saving...' : 'SAVE'}
                     </button>
