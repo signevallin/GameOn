@@ -761,10 +761,10 @@ pre {
   /* Game key font size — prevent overflow on narrow screens */
   .mobile-game-key {
     font-family: 'Sora', sans-serif;
-    font-size: clamp(28px, 8vw, 48px);
+    font-size: clamp(28px, 8vw, 48px) !important;
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: clamp(3px, 1.5vw, 8px);
+    letter-spacing: clamp(3px, 1.5vw, 8px) !important;
     line-height: 1;
   }
 
