@@ -1450,6 +1450,7 @@ export default function AdminScreen({ onLogout }: Props) {
           photoPrompt: mission.photoPrompt ?? '',
         });
         setMissionFormError('');
+        setMissionCategoryId(null);
         setShowMissionForm(true);
         setAiPanelOpen(false);
         setAiPrompt('');
@@ -1525,6 +1526,7 @@ export default function AdminScreen({ onLogout }: Props) {
       setMissionSaving(false);
       setShowMissionForm(false);
       setEditingMissionId(null);
+      setMissionCategoryId(null);
       showToast('Mission saved ✓');
       loadAdminCustomMissions();
     }
@@ -1554,7 +1556,7 @@ export default function AdminScreen({ onLogout }: Props) {
         </nav>
         <div className="container fade-in">
           <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); }}>← Back</button>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}>← Back</button>
             <h2 style={{ margin: 0 }}>My Missions</h2>
           </div>
 
@@ -1951,7 +1953,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} disabled={missionSaving || !missionForm.name.trim() || !missionForm.type} onClick={saveMission}>
                   {missionSaving ? 'Saving…' : editingMissionId ? 'Save Changes' : 'Add Mission'}
                 </button>
-                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); }}>Cancel</button>
+                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); setMissionCategoryId(null); }}>Cancel</button>
               </div>
             </div>
           )}
