@@ -14,7 +14,7 @@ export type Team = {
   created_at: string;
   finished_at: string | null;
   mission_scores: Record<string, number>;
-  pending_notification: { type: string; message: string } | null;
+  pending_notification: { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> } | null;
   double_points: boolean;
   active_effects: {
     freeze_until?: string;
@@ -25,6 +25,7 @@ export type Team = {
   team_powerups_used: string[];
   mission_answers: Record<string, string>;
   powerups_received: number;
+  extra_powerups: string[];
 };
 
 export type Game = {
@@ -47,6 +48,11 @@ export type Game = {
     expires_at: string;
     penalty_pts: number;
     game_id: string;
+  } | null;
+  mystery_box?: {
+    created_at: string;
+    expires_at: string;
+    claimed_by: string | null;
   } | null;
 };
 
