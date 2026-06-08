@@ -454,6 +454,12 @@ export default function AdminScreen({ onLogout }: Props) {
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
   const [missionFormError, setMissionFormError] = useState('');
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiType, setAiType] = useState('');
+  const [aiLanguage, setAiLanguage] = useState('en');
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
@@ -1174,7 +1180,10 @@ export default function AdminScreen({ onLogout }: Props) {
             {plan === 'free' ? (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
             ) : (
-              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); setAiPanelOpen(true); }}>✨ Generate</button>
+              </div>
             )}
             {isSuperAdmin && (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}>⚙️ Templates</button>
@@ -1334,6 +1343,73 @@ export default function AdminScreen({ onLogout }: Props) {
       setShowMissionForm(true);
     }
 
+    async function generateWithAI() {
+      if (!aiPrompt.trim()) return;
+      setAiGenerating(true);
+      setAiError('');
+      try {
+        const res = await fetch('/api/admin/ai-generate-mission', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            prompt: aiPrompt,
+            ...(aiType ? { type: aiType } : {}),
+            language: aiLanguage,
+          }),
+        });
+
+        if (res.status === 403) {
+          setAiError('pro_required');
+          return;
+        }
+        if (!res.ok) {
+          setAiError('Generation failed — try rephrasing your prompt.');
+          return;
+        }
+
+        const mission = await res.json() as {
+          type: string; name: string; icon: string; desc: string;
+          difficulty: 'easy' | 'medium' | 'hard'; maxPts: number;
+          triviaRounds?: { question: string; options: [string, string, string, string]; answer: string }[];
+          statements?: { text: string; answer: boolean }[];
+          closestQuestions?: { q: string; answer: string; unit: string; hint: string }[];
+          clues?: string[];
+          paAnswer?: string;
+          timelineItems?: { label: string; year: string }[];
+          photoPrompt?: string;
+        };
+
+        setEditingMissionId(null);
+        setMissionForm({
+          name: mission.name ?? '',
+          icon: mission.icon ?? '⭐',
+          desc: mission.desc ?? '',
+          difficulty: mission.difficulty ?? 'medium',
+          maxPts: mission.maxPts ?? 500,
+          type: mission.type ?? '',
+          triviaRounds: mission.triviaRounds ?? [],
+          statements: mission.statements ?? [],
+          closestQuestions: mission.closestQuestions ?? [],
+          clues: mission.clues ?? [],
+          paAnswer: mission.paAnswer ?? '',
+          timelineItems: mission.timelineItems ?? [],
+          photoPrompt: mission.photoPrompt ?? '',
+        });
+        setMissionFormError('');
+        setShowMissionForm(true);
+        setAiPanelOpen(false);
+        setAiPrompt('');
+        setAiType('');
+      } catch {
+        setAiError('Generation failed — try rephrasing your prompt.');
+      } finally {
+        setAiGenerating(false);
+      }
+    }
+
     async function saveMission() {
       const { validateMissionData, buildMissionData } = await import('@/lib/custom-missions');
       const validationError = validateMissionData(missionForm.type, {
@@ -1480,7 +1556,88 @@ export default function AdminScreen({ onLogout }: Props) {
 
           {/* Add / Edit form */}
           {!showMissionForm && (
-            <button className="btn btn-primary" style={{ width: '100%', padding: '12px' }} onClick={openNewForm}>+ Add Mission</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* AI generate button */}
+              <button
+                className="btn btn-ghost"
+                style={{ width: '100%', padding: '12px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                onClick={() => { setAiPanelOpen(v => !v); setAiError(''); }}
+              >
+                ✨ {aiPanelOpen ? 'Close AI Generator' : 'Generate with AI'}
+              </button>
+
+              {/* AI panel */}
+              {aiPanelOpen && (
+                <div className="card" style={{ marginBottom: '4px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '15px', color: '#7CBDD4' }}>✨ Generate with AI</h3>
+
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>DESCRIBE YOUR MISSION</label>
+                    <textarea
+                      rows={3}
+                      value={aiPrompt}
+                      onChange={e => setAiPrompt(e.target.value)}
+                      placeholder={'e.g. "5 trivia questions about football", "Apple product timeline", "let AI choose a type about our company GKN Aerospace"'}
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text)', fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>TYPE (OPTIONAL)</label>
+                      <select
+                        value={aiType}
+                        onChange={e => setAiType(e.target.value)}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value="">Let AI choose</option>
+                        <option value="trivia_quiz">Trivia Quiz</option>
+                        <option value="truefalse">True or False</option>
+                        <option value="closest_wins">Closest Wins</option>
+                        <option value="pa_sparet">På Spåret</option>
+                        <option value="timeline">Timeline</option>
+                        <option value="photo">Photo</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>LANGUAGE</label>
+                      <select
+                        value={aiLanguage}
+                        onChange={e => setAiLanguage(e.target.value)}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value="en">English</option>
+                        <option value="sv">Svenska</option>
+                        <option value="no">Norsk</option>
+                        <option value="da">Dansk</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {aiError === 'pro_required' ? (
+                    <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '12px' }}>
+                      AI mission generation requires Pro.{' '}
+                      <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade →</span>
+                    </div>
+                  ) : aiError ? (
+                    <div style={{ fontSize: '13px', color: 'var(--danger, #e74c3c)', marginBottom: '12px' }}>{aiError}</div>
+                  ) : null}
+
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '12px', opacity: (!aiPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
+                    disabled={!aiPrompt.trim() || aiGenerating}
+                    onClick={generateWithAI}
+                  >
+                    {aiGenerating ? '✨ Generating…' : '✨ Generate'}
+                  </button>
+                </div>
+              )}
+
+              <button className="btn btn-ghost" style={{ width: '100%', padding: '12px' }} onClick={openNewForm}>+ Add Mission Manually</button>
+            </div>
           )}
 
           {showMissionForm && (
