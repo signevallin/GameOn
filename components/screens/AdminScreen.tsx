@@ -468,6 +468,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
+  const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
@@ -1574,22 +1575,42 @@ export default function AdminScreen({ onLogout }: Props) {
                       <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                         <span style={{ fontSize: '18px', width: '28px', textAlign: 'center' }}>{cat.emoji}</span>
                         <span style={{ flex: 1, fontSize: '14px' }}>{cat.name}</span>
-                        <button
-                          onClick={async () => {
-                            const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, {
-                              method: 'DELETE',
-                              headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
-                            });
-                            if (res.ok) {
-                              setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
-                              setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
-                            }
-                          }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }}
-                          title="Delete category"
-                        >
-                          ×
-                        </button>
+                        {pendingDeleteCategoryId === cat.id ? (
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              onClick={async () => {
+                                const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, {
+                                  method: 'DELETE',
+                                  headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+                                });
+                                if (res.ok) {
+                                  setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
+                                  setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
+                                } else {
+                                  setCategoryError('Failed to delete category.');
+                                }
+                                setPendingDeleteCategoryId(null);
+                              }}
+                              style={{ fontSize: '11px', color: 'var(--danger, #e74c3c)', background: 'none', border: '1px solid var(--danger, #e74c3c)', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px', fontFamily: 'inherit' }}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={() => setPendingDeleteCategoryId(null)}
+                              style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setPendingDeleteCategoryId(cat.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }}
+                            title="Delete category"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
                     ))}
 
