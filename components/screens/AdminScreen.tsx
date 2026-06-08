@@ -7,6 +7,7 @@ import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import type { GameTemplate } from '@/lib/templates';
+import MysteryBoxAR from '@/components/MysteryBoxAR';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -83,6 +84,12 @@ type PowerUpsCardProps = {
   onHotPotato: () => void;
   hotPotatoLoading: boolean;
   hotPotatoActive: HotPotatoState;
+  // mystery box
+  mysteryBoxActive: MysteryBoxState;
+  mysteryBoxSecsLeft: number | null;
+  mysteryBoxLoading: boolean;
+  onLaunchMysteryBox: () => void;
+  activeGameStatus: string | undefined;
 };
 
 function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
@@ -98,9 +105,29 @@ function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
   return secondsLeft;
 }
 
+type MysteryBoxState = {
+  created_at: string;
+  expires_at: string;
+  claimed_by: string | null;
+} | null;
+
+function useMysteryBoxCountdown(mb: MysteryBoxState) {
+  const [secsLeft, setSecsLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (!mb || mb.claimed_by !== null) { setSecsLeft(null); return; }
+    const endTime = new Date(mb.expires_at).getTime();
+    const tick = () => setSecsLeft(Math.max(0, Math.ceil((endTime - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [mb]);
+  return secsLeft;
+}
+
 function PowerUpsCard({
   teams, gameId: _gameId, gameMissionIds, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
   hotPotatoMissionId, setHotPotatoMissionId, onHotPotato, hotPotatoLoading, hotPotatoActive,
+  mysteryBoxActive, mysteryBoxSecsLeft, mysteryBoxLoading, onLaunchMysteryBox, activeGameStatus,
 }: PowerUpsCardProps) {
   const hotPotatoSecondsLeft = useHotPotatoCountdown(hotPotatoActive);
 
@@ -309,6 +336,52 @@ function PowerUpsCard({
           </div>
         )}
       </div>
+
+      {/* ── MYSTERY BOX ───────────────────────────────────── */}
+      <div style={{
+        background: mysteryBoxActive && mysteryBoxActive.claimed_by === null
+          ? 'rgba(222,187,107,0.08)' : 'var(--card)',
+        border: `1px solid ${mysteryBoxActive && mysteryBoxActive.claimed_by === null
+          ? 'rgba(222,187,107,0.6)' : 'var(--border)'}`,
+        borderRadius: '12px', padding: '16px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <span style={{ fontSize: '22px' }}>🎁</span>
+          <div style={{ fontSize: '14px', fontWeight: 800, color: mysteryBoxActive && mysteryBoxActive.claimed_by === null ? 'var(--gold)' : 'var(--text)' }}>
+            AR Mystery Box
+          </div>
+          {mysteryBoxActive && mysteryBoxActive.claimed_by === null && mysteryBoxSecsLeft !== null && (
+            <span style={{
+              marginLeft: 'auto',
+              fontSize: '13px', fontWeight: 800,
+              color: mysteryBoxSecsLeft <= 30 ? 'var(--accent2)' : 'var(--gold)',
+              background: 'rgba(222,187,107,0.15)',
+              padding: '3px 10px', borderRadius: '20px',
+            }}>
+              ⏱ {fmtTimer(mysteryBoxSecsLeft)}
+            </span>
+          )}
+        </div>
+
+        {mysteryBoxActive && mysteryBoxActive.claimed_by === null ? (
+          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>
+            Box is live — teams are racing to open it!
+          </p>
+        ) : mysteryBoxActive?.claimed_by ? (
+          <p style={{ fontSize: '12px', color: 'var(--accent3)', margin: 0 }}>
+            ✓ Claimed by a team
+          </p>
+        ) : (
+          <button
+            className="btn btn-primary"
+            style={{ width: '100%', background: 'var(--gold)', borderColor: 'var(--gold)', color: '#000' }}
+            disabled={mysteryBoxLoading || activeGameStatus !== 'active'}
+            onClick={onLaunchMysteryBox}
+          >
+            {mysteryBoxLoading ? '...' : '🎁 Drop AR Mystery Box'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -402,6 +475,10 @@ export default function AdminScreen({ onLogout }: Props) {
   const [hotPotatoMissionId, setHotPotatoMissionId] = useState('');
   const [hotPotatoLoading, setHotPotatoLoading] = useState(false);
   const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
+  const [mysteryBoxActive, setMysteryBoxActive] = useState<MysteryBoxState>(null);
+  const [showMysteryBoxAR, setShowMysteryBoxAR] = useState(false);
+  const [mysteryBoxLoading, setMysteryBoxLoading] = useState(false);
+  const mysteryBoxSecsLeft = useMysteryBoxCountdown(mysteryBoxActive);
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   // Ref so closures (polling interval, startOrStop) always read the latest token
@@ -564,6 +641,7 @@ export default function AdminScreen({ onLogout }: Props) {
     }
     if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     setHotPotatoActive(sd.hot_potato ?? null);
+    setMysteryBoxActive(sd.mystery_box ?? null);
   }, [POST]);
 
   useEffect(() => { loadGames(); }, [loadGames]);
@@ -641,6 +719,16 @@ export default function AdminScreen({ onLogout }: Props) {
         const freshSd = await postWithAuth('/api/settings', { gameId }).then(r => r.json());
         if (freshSd.powerups_used) setPowerupsUsed(freshSd.powerups_used);
         setHotPotatoActive(freshSd.hot_potato ?? null);
+      }
+
+      const mb = sd.mystery_box ?? null;
+      setMysteryBoxActive(mb);
+
+      // Auto-expire mystery box when countdown reaches 0
+      if (mb && mb.claimed_by === null && new Date(mb.expires_at) <= new Date()) {
+        await postWithAuth('/api/admin/mystery-box', { gameId, action: 'expire' });
+        const freshSd = await postWithAuth('/api/settings', { gameId }).then(r => r.json());
+        setMysteryBoxActive(freshSd.mystery_box ?? null);
       }
     }
     poll();
@@ -783,6 +871,31 @@ export default function AdminScreen({ onLogout }: Props) {
       setHotPotatoMissionId('');
     } finally {
       setHotPotatoLoading(false);
+    }
+  }
+
+  async function launchMysteryBox() {
+    if (!activeGame) return;
+    setShowMysteryBoxAR(true);
+  }
+
+  async function onMysteryBoxPlaced() {
+    if (!activeGame) return;
+    setShowMysteryBoxAR(false);
+    setMysteryBoxLoading(true);
+    try {
+      const res = await fetch('/api/admin/mystery-box', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({ gameId: activeGame.id }),
+        cache: 'no-store',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMysteryBoxActive({ created_at: new Date().toISOString(), expires_at: data.expiresAt, claimed_by: null });
+      }
+    } finally {
+      setMysteryBoxLoading(false);
     }
   }
 
@@ -3217,6 +3330,11 @@ export default function AdminScreen({ onLogout }: Props) {
               onHotPotato={activateHotPotato}
               hotPotatoLoading={hotPotatoLoading}
               hotPotatoActive={hotPotatoActive}
+              mysteryBoxActive={mysteryBoxActive}
+              mysteryBoxSecsLeft={mysteryBoxSecsLeft}
+              mysteryBoxLoading={mysteryBoxLoading}
+              onLaunchMysteryBox={launchMysteryBox}
+              activeGameStatus={activeGame.status}
             />
           </div>
         )}
@@ -3493,6 +3611,13 @@ export default function AdminScreen({ onLogout }: Props) {
             </button>
           </nav>
         </>
+      )}
+      {showMysteryBoxAR && (
+        <MysteryBoxAR
+          mode="place"
+          onPlace={onMysteryBoxPlaced}
+          onClose={() => setShowMysteryBoxAR(false)}
+        />
       )}
     </>
   );
