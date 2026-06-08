@@ -67,6 +67,7 @@ export async function POST(req: Request) {
 
   // Create game
   const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language } = body;
+  if (!name?.trim()) return NextResponse.json({ error: 'Enter a game name.' }, { status: 400 });
   if (!missions?.length) return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
 
   let key = '';
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
     .from('games')
     .insert({
       game_key: key,
-      name: name?.trim() || null,
+      name: name.trim(),
       missions,
       duration_minutes: duration_minutes ?? 45,
       mission_max_pts: mission_max_pts ?? {},

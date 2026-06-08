@@ -664,6 +664,7 @@ export default function AdminScreen({ onLogout }: Props) {
   }, [activeGameId]);
 
   async function createGame() {
+    if (!gameName.trim()) { setCreateError('Enter a game name.'); return; }
     if (!selectedMissions.length) { setCreateError('Select at least one mission.'); return; }
     setCreating(true); setCreateError('');
     // Only include custom pts that differ from the mission default
