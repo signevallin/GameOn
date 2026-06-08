@@ -5,7 +5,11 @@ import { getSubscription } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+if (!ANTHROPIC_API_KEY) {
+  throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+}
+const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `You are a game mission generator for GameOn, a team trivia and activity game platform.
 
@@ -158,29 +162,50 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { prompt, type, language } = body as {
-    prompt: string;
-    type?: string;
-    language: string;
-  };
+  let body: { prompt?: unknown; type?: unknown; language?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+  }
+  const { prompt, type, language } = body;
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return NextResponse.json({ error: 'prompt_required' }, { status: 400 });
   }
 
-  const typeInstruction = type ? `Mission type: ${type}` : 'Choose the best mission type for this content.';
+  if (!language || typeof language !== 'string') {
+    return NextResponse.json({ error: 'language_required' }, { status: 400 });
+  }
+
+  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo'];
+  if (type !== undefined && type !== null && typeof type === 'string' && !VALID_TYPES.includes(type)) {
+    return NextResponse.json({ error: 'invalid_type' }, { status: 400 });
+  }
+
+  const typeInstruction = (typeof type === 'string' && type) ? `Mission type: ${type}` : 'Choose the best mission type for this content.';
   const userMessage = `${typeInstruction}
 Language: ${language}
 Topic/description: ${prompt}`;
 
   // First attempt
-  let raw = await callClaude(userMessage);
+  let raw: string;
+  try {
+    raw = await callClaude(userMessage);
+  } catch (err) {
+    console.error('Claude API error:', err);
+    return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+  }
   let parsed = parseJSON(raw);
 
   // Retry once if invalid JSON
   if (!parsed) {
-    raw = await callClaude(userMessage + '\n\nIMPORTANT: Return ONLY the JSON object. No other text.');
+    try {
+      raw = await callClaude(userMessage + '\n\nIMPORTANT: Return ONLY the JSON object. No other text.');
+    } catch (err) {
+      console.error('Claude API retry error:', err);
+      return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+    }
     parsed = parseJSON(raw);
   }
 
