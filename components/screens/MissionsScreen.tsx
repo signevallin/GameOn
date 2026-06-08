@@ -959,7 +959,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 </div>
 
                 {/* Category cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', paddingBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridAutoRows: '1fr', gap: '12px', paddingBottom: '24px' }}>
                   {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
                     const cat = SUPER_CATEGORIES[key];
                     const allCatDone = done === missions.length;
@@ -977,6 +977,8 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           position: 'relative',
                           overflow: 'hidden',
                           minHeight: '120px',
+                          height: '100%',
+                          boxSizing: 'border-box',
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
@@ -1001,7 +1003,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   {visibleCustomMissions.length > 0 && customCategoryName && selectedCategory === null && (
                     <div
                       className="card"
-                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px' }}
+                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px', height: '100%', boxSizing: 'border-box' }}
                       onClick={() => setSelectedCategory('__custom__' as SuperCategoryKey)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
