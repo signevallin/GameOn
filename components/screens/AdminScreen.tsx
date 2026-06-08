@@ -456,6 +456,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
   const [missionFormError, setMissionFormError] = useState('');
+  const [missionCategoryId, setMissionCategoryId] = useState<string | null>(null);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiType, setAiType] = useState('');
@@ -1326,6 +1327,7 @@ export default function AdminScreen({ onLogout }: Props) {
       setEditingMissionId(null);
       setMissionForm(EMPTY_FORM);
       setMissionFormError('');
+      setMissionCategoryId(null);
       setShowMissionForm(true);
     }
 
@@ -1352,6 +1354,7 @@ export default function AdminScreen({ onLogout }: Props) {
         photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
       });
       setMissionFormError('');
+      setMissionCategoryId(cm.category_id ?? null);
       setShowMissionForm(true);
     }
 
@@ -1492,6 +1495,7 @@ export default function AdminScreen({ onLogout }: Props) {
         max_pts: missionForm.maxPts,
         type: missionForm.type,
         data,
+        category_id: missionCategoryId,
       };
 
       if (editingMissionId) {
@@ -1778,6 +1782,21 @@ export default function AdminScreen({ onLogout }: Props) {
                 <label style={labelStyle}>DESCRIPTION</label>
                 <input type="text" value={missionForm.desc} onChange={e => setF({ desc: e.target.value })} placeholder="What teams see before starting" style={inputStyle} />
               </div>
+              {adminCategories.length > 0 && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>CATEGORY</label>
+                  <select
+                    value={missionCategoryId ?? ''}
+                    onChange={e => setMissionCategoryId(e.target.value || null)}
+                    style={inputStyle}
+                  >
+                    <option value="">(No category)</option>
+                    {adminCategories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={labelStyle}>DIFFICULTY</label>
