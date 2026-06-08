@@ -70,7 +70,15 @@
     "robin_hood_from_msg": "{{stolen}} point blev stjålet fra dit hold og givet til det svageste hold!",
     "robin_hood_to_msg": "Du modtog {{stolen}} stjålne point!",
     "robin_hood_self_msg": "Stjal {{stolen}} point fra {{target}} og gav dem til {{recipient}}!",
-    "duel_received_msg": "Modstanderen svarede rigtigt på {{correct}}/3 spørgsmål og stjal {{stolen}} point fra dig!"
+    "duel_received_msg": "Modstanderen svarede rigtigt på {{correct}}/3 spørgsmål og stjal {{stolen}} point fra dig!",
+    "mystery_box": "MYSTERY BOX!",
+    "mystery_box_won": "DU FIK DEN!",
+    "mystery_box_taken": "FOR LANGSOM!",
+    "mystery_box_expired": "DEN FORSVANDT…",
+    "mystery_box_msg": "En mystery box dukkede op! Kap om at åbne den!",
+    "mystery_box_won_msg": "Du fik mystery boksen! +1 {{powerup}}-opladning låst op.",
+    "mystery_box_taken_msg": "{{team}} greb mystery boksen! 💨",
+    "mystery_box_expired_msg": "Mystery boksen forsvandt… ingen var hurtig nok ⏰"
   },
   "leaderboard": {
     "yourTeam": "Dit hold",

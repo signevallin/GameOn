@@ -70,7 +70,15 @@
     "robin_hood_from_msg": "{{stolen}} poäng stals från ditt lag och gavs till det svagaste laget!",
     "robin_hood_to_msg": "Du fick {{stolen}} stulna poäng!",
     "robin_hood_self_msg": "Stal {{stolen}} poäng från {{target}} och gav dem till {{recipient}}!",
-    "duel_received_msg": "Motståndaren svarade rätt på {{correct}}/3 frågor och stal {{stolen}} poäng från dig!"
+    "duel_received_msg": "Motståndaren svarade rätt på {{correct}}/3 frågor och stal {{stolen}} poäng från dig!",
+    "mystery_box": "MYSTERY BOX!",
+    "mystery_box_won": "DU FICK DEN!",
+    "mystery_box_taken": "FÖR LÅNGSAMT!",
+    "mystery_box_expired": "DEN FÖRSVANN…",
+    "mystery_box_msg": "En mystery box dök upp! Tävla om att öppna den!",
+    "mystery_box_won_msg": "Du fick mystery boxen! +1 {{powerup}}-laddning upplåst.",
+    "mystery_box_taken_msg": "{{team}} tog mystery boxen! 💨",
+    "mystery_box_expired_msg": "Mystery boxen försvann… ingen var snabb nog ⏰"
   },
   "leaderboard": {
     "yourTeam": "Ditt team",

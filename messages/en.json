@@ -70,7 +70,15 @@
     "robin_hood_from_msg": "{{stolen}} points were stolen from your team and given to the poorest team!",
     "robin_hood_to_msg": "You received {{stolen}} stolen points!",
     "robin_hood_self_msg": "Stole {{stolen}} pts from {{target}} and gave them to {{recipient}}!",
-    "duel_received_msg": "The opponent answered {{correct}}/3 questions correctly and stole {{stolen}} points from you!"
+    "duel_received_msg": "The opponent answered {{correct}}/3 questions correctly and stole {{stolen}} points from you!",
+    "mystery_box": "MYSTERY BOX!",
+    "mystery_box_won": "YOU GOT IT!",
+    "mystery_box_taken": "TOO SLOW!",
+    "mystery_box_expired": "IT DISAPPEARED…",
+    "mystery_box_msg": "A mystery box appeared! Race to open it!",
+    "mystery_box_won_msg": "You got the mystery box! +1 {{powerup}} charge unlocked.",
+    "mystery_box_taken_msg": "{{team}} grabbed the mystery box! 💨",
+    "mystery_box_expired_msg": "The mystery box disappeared… no one was fast enough ⏰"
   },
   "leaderboard": {
     "yourTeam": "Your team",
