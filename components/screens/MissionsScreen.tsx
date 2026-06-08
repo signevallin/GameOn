@@ -5,6 +5,7 @@ import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
+import MysteryBoxAR from '@/components/MysteryBoxAR';
 
 type Notification = { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> };
 
@@ -105,6 +106,9 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
     point_steal_to:     { emoji: '🤑', title: t('notifications.point_steal'),        btnLabel: t('notifications.btn_yesss'),  color: 'var(--accent3)' },
     hot_potato:         { emoji: '💣', title: t('notifications.hot_potato'),         btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'   },
     hot_potato_penalty: { emoji: '💥', title: t('notifications.hot_potato_penalty'), btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    mystery_box_won:     { emoji: '🎁', title: t('notifications.mystery_box_won'),     btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'    },
+    mystery_box_taken:   { emoji: '💨', title: t('notifications.mystery_box_taken'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    mystery_box_expired: { emoji: '⏰', title: t('notifications.mystery_box_expired'), btnLabel: t('notifications.btn_ok'),     color: 'var(--muted)'   },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
@@ -505,6 +509,12 @@ function formatTime(s: number) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+function fmtMins(secs: number) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 function formatElapsed(ms: number) {
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);
@@ -592,10 +602,30 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
+  const [showMysteryBoxAR, setShowMysteryBoxAR] = useState(false);
+  const mysteryBoxExpiresAtRef = useRef<number>(0);
+  const [mysteryBoxSecsLeft, setMysteryBoxSecsLeft] = useState(0);
 
   useEffect(() => {
     if (team.pending_notification) setNotification(team.pending_notification);
   }, [team.pending_notification]);
+
+  // Drive countdown for mystery_box banner
+  useEffect(() => {
+    if (!notification || notification.type !== 'mystery_box') return;
+    const expiresAt = notification.params?.expiresAt as string | undefined;
+    mysteryBoxExpiresAtRef.current = expiresAt
+      ? new Date(expiresAt).getTime()
+      : Date.now() + 2 * 60 * 1000;
+
+    const tick = () => {
+      const secs = Math.max(0, Math.ceil((mysteryBoxExpiresAtRef.current - Date.now()) / 1000));
+      setMysteryBoxSecsLeft(secs);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [notification]);
 
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
   const visibleCustomMissions = customMissions.filter(m => game.missions.includes(m.id));
@@ -649,7 +679,66 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
   return (
     <>
-      {notification && (
+      {notification && notification.type === 'mystery_box' && !showMysteryBoxAR && (
+        /* Mystery box countdown banner */
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: '20px', padding: '32px',
+        }}>
+          <style>{`@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
+          <div style={{ fontSize: '72px', animation: 'float 2s ease-in-out infinite' }}>📦</div>
+          <h2 style={{ color: 'var(--gold)', letterSpacing: '2px', textAlign: 'center' }}>
+            MYSTERY BOX!
+          </h2>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', textAlign: 'center', maxWidth: '260px' }}>
+            A mystery box appeared! Race to open it before other teams!
+          </p>
+          <div style={{
+            fontSize: '36px', fontWeight: 800,
+            color: mysteryBoxSecsLeft <= 30 ? 'var(--accent2)' : 'var(--gold)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            ⏱ {fmtMins(mysteryBoxSecsLeft)}
+          </div>
+          {mysteryBoxSecsLeft > 0 ? (
+            <button
+              className="btn btn-primary"
+              style={{ fontSize: '16px', padding: '14px 32px', background: 'var(--gold)', borderColor: 'var(--gold)', color: '#000' }}
+              onClick={() => setShowMysteryBoxAR(true)}
+            >
+              📷 Open AR Camera
+            </button>
+          ) : (
+            <p style={{ color: 'var(--accent2)', fontSize: '14px' }}>Box expired ⏰</p>
+          )}
+          <button
+            style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+            onClick={() => setNotification(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {notification && notification.type === 'mystery_box' && showMysteryBoxAR && (
+        <MysteryBoxAR
+          mode="claim"
+          teamId={team.id}
+          onClaim={(result) => {
+            setShowMysteryBoxAR(false);
+            setNotification(null);
+            if (result === 'won') {
+              // notification will arrive via poll as mystery_box_won
+            }
+          }}
+          onClose={() => setShowMysteryBoxAR(false)}
+        />
+      )}
+
+      {notification && notification.type !== 'mystery_box' && (
         <NotificationOverlay
           notification={notification}
           teamId={team.id}

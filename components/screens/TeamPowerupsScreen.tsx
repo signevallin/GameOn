@@ -41,6 +41,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
 
   const rivals = teams.filter(t => t.id !== team.id);
   const used = team.team_powerups_used ?? [];
+  const extra = team.extra_powerups ?? [];
 
   async function send() {
     if (!selected) return;
@@ -204,7 +205,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {POWERUPS.map(pu => {
-          const isUsed = used.includes(pu.id);
+          const isUsed = used.includes(pu.id) && !extra.includes(pu.id);
           const isSelected = selected?.id === pu.id;
           return (
             <div key={pu.id}>
@@ -233,7 +234,9 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
                 </div>
                 {isUsed
                   ? <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>{t('powerups.usedTag')}</span>
-                  : <span style={{ fontSize: '16px', color: pu.color, flexShrink: 0 }}>{isSelected ? '▾' : '▸'}</span>
+                  : extra.includes(pu.id)
+                    ? <span style={{ fontSize: '11px', color: 'var(--gold)', background: 'rgba(222,187,107,0.15)', border: '1px solid rgba(222,187,107,0.4)', borderRadius: '20px', padding: '2px 8px', flexShrink: 0 }}>+1 EXTRA</span>
+                    : <span style={{ fontSize: '16px', color: pu.color, flexShrink: 0 }}>{isSelected ? '▾' : '▸'}</span>
                 }
               </div>
 
