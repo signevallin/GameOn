@@ -29,6 +29,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
 
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (category_id && (typeof category_id !== 'string' || !UUID_RE.test(category_id))) {
+    return NextResponse.json({ error: 'Invalid category_id.' }, { status: 400 });
+  }
+
   // Only include fields that were explicitly provided
   const updateFields: Record<string, unknown> = {};
   if (name !== undefined) updateFields.name = name.trim();

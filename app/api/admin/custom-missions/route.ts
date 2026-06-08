@@ -37,6 +37,11 @@ export async function POST(req: Request) {
   if (!name?.trim()) return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
   if (!type) return NextResponse.json({ error: 'Type is required.' }, { status: 400 });
 
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (category_id && (typeof category_id !== 'string' || !UUID_RE.test(category_id))) {
+    return NextResponse.json({ error: 'Invalid category_id.' }, { status: 400 });
+  }
+
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
     .insert({
