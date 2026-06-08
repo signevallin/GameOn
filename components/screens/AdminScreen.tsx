@@ -450,8 +450,6 @@ export default function AdminScreen({ onLogout }: Props) {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
-  const [customCategoryName, setCustomCategoryName] = useState('My Missions');
-  const [categoryNameSaving, setCategoryNameSaving] = useState(false);
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
@@ -1011,7 +1009,6 @@ export default function AdminScreen({ onLogout }: Props) {
     const catsData = await catsRes.json();
     if (missionsData.missions) {
       setAdminCustomMissions(missionsData.missions);
-      if (missionsData.missions.length > 0) setCustomCategoryName(missionsData.missions[0].category_name);
     }
     if (catsData.categories) setAdminCategories(catsData.categories);
   }
@@ -1316,14 +1313,6 @@ export default function AdminScreen({ onLogout }: Props) {
 
   // ── MY MISSIONS ──
   if (view === 'missions') {
-    async function saveCategoryName() {
-      if (!customCategoryName.trim()) return;
-      setCategoryNameSaving(true);
-      await POST('/api/admin/custom-missions/category', { category_name: customCategoryName.trim() });
-      setCategoryNameSaving(false);
-      loadAdminCustomMissions();
-    }
-
     function openNewForm() {
       setEditingMissionId(null);
       setMissionForm(EMPTY_FORM);
@@ -1489,7 +1478,6 @@ export default function AdminScreen({ onLogout }: Props) {
         photoPrompt: missionForm.photoPrompt,
       });
       const payload = {
-        category_name: customCategoryName,
         name: missionForm.name.trim(),
         icon: missionForm.icon || '⭐',
         desc: missionForm.desc,
