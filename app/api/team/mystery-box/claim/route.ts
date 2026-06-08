@@ -52,16 +52,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Already claimed.', code: 'already_claimed' }, { status: 409 });
   }
 
-  // Assign random power-up and mark claimed
+  // Assign random power-up
   const powerup = POWERUP_POOL[Math.floor(Math.random() * POWERUP_POOL.length)];
 
-  await supabase.from('games').update({
-    mystery_box: { ...mb, claimed_by: teamId },
-    updated_at: new Date().toISOString(),
-  }).eq('id', team.game_id);
+  // Atomic claim: only update if claimed_by is still null (race condition guard)
+  const { count, error: claimErr } = await supabase
+    .from('games')
+    .update({
+      mystery_box: { ...mb, claimed_by: teamId },
+      updated_at: new Date().toISOString(),
+    }, { count: 'exact' })
+    .eq('id', team.game_id)
+    .filter('mystery_box->>claimed_by', 'is', null);
 
+  if (claimErr) return NextResponse.json({ error: 'Failed to claim mystery box.' }, { status: 500 });
+  if (!count || count === 0) {
+    return NextResponse.json({ error: 'Already claimed.', code: 'already_claimed' }, { status: 409 });
+  }
+
+  // Grant power-up to winning team
   const extraPowerups: string[] = team.extra_powerups ?? [];
-  await supabase.from('teams').update({
+  const { error: teamUpdateErr } = await supabase.from('teams').update({
     extra_powerups: [...extraPowerups, powerup],
     pending_notification: {
       type: 'mystery_box_won',
@@ -70,19 +81,21 @@ export async function POST(req: Request) {
     },
   }).eq('id', teamId);
 
-  // Notify all other teams
+  if (teamUpdateErr) return NextResponse.json({ error: 'Failed to update team.' }, { status: 500 });
+
+  // Notify all other teams (best-effort, fire-and-forget)
   const { data: allTeams } = await supabase
     .from('teams').select('id').eq('game_id', team.game_id).neq('id', teamId);
   if (allTeams) {
-    for (const t of allTeams) {
-      await supabase.from('teams').update({
+    await Promise.all(allTeams.map((t) =>
+      supabase.from('teams').update({
         pending_notification: {
           type: 'mystery_box_taken',
           msgKey: 'mystery_box_taken_msg',
           params: { team: team.name },
         },
-      }).eq('id', t.id);
-    }
+      }).eq('id', t.id)
+    ));
   }
 
   return NextResponse.json({ ok: true, powerup });
