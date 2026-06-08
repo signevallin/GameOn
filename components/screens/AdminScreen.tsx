@@ -2399,55 +2399,72 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
               );
             })}
-            {/* ── Custom missions ── */}
+            {/* ── Custom missions — grouped by category ── */}
             {adminCustomMissions.length > 0 && (() => {
-              const catName = adminCustomMissions[0].category_name;
-              const allOn = adminCustomMissions.every(m => selectedMissions.includes(m.id));
+              const buckets = new Map<string | null, typeof adminCustomMissions>();
+              for (const m of adminCustomMissions) {
+                const key = m.category_id ?? null;
+                if (!buckets.has(key)) buckets.set(key, []);
+                buckets.get(key)!.push(m);
+              }
+              const groups: { cat: AdminCategory | null; missions: typeof adminCustomMissions }[] = [];
+              for (const cat of adminCategories) {
+                if (buckets.has(cat.id)) groups.push({ cat, missions: buckets.get(cat.id)! });
+              }
+              if (buckets.has(null)) groups.push({ cat: null, missions: buckets.get(null)! });
+
               return (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
-                      ⭐ {catName.toUpperCase()}
-                    </span>
-                    <button
-                      onClick={() => {
-                        const ids = adminCustomMissions.map(m => m.id);
-                        setSelectedMissions(prev => allOn
-                          ? prev.filter(x => !ids.includes(x))
-                          : [...new Set([...prev, ...ids])]);
-                      }}
-                      style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
-                    >
-                      {allOn ? 'Deselect all' : 'Select all'}
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {adminCustomMissions.map(m => {
-                      const on = selectedMissions.includes(m.id);
-                      const pts = missionMaxPts[m.id] ?? m.max_pts;
-                      return (
-                        <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? '#9b59b6' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45 }}>
-                          <div
+                <>
+                  {groups.map(({ cat, missions }) => {
+                    const label = cat ? `${cat.emoji} ${cat.name.toUpperCase()}` : '📋 ÖVRIGT';
+                    const groupIds = missions.map(m => m.id);
+                    const allOn = groupIds.every(id => selectedMissions.includes(id));
+                    return (
+                      <div key={cat?.id ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
+                            {label}
+                          </span>
+                          <button
                             onClick={() => {
-                              setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
-                              if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                              setSelectedMissions(prev => allOn
+                                ? prev.filter(x => !groupIds.includes(x))
+                                : [...new Set([...prev, ...groupIds])]);
                             }}
-                            style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                            style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
                           >
-                            <span style={{ fontSize: '18px' }}>{m.icon}</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
-                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
-                            </div>
-                            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? '#9b59b6' : 'var(--border)', position: 'relative', flexShrink: 0 }}>
-                              <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
-                            </div>
-                          </div>
+                            {allOn ? 'Deselect all' : 'Select all'}
+                          </button>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {missions.map(m => {
+                            const on = selectedMissions.includes(m.id);
+                            return (
+                              <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? '#9b59b6' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45 }}>
+                                <div
+                                  onClick={() => {
+                                    setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
+                                    if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                                  }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                                >
+                                  <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
+                                  </div>
+                                  <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? '#9b59b6' : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                                    <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
               );
             })()}
           </div>
