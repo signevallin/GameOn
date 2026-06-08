@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     pending_notification: {
       type: 'mystery_box_won',
       msgKey: 'mystery_box_won_msg',
-      params: { powerup: powerup.replace(/_/g, ' ') },
+      params: { powerup },
     },
   }).eq('id', teamId);
 
