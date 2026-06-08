@@ -81,6 +81,19 @@ export async function DELETE(req: Request) {
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
   const supabase = getSupabase();
+
+  // Verify the category exists and belongs to this admin
+  const { data: existing } = await supabase
+    .from('custom_mission_categories')
+    .select('id')
+    .eq('id', id)
+    .eq('user_id', admin.userId)
+    .single();
+
+  if (!existing) {
+    return NextResponse.json({ error: 'Not found.' }, { status: 404 });
+  }
+
   const { error } = await supabase
     .from('custom_mission_categories')
     .delete()
