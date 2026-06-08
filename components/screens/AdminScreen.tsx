@@ -316,6 +316,8 @@ function PowerUpsCard({
 type Props = { onLogout: () => void };
 type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates';
 
+type AdminCategory = { id: string; name: string; emoji: string; sort_order: number };
+
 type MissionFormData = {
   name: string;
   icon: string;
@@ -460,6 +462,12 @@ export default function AdminScreen({ onLogout }: Props) {
   const [aiLanguage, setAiLanguage] = useState('en');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [categoryFormName, setCategoryFormName] = useState('');
+  const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
@@ -988,19 +996,21 @@ export default function AdminScreen({ onLogout }: Props) {
   }
 
   async function loadAdminCustomMissions() {
-    const res = await fetch('/api/admin/custom-missions', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-      },
-      cache: 'no-store',
-    });
-    const data = await res.json();
-    if (data.missions) {
-      setAdminCustomMissions(data.missions);
-      if (data.missions.length > 0) setCustomCategoryName(data.missions[0].category_name);
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+    };
+    const [missionsRes, catsRes] = await Promise.all([
+      fetch('/api/admin/custom-missions', { method: 'GET', headers, cache: 'no-store' }),
+      fetch('/api/admin/mission-categories', { method: 'GET', headers }),
+    ]);
+    const missionsData = await missionsRes.json();
+    const catsData = await catsRes.json();
+    if (missionsData.missions) {
+      setAdminCustomMissions(missionsData.missions);
+      if (missionsData.missions.length > 0) setCustomCategoryName(missionsData.missions[0].category_name);
     }
+    if (catsData.categories) setAdminCategories(catsData.categories);
   }
 
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
@@ -1344,6 +1354,32 @@ export default function AdminScreen({ onLogout }: Props) {
       setShowMissionForm(true);
     }
 
+    async function saveCategory() {
+      if (!categoryFormName.trim()) return;
+      setCategorySaving(true);
+      setCategoryError('');
+      try {
+        const res = await fetch('/api/admin/mission-categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({ name: categoryFormName.trim(), emoji: categoryFormEmoji || '📋' }),
+        });
+        if (!res.ok) { setCategoryError('Failed to save category.'); return; }
+        const data = await res.json() as { category: AdminCategory };
+        setAdminCategories(prev => [...prev, data.category]);
+        setCategoryFormOpen(false);
+        setCategoryFormName('');
+        setCategoryFormEmoji('📋');
+      } catch {
+        setCategoryError('Failed to save category.');
+      } finally {
+        setCategorySaving(false);
+      }
+    }
+
     async function generateWithAI() {
       if (!aiPrompt.trim()) return;
       setAiGenerating(true);
@@ -1517,26 +1553,76 @@ export default function AdminScreen({ onLogout }: Props) {
             <h2 style={{ margin: 0 }}>My Missions</h2>
           </div>
 
-          {/* Category name */}
+          {/* Categories manager */}
           <div className="card" style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>CATEGORY NAME (shown to teams)</label>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <input
-                type="text"
-                value={customCategoryName}
-                onChange={e => setCustomCategoryName(e.target.value)}
-                placeholder="e.g. Volvo Cars"
-                style={{ ...inputStyle, flex: 1 }}
-              />
-              <button
-                className="btn btn-primary"
-                style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0 }}
-                disabled={categoryNameSaving || !customCategoryName.trim()}
-                onClick={saveCategoryName}
-              >
-                {categoryNameSaving ? '...' : 'Save'}
-              </button>
-            </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <label style={labelStyle}>CATEGORIES</label>
+                      <button
+                        className="btn btn-ghost"
+                        style={{ fontSize: '11px', padding: '4px 10px' }}
+                        onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); }}
+                      >
+                        {categoryFormOpen ? '✕ Cancel' : '+ New category'}
+                      </button>
+                    </div>
+
+                    {adminCategories.length === 0 && !categoryFormOpen && (
+                      <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 8px' }}>No categories yet. Create one to organise your missions.</p>
+                    )}
+                    {adminCategories.map(cat => (
+                      <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '18px', width: '28px', textAlign: 'center' }}>{cat.emoji}</span>
+                        <span style={{ flex: 1, fontSize: '14px' }}>{cat.name}</span>
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, {
+                              method: 'DELETE',
+                              headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+                            });
+                            if (res.ok) {
+                              setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
+                              setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
+                            }
+                          }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }}
+                          title="Delete category"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+
+                    {categoryFormOpen && (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
+                        <input
+                          type="text"
+                          value={categoryFormEmoji}
+                          onChange={e => setCategoryFormEmoji(e.target.value.slice(-2) || '📋')}
+                          style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '18px', padding: '8px 4px', flexShrink: 0 }}
+                          maxLength={2}
+                          placeholder="📋"
+                        />
+                        <input
+                          type="text"
+                          value={categoryFormName}
+                          onChange={e => setCategoryFormName(e.target.value)}
+                          placeholder="Category name…"
+                          style={{ ...inputStyle, flex: 1 }}
+                          onKeyDown={async e => { if (e.key === 'Enter' && categoryFormName.trim()) await saveCategory(); }}
+                        />
+                        <button
+                          className="btn btn-primary"
+                          style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                          disabled={!categoryFormName.trim() || categorySaving}
+                          onClick={saveCategory}
+                        >
+                          {categorySaving ? '…' : 'Save'}
+                        </button>
+                      </div>
+                    )}
+                    {categoryError && <p style={{ fontSize: '12px', color: 'var(--danger, #e74c3c)', marginTop: '6px' }}>{categoryError}</p>}
+                  </div>
           </div>
 
           {/* Mission list */}
