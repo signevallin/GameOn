@@ -14,6 +14,24 @@ function getSupabase() {
 const VALID_TYPES = ['freeze', 'double_trouble', 'shield', 'all_in', 'point_steal', 'robin_hood'] as const;
 type PowerUpType = typeof VALID_TYPES[number];
 
+function markPowerupUsed(
+  type: string,
+  usedPowerups: string[],
+  extraPowerups: string[],
+  hasExtra: boolean
+): Record<string, unknown> {
+  if (hasExtra) {
+    const idx = extraPowerups.indexOf(type);
+    return {
+      extra_powerups: [
+        ...extraPowerups.slice(0, idx),
+        ...extraPowerups.slice(idx + 1),
+      ],
+    };
+  }
+  return { team_powerups_used: [...usedPowerups, type] };
+}
+
 export async function POST(req: Request) {
   const { type, senderTeamId, targetTeamId } = await req.json();
 
@@ -31,7 +49,9 @@ export async function POST(req: Request) {
   if (senderErr || !sender) return NextResponse.json({ error: 'Sender not found.' }, { status: 404 });
 
   const usedPowerups: string[] = sender.team_powerups_used ?? [];
-  if (usedPowerups.includes(type)) {
+  const extraPowerups: string[] = sender.extra_powerups ?? [];
+  const hasExtra = extraPowerups.includes(type);
+  if (usedPowerups.includes(type) && !hasExtra) {
     return NextResponse.json({ error: 'You have already used this power-up.' }, { status: 409 });
   }
 
@@ -41,7 +61,7 @@ export async function POST(req: Request) {
     const effects = sender.active_effects ?? {};
     await supabase.from('teams').update({
       active_effects: { ...effects, shield_until: shieldUntil },
-      team_powerups_used: [...usedPowerups, type],
+      ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
       pending_notification: { type: 'powerup_self', msgKey: 'shield_msg', params: {} },
     }).eq('id', senderTeamId);
 
@@ -64,7 +84,7 @@ export async function POST(req: Request) {
   const shieldUntil = targetEffects.shield_until ? new Date(targetEffects.shield_until) : null;
   if (shieldUntil && shieldUntil > new Date()) {
     // Mark sender as used anyway, but block the effect
-    await supabase.from('teams').update({ team_powerups_used: [...usedPowerups, type] }).eq('id', senderTeamId);
+    await supabase.from('teams').update({ ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra) }).eq('id', senderTeamId);
     return NextResponse.json({ ok: true, blocked: true, message: 'That team has a shield active! Your power-up was wasted. 🛡️' });
   }
 
@@ -124,7 +144,7 @@ export async function POST(req: Request) {
       }).eq('id', targetTeamId);
 
       // Mark sender used + attach result
-      await supabase.from('teams').update({ team_powerups_used: [...usedPowerups, type] }).eq('id', senderTeamId);
+      await supabase.from('teams').update({ ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra) }).eq('id', senderTeamId);
       return NextResponse.json({ ok: true, won: true, newSenderScore, resultMessage: `🎲 You won the gamble! +${prize} pts stolen from ${target.name}!` });
     } else {
       // Sender loses: target gains 30% of sender's points, sender loses them
@@ -139,7 +159,7 @@ export async function POST(req: Request) {
       }).eq('id', targetTeamId);
 
       // Mark sender used + attach result
-      await supabase.from('teams').update({ team_powerups_used: [...usedPowerups, type] }).eq('id', senderTeamId);
+      await supabase.from('teams').update({ ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra) }).eq('id', senderTeamId);
       return NextResponse.json({ ok: true, won: false, newSenderScore, resultMessage: `🎲 You lost the gamble… -${wager} pts went to ${target.name}.` });
     }
   }
@@ -156,7 +176,7 @@ export async function POST(req: Request) {
 
     await supabase.from('teams').update({
       score: senderScore + stolen,
-      team_powerups_used: [...usedPowerups, type],
+      ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
       pending_notification: { type: 'point_steal_to', msgKey: 'point_steal_to_msg', params: { stolen, target: target.name } },
     }).eq('id', senderTeamId);
 
@@ -194,7 +214,7 @@ export async function POST(req: Request) {
 
     // Mark sender as used
     await supabase.from('teams').update({
-      team_powerups_used: [...usedPowerups, type],
+      ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
       pending_notification: { type: 'powerup_self', msgKey: 'robin_hood_self_msg', params: { stolen, target: target.name, recipient: recipientName } },
     }).eq('id', senderTeamId);
 
@@ -203,7 +223,7 @@ export async function POST(req: Request) {
 
   // Mark sender powerup as used
   await supabase.from('teams').update({
-    team_powerups_used: [...usedPowerups, type],
+    ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
   }).eq('id', senderTeamId);
 
   return NextResponse.json({ ok: true });
