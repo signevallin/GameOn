@@ -511,6 +511,7 @@ export default function AdminScreen({ onLogout }: Props) {
   // Timestamp of the last admin command (start/finish/restart).
   // Polls that started BEFORE a command are discarded to prevent race conditions.
   const lastCommandAtRef = useRef(0);
+  const aiAbortRef = useRef<AbortController | null>(null);
 
   const POST = useCallback((url: string, body?: object) => fetch(url, {
     method: 'POST',
@@ -1182,7 +1183,7 @@ export default function AdminScreen({ onLogout }: Props) {
             ) : (
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
-                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); setAiPanelOpen(true); }}>✨ Generate</button>
+                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); setAiPanelOpen(true); setAiError(''); }}>✨ Generate</button>
               </div>
             )}
             {isSuperAdmin && (
@@ -1347,9 +1348,14 @@ export default function AdminScreen({ onLogout }: Props) {
       if (!aiPrompt.trim()) return;
       setAiGenerating(true);
       setAiError('');
+      // Cancel any in-flight request
+      aiAbortRef.current?.abort();
+      const ctrl = new AbortController();
+      aiAbortRef.current = ctrl;
       try {
         const res = await fetch('/api/admin/ai-generate-mission', {
           method: 'POST',
+          signal: ctrl.signal,
           headers: {
             'Content-Type': 'application/json',
             ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
@@ -1382,6 +1388,11 @@ export default function AdminScreen({ onLogout }: Props) {
           photoPrompt?: string;
         };
 
+        if (!mission || typeof mission.type !== 'string' || typeof mission.name !== 'string') {
+          setAiError('Generation failed — try rephrasing your prompt.');
+          return;
+        }
+
         setEditingMissionId(null);
         setMissionForm({
           name: mission.name ?? '',
@@ -1403,7 +1414,8 @@ export default function AdminScreen({ onLogout }: Props) {
         setAiPanelOpen(false);
         setAiPrompt('');
         setAiType('');
-      } catch {
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
         setAiError('Generation failed — try rephrasing your prompt.');
       } finally {
         setAiGenerating(false);
