@@ -19,3 +19,7 @@ CREATE POLICY "custom_mission_categories_owner"
 -- 2. Add category_id FK to custom_missions (nullable — existing rows default to NULL)
 ALTER TABLE custom_missions
   ADD COLUMN category_id UUID REFERENCES custom_mission_categories(id) ON DELETE SET NULL;
+
+-- 3. Create indexes for optimal query performance
+CREATE INDEX idx_custom_mission_categories_user_id ON custom_mission_categories(user_id);
+CREATE INDEX idx_custom_missions_category_id ON custom_missions(category_id);
