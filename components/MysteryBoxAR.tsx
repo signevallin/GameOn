@@ -323,7 +323,7 @@ export default function MysteryBoxAR({ mode, onPlace, onClaim, teamId, onClose }
             fontSize: '16px', padding: '14px 32px', minWidth: '200px',
           }}
         >
-          📦 Placera här
+          📦 Place Here
         </button>
       )}
 

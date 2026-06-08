@@ -893,6 +893,8 @@ export default function AdminScreen({ onLogout }: Props) {
       const data = await res.json();
       if (res.ok) {
         setMysteryBoxActive({ created_at: new Date().toISOString(), expires_at: data.expiresAt, claimed_by: null });
+      } else {
+        showToast(`Mystery box failed: ${data.error ?? 'Unknown error'}`, 'error');
       }
     } finally {
       setMysteryBoxLoading(false);

@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     }, { count: 'exact' })
     .eq('id', team.game_id)
+    .not('mystery_box', 'is', null)
     .filter('mystery_box->>claimed_by', 'is', null);
 
   if (claimErr) return NextResponse.json({ error: 'Failed to claim mystery box.' }, { status: 500 });
