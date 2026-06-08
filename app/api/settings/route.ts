@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await getSupabase()
     .from('games')
-    .select('powerups_used, hot_potato')
+    .select('powerups_used, hot_potato, mystery_box')
     .eq('id', gameId)
     .single();
 
@@ -30,6 +30,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     powerups_used: data.powerups_used ?? [],
     hot_potato: data.hot_potato ?? null,
+    mystery_box: data.mystery_box ?? null,
   });
 }
 
@@ -44,7 +45,7 @@ export async function GET(req: Request) {
 
   const { data, error } = await getSupabase()
     .from('games')
-    .select('powerups_used, hot_potato')
+    .select('powerups_used, hot_potato, mystery_box')
     .eq('id', gameId)
     .single();
 
@@ -53,5 +54,6 @@ export async function GET(req: Request) {
   return NextResponse.json({
     powerups_used: data.powerups_used ?? [],
     hot_potato: data.hot_potato ?? null,
+    mystery_box: data.mystery_box ?? null,
   });
 }
