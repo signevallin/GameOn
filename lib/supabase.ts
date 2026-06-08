@@ -54,6 +54,7 @@ export type CustomMission = {
   id: string;
   user_id: string;
   category_name: string;
+  category_id: string | null;
   name: string;
   icon: string;
   desc: string;

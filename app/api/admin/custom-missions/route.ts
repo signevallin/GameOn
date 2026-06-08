@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (!admin) return unauthorizedResponse();
 
   const body = await req.json();
-  const { category_name, name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
+  const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
 
   if (!name?.trim()) return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
   if (!type) return NextResponse.json({ error: 'Type is required.' }, { status: 400 });
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
     .insert({
       user_id: admin.userId,
       category_name: category_name ?? 'My Missions',
+      category_id: category_id ?? null,
       name: name.trim(),
       icon: icon ?? '⭐',
       desc: desc ?? '',

@@ -25,7 +25,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   if (existing.user_id !== admin.userId && !admin.isSuperAdmin) return unauthorizedResponse();
 
-  const { name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
+  const { category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
 
   if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
 
@@ -39,6 +39,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (type !== undefined) updateFields.type = type;
   if (data !== undefined) updateFields.data = data;
   if (sort_order !== undefined) updateFields.sort_order = sort_order;
+  if (category_id !== undefined) updateFields.category_id = category_id ?? null;
 
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
