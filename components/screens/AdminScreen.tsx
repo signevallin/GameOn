@@ -1138,9 +1138,11 @@ export default function AdminScreen({ onLogout }: Props) {
   }
 
   async function loadAdminCustomMissions() {
+    // Use the ref so this works even when called before authToken state has updated
+    const token = authTokenRef.current;
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     };
     const [missionsRes, catsRes] = await Promise.all([
       fetch('/api/admin/custom-missions', { method: 'GET', headers, cache: 'no-store' }),
@@ -2329,7 +2331,7 @@ export default function AdminScreen({ onLogout }: Props) {
               {templates.filter(t => t.isBuiltin).map(t => (
                 <button
                   key={t.id}
-                  onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
+                  onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
                   style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
@@ -2358,7 +2360,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
                   >
                     <button
-                      onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
+                      onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
                       style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
                     >
                       <span style={{ fontSize: '24px', flexShrink: 0 }}>{t.icon}</span>
@@ -2389,7 +2391,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
             {/* Blank game */}
             <button
-              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); setView('create'); }}
+              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
               style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
@@ -3671,7 +3673,7 @@ export default function AdminScreen({ onLogout }: Props) {
           {/* FAB — create new game */}
           <button
             className="mobile-fab"
-            onClick={() => { setMobileMoreOpen(false); setView('create'); }}
+            onClick={() => { setMobileMoreOpen(false); loadAdminCustomMissions(); setView('create'); }}
             aria-label="Create new game"
           >
             +
