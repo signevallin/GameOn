@@ -28,28 +28,33 @@ export async function POST(req: Request) {
   if (gameErr || !game) return NextResponse.json({ error: 'Wrong game key. Ask the organiser.' }, { status: 404 });
   if (game.status === 'finished') return NextResponse.json({ error: 'This game is already finished.' }, { status: 400 });
 
-  // Fetch custom missions for this game's owner (in parallel with team lookup)
-  const customMissionsPromise = game.user_id
-    ? (() => {
-        const nowIso = new Date().toISOString();
-        return supabase
-          .from('custom_missions')
-          .select('*')
-          .eq('user_id', game.user_id)
-          .or(`active_from.is.null,active_from.lte.${nowIso}`)
-          .or(`active_until.is.null,active_until.gte.${nowIso}`)
-          .order('sort_order')
-          .order('created_at');
-      })()
-    : Promise.resolve({ data: [] });
+  // Helper to build custom missions query (called inside each branch after validation)
+  function buildCustomMissionsPromise() {
+    if (!game.user_id) return Promise.resolve({ data: [] as unknown[] });
+    const nowIso = new Date().toISOString();
+    return supabase
+      .from('custom_missions')
+      .select('*')
+      .eq('user_id', game.user_id)
+      .or(`active_from.is.null,active_from.lte.${nowIso}`)
+      .or(`active_until.is.null,active_until.gte.${nowIso}`)
+      .order('sort_order')
+      .order('created_at');
+  }
 
   // ── REMOTE MODE ──────────────────────────────────────────────────────────────
   if (game.remote_mode) {
     if (!memberName?.trim()) {
       return NextResponse.json({ error: 'Enter your name.' }, { status: 400 });
     }
+    if (memberName.trim().length > 50) {
+      return NextResponse.json({ error: 'Name too long (max 50 characters).' }, { status: 400 });
+    }
     if (!joinCode?.trim()) {
       return NextResponse.json({ error: 'Enter the team code.' }, { status: 400 });
+    }
+    if (joinCode.trim().length !== 4) {
+      return NextResponse.json({ error: 'Team code must be 4 characters.' }, { status: 400 });
     }
 
     const [teamResult, customMissionsResult] = await Promise.all([
@@ -60,7 +65,7 @@ export async function POST(req: Request) {
         .eq('name', name.trim())
         .eq('join_code', joinCode.trim().toUpperCase())
         .single(),
-      customMissionsPromise,
+      buildCustomMissionsPromise(),
     ]);
 
     let customMissions = customMissionsResult.data ?? [];
@@ -122,7 +127,7 @@ export async function POST(req: Request) {
       team = newTeam;
     }
 
-    // Check member cap
+    // Member cap check — best-effort (not transactional; acceptable for low-concurrency game use case)
     const { count: memberCount } = await supabase
       .from('team_members')
       .select('id', { count: 'exact', head: true })
@@ -150,10 +155,10 @@ export async function POST(req: Request) {
     });
   }
 
-  // ── CLASSIC MODE (unchanged) ─────────────────────────────────────────────────
+  // ── CLASSIC MODE ─────────────────────────────────────────────────────────────
   const [teamResult, customMissionsResult] = await Promise.all([
     supabase.from('teams').select('*').eq('name', name.trim()).eq('game_id', game.id).single(),
-    customMissionsPromise,
+    buildCustomMissionsPromise(),
   ]);
 
   let customMissions = customMissionsResult.data ?? [];
