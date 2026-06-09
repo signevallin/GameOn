@@ -5,11 +5,39 @@ import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
+const ONLINE_THRESHOLD_MS = 60_000;
+
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+type RawTeam = { id: string; join_code?: string | null; [key: string]: unknown };
+type MemberRow = { name: string; last_seen_at: string };
+
+async function enrichWithMembers(supabase: ReturnType<typeof getSupabase>, teams: RawTeam[]) {
+  const remoteTeamIds = teams.filter(t => t.join_code).map(t => t.id);
+  if (remoteTeamIds.length === 0) return teams;
+
+  const { data: allMembers } = await supabase
+    .from('team_members')
+    .select('team_id, name, last_seen_at')
+    .in('team_id', remoteTeamIds)
+    .order('created_at', { ascending: true });
+
+  if (!allMembers) return teams;
+
+  const cutoff = Date.now() - ONLINE_THRESHOLD_MS;
+  const membersByTeam = new Map<string, Array<{ name: string; online: boolean }>>();
+  for (const m of allMembers as Array<{ team_id: string } & MemberRow>) {
+    const list = membersByTeam.get(m.team_id) ?? [];
+    list.push({ name: m.name, online: new Date(m.last_seen_at).getTime() > cutoff });
+    membersByTeam.set(m.team_id, list);
+  }
+
+  return teams.map(t => t.join_code ? { ...t, members: membersByTeam.get(t.id) ?? [] } : t);
 }
 
 export async function POST(req: Request) {
@@ -21,7 +49,9 @@ export async function POST(req: Request) {
   if (gameId) query = query.eq('game_id', gameId);
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ teams: data });
+
+  const teams = await enrichWithMembers(getSupabase(), (data ?? []) as RawTeam[]);
+  return NextResponse.json({ teams });
 }
 
 export async function GET(req: Request) {
@@ -34,5 +64,7 @@ export async function GET(req: Request) {
   if (gameId) query = query.eq('game_id', gameId);
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ teams: data }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
+
+  const teams = await enrichWithMembers(getSupabase(), (data ?? []) as RawTeam[]);
+  return NextResponse.json({ teams }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }
