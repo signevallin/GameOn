@@ -60,7 +60,6 @@ export async function POST(req: Request) {
     .from('games')
     .update({
       mystery_box: { ...mb, claimed_by: teamId },
-      updated_at: new Date().toISOString(),
     }, { count: 'exact' })
     .eq('id', team.game_id)
     .not('mystery_box', 'is', null)

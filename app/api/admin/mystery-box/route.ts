@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     if (gameLookupErr || !game) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
     if (!game.mystery_box) return NextResponse.json({ ok: true, status: 'no_active' });
 
-    const { error: expireErr } = await supabase.from('games').update({ mystery_box: null, updated_at: new Date().toISOString() }).eq('id', gameId);
+    const { error: expireErr } = await supabase.from('games').update({ mystery_box: null }).eq('id', gameId);
     if (expireErr) return NextResponse.json({ error: 'Failed to expire mystery box.' }, { status: 500 });
 
     const { data: allTeams } = await supabase
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   const expiresAt = new Date(now.getTime() + 2 * 60 * 1000).toISOString();
   const mysteryBox = { created_at: now.toISOString(), expires_at: expiresAt, claimed_by: null };
 
-  const { error: createErr } = await supabase.from('games').update({ mystery_box: mysteryBox, updated_at: new Date().toISOString() }).eq('id', gameId);
+  const { error: createErr } = await supabase.from('games').update({ mystery_box: mysteryBox }).eq('id', gameId);
   if (createErr) return NextResponse.json({ error: 'Failed to create mystery box.' }, { status: 500 });
 
   const { data: allTeams } = await supabase
