@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   }
 
   // Create game
-  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language } = body;
+  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language, remote_mode } = body;
   if (!name?.trim()) return NextResponse.json({ error: 'Enter a game name.' }, { status: 400 });
   if (!missions?.length) return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
 
@@ -94,6 +94,7 @@ export async function POST(req: Request) {
       status: 'draft',
       user_id: admin.userId,
       powerups_used: [],
+      remote_mode: remote_mode ?? false,
     })
     .select()
     .single();
