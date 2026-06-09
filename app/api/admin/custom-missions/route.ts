@@ -12,6 +12,17 @@ function getSupabase() {
   );
 }
 
+// Accepts an ISO 8601 string, null, or undefined. Returns
+// { ok: true, value } where value is a normalized ISO string or null,
+// or { ok: false } when the input is not parseable.
+function parseActiveWindow(input: unknown): { ok: true; value: string | null } | { ok: false } {
+  if (input === undefined || input === null || input === '') return { ok: true, value: null };
+  if (typeof input !== 'string') return { ok: false };
+  const t = Date.parse(input);
+  if (Number.isNaN(t)) return { ok: false };
+  return { ok: true, value: new Date(t).toISOString() };
+}
+
 export async function GET(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
@@ -32,7 +43,12 @@ export async function POST(req: Request) {
   if (!admin) return unauthorizedResponse();
 
   const body = await req.json();
-  const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
+  const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
+
+  const activeFrom = parseActiveWindow(active_from);
+  if (!activeFrom.ok) return NextResponse.json({ error: 'Invalid active_from.' }, { status: 400 });
+  const activeUntil = parseActiveWindow(active_until);
+  if (!activeUntil.ok) return NextResponse.json({ error: 'Invalid active_until.' }, { status: 400 });
 
   if (!name?.trim()) return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
   if (!type) return NextResponse.json({ error: 'Type is required.' }, { status: 400 });
@@ -56,6 +72,8 @@ export async function POST(req: Request) {
       type,
       data: data ?? {},
       sort_order: sort_order ?? 0,
+      active_from: activeFrom.value,
+      active_until: activeUntil.value,
     })
     .select()
     .single();
@@ -63,3 +81,5 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ mission });
 }
+
+export { parseActiveWindow };

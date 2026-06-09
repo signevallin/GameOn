@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { parseActiveWindow } from '../route';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,13 +26,26 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   if (existing.user_id !== admin.userId && !admin.isSuperAdmin) return unauthorizedResponse();
 
-  const { category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order } = body;
+  const { category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
 
   if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (category_id && (typeof category_id !== 'string' || !UUID_RE.test(category_id))) {
     return NextResponse.json({ error: 'Invalid category_id.' }, { status: 400 });
+  }
+
+  let activeFromParsed: { value: string | null } | null = null;
+  if (active_from !== undefined) {
+    const r = parseActiveWindow(active_from);
+    if (!r.ok) return NextResponse.json({ error: 'Invalid active_from.' }, { status: 400 });
+    activeFromParsed = { value: r.value };
+  }
+  let activeUntilParsed: { value: string | null } | null = null;
+  if (active_until !== undefined) {
+    const r = parseActiveWindow(active_until);
+    if (!r.ok) return NextResponse.json({ error: 'Invalid active_until.' }, { status: 400 });
+    activeUntilParsed = { value: r.value };
   }
 
   // Only include fields that were explicitly provided
@@ -45,6 +59,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (data !== undefined) updateFields.data = data;
   if (sort_order !== undefined) updateFields.sort_order = sort_order;
   if (category_id !== undefined) updateFields.category_id = category_id ?? null;
+  if (activeFromParsed) updateFields.active_from = activeFromParsed.value;
+  if (activeUntilParsed) updateFields.active_until = activeUntilParsed.value;
 
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
