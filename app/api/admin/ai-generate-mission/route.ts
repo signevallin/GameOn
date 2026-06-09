@@ -83,13 +83,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  let body: { prompt?: unknown; type?: unknown; language?: unknown };
+  let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
-  const { prompt, type, language } = body;
+  const { prompt, type, language, excludedNames } = body;
+
+  let safeExcluded: string[] = [];
+  if (excludedNames !== undefined && excludedNames !== null) {
+    if (!Array.isArray(excludedNames)) {
+      return NextResponse.json({ error: 'invalid_excluded_names' }, { status: 400 });
+    }
+    safeExcluded = excludedNames
+      .filter((n): n is string => typeof n === 'string')
+      .map(n => n.trim())
+      .filter(n => n.length > 0 && n.length <= 100)
+      .slice(0, 50);
+  }
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return NextResponse.json({ error: 'prompt_required' }, { status: 400 });
@@ -105,9 +117,12 @@ export async function POST(req: Request) {
   }
 
   const typeInstruction = (typeof type === 'string' && type) ? `Mission type: ${type}` : 'Choose the best mission type for this content.';
+  const exclusionLine = safeExcluded.length > 0
+    ? `\n\nDo NOT create a mission about any of these topics (already used): ${safeExcluded.join(', ')}`
+    : '';
   const userMessage = `${typeInstruction}
 Language: ${language}
-Topic/description: ${prompt}`;
+Topic/description: ${prompt}${exclusionLine}`;
 
   // First attempt
   let raw: string;
