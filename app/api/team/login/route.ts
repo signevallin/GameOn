@@ -30,7 +30,17 @@ export async function POST(req: Request) {
   const [teamResult, customMissionsResult] = await Promise.all([
     supabase.from('teams').select('*').eq('name', name.trim()).eq('game_id', game.id).single(),
     game.user_id
-      ? supabase.from('custom_missions').select('*').eq('user_id', game.user_id).order('sort_order').order('created_at')
+      ? (() => {
+          const nowIso = new Date().toISOString();
+          return supabase
+            .from('custom_missions')
+            .select('*')
+            .eq('user_id', game.user_id)
+            .or(`active_from.is.null,active_from.lte.${nowIso}`)
+            .or(`active_until.is.null,active_until.gte.${nowIso}`)
+            .order('sort_order')
+            .order('created_at');
+        })()
       : Promise.resolve({ data: [] }),
   ]);
 
