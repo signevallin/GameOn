@@ -13,6 +13,11 @@ function getSupabase() {
 // ── Server-side team list cache ───────────────────────────────────────────────
 // All 25 teams poll for the same list every 5s — cache it for 4s so the DB
 // only gets hit once per cycle instead of 25 times.
+const ONLINE_THRESHOLD_MS = 60_000; // 60 seconds
+
+// ── Server-side team list cache ───────────────────────────────────────────────
+// All 25 teams poll for the same list every 5s — cache it for 4s so the DB
+// only gets hit once per cycle instead of 25 times.
 const teamListCache = new Map<string, { data: unknown; expiresAt: number }>();
 
 async function getCachedTeams(supabase: ReturnType<typeof getSupabase>, gameId: string) {
@@ -58,6 +63,7 @@ export async function POST(req: Request) {
   }
 
   let game = gameRes.data;
+  const team = teamRes.data;
 
   // Auto-finish if timer has expired
   if (game.status === 'active' && game.started_at) {
@@ -73,5 +79,24 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ game, team: teamRes.data, teams: teams ?? [] });
+  // ── Remote mode: include team members with online status ──────────────────
+  let members: Array<{ id: string; name: string; online: boolean }> | undefined;
+  if (team.join_code) {
+    const { data: rows } = await supabase
+      .from('team_members')
+      .select('id, name, last_seen_at')
+      .eq('team_id', team.id)
+      .order('created_at', { ascending: true });
+
+    if (rows) {
+      const cutoff = Date.now() - ONLINE_THRESHOLD_MS;
+      members = rows.map((r: { id: string; name: string; last_seen_at: string }) => ({
+        id: r.id,
+        name: r.name,
+        online: new Date(r.last_seen_at).getTime() > cutoff,
+      }));
+    }
+  }
+
+  return NextResponse.json({ game, team, teams: teams ?? [], ...(members ? { members } : {}) });
 }
