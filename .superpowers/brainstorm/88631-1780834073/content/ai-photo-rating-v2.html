@@ -1,0 +1,113 @@
+<h2>AI Photo Rating — uppdaterad design</h2>
+<p class="subtitle">AI-instruktioner visas när toggle är på</p>
+
+<div class="split">
+
+  <!-- Create game toggle with instructions -->
+  <div class="mockup">
+    <div class="mockup-header">Create game — AI-inställningar</div>
+    <div class="mockup-body" style="background:#0a0e19;padding:20px;font-family:'Sora',sans-serif">
+      <div style="color:#4b5563;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">Game settings</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="color:#dce4ee;font-size:12px;font-weight:600">Hide leaderboard</div>
+            <div style="color:#4b5563;font-size:10px">Teams can't see rankings during game</div>
+          </div>
+          <div style="width:36px;height:20px;background:#1e293b;border-radius:10px;position:relative">
+            <div style="width:16px;height:16px;background:#4b5563;border-radius:50%;position:absolute;top:2px;left:2px"></div>
+          </div>
+        </div>
+
+        <!-- AI rating toggle — ON, expanded -->
+        <div style="background:#111827;border:1px solid #7cbdd4;border-radius:10px;overflow:hidden">
+          <div style="padding:12px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="color:#dce4ee;font-size:12px;font-weight:600">AI photo rating ✨</div>
+              <div style="color:#4b5563;font-size:10px">Photos rated automatically — you can override anytime</div>
+            </div>
+            <div style="width:36px;height:20px;background:#7cbdd4;border-radius:10px;position:relative;flex-shrink:0">
+              <div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px"></div>
+            </div>
+          </div>
+          <!-- Extra instructions field — only visible when AI is ON -->
+          <div style="padding:0 12px 12px;border-top:1px solid #1e3a4a;margin-top:0">
+            <div style="color:#4b5563;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;padding-top:10px">Scoring focus <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+            <input
+              type="text"
+              placeholder="e.g. Reward creativity and humor extra highly"
+              style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid #2d3f50;background:#0f172a;color:#dce4ee;font-size:11px;font-family:'Sora',sans-serif;box-sizing:border-box"
+            />
+            <div style="color:#4b5563;font-size:9px;margin-top:5px">Passed to the AI as extra context when rating photos</div>
+          </div>
+        </div>
+      </div>
+
+      <button style="width:100%;padding:10px;border-radius:8px;border:none;background:#7cbdd4;color:#0a0e19;font-weight:700;font-size:12px;cursor:pointer;font-family:'Sora',sans-serif">CREATE GAME</button>
+    </div>
+  </div>
+
+  <!-- Photos tab live override -->
+  <div class="mockup">
+    <div class="mockup-header">Photos tab — live override + instruktioner</div>
+    <div class="mockup-body" style="background:#0a0e19;padding:16px;font-family:'Sora',sans-serif">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="color:#dce4ee;font-size:13px;font-weight:700">📸 Photos</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:#4b5563;font-size:10px">AI rating</span>
+          <div style="width:36px;height:20px;background:#7cbdd4;border-radius:10px;position:relative">
+            <div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px"></div>
+          </div>
+          <span style="color:#7cbdd4;font-size:10px;font-weight:700">ON</span>
+        </div>
+      </div>
+
+      <!-- AI info card with scoring focus -->
+      <div style="background:#0f1a24;border:1px solid #1e3a4a;border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:14px">✨</span>
+          <div style="color:#7cbdd4;font-size:11px;font-weight:600">AI rating is on</div>
+        </div>
+        <div style="color:#4b5563;font-size:10px;margin-bottom:8px">Photos are rated automatically when submitted</div>
+        <div style="background:#0a0e19;border-radius:6px;padding:7px 9px;display:flex;gap:6px;align-items:flex-start">
+          <span style="color:#4b5563;font-size:10px;flex-shrink:0;margin-top:1px">Focus:</span>
+          <span style="color:#8896a7;font-size:10px;font-style:italic">Reward creativity and humor extra highly</span>
+        </div>
+      </div>
+
+      <!-- Rated photos -->
+      <div style="color:#4b5563;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Rated (2)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;overflow:hidden">
+          <div style="padding:8px 10px;background:#0f172a;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:6px">
+            <span style="font-size:13px">📸</span>
+            <div style="flex:1">
+              <div style="color:#7cbdd4;font-size:11px;font-weight:700">Bubble Challenge</div>
+              <div style="color:#4b5563;font-size:9px">Team Alfa</div>
+            </div>
+            <span style="background:#1e3a4a;border-radius:4px;padding:2px 6px;color:#7cbdd4;font-size:9px;font-weight:700">✨ AI • 400p</span>
+          </div>
+          <div style="height:70px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#4b5563;font-size:10px">[photo]</div>
+          <div style="padding:8px 10px;display:flex;justify-content:flex-end">
+            <button style="padding:4px 10px;border-radius:6px;border:1px solid #2d3f50;background:transparent;color:#8896a7;font-size:10px;cursor:pointer">Override points</button>
+          </div>
+        </div>
+
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;overflow:hidden">
+          <div style="padding:8px 10px;background:#0f172a;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:6px">
+            <span style="font-size:13px">🎥</span>
+            <div style="flex:1">
+              <div style="color:#7cbdd4;font-size:11px;font-weight:700">Lights, Camera, Action!</div>
+              <div style="color:#4b5563;font-size:9px">Team Beta</div>
+            </div>
+            <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">✏️ Manual • 250p</span>
+          </div>
+          <div style="height:70px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#4b5563;font-size:10px">[photo]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,82 @@
+<h2>Hur admin placerar — tekniska alternativ</h2>
+<p class="subtitle">AR-placering är möjlig, men delning av position till andra telefoner kräver en lösning</p>
+
+<div class="section" style="background:rgba(208,117,125,0.08);border:1px solid rgba(208,117,125,0.3);border-radius:10px;padding:14px;margin-bottom:20px">
+  <strong style="color:var(--accent2)">⚠️ Teknisk verklighet</strong>
+  <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">WebAR (webbläsare) låter admin placera en box på en yta — men den positionen är låst till <em>den enda telefonen</em>. Webbläsare har inget inbyggt sätt att dela AR-ankarpunkter mellan enheter utan externa SDK:er (typ Google ARCore Cloud eller Immersal). Det innebär att vi behöver välja hur lagen "hittar" boxen.</p>
+</div>
+
+<div class="cards">
+
+  <div class="card" data-choice="screenshot-clue" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;height:200px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;overflow:hidden">
+      <!-- Step 1: Admin AR placement -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px">ADMIN</div>
+        <div style="width:60px;height:95px;border:3px solid #555;border-radius:8px;background:#111;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:3px;border-radius:5px;background:linear-gradient(160deg,#1a2035,#0d1520);display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px">
+            <!-- Surface lines -->
+            <div style="position:absolute;bottom:18px;left:0;right:0;height:1px;background:rgba(117,171,200,0.3)"></div>
+            <div style="position:absolute;bottom:14px;left:5px;right:5px;height:1px;background:rgba(117,171,200,0.15)"></div>
+            <!-- Box on surface -->
+            <div style="font-size:22px;position:absolute;bottom:20px;left:50%;transform:translateX(-50%)">📦</div>
+            <!-- Tap indicator -->
+            <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:16px;height:16px;border:2px solid var(--accent);border-radius:50%;opacity:0.7"></div>
+          </div>
+        </div>
+        <div style="font-size:8px;color:var(--accent);text-align:center">Trycker på bordet → boxen placeras</div>
+      </div>
+
+      <!-- Arrow + screenshot saved -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:16px;color:var(--accent)">→</div>
+        <div style="width:40px;height:32px;background:#1a2035;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px">📸</div>
+        <div style="font-size:8px;color:var(--muted);text-align:center">Skärm-<br>dump sparas</div>
+      </div>
+
+      <!-- Step 2: Team gets clue -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px">LAG</div>
+        <div style="width:60px;height:95px;border:3px solid #444;border-radius:8px;background:#111;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:3px;border-radius:5px;background:#1a2035;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px">
+            <!-- Blurred clue photo -->
+            <div style="width:100%;height:42px;background:linear-gradient(160deg,#1a2035,#0d1520);border-radius:3px;filter:blur(1px);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1)">
+              <span style="font-size:14px;filter:blur(0px)">📦</span>
+            </div>
+            <div style="font-size:7px;color:var(--accent);text-align:center">Ledtråd: "finns nära ett bord"</div>
+            <div style="background:var(--accent);color:#fff;font-size:7px;padding:2px 6px;border-radius:4px;font-weight:700">ÖPPNA AR</div>
+          </div>
+        </div>
+        <div style="font-size:8px;color:var(--accent2);text-align:center">Hittar stället → AR-reveal</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>📸 AR-placering + ledtrådsfoto (rekommenderas)</h3>
+      <p>Admin placerar boxen i AR-vy → appen sparar en screenshot + en textledtråd. Lagen ser ledtråden och letar rätt ställe fysiskt. När de hittar det öppnar de AR-kameran och boxen animeras fram.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Fördelar</h4><ul><li>Admin får riktig AR-placeringsupplevelse</li><li>Lagen får en äventyrskänsla</li><li>Fungerar inomhus och utomhus</li><li>Ingen extra enhet, ingen utskrift</li></ul></div>
+        <div class="cons"><h4>Nackdelar</h4><ul><li>Boxen är inte bokstavligt "fast" i 3D-rummet — lagen triggar AR-animationen manuellt när de hittat rätt plats</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="arcore-cloud" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+      <div style="text-align:center">
+        <div style="font-size:48px;margin-bottom:8px">🌐</div>
+        <div style="font-size:13px;color:var(--text);font-weight:700">ARCore Cloud Anchors</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;max-width:180px">Googles tjänst — delar exakta 3D-ankarpunkter mellan enheter på riktigt</div>
+        <div style="margin-top:10px;background:rgba(208,117,125,0.15);border:1px solid var(--accent2);border-radius:6px;padding:6px 10px;font-size:10px;color:var(--accent2)">Kräver Google ARCore API-nyckel + Android-app (ej webb)</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>🌐 Äkta delade ankare (ARCore Cloud)</h3>
+      <p>Boxen sitter bokstavligt fast i 3D-rummet och syns på alla lagets telefoner exakt rätt. Men kräver ett Google-konto, API-nyckel och fungerar bara på Android — inte som webbapp.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Fördelar</h4><ul><li>Exakta positioner, äkta AR</li></ul></div>
+        <div class="cons"><h4>Nackdelar</h4><ul><li>Kräver native Android-app</li><li>Google API-nyckel</li><li>Komplex implementation</li><li>Bryts mot GameOns webbapp-arkitektur</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,206 @@
+<h2>Superadmin Analytics — Layout</h2>
+<p class="subtitle">Tre alternativ för hur statistiken presenteras. Alla visar samma data.</p>
+
+<div class="cards">
+
+  <!-- Option A: KPI top + flat game table -->
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:14px;font-family:system-ui;border-radius:6px;min-height:260px;font-size:11px;">
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;">
+          <div style="background:#162030;border-radius:5px;padding:7px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;margin-bottom:3px;">SPEL TOTALT</div>
+            <div style="color:#7CBDD4;font-weight:700;font-size:14px;">247</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:7px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;margin-bottom:3px;">KUNDER</div>
+            <div style="color:#7CBDD4;font-weight:700;font-size:14px;">38</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:7px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;margin-bottom:3px;">SLUTFÖRDA</div>
+            <div style="color:#8CBF9B;font-weight:700;font-size:14px;">81%</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:7px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;margin-bottom:3px;">SNITTEAM</div>
+            <div style="color:#DEBB6B;font-weight:700;font-size:14px;">6.4</div>
+          </div>
+        </div>
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr;gap:4px;padding:4px 0;border-bottom:1px solid rgba(124,189,212,0.3);margin-bottom:4px;">
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;">SPEL</div>
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;">KUND</div>
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;text-align:center;">LAG</div>
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;text-align:right;">TOPPS.</div>
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;text-align:center;">KLAR</div>
+          <div style="color:#8FA8C0;font-size:7px;font-weight:700;text-align:right;">DATUM</div>
+        </div>
+        <!-- Rows -->
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr;gap:4px;padding:4px 2px;background:rgba(17,28,42,0.6);border-radius:3px;margin-bottom:2px;">
+          <div style="color:#DCE4EE;font-size:7px;">City Rally Stockholm</div>
+          <div style="color:#8FA8C0;font-size:7px;">anna@acme.se</div>
+          <div style="color:#DCE4EE;font-size:7px;text-align:center;">8</div>
+          <div style="color:#DEBB6B;font-size:7px;font-weight:700;text-align:right;">4 200</div>
+          <div style="color:#8CBF9B;font-size:7px;text-align:center;">✓</div>
+          <div style="color:#8FA8C0;font-size:7px;text-align:right;">idag</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr;gap:4px;padding:4px 2px;margin-bottom:2px;">
+          <div style="color:#DCE4EE;font-size:7px;">Tech Hunt Göteborg</div>
+          <div style="color:#8FA8C0;font-size:7px;">bob@corp.com</div>
+          <div style="color:#DCE4EE;font-size:7px;text-align:center;">12</div>
+          <div style="color:#DEBB6B;font-size:7px;font-weight:700;text-align:right;">6 800</div>
+          <div style="color:#8CBF9B;font-size:7px;text-align:center;">✓</div>
+          <div style="color:#8FA8C0;font-size:7px;text-align:right;">igår</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr;gap:4px;padding:4px 2px;background:rgba(17,28,42,0.6);border-radius:3px;margin-bottom:2px;">
+          <div style="color:#DCE4EE;font-size:7px;">Quiz Night Malmö</div>
+          <div style="color:#8FA8C0;font-size:7px;">sara@event.se</div>
+          <div style="color:#DCE4EE;font-size:7px;text-align:center;">5</div>
+          <div style="color:#DEBB6B;font-size:7px;font-weight:700;text-align:right;">2 100</div>
+          <div style="color:#D4875A;font-size:7px;text-align:center;">—</div>
+          <div style="color:#8FA8C0;font-size:7px;text-align:right;">3 dagar</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.7fr 0.7fr 0.7fr 0.8fr;gap:4px;padding:4px 2px;">
+          <div style="color:#DCE4EE;font-size:7px;">Office Games HQ</div>
+          <div style="color:#8FA8C0;font-size:7px;">anna@acme.se</div>
+          <div style="color:#DCE4EE;font-size:7px;text-align:center;">6</div>
+          <div style="color:#DEBB6B;font-size:7px;font-weight:700;text-align:right;">3 400</div>
+          <div style="color:#8CBF9B;font-size:7px;text-align:center;">✓</div>
+          <div style="color:#8FA8C0;font-size:7px;text-align:right;">5 dagar</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — KPI-kort + spelregister</h3>
+      <p>4 nyckeltal högst upp, sedan alla spel från alla kunder i en sorterbar tabell. Enkel, snabb överblick.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Customer list + game drill-down -->
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:14px;font-family:system-ui;border-radius:6px;min-height:260px;font-size:11px;display:grid;grid-template-columns:1fr 1.6fr;gap:10px;">
+        <!-- Left: customer list -->
+        <div>
+          <div style="color:#7CBDD4;font-size:7px;font-weight:700;letter-spacing:1.5px;margin-bottom:6px;">KUNDER</div>
+          <div style="background:#1A2A3A;border-radius:4px;padding:6px 8px;margin-bottom:3px;border-left:2px solid #7CBDD4;">
+            <div style="color:#DCE4EE;font-size:8px;font-weight:700;">anna@acme.se</div>
+            <div style="color:#8FA8C0;font-size:6.5px;margin-top:1px;">12 spel · senast idag</div>
+          </div>
+          <div style="background:#162030;border-radius:4px;padding:6px 8px;margin-bottom:3px;">
+            <div style="color:#DCE4EE;font-size:8px;">bob@corp.com</div>
+            <div style="color:#8FA8C0;font-size:6.5px;margin-top:1px;">7 spel · igår</div>
+          </div>
+          <div style="background:#162030;border-radius:4px;padding:6px 8px;margin-bottom:3px;">
+            <div style="color:#DCE4EE;font-size:8px;">sara@event.se</div>
+            <div style="color:#8FA8C0;font-size:6.5px;margin-top:1px;">4 spel · 3 dagar</div>
+          </div>
+          <div style="background:#162030;border-radius:4px;padding:6px 8px;">
+            <div style="color:#DCE4EE;font-size:8px;">karl@team.se</div>
+            <div style="color:#8FA8C0;font-size:6.5px;margin-top:1px;">2 spel · 2 veckor</div>
+          </div>
+        </div>
+        <!-- Right: selected customer detail -->
+        <div>
+          <div style="color:#7CBDD4;font-size:7px;font-weight:700;letter-spacing:1.5px;margin-bottom:6px;">ANNA@ACME.SE — 12 SPEL</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+            <div style="background:#162030;border-radius:4px;padding:5px 6px;">
+              <div style="color:#8FA8C0;font-size:6px;letter-spacing:0.5px;">SLUTFÖRDA</div>
+              <div style="color:#8CBF9B;font-weight:700;font-size:11px;">10/12</div>
+            </div>
+            <div style="background:#162030;border-radius:4px;padding:5px 6px;">
+              <div style="color:#8FA8C0;font-size:6px;letter-spacing:0.5px;">SNITTEAM</div>
+              <div style="color:#7CBDD4;font-weight:700;font-size:11px;">7.2</div>
+            </div>
+            <div style="background:#162030;border-radius:4px;padding:5px 6px;">
+              <div style="color:#8FA8C0;font-size:6px;letter-spacing:0.5px;">TOPPSCORE</div>
+              <div style="color:#DEBB6B;font-weight:700;font-size:11px;">6 800</div>
+            </div>
+          </div>
+          <!-- Game list for this customer -->
+          <div style="color:#8FA8C0;font-size:6.5px;font-weight:700;padding:3px 0;border-bottom:1px solid rgba(124,189,212,0.2);display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;margin-bottom:3px;">
+            <span>SPEL</span><span style="text-align:center;">LAG</span><span style="text-align:right;">TOPPS.</span><span style="text-align:center;">KLAR</span>
+          </div>
+          <div style="padding:3px 0;display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;background:rgba(17,28,42,0.5);border-radius:2px;margin-bottom:2px;">
+            <span style="color:#DCE4EE;font-size:7px;">City Rally Sthlm</span><span style="color:#DCE4EE;font-size:7px;text-align:center;">8</span><span style="color:#DEBB6B;font-size:7px;text-align:right;font-weight:700;">4 200</span><span style="color:#8CBF9B;font-size:7px;text-align:center;">✓</span>
+          </div>
+          <div style="padding:3px 0;display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;margin-bottom:2px;">
+            <span style="color:#DCE4EE;font-size:7px;">Office Games HQ</span><span style="color:#DCE4EE;font-size:7px;text-align:center;">6</span><span style="color:#DEBB6B;font-size:7px;text-align:right;font-weight:700;">3 400</span><span style="color:#8CBF9B;font-size:7px;text-align:center;">✓</span>
+          </div>
+          <div style="padding:3px 0;display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;background:rgba(17,28,42,0.5);border-radius:2px;">
+            <span style="color:#DCE4EE;font-size:7px;">Winter Hunt 2025</span><span style="color:#DCE4EE;font-size:7px;text-align:center;">4</span><span style="color:#DEBB6B;font-size:7px;text-align:right;font-weight:700;">1 800</span><span style="color:#D4875A;font-size:7px;text-align:center;">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Kundlista + drill-down</h3>
+      <p>Välj en kund i listan till vänster, se deras spel och stats till höger. Bra för att följa en specifik kund.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Global KPI + customer accordion -->
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:14px;font-family:system-ui;border-radius:6px;min-height:260px;font-size:11px;">
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;">
+          <div style="background:#162030;border-radius:5px;padding:6px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;">SPEL</div>
+            <div style="color:#7CBDD4;font-weight:700;font-size:13px;">247</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:6px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;">KUNDER</div>
+            <div style="color:#7CBDD4;font-weight:700;font-size:13px;">38</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:6px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;">SLUTFÖRDA</div>
+            <div style="color:#8CBF9B;font-weight:700;font-size:13px;">81%</div>
+          </div>
+          <div style="background:#162030;border-radius:5px;padding:6px 8px;">
+            <div style="color:#8FA8C0;font-size:7px;letter-spacing:1px;">SNITTEAM</div>
+            <div style="color:#DEBB6B;font-weight:700;font-size:13px;">6.4</div>
+          </div>
+        </div>
+        <!-- Customer accordion rows -->
+        <div style="color:#7CBDD4;font-size:7px;font-weight:700;letter-spacing:1.5px;margin-bottom:5px;">KUNDER — SENASTE AKTIVA FÖRST</div>
+        <!-- Expanded customer -->
+        <div style="background:#162030;border-radius:5px;margin-bottom:4px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1fr 0.5fr 0.5fr 0.5fr;gap:4px;padding:6px 8px;border-bottom:1px solid rgba(124,189,212,0.15);">
+            <div style="color:#DCE4EE;font-size:8px;font-weight:700;">anna@acme.se</div>
+            <div style="color:#8FA8C0;font-size:7px;">12 spel</div>
+            <div style="color:#8CBF9B;font-size:7px;">83% klara</div>
+            <div style="color:#8FA8C0;font-size:7px;">idag</div>
+          </div>
+          <!-- Expanded games -->
+          <div style="padding:5px 8px;display:grid;gap:2px;">
+            <div style="display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;padding:2px 0;">
+              <span style="color:#8FA8C0;font-size:7px;">City Rally Sthlm</span><span style="color:#8FA8C0;font-size:7px;text-align:center;">8 lag</span><span style="color:#DEBB6B;font-size:7px;text-align:right;font-weight:700;">4 200p</span><span style="color:#8CBF9B;font-size:7px;text-align:center;">✓</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.5fr 0.7fr 0.5fr;gap:4px;padding:2px 0;">
+              <span style="color:#8FA8C0;font-size:7px;">Office Games HQ</span><span style="color:#8FA8C0;font-size:7px;text-align:center;">6 lag</span><span style="color:#DEBB6B;font-size:7px;text-align:right;font-weight:700;">3 400p</span><span style="color:#8CBF9B;font-size:7px;text-align:center;">✓</span>
+            </div>
+          </div>
+        </div>
+        <!-- Collapsed customers -->
+        <div style="background:#162030;border-radius:5px;margin-bottom:4px;padding:6px 8px;display:grid;grid-template-columns:1fr 0.5fr 0.5fr 0.5fr;gap:4px;">
+          <div style="color:#DCE4EE;font-size:8px;">bob@corp.com</div>
+          <div style="color:#8FA8C0;font-size:7px;">7 spel</div>
+          <div style="color:#8CBF9B;font-size:7px;">100% klara</div>
+          <div style="color:#8FA8C0;font-size:7px;">igår</div>
+        </div>
+        <div style="background:#162030;border-radius:5px;padding:6px 8px;display:grid;grid-template-columns:1fr 0.5fr 0.5fr 0.5fr;gap:4px;">
+          <div style="color:#DCE4EE;font-size:8px;">sara@event.se</div>
+          <div style="color:#8FA8C0;font-size:7px;">4 spel</div>
+          <div style="color:#D4875A;font-size:7px;">50% klara</div>
+          <div style="color:#8FA8C0;font-size:7px;">3 dagar</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — KPI-kort + kundaccordion</h3>
+      <p>Nyckeltal högst upp, sedan kunder i en expanderbar lista. Klicka på en kund för att se deras spel inline. Kombinerar överblick och detalj.</p>
+    </div>
+  </div>
+
+</div>

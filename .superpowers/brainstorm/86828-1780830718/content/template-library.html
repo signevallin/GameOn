@@ -1,0 +1,74 @@
+<h2>Mallbiblioteket — designförslag</h2>
+<p class="subtitle">Steget som visas när admin klickar "+ NEW GAME"</p>
+
+<div class="mockup">
+  <div class="mockup-header">AdminScreen — view: templates</div>
+  <div class="mockup-body" style="background:#0a0e19;padding:24px;font-family:'Sora',sans-serif">
+
+    <!-- Nav -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
+      <span style="color:#7cbdd4;font-size:13px;font-weight:700">🎮 GameOn</span>
+      <button style="background:none;border:1px solid #2d3f50;border-radius:6px;padding:5px 12px;color:#8896a7;font-size:11px;cursor:pointer">← TILLBAKA</button>
+    </div>
+
+    <h2 style="color:#dce4ee;font-size:20px;font-weight:700;margin:0 0 4px">Välj startpunkt</h2>
+    <p style="color:#4b5563;font-size:13px;margin:0 0 24px">Starta från en mall eller bygg från grunden</p>
+
+    <!-- Section: Built-in templates -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4b5563;text-transform:uppercase;margin-bottom:12px">Inbyggda mallar</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+
+      <div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:16px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='#7cbdd4'" onmouseout="this.style.borderColor='#1e293b'">
+        <div style="font-size:28px;margin-bottom:8px">🍻</div>
+        <div style="color:#dce4ee;font-size:13px;font-weight:600;margin-bottom:4px">After Work</div>
+        <div style="color:#4b5563;font-size:11px;margin-bottom:10px">Avslappnad blandning · 8 uppdrag</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Quiz</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Foto</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Musik</span>
+        </div>
+      </div>
+
+      <div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:16px;cursor:pointer" onmouseover="this.style.borderColor='#7cbdd4'" onmouseout="this.style.borderColor='#1e293b'">
+        <div style="font-size:28px;margin-bottom:8px">💻</div>
+        <div style="color:#dce4ee;font-size:13px;font-weight:600;margin-bottom:4px">IT Onboarding</div>
+        <div style="color:#4b5563;font-size:11px;margin-bottom:10px">Tech-fokus · 6 uppdrag</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Trivia</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Quiz</span>
+        </div>
+      </div>
+
+      <div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:16px;cursor:pointer" onmouseover="this.style.borderColor='#7cbdd4'" onmouseout="this.style.borderColor='#1e293b'">
+        <div style="font-size:28px;margin-bottom:8px">🎉</div>
+        <div style="color:#dce4ee;font-size:13px;font-weight:600;margin-bottom:4px">Team Kickoff</div>
+        <div style="color:#4b5563;font-size:11px;margin-bottom:10px">Energirik · 7 uppdrag</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Simon Says</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Foto</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 6px;color:#8896a7;font-size:9px">Duel</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section: My templates (empty state) -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4b5563;text-transform:uppercase;margin-bottom:12px">Mina mallar</div>
+    <div style="background:#111827;border:1px dashed #2d3f50;border-radius:12px;padding:20px;text-align:center;color:#4b5563;font-size:12px;margin-bottom:24px">
+      Inga sparade mallar ännu — spara ett spel som mall från spellistan
+    </div>
+
+    <!-- Start from scratch -->
+    <div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onmouseover="this.style.borderColor='#7cbdd4'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">✏️</span>
+        <div>
+          <div style="color:#dce4ee;font-size:13px;font-weight:600">Tomt spel</div>
+          <div style="color:#4b5563;font-size:11px">Välj uppdrag manuellt</div>
+        </div>
+      </div>
+      <span style="color:#4b5563;font-size:16px">→</span>
+    </div>
+
+  </div>
+</div>

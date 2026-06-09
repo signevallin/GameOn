@@ -1,0 +1,124 @@
+<h2>PDF Report — Design Direction</h2>
+<p class="subtitle">Which visual style should the report follow? All three use the GameOn brand palette from the landing page.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:18px;font-family:system-ui;border-radius:6px;min-height:220px;position:relative;overflow:hidden;">
+        <!-- Subtle glow -->
+        <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(124,189,212,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <!-- Cover page mockup -->
+        <div style="text-align:center;padding-top:20px;position:relative;">
+          <div style="font-size:9px;color:#8FA8C0;letter-spacing:3px;margin-bottom:8px;">GAME REPORT</div>
+          <div style="font-size:22px;font-weight:800;color:#DCE4EE;margin-bottom:6px;">Game<span style="color:#7CBDD4">On</span></div>
+          <div style="font-size:14px;font-weight:800;color:#DCE4EE;margin-bottom:14px;letter-spacing:-0.5px;">Summer Hackathon 2026</div>
+          <div style="display:inline-block;background:rgba(124,189,212,0.08);border:1px solid rgba(124,189,212,0.25);border-radius:8px;padding:8px 16px;">
+            <div style="font-size:9px;color:#8FA8C0;">5 jun 2026 · 45 min · 6 lag</div>
+          </div>
+        </div>
+        <!-- Mini standings preview -->
+        <div style="margin-top:12px;background:#162030;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:7px;color:#7CBDD4;letter-spacing:2px;font-weight:700;margin-bottom:6px;">FINAL STANDINGS</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥇</span>
+            <span style="font-size:8px;color:#DEBB6B;font-weight:700;flex:1;">Team Alpha</span>
+            <span style="font-size:9px;color:#DEBB6B;font-weight:800;">2 400</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥈</span>
+            <span style="font-size:8px;color:#DCE4EE;flex:1;">Team Beta</span>
+            <span style="font-size:9px;color:#DCE4EE;font-weight:700;">2 100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:10px;">🥉</span>
+            <span style="font-size:8px;color:#DCE4EE;flex:1;">Team Gamma</span>
+            <span style="font-size:9px;color:#DCE4EE;font-weight:700;">1 800</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Landing Page Match</h3>
+      <p>Navy bg (#0D1520), cyan accent (#7CBDD4), gold (#DEBB6B) for top team, subtle radial glow on cover. Matches playgameon.app exactly.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#FFFFFF;padding:18px;font-family:system-ui;border-radius:6px;min-height:220px;">
+        <!-- White/light theme -->
+        <div style="text-align:center;padding-top:16px;">
+          <div style="font-size:9px;color:#8FA8C0;letter-spacing:3px;margin-bottom:8px;">GAME REPORT</div>
+          <div style="font-size:22px;font-weight:800;color:#0D1520;margin-bottom:6px;">Game<span style="color:#4890AA">On</span></div>
+          <div style="font-size:14px;font-weight:800;color:#0D1520;margin-bottom:14px;">Summer Hackathon 2026</div>
+          <div style="display:inline-block;background:#F0F6FA;border:1px solid #C8DDE8;border-radius:8px;padding:8px 16px;">
+            <div style="font-size:9px;color:#4A6580;">5 jun 2026 · 45 min · 6 lag</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#F0F6FA;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:7px;color:#4890AA;letter-spacing:2px;font-weight:700;margin-bottom:6px;">FINAL STANDINGS</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥇</span>
+            <span style="font-size:8px;color:#B8860B;font-weight:700;flex:1;">Team Alpha</span>
+            <span style="font-size:9px;color:#B8860B;font-weight:800;">2 400</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥈</span>
+            <span style="font-size:8px;color:#0D1520;flex:1;">Team Beta</span>
+            <span style="font-size:9px;color:#0D1520;font-weight:700;">2 100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:10px;">🥉</span>
+            <span style="font-size:8px;color:#0D1520;flex:1;">Team Gamma</span>
+            <span style="font-size:9px;color:#0D1520;font-weight:700;">1 800</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Light/Print Friendly</h3>
+      <p>White background, same cyan + navy colors but inverted. Better for printing on paper but departs from the GameOn dark aesthetic.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:18px;font-family:system-ui;border-radius:6px;min-height:220px;position:relative;overflow:hidden;">
+        <!-- Gradient header band -->
+        <div style="position:absolute;top:0;left:0;right:0;height:60px;background:linear-gradient(135deg,rgba(124,189,212,0.2) 0%,rgba(72,144,170,0.1) 100%);"></div>
+        <div style="position:relative;text-align:center;padding-top:8px;">
+          <div style="font-size:9px;color:#8FA8C0;letter-spacing:3px;margin-bottom:6px;">GAME REPORT</div>
+          <div style="font-size:22px;font-weight:800;color:#DCE4EE;margin-bottom:2px;">Game<span style="color:#7CBDD4">On</span></div>
+        </div>
+        <div style="position:relative;margin-top:8px;background:linear-gradient(135deg,rgba(124,189,212,0.1),rgba(72,144,170,0.05));border:1px solid rgba(124,189,212,0.2);border-radius:8px;padding:10px 12px;text-align:center;">
+          <div style="font-size:13px;font-weight:800;color:#DCE4EE;margin-bottom:4px;">Summer Hackathon 2026</div>
+          <div style="font-size:8px;color:#8FA8C0;">5 jun 2026 · 45 min · 6 lag</div>
+        </div>
+        <div style="margin-top:10px;background:#162030;border:1px solid rgba(124,189,212,0.12);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:7px;color:#7CBDD4;letter-spacing:2px;font-weight:700;margin-bottom:6px;">FINAL STANDINGS</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥇</span>
+            <span style="font-size:8px;color:#DEBB6B;font-weight:700;flex:1;">Team Alpha</span>
+            <span style="font-size:9px;color:#DEBB6B;font-weight:800;">2 400</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span style="font-size:10px;">🥈</span>
+            <span style="font-size:8px;color:#DCE4EE;flex:1;">Team Beta</span>
+            <span style="font-size:9px;color:#DCE4EE;font-weight:700;">2 100</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:10px;">🥉</span>
+            <span style="font-size:8px;color:#DCE4EE;flex:1;">Team Gamma</span>
+            <span style="font-size:9px;color:#DCE4EE;font-weight:700;">1 800</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Dark + Glassmorphism</h3>
+      <p>Same navy base but with gradient header bands and glass-effect cards (border + translucent tint). More premium feel, slightly heavier.</p>
+    </div>
+  </div>
+
+</div>

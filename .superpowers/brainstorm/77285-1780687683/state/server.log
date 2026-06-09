@@ -1,0 +1,10 @@
+{"type":"server-started","port":53230,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:53230","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/pdf-design-direction.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/pdf-design-direction.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/waiting-1.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/waiting-1.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/analytics-layout.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/analytics-layout.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/waiting-2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/77285-1780687683/content/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

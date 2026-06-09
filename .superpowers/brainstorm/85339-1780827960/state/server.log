@@ -1,0 +1,11 @@
+{"type":"server-started","port":49975,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:49975","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/waiting.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/waiting.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-layout.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-layout.html"}
+{"source":"user-event","type":"click","text":"GameOn Admin\n          🟢 Aktiv\n        \n        \n        \n          LEADERBOARD\n          \n            \n              1. Lag Alpha\n              1 240p\n            \n            \n              2. Lag Beta\n              980p\n            \n            \n              3. Lag Gamma\n              740p\n            \n          \n        \n        \n        \n          \n            🏆\n            Ledare\n          \n          \n            📸\n            Foton\n          \n          \n            ⚡\n            Power-ups\n          \n          \n            ···\n            Mer\n          \n        \n      \n    \n    \n      A — Bottom navigation\n      Fast navigationsfält längst ner med Leaderboard, Foton, Power-ups och Mer. Standard mobilmönster (som Instagram/TikTok). Tumvänlig, alltid synlig.","choice":"a","id":null,"timestamp":1780828273711}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-create.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-create.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-full.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/85339-1780827960/content/mobile-full.html"}
+{"type":"server-stopped","reason":"idle timeout"}

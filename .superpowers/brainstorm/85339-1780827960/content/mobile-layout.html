@@ -1,0 +1,110 @@
+<h2>Mobilvy för admin — layout</h2>
+<p class="subtitle">Hur ska de primära flikarna nås på mobil?</p>
+
+<div class="cards">
+
+  <!-- Option A: Bottom nav -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0e19;padding:16px;display:flex;justify-content:center">
+      <div style="width:200px;background:#111827;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+        <!-- Status bar -->
+        <div style="background:#0f172a;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#7cbdd4;font-size:10px;font-weight:700">GameOn Admin</span>
+          <span style="color:#4b5563;font-size:9px">🟢 Aktiv</span>
+        </div>
+        <!-- Content area -->
+        <div style="padding:10px;min-height:140px">
+          <div style="color:#dce4ee;font-size:9px;font-weight:700;margin-bottom:8px">LEADERBOARD</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#f0b429;font-size:9px;font-weight:700">1. Lag Alpha</span>
+              <span style="color:#7cbdd4;font-size:9px">1 240p</span>
+            </div>
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#dce4ee;font-size:9px">2. Lag Beta</span>
+              <span style="color:#7cbdd4;font-size:9px">980p</span>
+            </div>
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#dce4ee;font-size:9px">3. Lag Gamma</span>
+              <span style="color:#7cbdd4;font-size:9px">740p</span>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom nav -->
+        <div style="background:#0f172a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;padding:8px 0">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">🏆</span>
+            <span style="color:#7cbdd4;font-size:7px;font-weight:700">Ledare</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">📸</span>
+            <span style="color:#4b5563;font-size:7px">Foton</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">⚡</span>
+            <span style="color:#4b5563;font-size:7px">Power-ups</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">···</span>
+            <span style="color:#4b5563;font-size:7px">Mer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Bottom navigation</h3>
+      <p>Fast navigationsfält längst ner med Leaderboard, Foton, Power-ups och Mer. Standard mobilmönster (som Instagram/TikTok). Tumvänlig, alltid synlig.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Top tabs scroll -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0e19;padding:16px;display:flex;justify-content:center">
+      <div style="width:200px;background:#111827;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+        <!-- Status bar -->
+        <div style="background:#0f172a;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#7cbdd4;font-size:10px;font-weight:700">GameOn Admin</span>
+          <span style="color:#4b5563;font-size:9px">🟢 Aktiv</span>
+        </div>
+        <!-- Scrollable top tabs -->
+        <div style="background:#0f172a;border-bottom:1px solid #1e293b;padding:0 8px;display:flex;gap:4px;overflow:hidden">
+          <div style="padding:6px 8px;border-bottom:2px solid #7cbdd4;white-space:nowrap">
+            <span style="color:#7cbdd4;font-size:8px;font-weight:700">🏆 Ledare</span>
+          </div>
+          <div style="padding:6px 8px">
+            <span style="color:#4b5563;font-size:8px">📸 Foton</span>
+          </div>
+          <div style="padding:6px 8px">
+            <span style="color:#4b5563;font-size:8px">⚡ Power</span>
+          </div>
+          <div style="padding:6px 8px;opacity:0.4">
+            <span style="color:#4b5563;font-size:8px">▸</span>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="padding:10px;min-height:140px">
+          <div style="color:#dce4ee;font-size:9px;font-weight:700;margin-bottom:8px">LEADERBOARD</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#f0b429;font-size:9px;font-weight:700">1. Lag Alpha</span>
+              <span style="color:#7cbdd4;font-size:9px">1 240p</span>
+            </div>
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#dce4ee;font-size:9px">2. Lag Beta</span>
+              <span style="color:#7cbdd4;font-size:9px">980p</span>
+            </div>
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#dce4ee;font-size:9px">3. Lag Gamma</span>
+              <span style="color:#7cbdd4;font-size:9px">740p</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Scrollbara toppflikar</h3>
+      <p>Samma flikar som desktop men scrollbara horisontellt. Enklare att implementera, mer konsekvent med desktop-vyn. Svårare att nå med tummen.</p>
+    </div>
+  </div>
+
+</div>

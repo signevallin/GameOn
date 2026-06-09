@@ -1,0 +1,113 @@
+<h2>Tre helt nya idéer</h2>
+<p class="subtitle">Annorlunda sätt att tänka kring AR mystery box</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="race" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;height:180px;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;overflow:hidden">
+      <!-- Notification burst -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px">ALLA LAG SAMTIDIGT</div>
+        <div style="display:flex;gap:8px">
+          <!-- Phone 1 -->
+          <div style="width:44px;height:72px;border:2px solid #444;border-radius:6px;background:#111;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:2px;border-radius:4px;background:#1a2035;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+              <div style="font-size:16px;animation:shake 0.4s ease-in-out infinite">📦</div>
+              <div style="font-size:6px;color:var(--accent);font-weight:700">TAP!</div>
+            </div>
+          </div>
+          <!-- Phone 2 -->
+          <div style="width:44px;height:72px;border:2px solid #555;border-radius:6px;background:#111;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:2px;border-radius:4px;background:#1a2035;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+              <div style="font-size:16px;opacity:0.4">📦</div>
+              <div style="font-size:6px;color:var(--muted)">För sent...</div>
+            </div>
+          </div>
+          <!-- Phone 3 -->
+          <div style="width:44px;height:72px;border:2px solid #555;border-radius:6px;background:#111;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:2px;border-radius:4px;background:#1a2035;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+              <div style="font-size:16px;opacity:0.4">📦</div>
+              <div style="font-size:6px;color:var(--muted)">För sent...</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:var(--gold);text-align:center">Lag 1 tar boxen!</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>⚡ Global tävling — vem öppnar boxen först?</h3>
+      <p>Admin trycker "Släpp mystery box". Alla lag får en notis <em>samtidigt</em> — en box dyker upp i AR på valfri yta framför dem. Det gäller att vara snabbast med att trycka på den. Första laget som öppnar den vinner power-upen.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">AR är inte platsbaserad — boxen materialiseras på varje lags telefon lokalt. Känslan är som ett Pokémon GO-event fast i ditt rum.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="phone-beacon" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;height:180px;display:flex;align-items:center;justify-content:center;gap:16px;padding:12px;overflow:hidden">
+      <!-- Admin phone face up on table -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:9px;color:var(--muted)">Admin lägger phone face-up</div>
+        <div style="width:80px;height:50px;border:3px solid #555;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;position:relative">
+          <!-- Screen showing glow pattern -->
+          <div style="position:absolute;inset:3px;border-radius:4px;background:radial-gradient(circle,rgba(117,171,200,0.6) 0%,rgba(117,171,200,0.1) 60%,transparent 100%);display:flex;align-items:center;justify-content:center">
+            <div style="font-size:18px">✨</div>
+          </div>
+        </div>
+        <div style="font-size:8px;color:var(--muted)">Lagt på ett bord</div>
+      </div>
+      <!-- Arrow -->
+      <div style="font-size:20px;color:var(--accent)">→</div>
+      <!-- Team scanning over it -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:9px;color:var(--muted)">Lag håller kameran över</div>
+        <div style="width:50px;height:80px;border:3px solid #444;border-radius:8px;background:#111;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:3px;border-radius:5px;background:#1a2035;display:flex;align-items:center;justify-content:center">
+            <div style="font-size:24px;animation:float 2s ease-in-out infinite">📦</div>
+          </div>
+        </div>
+        <div style="font-size:8px;color:var(--accent)">Box dyker upp!</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>📱 Admin's telefon = beacon</h3>
+      <p>Admin placerar sin telefon liggandes med skärmen uppåt på valfri yta i rummet. Skärmen visar ett glödande mönster. Lagen letar efter den — när de håller sin kamera över admin's skärm triggas AR-boxen ovanpå.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Ingen utskrift. Admin "gömmer" sin telefon. Lagen letar den. Enkelt, analogt och fysiskt.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="visual-match" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;height:180px;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;overflow:hidden">
+      <!-- Split screen: clue vs live camera -->
+      <div style="width:150px;height:140px;background:#111;border-radius:8px;border:2px solid #444;overflow:hidden;display:flex;flex-direction:column">
+        <!-- Top: clue photo (blurred) -->
+        <div style="flex:1;background:linear-gradient(135deg,#1a2035,#0d1520);display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #444">
+          <div style="filter:blur(3px);font-size:20px">🪑 ☕</div>
+          <div style="position:absolute;top:3px;left:5px;font-size:7px;color:var(--accent);background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px">LEDTRÅD</div>
+        </div>
+        <!-- Bottom: live camera match -->
+        <div style="flex:1;background:linear-gradient(135deg,#1a3020,#0a2015);display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="font-size:20px">🪑 ☕</div>
+          <div style="position:absolute;top:3px;left:5px;font-size:7px;color:var(--accent2);background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px">DIN KAMERA</div>
+          <!-- Match indicator -->
+          <div style="position:absolute;top:3px;right:5px;font-size:8px;color:var(--accent3)">✓ Match!</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>🔍 Visuell matchning — delade skärmar</h3>
+      <p>Admin placerar boxen i AR och appen sparar vyn. Lagen ser en suddig/delvis gömd ledtrådsbild. De håller upp sin kamera i rummet — appen visar live-kameran bredvid ledtrådsbilden. När vyerna matchar låses boxen upp och AR-animationen spelas.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Kräver bildmatchningslogik (möjligt med canvas + pixeljämförelse) men ger en detektivkänsla.</p>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes float {
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+@keyframes shake {
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+}
+</style>

@@ -1,0 +1,239 @@
+<h2>Admin Mobile Layout — Full Design</h2>
+<p class="subtitle">Below 768px — desktop view unchanged above that</p>
+
+<div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+
+  <!-- State 1: No active game -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">No Active Game</div>
+    <div style="width:180px;background:#111827;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative">
+      <div style="background:#0f172a;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#7cbdd4;font-size:11px;font-weight:800">GameOn</span>
+        <span style="color:#4b5563;font-size:9px">Admin</span>
+      </div>
+      <div style="padding:16px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+        <div style="color:#4b5563;font-size:9px;text-align:center">No game running</div>
+        <div style="background:#1e293b;border-radius:8px;padding:10px;width:100%;box-sizing:border-box">
+          <div style="color:#4b5563;font-size:8px;margin-bottom:4px">Recent games</div>
+          <div style="background:#0f172a;border-radius:4px;padding:5px 7px;display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="color:#dce4ee;font-size:8px">Team Kickoff</span>
+            <span style="color:#4b5563;font-size:8px">finished</span>
+          </div>
+          <div style="background:#0f172a;border-radius:4px;padding:5px 7px;display:flex;justify-content:space-between">
+            <span style="color:#dce4ee;font-size:8px">After Work</span>
+            <span style="color:#4b5563;font-size:8px">finished</span>
+          </div>
+        </div>
+      </div>
+      <!-- FAB -->
+      <div style="position:absolute;bottom:52px;right:12px;width:36px;height:36px;background:linear-gradient(135deg,#7cbdd4,#5aa3bd);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(124,189,212,0.5)">
+        <span style="color:#0a0e19;font-size:18px;font-weight:800;line-height:1">+</span>
+      </div>
+      <!-- Bottom nav -->
+      <div style="background:#0f172a;border-top:1px solid #1e293b;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 0 10px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">🏆</span>
+          <span style="color:#7cbdd4;font-size:7px;font-weight:700">Leaderboard</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px;opacity:0.3">📸</span>
+          <span style="color:#4b5563;font-size:7px">Photos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px;opacity:0.3">⚡</span>
+          <span style="color:#4b5563;font-size:7px">Power-ups</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px;opacity:0.3">···</span>
+          <span style="color:#4b5563;font-size:7px">More</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 2: Leaderboard tab -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Leaderboard</div>
+    <div style="width:180px;background:#111827;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative">
+      <div style="background:#0f172a;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#7cbdd4;font-size:11px;font-weight:800">GameOn</span>
+        <span style="color:#8cbf9b;font-size:9px;font-weight:700">🟢 Running · 32m</span>
+      </div>
+      <div style="padding:10px;min-height:200px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+          <span style="color:#dce4ee;font-size:9px;font-weight:700">LEADERBOARD</span>
+          <span style="color:#4b5563;font-size:8px">6 teams</span>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px 8px;display:flex;align-items:center;gap:6px;border:1px solid rgba(240,180,41,0.2)">
+          <span style="color:#f0b429;font-size:10px;font-weight:800;width:12px">1</span>
+          <span style="color:#dce4ee;font-size:9px;flex:1">Lag Alpha</span>
+          <span style="color:#7cbdd4;font-size:9px;font-weight:700">1 240p</span>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px 8px;display:flex;align-items:center;gap:6px">
+          <span style="color:#94a3b8;font-size:10px;font-weight:800;width:12px">2</span>
+          <span style="color:#dce4ee;font-size:9px;flex:1">Lag Beta</span>
+          <span style="color:#7cbdd4;font-size:9px;font-weight:700">980p</span>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px 8px;display:flex;align-items:center;gap:6px">
+          <span style="color:#94a3b8;font-size:10px;width:12px">3</span>
+          <span style="color:#dce4ee;font-size:9px;flex:1">Lag Gamma</span>
+          <span style="color:#7cbdd4;font-size:9px;font-weight:700">740p</span>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px 8px;display:flex;align-items:center;gap:6px">
+          <span style="color:#94a3b8;font-size:10px;width:12px">4</span>
+          <span style="color:#dce4ee;font-size:9px;flex:1">Lag Delta</span>
+          <span style="color:#7cbdd4;font-size:9px;font-weight:700">580p</span>
+        </div>
+        <!-- Stop game button -->
+        <div style="background:rgba(208,117,125,0.15);border:1px solid rgba(208,117,125,0.3);border-radius:6px;padding:7px;text-align:center;margin-top:4px">
+          <span style="color:#d0757d;font-size:8px;font-weight:700">⏹ Stop Game</span>
+        </div>
+      </div>
+      <!-- FAB -->
+      <div style="position:absolute;bottom:52px;right:12px;width:36px;height:36px;background:linear-gradient(135deg,#7cbdd4,#5aa3bd);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(124,189,212,0.5)">
+        <span style="color:#0a0e19;font-size:18px;font-weight:800;line-height:1">+</span>
+      </div>
+      <div style="background:#0f172a;border-top:1px solid #1e293b;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 0 10px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border-top:2px solid #7cbdd4;padding-top:4px">
+          <span style="font-size:16px">🏆</span>
+          <span style="color:#7cbdd4;font-size:7px;font-weight:700">Leaderboard</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">📸</span>
+          <span style="color:#4b5563;font-size:7px">Photos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">⚡</span>
+          <span style="color:#4b5563;font-size:7px">Power-ups</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">···</span>
+          <span style="color:#4b5563;font-size:7px">More</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 3: Photos tab -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Photos</div>
+    <div style="width:180px;background:#111827;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);position:relative">
+      <div style="background:#0f172a;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#7cbdd4;font-size:11px;font-weight:800">GameOn</span>
+        <span style="color:#8cbf9b;font-size:9px;font-weight:700">🟢 Running</span>
+      </div>
+      <div style="padding:10px;min-height:200px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="color:#dce4ee;font-size:9px;font-weight:700">PHOTOS</span>
+          <span style="background:rgba(208,117,125,0.2);color:#d0757d;font-size:7px;font-weight:700;padding:2px 6px;border-radius:10px">3 pending</span>
+        </div>
+        <!-- Photo card -->
+        <div style="background:#1e293b;border-radius:8px;overflow:hidden;margin-bottom:6px">
+          <div style="height:80px;background:linear-gradient(135deg,#1e3a5f,#0f2a4a);display:flex;align-items:center;justify-content:center">
+            <span style="font-size:24px">🏔️</span>
+          </div>
+          <div style="padding:6px 8px">
+            <div style="color:#dce4ee;font-size:8px;font-weight:600;margin-bottom:1px">Lag Alpha</div>
+            <div style="color:#4b5563;font-size:7px;margin-bottom:6px">Scavenger Hunt</div>
+            <div style="display:flex;gap:4px">
+              <div style="flex:1;background:rgba(140,191,155,0.15);border:1px solid rgba(140,191,155,0.3);border-radius:4px;padding:4px;text-align:center">
+                <span style="color:#8cbf9b;font-size:7px;font-weight:700">✓ 500p</span>
+              </div>
+              <div style="flex:1;background:rgba(208,117,125,0.15);border:1px solid rgba(208,117,125,0.3);border-radius:4px;padding:4px;text-align:center">
+                <span style="color:#d0757d;font-size:7px;font-weight:700">✗ 0p</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Second photo -->
+        <div style="background:#1e293b;border-radius:8px;overflow:hidden">
+          <div style="height:60px;background:linear-gradient(135deg,#2d1b4e,#1a0f2e);display:flex;align-items:center;justify-content:center">
+            <span style="font-size:20px">🌆</span>
+          </div>
+          <div style="padding:6px 8px">
+            <div style="color:#dce4ee;font-size:8px;font-weight:600">Lag Beta</div>
+            <div style="color:#4b5563;font-size:7px">Mirror Selfie</div>
+          </div>
+        </div>
+      </div>
+      <!-- FAB -->
+      <div style="position:absolute;bottom:52px;right:12px;width:36px;height:36px;background:linear-gradient(135deg,#7cbdd4,#5aa3bd);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(124,189,212,0.5)">
+        <span style="color:#0a0e19;font-size:18px;font-weight:800;line-height:1">+</span>
+      </div>
+      <div style="background:#0f172a;border-top:1px solid #1e293b;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 0 10px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">🏆</span>
+          <span style="color:#4b5563;font-size:7px">Leaderboard</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border-top:2px solid #7cbdd4;padding-top:4px">
+          <span style="font-size:16px">📸</span>
+          <span style="color:#7cbdd4;font-size:7px;font-weight:700">Photos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">⚡</span>
+          <span style="color:#4b5563;font-size:7px">Power-ups</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:16px">···</span>
+          <span style="color:#4b5563;font-size:7px">More</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 4: Create game (FAB tapped) -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Create Game (FAB)</div>
+    <div style="width:180px;background:#111827;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+      <div style="background:#0f172a;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#7cbdd4;font-size:11px;font-weight:800">New Game</span>
+        <span style="color:#4b5563;font-size:9px;cursor:pointer">✕ Cancel</span>
+      </div>
+      <div style="padding:10px;min-height:200px;display:flex;flex-direction:column;gap:7px">
+        <div>
+          <div style="color:#4b5563;font-size:8px;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px">Game Name</div>
+          <div style="background:#0f172a;border:1px solid #2d3748;border-radius:6px;padding:6px 8px;color:#dce4ee;font-size:9px">Team Kickoff 2026</div>
+        </div>
+        <div>
+          <div style="color:#4b5563;font-size:8px;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px">Duration</div>
+          <div style="display:flex;gap:4px">
+            <div style="flex:1;background:#1e293b;border-radius:5px;padding:5px;text-align:center;border:1px solid #2d3748">
+              <span style="color:#4b5563;font-size:8px">30m</span>
+            </div>
+            <div style="flex:1;background:#7cbdd4;border-radius:5px;padding:5px;text-align:center">
+              <span style="color:#0a0e19;font-size:8px;font-weight:700">45m</span>
+            </div>
+            <div style="flex:1;background:#1e293b;border-radius:5px;padding:5px;text-align:center;border:1px solid #2d3748">
+              <span style="color:#4b5563;font-size:8px">60m</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="color:#4b5563;font-size:8px;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px">Missions</div>
+          <div style="background:#0f172a;border:1px solid #2d3748;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between;align-items:center">
+            <span style="color:#dce4ee;font-size:9px">All missions</span>
+            <span style="color:#7cbdd4;font-size:8px">30 ✓</span>
+          </div>
+          <div style="color:#4b5563;font-size:7px;margin-top:3px">Tap to customise</div>
+        </div>
+        <div style="background:#7cbdd4;border-radius:8px;padding:9px;text-align:center;margin-top:4px">
+          <span style="color:#0a0e19;font-size:9px;font-weight:800">CREATE GAME →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;max-width:600px;margin-left:auto;margin-right:auto">
+  <h3 style="margin:0 0 8px">Design summary</h3>
+  <ul style="margin:0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.8">
+    <li>Breakpoint: <strong style="color:var(--text)">768px</strong> — desktop layout unchanged above</li>
+    <li>Bottom nav: <strong style="color:var(--text)">Leaderboard · Photos · Power-ups · More</strong></li>
+    <li>FAB <strong style="color:var(--text)">"+"</strong> always visible, opens create-game flow full-screen</li>
+    <li><strong style="color:var(--text)">"More"</strong> tab shows Progress, Stats, Analytics</li>
+    <li>Active tab indicated by <strong style="color:var(--text)">top border + accent color</strong></li>
+    <li>Stop/Start game button lives in <strong style="color:var(--text)">Leaderboard tab</strong></li>
+    <li>All text in <strong style="color:var(--text)">English</strong></li>
+  </ul>
+</div>

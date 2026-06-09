@@ -1,0 +1,168 @@
+<h2>Mission Analytics — Sidlayout</h2>
+<p class="subtitle">Hur ska uppdragsstatistiken presenteras? Samma mörka GameOn-tema.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:14px;font-family:system-ui;border-radius:6px;min-height:240px;">
+        <div style="font-size:8px;color:#7CBDD4;letter-spacing:2px;font-weight:700;margin-bottom:10px;">MISSION ANALYTICS</div>
+        <!-- Table style -->
+        <div style="font-size:6.5px;color:#8FA8C0;display:flex;gap:4px;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid rgba(124,189,212,0.2);">
+          <span style="flex:2;font-weight:700;">UPPDRAG</span>
+          <span style="width:40px;text-align:center;font-weight:700;">KLARAT</span>
+          <span style="width:40px;text-align:center;font-weight:700;">RATE</span>
+          <span style="width:40px;text-align:right;font-weight:700;">SNITTS.</span>
+          <span style="width:40px;text-align:right;font-weight:700;">TOPPS.</span>
+        </div>
+        <!-- Row 1 - high completion -->
+        <div style="font-size:7px;color:#DCE4EE;display:flex;gap:4px;align-items:center;padding:3px 0;background:rgba(124,189,212,0.04);border-radius:3px;margin-bottom:2px;">
+          <span style="flex:2;">🧠 Logic Puzzle</span>
+          <span style="width:40px;text-align:center;color:#8CBF9B;">6/6</span>
+          <span style="width:40px;text-align:center;">
+            <span style="display:inline-block;background:rgba(140,191,155,0.3);color:#8CBF9B;border-radius:3px;padding:1px 4px;font-size:6px;font-weight:700;">100%</span>
+          </span>
+          <span style="width:40px;text-align:right;color:#8FA8C0;">320</span>
+          <span style="width:40px;text-align:right;color:#DEBB6B;font-weight:700;">500</span>
+        </div>
+        <!-- Row 2 - medium -->
+        <div style="font-size:7px;color:#DCE4EE;display:flex;gap:4px;align-items:center;padding:3px 0;margin-bottom:2px;">
+          <span style="flex:2;">💻 Tech Sprint</span>
+          <span style="width:40px;text-align:center;color:#7CBDD4;">4/6</span>
+          <span style="width:40px;text-align:center;">
+            <span style="display:inline-block;background:rgba(124,189,212,0.2);color:#7CBDD4;border-radius:3px;padding:1px 4px;font-size:6px;font-weight:700;">67%</span>
+          </span>
+          <span style="width:40px;text-align:right;color:#8FA8C0;">280</span>
+          <span style="width:40px;text-align:right;color:#DEBB6B;font-weight:700;">450</span>
+        </div>
+        <!-- Row 3 - low -->
+        <div style="font-size:7px;color:#DCE4EE;display:flex;gap:4px;align-items:center;padding:3px 0;background:rgba(124,189,212,0.04);border-radius:3px;margin-bottom:2px;">
+          <span style="flex:2;">🎯 Photo Hunt</span>
+          <span style="width:40px;text-align:center;color:#D4875A;">2/6</span>
+          <span style="width:40px;text-align:center;">
+            <span style="display:inline-block;background:rgba(212,135,90,0.2);color:#D4875A;border-radius:3px;padding:1px 4px;font-size:6px;font-weight:700;">33%</span>
+          </span>
+          <span style="width:40px;text-align:right;color:#8FA8C0;">190</span>
+          <span style="width:40px;text-align:right;color:#DEBB6B;font-weight:700;">350</span>
+        </div>
+        <div style="font-size:7px;color:#DCE4EE;display:flex;gap:4px;align-items:center;padding:3px 0;margin-bottom:2px;">
+          <span style="flex:2;">⚡ Speed Code</span>
+          <span style="width:40px;text-align:center;color:#7CBDD4;">5/6</span>
+          <span style="width:40px;text-align:center;">
+            <span style="display:inline-block;background:rgba(124,189,212,0.2);color:#7CBDD4;border-radius:3px;padding:1px 4px;font-size:6px;font-weight:700;">83%</span>
+          </span>
+          <span style="width:40px;text-align:right;color:#8FA8C0;">410</span>
+          <span style="width:40px;text-align:right;color:#DEBB6B;font-weight:700;">600</span>
+        </div>
+        <!-- Progress bars mini at bottom -->
+        <div style="margin-top:8px;font-size:6px;color:#8FA8C0;letter-spacing:1px;margin-bottom:4px;">COMPLETION RATE ↓</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:5.5px;color:#8FA8C0;width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🧠 Logic</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+              <div style="width:100%;height:100%;background:#8CBF9B;border-radius:2px;"></div>
+            </div>
+            <span style="font-size:6px;color:#8CBF9B;width:20px;text-align:right;">100%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:5.5px;color:#8FA8C0;width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">⚡ Speed</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+              <div style="width:83%;height:100%;background:#7CBDD4;border-radius:2px;"></div>
+            </div>
+            <span style="font-size:6px;color:#7CBDD4;width:20px;text-align:right;">83%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:5.5px;color:#8FA8C0;width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💻 Tech</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+              <div style="width:67%;height:100%;background:#7CBDD4;border-radius:2px;"></div>
+            </div>
+            <span style="font-size:6px;color:#7CBDD4;width:20px;text-align:right;">67%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:5.5px;color:#8FA8C0;width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎯 Photo</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+              <div style="width:33%;height:100%;background:#D4875A;border-radius:2px;"></div>
+            </div>
+            <span style="font-size:6px;color:#D4875A;width:20px;text-align:right;">33%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Tabell + staplar</h3>
+      <p>Tabell med alla kolumner (klarade, rate, snitt, topp) + horisontella staplar sorterade efter completion rate. Kompakt, datarikt.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0D1520;padding:14px;font-family:system-ui;border-radius:6px;min-height:240px;">
+        <div style="font-size:8px;color:#7CBDD4;letter-spacing:2px;font-weight:700;margin-bottom:10px;">MISSION ANALYTICS</div>
+        <!-- Card grid style -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="background:#162030;border:1px solid rgba(124,189,212,0.12);border-radius:5px;padding:7px;">
+            <div style="font-size:8px;margin-bottom:3px;">🧠 Logic Puzzle</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:6px;color:#8FA8C0;">Completion</span>
+              <span style="font-size:8px;font-weight:700;color:#8CBF9B;">100%</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:4px;overflow:hidden;">
+              <div style="width:100%;height:100%;background:#8CBF9B;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:5.5px;color:#8FA8C0;">Snitt: <span style="color:#DCE4EE;">320</span></span>
+              <span style="font-size:5.5px;color:#DEBB6B;">Topp: 500</span>
+            </div>
+          </div>
+          <div style="background:#162030;border:1px solid rgba(124,189,212,0.12);border-radius:5px;padding:7px;">
+            <div style="font-size:8px;margin-bottom:3px;">⚡ Speed Code</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:6px;color:#8FA8C0;">Completion</span>
+              <span style="font-size:8px;font-weight:700;color:#7CBDD4;">83%</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:4px;overflow:hidden;">
+              <div style="width:83%;height:100%;background:#7CBDD4;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:5.5px;color:#8FA8C0;">Snitt: <span style="color:#DCE4EE;">410</span></span>
+              <span style="font-size:5.5px;color:#DEBB6B;">Topp: 600</span>
+            </div>
+          </div>
+          <div style="background:#162030;border:1px solid rgba(124,189,212,0.12);border-radius:5px;padding:7px;">
+            <div style="font-size:8px;margin-bottom:3px;">💻 Tech Sprint</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:6px;color:#8FA8C0;">Completion</span>
+              <span style="font-size:8px;font-weight:700;color:#7CBDD4;">67%</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:4px;overflow:hidden;">
+              <div style="width:67%;height:100%;background:#7CBDD4;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:5.5px;color:#8FA8C0;">Snitt: <span style="color:#DCE4EE;">280</span></span>
+              <span style="font-size:5.5px;color:#DEBB6B;">Topp: 450</span>
+            </div>
+          </div>
+          <div style="background:#162030;border:1px solid rgba(124,189,212,0.12);border-radius:5px;padding:7px;">
+            <div style="font-size:8px;margin-bottom:3px;">🎯 Photo Hunt</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:6px;color:#8FA8C0;">Completion</span>
+              <span style="font-size:8px;font-weight:700;color:#D4875A;">33%</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:4px;overflow:hidden;">
+              <div style="width:33%;height:100%;background:#D4875A;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:5.5px;color:#8FA8C0;">Snitt: <span style="color:#DCE4EE;">190</span></span>
+              <span style="font-size:5.5px;color:#DEBB6B;">Topp: 350</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Kort-grid</h3>
+      <p>Varje uppdrag får ett eget kort med stapel, snitt och toppresultat. Visuellt luftigare men tar mer plats (kan bli många sidor med många uppdrag).</p>
+    </div>
+  </div>
+
+</div>
