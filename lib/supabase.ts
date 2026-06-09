@@ -70,4 +70,6 @@ export type CustomMission = {
   data: Record<string, unknown>;
   sort_order: number;
   created_at: string;
+  active_from?: string | null;
+  active_until?: string | null;
 };

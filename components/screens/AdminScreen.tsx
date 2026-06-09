@@ -411,12 +411,16 @@ type MissionFormData = {
   timelineItems: { label: string; year: string }[];
   // photo
   photoPrompt: string;
+  // seasonal window — ISO date strings ('' = unset)
+  activeFrom: string;
+  activeUntil: string;
 };
 
 const EMPTY_FORM: MissionFormData = {
   name: '', icon: '⭐', desc: '', difficulty: 'medium', maxPts: 500, type: '',
   triviaRounds: [], statements: [], closestQuestions: [],
   clues: [], paAnswer: '', timelineItems: [], photoPrompt: '',
+  activeFrom: '', activeUntil: '',
 };
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
@@ -1479,6 +1483,12 @@ export default function AdminScreen({ onLogout }: Props) {
           ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
           : [],
         photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
+        activeFrom: (cm as { active_from?: string | null }).active_from
+          ? new Date((cm as { active_from: string }).active_from).toISOString().slice(0, 10)
+          : '',
+        activeUntil: (cm as { active_until?: string | null }).active_until
+          ? new Date((cm as { active_until: string }).active_until).toISOString().slice(0, 10)
+          : '',
       });
       setMissionFormError('');
       setMissionCategoryId(cm.category_id ?? null);
@@ -1590,6 +1600,8 @@ export default function AdminScreen({ onLogout }: Props) {
           paAnswer: mission.paAnswer ?? '',
           timelineItems: mission.timelineItems ?? [],
           photoPrompt: mission.photoPrompt ?? '',
+          activeFrom: '',
+          activeUntil: '',
         });
         setMissionFormError('');
         setMissionCategoryId(null);
@@ -1618,6 +1630,11 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (validationError) { setMissionFormError(validationError); return; }
 
+      if (missionForm.activeFrom && missionForm.activeUntil && missionForm.activeFrom > missionForm.activeUntil) {
+        setMissionFormError('Active until must be on or after active from.');
+        return;
+      }
+
       setMissionSaving(true);
       setMissionFormError('');
       const data = buildMissionData(missionForm.type, {
@@ -1638,6 +1655,12 @@ export default function AdminScreen({ onLogout }: Props) {
         type: missionForm.type,
         data,
         category_id: missionCategoryId,
+        active_from: missionForm.activeFrom
+          ? new Date(`${missionForm.activeFrom}T00:00:00Z`).toISOString()
+          : null,
+        active_until: missionForm.activeUntil
+          ? new Date(`${missionForm.activeUntil}T23:59:59Z`).toISOString()
+          : null,
       };
 
       if (editingMissionId) {
@@ -1966,6 +1989,36 @@ export default function AdminScreen({ onLogout }: Props) {
                   </select>
                 </div>
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', display: 'block', marginBottom: '4px' }}>
+                    ACTIVE FROM (OPTIONAL)
+                  </label>
+                  <input
+                    type="date"
+                    value={missionForm.activeFrom}
+                    onChange={e => setF({ activeFrom: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', display: 'block', marginBottom: '4px' }}>
+                    ACTIVE UNTIL (OPTIONAL)
+                  </label>
+                  <input
+                    type="date"
+                    value={missionForm.activeUntil}
+                    onChange={e => setF({ activeUntil: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              {missionForm.activeFrom && missionForm.activeUntil && missionForm.activeFrom > missionForm.activeUntil && (
+                <div style={{ marginBottom: '8px', fontSize: '11px', color: 'var(--danger, #d33)' }}>
+                  Active until must be on or after active from.
+                </div>
+              )}
 
               {/* ── Type-specific fields ── */}
 
