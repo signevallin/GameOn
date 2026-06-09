@@ -10,9 +10,6 @@ function getSupabase() {
   );
 }
 
-// ── Server-side team list cache ───────────────────────────────────────────────
-// All 25 teams poll for the same list every 5s — cache it for 4s so the DB
-// only gets hit once per cycle instead of 25 times.
 const ONLINE_THRESHOLD_MS = 60_000; // 60 seconds
 
 // ── Server-side team list cache ───────────────────────────────────────────────
