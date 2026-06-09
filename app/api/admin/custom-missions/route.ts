@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { parseActiveWindow } from '@/lib/parse-active-window';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,17 +11,6 @@ function getSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-}
-
-// Accepts an ISO 8601 string, null, or undefined. Returns
-// { ok: true, value } where value is a normalized ISO string or null,
-// or { ok: false } when the input is not parseable.
-function parseActiveWindow(input: unknown): { ok: true; value: string | null } | { ok: false } {
-  if (input === undefined || input === null || input === '') return { ok: true, value: null };
-  if (typeof input !== 'string') return { ok: false };
-  const t = Date.parse(input);
-  if (Number.isNaN(t)) return { ok: false };
-  return { ok: true, value: new Date(t).toISOString() };
 }
 
 export async function GET(req: Request) {
@@ -82,4 +72,3 @@ export async function POST(req: Request) {
   return NextResponse.json({ mission });
 }
 
-export { parseActiveWindow };

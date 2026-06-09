@@ -5,11 +5,11 @@ import { getSubscription } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+function getClient() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+  return new Anthropic({ apiKey: key });
 }
-const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
 Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
@@ -52,7 +52,7 @@ Field rules:
 - Return ONLY the JSON object`;
 
 async function callClaude(userMessage: string): Promise<string> {
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 2048,
     messages: [{ role: 'user', content: userMessage }],

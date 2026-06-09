@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
-import { parseActiveWindow } from '../route';
+import { parseActiveWindow } from '@/lib/parse-active-window';
 
 export const dynamic = 'force-dynamic';
 
