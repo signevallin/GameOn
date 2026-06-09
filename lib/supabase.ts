@@ -26,6 +26,8 @@ export type Team = {
   mission_answers: Record<string, string>;
   powerups_received: number;
   extra_powerups: string[];
+  join_code?: string | null;
+  members?: Array<{ id: string; name: string; online: boolean }>;
 };
 
 export type Game = {
@@ -54,6 +56,7 @@ export type Game = {
     expires_at: string;
     claimed_by: string | null;
   } | null;
+  remote_mode?: boolean;
 };
 
 export type CustomMission = {
@@ -72,4 +75,12 @@ export type CustomMission = {
   created_at: string;
   active_from?: string | null;
   active_until?: string | null;
+};
+
+export type TeamMember = {
+  id: string;
+  team_id: string;
+  name: string;
+  last_seen_at: string;
+  created_at: string;
 };
