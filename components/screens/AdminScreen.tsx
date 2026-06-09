@@ -527,6 +527,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
+  const [playedMissionIds, setPlayedMissionIds] = useState<string[]>([]);
+  const [hidePlayedMissions, setHidePlayedMissions] = useState<boolean>(false);
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
@@ -645,6 +647,26 @@ export default function AdminScreen({ onLogout }: Props) {
   }, [POST]);
 
   useEffect(() => { loadGames(); }, [loadGames]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/played-missions', {
+          headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { playedIds?: string[] };
+        if (!cancelled && Array.isArray(data.playedIds)) {
+          setPlayedMissionIds(data.playedIds);
+        }
+      } catch {
+        // Non-fatal — toggle simply has no effect.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authToken]);
 
   // Only restart the polling interval when the game ID changes (not when game data updates).
   // Using activeGame?.id prevents an infinite loop where setActiveGame → effect re-runs → setActiveGame…
@@ -1509,6 +1531,21 @@ export default function AdminScreen({ onLogout }: Props) {
             prompt: aiPrompt,
             ...(aiType ? { type: aiType } : {}),
             language: aiLanguage,
+            excludedNames: (() => {
+              // Names of standard + custom missions used in the most recently created game.
+              const newest = [...games].sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )[0];
+              if (!newest || !Array.isArray(newest.missions)) return [];
+              const customById = new Map(adminCustomMissions.map(cm => [cm.id, cm.name] as const));
+              const standardById = new Map(MISSIONS.map(m => [m.id, m.name] as const));
+              const names: string[] = [];
+              for (const id of newest.missions) {
+                const n = customById.get(id) ?? standardById.get(id);
+                if (n) names.push(n);
+              }
+              return names;
+            })(),
           }),
         });
 
@@ -2432,7 +2469,16 @@ export default function AdminScreen({ onLogout }: Props) {
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <label className="form-label" style={{ margin: 0 }}>Select Missions ({selectedMissions.length} selected)</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={hidePlayedMissions}
+                  onChange={e => setHidePlayedMissions(e.target.checked)}
+                  style={{ margin: 0 }}
+                />
+                Hide already played{playedMissionIds.length > 0 ? ` (${playedMissionIds.length})` : ''}
+              </label>
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions(MISSIONS.map(m => m.id))}>All on</button>
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
             </div>
@@ -2441,7 +2487,10 @@ export default function AdminScreen({ onLogout }: Props) {
             {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => {
               if (catKey === 'gkn' && !isSuperAdmin) return null;
               const cat = SUPER_CATEGORIES[catKey];
-              const catMissions = MISSIONS.filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey);
+              const playedSet = new Set(playedMissionIds);
+              const catMissions = MISSIONS
+                .filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey)
+                .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
               if (catMissions.length === 0) return null;
               const allOn = catMissions.every(m => selectedMissions.includes(m.id));
               return (
@@ -2505,8 +2554,13 @@ export default function AdminScreen({ onLogout }: Props) {
             })}
             {/* ── Custom missions — grouped by category ── */}
             {adminCustomMissions.length > 0 && (() => {
-              const buckets = new Map<string | null, typeof adminCustomMissions>();
-              for (const m of adminCustomMissions) {
+              const playedSet = new Set(playedMissionIds);
+              const visibleCustom = hidePlayedMissions
+                ? adminCustomMissions.filter(m => !playedSet.has(m.id))
+                : adminCustomMissions;
+              if (visibleCustom.length === 0) return null;
+              const buckets = new Map<string | null, typeof visibleCustom>();
+              for (const m of visibleCustom) {
                 const key = m.category_id ?? null;
                 if (!buckets.has(key)) buckets.set(key, []);
                 buckets.get(key)!.push(m);
