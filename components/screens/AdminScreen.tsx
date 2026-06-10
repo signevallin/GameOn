@@ -1348,6 +1348,9 @@ export default function AdminScreen({ onLogout }: Props) {
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
             )}
             {isSuperAdmin && (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('analytics'); loadAnalytics(); }}>📊 Analytics</button>
+            )}
+            {isSuperAdmin && (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}>⚙️ Templates</button>
             )}
             <button className="btn btn-primary" onClick={() => { loadTemplates(); setView('templates'); }}>+ NEW GAME</button>
@@ -2899,9 +2902,6 @@ export default function AdminScreen({ onLogout }: Props) {
           {activeGame.status === 'active' && (
             <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups{plan === 'free' ? ' 🔒' : ''}</button>
           )}
-          {isSuperAdmin && (
-            <button className={`admin-tab${tab === 'customers' ? ' active' : ''}`} onClick={() => { setTab('customers'); loadAnalytics(); }}>👥 Analytics</button>
-          )}
         </div>
 
         {/* LEADERBOARD */}
@@ -3726,14 +3726,6 @@ export default function AdminScreen({ onLogout }: Props) {
                 >
                   📈 Stats
                 </button>
-                {isSuperAdmin && (
-                  <button
-                    className="mobile-more-sheet-item"
-                    onClick={() => { setTab('customers'); loadAnalytics(); setMobileMoreOpen(false); }}
-                  >
-                    👥 Analytics
-                  </button>
-                )}
               </div>
             </>
           )}
