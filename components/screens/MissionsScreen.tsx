@@ -575,6 +575,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
   const [showPowerups, setShowPowerups] = useState(false);
   const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
+  const [showMembers, setShowMembers] = useState(false);
 
   // Score count-up animation
   const [displayScore, setDisplayScore] = useState(team.score ?? 0);
@@ -795,10 +796,37 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
       )}
 
       <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', alignItems: 'center', gap: '4px' }}>
-        {/* Col 1: team name */}
-        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {team.name}
-        </span>
+        {/* Col 1: team name — button in remote mode, span otherwise */}
+        {game.remote_mode ? (
+          <button
+            onClick={() => setShowMembers(v => !v)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '12px',
+              fontWeight: 700,
+              color: 'var(--text)',
+              overflow: 'hidden',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {team.name}
+            </span>
+            <span style={{ fontSize: '9px', color: 'var(--muted)', flexShrink: 0 }}>
+              {showMembers ? '▴' : '▾'}
+            </span>
+          </button>
+        ) : (
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {team.name}
+          </span>
+        )}
 
         {/* Col 2: power-up pill */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -859,8 +887,33 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
       </nav>
 
-      {game.remote_mode && members.length > 0 && (
-        <MemberBar members={members} currentMemberId={memberId} />
+      {game.remote_mode && showMembers && members.length > 0 && (
+        <div style={{
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          padding: '8px 16px',
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+        }}>
+          {members.map(m => (
+            <div key={m.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              background: m.id === memberId ? 'rgba(124,189,212,0.12)' : 'var(--card)',
+              border: `1px solid ${m.id === memberId ? 'rgba(124,189,212,0.4)' : 'var(--border)'}`,
+              fontSize: '12px',
+              fontWeight: m.id === memberId ? 700 : 500,
+              color: 'var(--text)',
+            }}>
+              <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
+              {m.name}
+            </div>
+          ))}
+        </div>
       )}
 
       <div className="container fade-in">
