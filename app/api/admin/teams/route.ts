@@ -2,10 +2,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { ONLINE_THRESHOLD_MS } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
-
-const ONLINE_THRESHOLD_MS = 60_000;
 
 function getSupabase() {
   return createClient(

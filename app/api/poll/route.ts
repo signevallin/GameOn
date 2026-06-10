@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { ONLINE_THRESHOLD_MS } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +10,6 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
-
-const ONLINE_THRESHOLD_MS = 60_000; // 60 seconds
 
 // ── Server-side team list cache ───────────────────────────────────────────────
 // All 25 teams poll for the same list every 5s — cache it for 4s so the DB

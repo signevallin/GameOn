@@ -310,7 +310,6 @@ export default function Home() {
         onLogout={handleLogout}
         onTeamUpdate={setTeam}
         onGameUpdate={setGame}
-        // @ts-ignore — MissionsScreen props will be extended in a follow-up task
         memberId={memberId ?? undefined}
         members={members}
       />

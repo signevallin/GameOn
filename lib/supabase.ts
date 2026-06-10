@@ -5,6 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/** How long without a heartbeat before a team member is considered offline. */
+export const ONLINE_THRESHOLD_MS = 60_000;
+
 export type Team = {
   id: string;
   name: string;

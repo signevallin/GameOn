@@ -504,7 +504,7 @@ function MemberBar({ members, currentMemberId }: {
           fontWeight: m.id === currentMemberId ? 700 : 500,
           color: 'var(--text)',
         }}>
-          <span style={{ fontSize: '8px', color: m.online ? '#4CAF50' : 'var(--muted)' }}>●</span>
+          <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
           {m.name}
         </div>
       ))}
