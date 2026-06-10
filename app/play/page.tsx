@@ -25,6 +25,9 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [customMissions, setCustomMissions] = useState<Mission[]>([]);
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
+  const [memberId, setMemberId] = useState<string | null>(null);
+  const [memberName, setMemberName] = useState<string | null>(null);
+  const [members, setMembers] = useState<Array<{ id: string; name: string; online: boolean }>>([]);
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
@@ -36,6 +39,8 @@ export default function Home() {
   const gameRef = useRef(game);
   teamRef.current = team;
   gameRef.current = game;
+  const memberIdRef = useRef<string | null>(null);
+  memberIdRef.current = memberId;
 
   // ── Restore session on first mount ──
   useEffect(() => {
@@ -56,6 +61,13 @@ export default function Home() {
           setTeam(JSON.parse(savedTeam));
           setGame(JSON.parse(savedGame));
           setScreen('missions');
+          try {
+            const savedMember = localStorage.getItem('gameon_member');
+            if (savedMember) {
+              const m = JSON.parse(savedMember);
+              if (m.memberId) { setMemberId(m.memberId); setMemberName(m.memberName ?? null); }
+            }
+          } catch { /* ignore corrupted member storage */ }
         }
       } catch { /* corrupted storage – start fresh */ }
       setHydrated(true);
@@ -101,6 +113,8 @@ export default function Home() {
         if (data.game) setGame(data.game);
         if (data.team) setTeam(data.team);
         if (data.teams) setTeams(data.teams);
+        if (data.members) setMembers(data.members);
+        else if (!gameRef.current?.remote_mode) setMembers([]);
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
@@ -109,6 +123,31 @@ export default function Home() {
     const id = setInterval(refresh, 5000);
     return () => clearInterval(id);
   // Only restart when the session itself changes (login/logout), not on every state update.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result']);
+
+  // ── Heartbeat: keep remote member presence alive ──────────────────────────
+  useEffect(() => {
+    if (!hydrated) return;
+    if (screen !== 'missions' && screen !== 'challenge' && screen !== 'result') return;
+
+    async function heartbeat() {
+      const mId = memberIdRef.current;
+      const g = gameRef.current;
+      if (!mId || !g?.remote_mode) return;
+      try {
+        await fetch('/api/team/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberId: mId }),
+          cache: 'no-store',
+        });
+      } catch { /* silent — heartbeat is best-effort */ }
+    }
+
+    heartbeat(); // immediate on mount
+    const id = setInterval(heartbeat, 30_000);
+    return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result']);
 
@@ -148,16 +187,23 @@ export default function Home() {
       localStorage.removeItem('gameon_screen');
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
+      localStorage.removeItem('gameon_member');
     } else if ((screen === 'missions' || screen === 'challenge' || screen === 'result') && team && game) {
       localStorage.setItem('gameon_screen', 'missions');
       localStorage.setItem('gameon_team', JSON.stringify(team));
       localStorage.setItem('gameon_game', JSON.stringify(game));
+      if (memberId) {
+        localStorage.setItem('gameon_member', JSON.stringify({ memberId, memberName }));
+      } else {
+        localStorage.removeItem('gameon_member');
+      }
     } else if (screen === 'login') {
       localStorage.removeItem('gameon_screen');
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
+      localStorage.removeItem('gameon_member');
     }
-  }, [screen, team, game, hydrated]);
+  }, [screen, team, game, hydrated, memberId, memberName]);
 
   async function doPasswordUpdate() {
     setNewPasswordError('');
@@ -174,7 +220,7 @@ export default function Home() {
     }
   }
 
-  async function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = []) {
+  async function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = [], mId?: string, mName?: string) {
     setTeam(t);
     setGame(g);
     setCustomMissions(cms.map(toMission));
@@ -182,6 +228,7 @@ export default function Home() {
     const savedLang = localStorage.getItem('gameon_lang');
     const lang = savedLang ?? (g as { language?: string }).language ?? 'en';
     await initI18n(lang);
+    if (mId) { setMemberId(mId); setMemberName(mName ?? null); }
     setScreen('missions');
   }
 
@@ -218,6 +265,9 @@ export default function Home() {
     await supabase.auth.signOut().catch(() => {});
     setTeam(null);
     setGame(null);
+    setMemberId(null);
+    setMemberName(null);
+    setMembers([]);
     setScreen('login');
   }
 
@@ -260,6 +310,9 @@ export default function Home() {
         onLogout={handleLogout}
         onTeamUpdate={setTeam}
         onGameUpdate={setGame}
+        // @ts-ignore — MissionsScreen props will be extended in a follow-up task
+        memberId={memberId ?? undefined}
+        members={members}
       />
     );
   }
