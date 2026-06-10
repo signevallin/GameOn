@@ -1363,8 +1363,8 @@ export default function AdminScreen({ onLogout }: Props) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {games.map(g => {
-              const statusColor = g.status === 'active' ? 'var(--accent3)' : g.status === 'finished' ? 'var(--muted)' : 'var(--gold)';
-              const statusLabel = g.status === 'active' ? '🟢 Active' : g.status === 'finished' ? '⬛ Finished' : '🟡 Draft';
+              const statusKey = g.status === 'active' ? 'active' : g.status === 'finished' ? 'finished' : 'draft';
+              const statusText = g.status === 'active' ? 'Active' : g.status === 'finished' ? 'Finished' : 'Draft';
               const isConfirming = confirmDeleteId === g.id;
               const isDeleting = deletingId === g.id;
               return (
@@ -1384,7 +1384,12 @@ export default function AdminScreen({ onLogout }: Props) {
                   {/* Key + status + actions — stacks below info on mobile */}
                   <div className="admin-game-card-bottom">
                     <div className="admin-game-key">{g.game_key}</div>
-                    <div className="admin-game-status" style={{ color: statusColor }}>{statusLabel}</div>
+                    <div className="admin-game-status">
+                      <span className={`status-pill ${statusKey}`}>
+                        <span className="status-pill-dot" />
+                        {statusText}
+                      </span>
+                    </div>
 
                     {/* Delete / confirm */}
                     {isConfirming ? (
@@ -2806,8 +2811,9 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
                 {activeGame.missions.length} missions · {activeGame.duration_minutes} min ·{' '}
-                <span style={{ color: activeGame.status === 'active' ? 'var(--accent3)' : activeGame.status === 'finished' ? 'var(--muted)' : 'var(--gold)', fontWeight: 700 }}>
-                  {activeGame.status === 'active' ? '🟢 Running' : activeGame.status === 'finished' ? '⬛ Finished' : '🟡 Draft'}
+                <span className={`status-pill ${activeGame.status === 'active' ? 'active' : activeGame.status === 'finished' ? 'finished' : 'draft'}`} style={{ verticalAlign: 'middle' }}>
+                  <span className="status-pill-dot" />
+                  {activeGame.status === 'active' ? 'Running' : activeGame.status === 'finished' ? 'Finished' : 'Draft'}
                 </span>
               </p>
             </div>

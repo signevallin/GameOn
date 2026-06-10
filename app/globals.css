@@ -887,7 +887,35 @@ pre {
 .admin-game-card-info .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .admin-game-card-info .date { font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; }
 .admin-game-key { font-family: 'Sora', sans-serif; letter-spacing: 3px; font-size: 18px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
-.admin-game-status { font-size: 13px; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
+.admin-game-status { flex-shrink: 0; white-space: nowrap; }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.status-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-pill.draft  { background: rgba(212,183,97,0.12); border-color: rgba(212,183,97,0.35); color: var(--gold); }
+.status-pill.draft  .status-pill-dot { background: var(--gold); }
+.status-pill.active { background: rgba(140,191,155,0.12); border-color: rgba(140,191,155,0.35); color: var(--accent3); }
+.status-pill.active .status-pill-dot { background: var(--accent3); animation: pulse-dot 1.8s ease-in-out infinite; }
+.status-pill.finished { background: rgba(150,150,160,0.10); border-color: rgba(150,150,160,0.25); color: var(--muted); }
+.status-pill.finished .status-pill-dot { background: var(--muted); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
 .admin-game-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
 .admin-game-actions-row { display: flex; gap: 6px; }
 .admin-game-confirm { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
