@@ -42,6 +42,13 @@ export default function Home() {
   const memberIdRef = useRef<string | null>(null);
   memberIdRef.current = memberId;
 
+  // Refs so sync logic and navigate calls always read the latest values
+  const activeMissionRef = useRef(activeMission);
+  const screenRef = useRef(screen);
+  const syncedMissionRef = useRef<string | null | undefined>(undefined);
+  activeMissionRef.current = activeMission;
+  screenRef.current = screen;
+
   // ── Restore session on first mount ──
   useEffect(() => {
     async function restoreSession() {
@@ -112,19 +119,36 @@ export default function Home() {
         if (data.error) { console.error('[poll]', data.error); return; }
         if (data.game) setGame(data.game);
         if (data.team) setTeam(data.team);
+        // ── Remote mode screen sync ──────────────────────────────────────
+        if (data.team && gameRef.current?.remote_mode) {
+          const incoming = (data.team as { synced_mission_id?: string | null }).synced_mission_id ?? null;
+          if (incoming !== syncedMissionRef.current) {
+            syncedMissionRef.current = incoming;
+            if (incoming !== null && incoming !== activeMissionRef.current) {
+              // A teammate navigated to a mission — follow them
+              setActiveMission(incoming);
+              setScreen('challenge');
+            } else if (incoming === null && screenRef.current === 'challenge') {
+              // A teammate went back to missions — follow them
+              setActiveMission(null);
+              setScreen('missions');
+            }
+          }
+        }
         if (data.teams) setTeams(data.teams);
         if (data.members) setMembers(data.members);
         else if (!gameRef.current?.remote_mode) setMembers([]);
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
-    // Poll immediately, then every 5 seconds (reduced from 3s for scalability)
+    // Poll immediately, then every 5 seconds (or 500ms in remote mode)
     refresh();
-    const id = setInterval(refresh, 5000);
+    const id = setInterval(refresh, gameRef.current?.remote_mode ? 500 : 5000);
     return () => clearInterval(id);
   // Only restart when the session itself changes (login/logout), not on every state update.
+  // Also restart when remote_mode becomes known so the 500ms interval kicks in.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result']);
+  }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result', !!game?.remote_mode]);
 
   // ── Heartbeat: keep remote member presence alive ──────────────────────────
   useEffect(() => {
@@ -253,6 +277,21 @@ export default function Home() {
   function handleSelectMission(id: string) {
     setActiveMission(id);
     setScreen('challenge');
+    navigateSync(id); // sync teammates in remote mode
+  }
+
+  async function navigateSync(missionId: string | null) {
+    const t = teamRef.current;
+    const g = gameRef.current;
+    if (!t || !g?.remote_mode) return;
+    try {
+      await fetch('/api/team/navigate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: t.id, missionId }),
+        cache: 'no-store',
+      });
+    } catch { /* best-effort — same pattern as heartbeat */ }
   }
 
   function handleChallengeDone(updatedTeam: Team, pts: number, correct: boolean, elapsed: number) {
@@ -325,7 +364,7 @@ export default function Home() {
         teams={teams}
         customMissions={customMissions}
         onDone={handleChallengeDone}
-        onBack={() => setScreen('missions')}
+        onBack={() => { setScreen('missions'); navigateSync(null); }}
       />
     );
   }
@@ -338,7 +377,7 @@ export default function Home() {
         pts={result.pts}
         correct={result.correct}
         elapsed={result.elapsed}
-        onBack={() => setScreen('missions')}
+        onBack={() => { setScreen('missions'); navigateSync(null); }}
       />
     );
   }
