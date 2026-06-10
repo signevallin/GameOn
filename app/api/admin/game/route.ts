@@ -23,12 +23,19 @@ export async function GET(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
 
-  let query = adminClient().from('games').select('*').order('created_at', { ascending: false });
+  let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
   if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ games: data }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
+
+  const normalized = (data ?? []).map(g => ({
+    ...g,
+    teams_count: (g.teams as { count: number }[] | null)?.[0]?.count ?? 0,
+    teams: undefined,
+  }));
+
+  return NextResponse.json({ games: normalized }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }
 
 export async function POST(req: Request) {
@@ -38,11 +45,16 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   if (body.action === 'list') {
-    let query = adminClient().from('games').select('*').order('created_at', { ascending: false });
+    let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
     if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ games: data });
+    const normalized = (data ?? []).map(g => ({
+      ...g,
+      teams_count: (g.teams as { count: number }[] | null)?.[0]?.count ?? 0,
+      teams: undefined,
+    }));
+    return NextResponse.json({ games: normalized });
   }
 
   if (body.action === 'delete') {
