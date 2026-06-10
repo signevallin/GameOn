@@ -1337,10 +1337,7 @@ export default function AdminScreen({ onLogout }: Props) {
             {plan === 'free' ? (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
             ) : (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
-                <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); setAiPanelOpen(true); setAiError(''); }}>✨ Generate</button>
-              </div>
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
             )}
             {isSuperAdmin && (
               <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}>⚙️ Templates</button>
