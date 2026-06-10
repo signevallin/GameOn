@@ -1594,10 +1594,171 @@ export default function AdminScreen({ onLogout }: Props) {
             );
           })()}
 
-          {/* ── UPPDRAG TAB — added in Task 5 ── */}
-          {analytics && !analyticsLoading && analyticsTab === 'missions' && (
-            <div style={{ color: 'var(--muted)', textAlign: 'center', padding: '48px 0' }}>Uppdrag-fliken implementeras i nästa steg.</div>
-          )}
+          {/* ── UPPDRAG TAB ── */}
+          {analytics && !analyticsLoading && analyticsTab === 'missions' && (() => {
+            const { missionStats } = analytics;
+
+            const missionsInUse = missionStats.length;
+            const avgCompletion = missionStats.length > 0
+              ? missionStats.reduce((s, m) => s + m.completionRate, 0) / missionStats.length
+              : 0;
+            const mostPopular = missionStats[0] ?? null; // already sorted by gameCount desc
+            const hardest = [...missionStats]
+              .filter(m => m.gameCount >= 5)
+              .sort((a, b) => a.completionRate - b.completionRate)[0] ?? null;
+
+            const top10 = missionStats.slice(0, 10);
+            const rarelyUsed = [...missionStats]
+              .filter(m => m.gameCount < 5)
+              .sort((a, b) => a.gameCount - b.gameCount)
+              .slice(0, 5);
+
+            // Per-category stats
+            const categoryStats: Record<string, { completionSum: number; count: number }> = {};
+            for (const m of missionStats) {
+              const cat = MISSION_SUPER_CATEGORY[m.id];
+              if (!cat) continue;
+              if (!categoryStats[cat]) categoryStats[cat] = { completionSum: 0, count: 0 };
+              categoryStats[cat].count++;
+              categoryStats[cat].completionSum += m.completionRate;
+            }
+            const categoryRows = (Object.entries(categoryStats) as [SuperCategoryKey, { completionSum: number; count: number }][])
+              .filter(([, s]) => s.count > 0)
+              .map(([key, s]) => ({
+                key,
+                label: SUPER_CATEGORIES[key].label,
+                icon: SUPER_CATEGORIES[key].icon,
+                color: SUPER_CATEGORIES[key].color,
+                avgCompletion: s.completionSum / s.count,
+              }))
+              .sort((a, b) => b.avgCompletion - a.avgCompletion);
+
+            const missionIconById: Record<string, string> = {};
+            for (const m of MISSIONS) missionIconById[m.id] = m.icon;
+
+            const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
+            const barColor = (rate: number) => {
+              if (rate >= 0.8) return 'var(--accent3)';
+              if (rate >= 0.5) return '#f59e0b';
+              return 'var(--accent2)';
+            };
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* KPI row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Uppdrag i bruk</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{missionsInUse}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>av {MISSIONS.length} tillgängliga</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Snitt klarade/spel</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(avgCompletion * 100)}%</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>av valda uppdrag</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Populärast</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {mostPopular ? `${missionIconById[mostPopular.id] ?? ''} ${mostPopular.name}` : '–'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                      {mostPopular ? `med i ${mostPopular.gameCount} av ${analytics.kpis.totalGames} spel` : ''}
+                    </div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Svårast</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {hardest ? `${missionIconById[hardest.id] ?? ''} ${hardest.name}` : '–'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                      {hardest ? `${Math.round(hardest.completionRate * 100)}% klarar det` : 'Behöver ≥5 spel'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 1: Top missions (3fr) + Right column (2fr) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px' }}>
+
+                  {/* Top missions ranked list */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Topp 10 uppdrag</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      {top10.map((m, i) => (
+                        <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 6px', borderRadius: '8px' }}>
+                          <div style={{ width: '20px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: rankColors[i] ?? 'var(--muted)', flexShrink: 0 }}>
+                            {i + 1}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '14px' }}>{missionIconById[m.id] ?? '🎯'}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>
+                              Med i {m.gameCount} spel · {m.totalTeams} lagförsök
+                            </div>
+                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${m.completionRate * 100}%`, background: barColor(m.completionRate), borderRadius: '2px', transition: 'width 0.3s' }} />
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0, minWidth: '36px', textAlign: 'right' }}>
+                            {Math.round(m.completionRate * 100)}%
+                          </div>
+                        </div>
+                      ))}
+                      {top10.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Ingen data</div>}
+                    </div>
+                  </div>
+
+                  {/* Right column: category breakdown + rarely used */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                    {/* Per kategori */}
+                    <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '14px', color: 'var(--text)' }}>Per kategori</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {categoryRows.map(cat => (
+                          <div key={cat.key}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '13px' }}>{cat.icon}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--text)', flex: 1 }}>{cat.label}</span>
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: cat.color }}>{Math.round(cat.avgCompletion * 100)}%</span>
+                            </div>
+                            <div style={{ height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${cat.avgCompletion * 100}%`, background: cat.color, borderRadius: '3px', transition: 'width 0.3s' }} />
+                            </div>
+                          </div>
+                        ))}
+                        {categoryRows.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>Ingen data</div>}
+                      </div>
+                    </div>
+
+                    {/* Sällan använda */}
+                    <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Sällan använda</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {rarelyUsed.map(m => (
+                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '14px', flexShrink: 0 }}>{missionIconById[m.id] ?? '🎯'}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.gameCount} spel · {m.totalTeams} lagförsök</div>
+                            </div>
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0 }}>{Math.round(m.completionRate * 100)}%</div>
+                          </div>
+                        ))}
+                        {rarelyUsed.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>Alla uppdrag används flitigt!</div>}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
 
         </div>
       </>
