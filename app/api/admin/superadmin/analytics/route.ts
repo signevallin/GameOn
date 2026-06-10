@@ -205,14 +205,19 @@ export async function POST(req: Request) {
 
   // ── Subscription plans ────────────────────────────────────────────────────
   const customerIds = customers.map(c => c.id);
-  const { data: subsData } = await supabase
-    .from('subscriptions')
-    .select('user_id, plan, status')
-    .in('user_id', customerIds);
+  const { data: subsData, error: subsError } = customerIds.length > 0
+    ? await supabase
+        .from('subscriptions')
+        .select('user_id, plan, status')
+        .in('user_id', customerIds)
+    : { data: [], error: null };
+  if (subsError) console.error('[analytics] subscriptions fetch failed:', subsError.message);
 
+  const VALID_PLANS = new Set(['free', 'pro', 'studio'] as const);
   const planByUserId: Record<string, 'free' | 'pro' | 'studio'> = {};
   for (const sub of (subsData ?? [])) {
-    if (sub.status !== 'canceled') {
+    // includes 'active', 'trialing', 'past_due' — all treated as active plans
+    if (sub.status !== 'canceled' && VALID_PLANS.has(sub.plan as 'free' | 'pro' | 'studio')) {
       planByUserId[sub.user_id] = sub.plan as 'free' | 'pro' | 'studio';
     }
   }
