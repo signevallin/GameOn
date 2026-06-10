@@ -387,7 +387,7 @@ function PowerUpsCard({
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics' | 'my-analytics';
 
 type AdminCategory = { id: string; name: string; emoji: string; sort_order: number };
 
@@ -1240,6 +1240,22 @@ export default function AdminScreen({ onLogout }: Props) {
               {/* Actions */}
               <div style={{ padding: '8px' }}>
                 <button
+                  onClick={() => { setShowProfile(false); setView('my-analytics'); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ fontSize: '16px' }}>📊</span>
+                  <span>Analytics</span>
+                </button>
+
+                <button
                   onClick={() => { handleChangePassword(); }}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: '8px',
@@ -1762,6 +1778,162 @@ export default function AdminScreen({ onLogout }: Props) {
 
         </div>
       </>
+    );
+  }
+
+  // ── MY ANALYTICS (per-user) ──
+  if (view === 'my-analytics') {
+    const isoWeekKey = (d: Date): string => {
+      const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+      const y = tmp.getUTCFullYear();
+      const yearStart = new Date(Date.UTC(y, 0, 1));
+      const w = Math.ceil((((tmp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+      return `${y}-${w}`;
+    };
+
+    const timeAgoLocal = (dateStr: string): string => {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const days = Math.floor(diff / 86400000);
+      if (days === 0) return 'idag';
+      if (days === 1) return '1 dag sedan';
+      if (days < 7) return `${days} dagar sedan`;
+      const weeks = Math.floor(days / 7);
+      if (weeks === 1) return '1 vecka sedan';
+      return `${weeks} veckor sedan`;
+    };
+
+    const totalGames = games.length;
+    const finishedCount = games.filter(g => g.status === 'finished').length;
+    const completionRate = totalGames > 0 ? Math.round(finishedCount / totalGames * 100) : 0;
+    const totalTeams = games.reduce((sum, g) => sum + (g.teams_count ?? 0), 0);
+    const avgTeams = totalGames > 0 ? (totalTeams / totalGames).toFixed(1) : '—';
+
+    // Last 7 ISO weeks oldest → newest
+    const gamesPerWeek: { label: string; key: string; count: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i * 7);
+      const key = isoWeekKey(d);
+      const weekNum = parseInt(key.split('-')[1]);
+      gamesPerWeek.push({ label: `V${weekNum}`, key, count: 0 });
+    }
+    games.forEach(g => {
+      if (!g.started_at) return;
+      const key = isoWeekKey(new Date(g.started_at));
+      const entry = gamesPerWeek.find(e => e.key === key);
+      if (entry) entry.count++;
+    });
+    const maxCount = Math.max(...gamesPerWeek.map(w => w.count), 1);
+
+    // Last 5 started games
+    const recentGames = [...games]
+      .filter(g => g.started_at)
+      .sort((a, b) => new Date(b.started_at!).getTime() - new Date(a.started_at!).getTime())
+      .slice(0, 5);
+
+    const kpis = [
+      { label: 'Spel totalt', value: String(totalGames), color: 'var(--accent)' },
+      { label: 'Slutförandegrad', value: `${completionRate}%`, color: 'var(--accent3)' },
+      { label: 'Snitt lag/spel', value: String(avgTeams), color: 'var(--text)' },
+      { label: 'Lag totalt', value: String(totalTeams), color: 'var(--gold)' },
+    ];
+
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '20px 16px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+            <button
+              onClick={() => setView('games')}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--accent)', fontSize: 13, padding: '6px 0',
+                fontFamily: "'Sora', sans-serif",
+              }}
+            >
+              ← Tillbaka
+            </button>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text)' }}>
+              📊 Din statistik
+            </h1>
+          </div>
+
+          {/* KPI row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+            {kpis.map(kpi => (
+              <div
+                key={kpi.label}
+                style={{
+                  background: 'var(--card)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '14px 12px', textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: 24, fontWeight: 700, color: kpi.color }}>{kpi.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>{kpi.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart + Recent games */}
+          <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 12 }}>
+            {/* Activity bar chart */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+                Spel per vecka
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 80 }}>
+                {gamesPerWeek.map((w, i) => {
+                  const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
+                  const heightPx = w.count === 0 ? 4 : Math.max(8, Math.round((w.count / maxCount) * 80));
+                  return (
+                    <div
+                      key={w.key}
+                      style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+                    >
+                      <div
+                        style={{
+                          width: '100%',
+                          background: `rgba(110,198,245,${opacity})`,
+                          borderRadius: '3px 3px 0 0',
+                          height: heightPx,
+                        }}
+                      />
+                      <div style={{ fontSize: 9, color: 'var(--muted)' }}>{w.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Recent games */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+                Senaste spel
+              </div>
+              {recentGames.length === 0 ? (
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>Inga spel ännu</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {recentGames.map(g => (
+                    <div key={g.id}>
+                      <div style={{
+                        fontSize: 13, fontWeight: 600, color: 'var(--text)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {g.name || '(namnlöst)'}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+                        {g.teams_count ?? 0} lag · {g.started_at ? timeAgoLocal(g.started_at) : 'Utkast'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
