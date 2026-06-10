@@ -31,6 +31,7 @@ export type Team = {
   extra_powerups: string[];
   join_code?: string | null;
   members?: Array<{ id: string; name: string; online: boolean }>;
+  synced_mission_id?: string | null;
 };
 
 export type Game = {
