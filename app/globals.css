@@ -923,7 +923,7 @@ pre {
 @media (max-width: 600px) {
   .admin-game-card { flex-wrap: wrap; gap: 10px; padding: 16px; }
   .admin-game-card-info { width: 100%; }
-  .admin-game-card-bottom { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .admin-game-card-bottom { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 4px 0; }
   .admin-game-key { font-size: 15px; letter-spacing: 2px; }
   .admin-game-actions { flex-direction: row; }
   .admin-game-confirm { flex-wrap: wrap; }
