@@ -593,11 +593,13 @@ export default function AdminScreen({ onLogout }: Props) {
     Object.fromEntries(MISSIONS.map(m => [m.id, m.maxPts]))
   );
   const [hideLeaderboard, setHideLeaderboard] = useState(false);
+  const [remoteMode, setRemoteMode] = useState(false);
   const [gameLanguage, setGameLanguage] = useState('en');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
 
   // Timestamp of the last admin command (start/finish/restart).
   // Polls that started BEFORE a command are discarded to prevent race conditions.
@@ -788,7 +790,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -2519,6 +2521,22 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
             </div>
           </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div
+              onClick={() => setRemoteMode(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${remoteMode ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>🌍 Remote / Distributed mode</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  Each team member joins on their own device.
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: remoteMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: remoteMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div style={{ marginBottom: '24px' }}>
@@ -2886,18 +2904,55 @@ export default function AdminScreen({ onLogout }: Props) {
                 const finishElapsed = t.finished_at && activeGame.started_at
                   ? fmtElapsed(new Date(t.finished_at).getTime() - new Date(activeGame.started_at).getTime())
                   : null;
+                const isExpanded = expandedTeamId === t.id;
+                const hasMembers = activeGame.remote_mode && Array.isArray((t as Team & { members?: Array<{name: string; online: boolean}> }).members);
+                const teamMembers = hasMembers ? (t as Team & { members?: Array<{name: string; online: boolean}> }).members! : [];
                 return (
-                  <div className="lb-row" key={t.id}>
-                    <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
-                    <div className="lb-name">{t.name}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
-                      <div className="lb-score">{t.score} p</div>
-                      {finishElapsed ? (
-                        <div style={{ fontSize: '11px', color: 'var(--accent3)', letterSpacing: '0.5px' }}>🏁 {finishElapsed}</div>
-                      ) : (
-                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
+                  <div key={t.id} style={{ marginBottom: '4px' }}>
+                    <div
+                      className="lb-row"
+                      style={{ cursor: hasMembers ? 'pointer' : 'default', borderRadius: isExpanded ? '10px 10px 0 0' : '10px' }}
+                      onClick={() => hasMembers && setExpandedTeamId(isExpanded ? null : t.id)}
+                    >
+                      <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
+                      <div className="lb-name">{t.name}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
+                        <div className="lb-score">{t.score} p</div>
+                        {finishElapsed ? (
+                          <div style={{ fontSize: '11px', color: 'var(--accent3)', letterSpacing: '0.5px' }}>🏁 {finishElapsed}</div>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
+                        )}
+                      </div>
+                      {hasMembers && (
+                        <div style={{ marginLeft: '10px', color: 'var(--muted)', fontSize: '12px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</div>
                       )}
                     </div>
+                    {isExpanded && teamMembers.length > 0 && (
+                      <div style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderTop: 'none',
+                        borderRadius: '0 0 10px 10px',
+                        padding: '10px 14px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                      }}>
+                        {teamMembers.map(m => (
+                          <div key={m.name} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            fontSize: '12px',
+                            color: m.online ? 'var(--text)' : 'var(--muted)',
+                          }}>
+                            <span style={{ fontSize: '8px', color: m.online ? '#4CAF50' : 'var(--muted)' }}>●</span>
+                            {m.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
