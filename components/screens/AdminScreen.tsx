@@ -1318,6 +1318,292 @@ export default function AdminScreen({ onLogout }: Props) {
     );
   }
 
+  // ── ANALYTICS PAGE (super admin only) ──
+  if (view === 'analytics' && isSuperAdmin) {
+
+    const timeAgo = (iso: string | null): string => {
+      if (!iso) return '–';
+      const diff = Date.now() - new Date(iso).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 60) return `${mins}m sedan`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h sedan`;
+      return `${Math.floor(hours / 24)}d sedan`;
+    };
+
+    const statusDotColor = (lastActive: string | null): string => {
+      if (!lastActive) return '#555';
+      const days = (Date.now() - new Date(lastActive).getTime()) / 86400000;
+      if (days <= 7) return '#4ade80';
+      if (days <= 30) return '#fbbf24';
+      return '#555';
+    };
+
+    const kpiCardStyle: React.CSSProperties = {
+      background: 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      minWidth: 0,
+    };
+
+    return (
+      <>
+        <nav className="nav" style={{ position: 'relative' }}>
+          <button
+            className="btn btn-ghost"
+            style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => setView('games')}
+          >
+            ← Back
+          </button>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontWeight: 700, fontSize: '15px', color: 'var(--text)' }}>
+            📊 Analytics
+          </div>
+          <div className="nav-right">
+            <button
+              className="btn btn-ghost"
+              style={{ padding: '6px 12px', fontSize: '12px' }}
+              onClick={loadAnalytics}
+              disabled={analyticsLoading}
+            >
+              {analyticsLoading ? '...' : '↻ Uppdatera'}
+            </button>
+          </div>
+        </nav>
+
+        <div className="container fade-in" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0' }}>
+            {(['customers', 'missions'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setAnalyticsTab(t)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '10px 20px',
+                  fontSize: '13px',
+                  fontWeight: analyticsTab === t ? 700 : 400,
+                  color: analyticsTab === t ? 'var(--text)' : 'var(--muted)',
+                  borderBottom: analyticsTab === t ? '2px solid var(--accent)' : '2px solid transparent',
+                  marginBottom: '-1px',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {t === 'customers' ? 'Kunder' : 'Uppdrag'}
+              </button>
+            ))}
+          </div>
+
+          {/* Loading */}
+          {analyticsLoading && (
+            <div className="empty-state">Laddar analytics...</div>
+          )}
+
+          {/* Error */}
+          {!analyticsLoading && analyticsError && (
+            <div className="empty-state" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+              <span>Kunde inte ladda analytics.</span>
+              <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={loadAnalytics}>↻ Försök igen</button>
+            </div>
+          )}
+
+          {/* ── KUNDER TAB ── */}
+          {analytics && !analyticsLoading && analyticsTab === 'customers' && (() => {
+            const { kpis, customers: cx, gamesPerWeek, planCounts } = analytics;
+            const totalCustomers = planCounts.free + planCounts.pro + planCounts.studio;
+            const proCustomers = planCounts.pro + planCounts.studio;
+            const proRatePct = totalCustomers > 0 ? Math.round(proCustomers / totalCustomers * 100) : 0;
+            const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+            const gamesThisMonth = cx.reduce((sum, c) => sum + c.games.filter(g => g.startedAt && g.startedAt >= monthStart).length, 0);
+            const maxBarCount = Math.max(...gamesPerWeek.map(w => w.count), 1);
+            const recentGames = cx
+              .flatMap(c => c.games.map(g => ({ ...g, customerEmail: c.email })))
+              .sort((a, b) => {
+                if (!a.startedAt) return 1;
+                if (!b.startedAt) return -1;
+                return b.startedAt.localeCompare(a.startedAt);
+              })
+              .slice(0, 10);
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* KPI row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aktiva kunder</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#6ec6f5', lineHeight: 1 }}>{kpis.activeCustomers}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} senaste 30d</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Spel totalt</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.totalGames}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} den här månaden</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Slutförandegrad</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(kpis.completionRate * 100)}%</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} av {kpis.totalGames} klara</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Snitt lag/spel</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.avgTeamsPerGame}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} lag totalt</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro-kunder</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{proCustomers}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% av alla</div>
+                  </div>
+                </div>
+
+                {/* Row 1: Activity chart + Customer status list */}
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px' }}>
+
+                  {/* Activity chart */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Aktivitet per vecka</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
+                      {gamesPerWeek.map((w, i) => {
+                        const barH = Math.max(4, Math.round((w.count / maxBarCount) * 80));
+                        const opacity = 0.22 + (i / 6) * 0.78;
+                        return (
+                          <div
+                            key={w.weekLabel}
+                            title={`${w.weekLabel}: ${w.count} spel`}
+                            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}
+                          >
+                            <div style={{ width: '100%', height: `${barH}px`, background: '#6ec6f5', opacity, borderRadius: '3px 3px 0 0', transition: 'height 0.2s' }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {gamesPerWeek.map(w => (
+                        <div key={w.weekLabel} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: 'var(--muted)' }}>{w.weekLabel}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Customer status list */}
+                  <div style={{ ...kpiCardStyle, padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Kundstatus</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'auto', maxHeight: '180px' }}>
+                      {cx.map(c => (
+                        <div
+                          key={c.id}
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', cursor: 'pointer', background: expandedCustomer === c.id ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'background 0.15s' }}
+                          onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)}
+                        >
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: statusDotColor(c.lastActive), flexShrink: 0 }} />
+                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'rgba(110,198,245,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#6ec6f5', flexShrink: 0 }}>
+                            {(c.email[0] ?? '?').toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{c.gameCount} spel</div>
+                        </div>
+                      ))}
+                      {cx.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Inga kunder</div>}
+                    </div>
+                    {/* Expanded customer games */}
+                    {expandedCustomer && (() => {
+                      const customer = cx.find(c => c.id === expandedCustomer);
+                      if (!customer) return null;
+                      return (
+                        <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '8px', fontWeight: 600 }}>{customer.email}</div>
+                          {customer.games.slice(0, 5).map(g => (
+                            <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '12px' }}>
+                              <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{g.name ?? '(namnlöst)'}</span>
+                              <span style={{ color: 'var(--muted)', flexShrink: 0, marginLeft: '8px' }}>{g.teamCount} lag</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Row 2: Recent games feed + Plan distribution */}
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+
+                  {/* Recent games feed */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Senaste spelen</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      {recentGames.map(g => {
+                        const teamBadgeColor = g.teamCount >= 8 ? 'var(--accent3)' : g.teamCount >= 4 ? '#6ec6f5' : 'var(--muted)';
+                        return (
+                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name ?? '(namnlöst)'}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.customerEmail}</div>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(g.startedAt)}</div>
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: teamBadgeColor, background: 'rgba(255,255,255,0.06)', borderRadius: '20px', padding: '2px 8px', flexShrink: 0 }}>
+                              {g.teamCount} lag
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {recentGames.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Inga spel</div>}
+                    </div>
+                  </div>
+
+                  {/* Plan distribution */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Planfördelning</div>
+                    {totalCustomers > 0 ? (
+                      <>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: '#f59e0b', fontWeight: 600 }}>Pro / Studio</span>
+                            <span style={{ color: 'var(--muted)' }}>{proCustomers}</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${(proCustomers / totalCustomers) * 100}%`, background: '#f59e0b', borderRadius: '4px', transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Free</span>
+                            <span style={{ color: 'var(--muted)' }}>{planCounts.free}</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${(planCounts.free / totalCustomers) * 100}%`, background: 'rgba(255,255,255,0.3)', borderRadius: '4px', transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+                          <div style={{ fontSize: '22px', fontWeight: 800, color: '#f59e0b' }}>{proRatePct}%</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>pro-rate · {totalCustomers} kunder</div>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Inga kunder</div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
+
+          {/* ── UPPDRAG TAB — added in Task 5 ── */}
+          {analytics && !analyticsLoading && analyticsTab === 'missions' && (
+            <div style={{ color: 'var(--muted)', textAlign: 'center', padding: '48px 0' }}>Uppdrag-fliken implementeras i nästa steg.</div>
+          )}
+
+        </div>
+      </>
+    );
+  }
+
   // ── GAMES LIST ──
   if (view === 'games') return (
     <>
