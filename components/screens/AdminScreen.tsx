@@ -775,6 +775,7 @@ export default function AdminScreen({ onLogout }: Props) {
       setAiRatingInstructions(activeGame.ai_photo_instructions ?? '');
     }
     setOverridingPhotoId(null);
+    setExpandedTeamId(null);
   }, [activeGameId]);
 
   async function createGame() {
@@ -2905,14 +2906,15 @@ export default function AdminScreen({ onLogout }: Props) {
                   ? fmtElapsed(new Date(t.finished_at).getTime() - new Date(activeGame.started_at).getTime())
                   : null;
                 const isExpanded = expandedTeamId === t.id;
-                const hasMembers = activeGame.remote_mode && Array.isArray((t as Team & { members?: Array<{name: string; online: boolean}> }).members);
-                const teamMembers = hasMembers ? (t as Team & { members?: Array<{name: string; online: boolean}> }).members! : [];
+                const teamMembers = activeGame.remote_mode ? (t.members ?? []) : [];
+                const hasMembers = activeGame.remote_mode && teamMembers.length > 0;
+                const showPanel = isExpanded && hasMembers;
                 return (
                   <div key={t.id} style={{ marginBottom: '4px' }}>
                     <div
                       className="lb-row"
-                      style={{ cursor: hasMembers ? 'pointer' : 'default', borderRadius: isExpanded ? '10px 10px 0 0' : '10px' }}
-                      onClick={() => hasMembers && setExpandedTeamId(isExpanded ? null : t.id)}
+                      style={{ cursor: activeGame.remote_mode ? 'pointer' : 'default', borderRadius: showPanel ? '10px 10px 0 0' : '10px' }}
+                      onClick={() => activeGame.remote_mode && setExpandedTeamId(isExpanded ? null : t.id)}
                     >
                       <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
                       <div className="lb-name">{t.name}</div>
@@ -2924,11 +2926,11 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
                         )}
                       </div>
-                      {hasMembers && (
+                      {activeGame.remote_mode && (
                         <div style={{ marginLeft: '10px', color: 'var(--muted)', fontSize: '12px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</div>
                       )}
                     </div>
-                    {isExpanded && teamMembers.length > 0 && (
+                    {showPanel && (
                       <div style={{
                         background: 'var(--surface)',
                         border: '1px solid var(--border)',
@@ -2940,14 +2942,14 @@ export default function AdminScreen({ onLogout }: Props) {
                         gap: '8px',
                       }}>
                         {teamMembers.map(m => (
-                          <div key={m.name} style={{
+                          <div key={m.id} style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
                             fontSize: '12px',
                             color: m.online ? 'var(--text)' : 'var(--muted)',
                           }}>
-                            <span style={{ fontSize: '8px', color: m.online ? '#4CAF50' : 'var(--muted)' }}>●</span>
+                            <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
                             {m.name}
                           </div>
                         ))}
