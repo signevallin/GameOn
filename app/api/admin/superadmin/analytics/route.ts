@@ -29,6 +29,7 @@ export interface AnalyticsCustomer {
   avgTeams: number;
   completionRate: number;
   lastActive: string | null;
+  plan: 'free' | 'pro' | 'studio';
   games: AnalyticsGame[];
 }
 
@@ -55,6 +56,16 @@ export interface AnalyticsResponse {
   kpis: AnalyticsKPIs;
   customers: AnalyticsCustomer[];
   missionStats: AnalyticsMissionStat[];
+  gamesPerWeek: Array<{ weekLabel: string; count: number }>;
+  planCounts: { free: number; pro: number; studio: number };
+}
+
+function isoWeek(date: Date): { week: number; year: number } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d.valueOf() - yearStart.valueOf()) / 86400000 + 1) / 7);
+  return { week, year: d.getUTCFullYear() };
 }
 
 export async function POST(req: Request) {
@@ -88,6 +99,22 @@ export async function POST(req: Request) {
   const users = usersResult.data.users;
   const games = gamesResult.data ?? [];
   const teams = teamsResult.data ?? [];
+
+  // ── Games per week (last 7 ISO weeks) ────────────────────────────────────
+  const now = new Date();
+  const weekSlots: Array<{ weekLabel: string; year: number; week: number; count: number }> = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i * 7));
+    const { week, year } = isoWeek(d);
+    weekSlots.push({ weekLabel: `V${week}`, year, week, count: 0 });
+  }
+  for (const g of games) {
+    if (!g.started_at) continue;
+    const { week, year } = isoWeek(new Date(g.started_at));
+    const slot = weekSlots.find(s => s.week === week && s.year === year);
+    if (slot) slot.count++;
+  }
+  const gamesPerWeek = weekSlots.map(({ weekLabel, count }) => ({ weekLabel, count }));
 
   // Build a lookup: game_id → array of teams
   const teamsByGame: Record<string, { score: number; completed: string[]; finished_at: string | null }[]> = {};
@@ -137,7 +164,7 @@ export async function POST(req: Request) {
     gamesByUser[g.user_id].push(g);
   }
 
-  const customers: AnalyticsCustomer[] = users
+  const customers: Omit<AnalyticsCustomer, 'plan'>[] = users
     .filter(u => u.app_metadata?.role !== 'superadmin')
     .map(u => {
       const userGames = gamesByUser[u.id] ?? [];
@@ -176,6 +203,30 @@ export async function POST(req: Request) {
       return b.lastActive.localeCompare(a.lastActive);
     });
 
+  // ── Subscription plans ────────────────────────────────────────────────────
+  const customerIds = customers.map(c => c.id);
+  const { data: subsData } = await supabase
+    .from('subscriptions')
+    .select('user_id, plan, status')
+    .in('user_id', customerIds);
+
+  const planByUserId: Record<string, 'free' | 'pro' | 'studio'> = {};
+  for (const sub of (subsData ?? [])) {
+    if (sub.status !== 'canceled') {
+      planByUserId[sub.user_id] = sub.plan as 'free' | 'pro' | 'studio';
+    }
+  }
+
+  const customersWithPlan: AnalyticsCustomer[] = customers.map(c => ({
+    ...c,
+    plan: planByUserId[c.id] ?? 'free' as const,
+  }));
+
+  const planCounts = { free: 0, pro: 0, studio: 0 };
+  for (const c of customersWithPlan) {
+    planCounts[c.plan]++;
+  }
+
   // ── Mission stats ─────────────────────────────────────────────────────────
   const missionStatsMap: Record<string, { gameCount: number; totalTeams: number; completedCount: number }> = {};
 
@@ -203,6 +254,6 @@ export async function POST(req: Request) {
     }))
     .sort((a, b) => b.gameCount - a.gameCount);
 
-  const response: AnalyticsResponse = { kpis, customers, missionStats };
+  const response: AnalyticsResponse = { kpis, customers: customersWithPlan, missionStats, gamesPerWeek, planCounts };
   return NextResponse.json(response);
 }
