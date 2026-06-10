@@ -387,7 +387,7 @@ function PowerUpsCard({
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics';
 
 type AdminCategory = { id: string; name: string; emoji: string; sort_order: number };
 
@@ -522,14 +522,16 @@ export default function AdminScreen({ onLogout }: Props) {
   const [resetSent, setResetSent] = useState(false);
   // Analytics state
   type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
-  type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; games: AnalyticsGame[] };
+  type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; plan: 'free' | 'pro' | 'studio'; games: AnalyticsGame[] };
   type AnalyticsMissionStat = { id: string; name: string; gameCount: number; completedCount: number; totalTeams: number; completionRate: number };
   type AnalyticsKPIs = { totalGames: number; finishedGames: number; activeCustomers: number; activeCustomers30d: number; completionRate: number; avgTeamsPerGame: number; totalTeams: number };
-  type AnalyticsData = { kpis: AnalyticsKPIs; customers: AnalyticsCustomer[]; missionStats: AnalyticsMissionStat[] };
+  type AnalyticsData = { kpis: AnalyticsKPIs; customers: AnalyticsCustomer[]; missionStats: AnalyticsMissionStat[]; gamesPerWeek: Array<{ weekLabel: string; count: number }>; planCounts: { free: number; pro: number; studio: number } };
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
+  const [analyticsTab, setAnalyticsTab] = useState<'customers' | 'missions'>('customers');
+  const [analyticsError, setAnalyticsError] = useState(false);
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
   const [playedMissionIds, setPlayedMissionIds] = useState<string[]>([]);
   const [hidePlayedMissions, setHidePlayedMissions] = useState<boolean>(false);
@@ -958,12 +960,18 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function loadAnalytics() {
     setAnalyticsLoading(true);
+    setAnalyticsError(false);
     try {
       const res = await POST('/api/admin/superadmin/analytics');
       const data = await res.json();
-      if (data.kpis) setAnalytics(data);
+      if (data.kpis) {
+        setAnalytics(data);
+      } else {
+        setAnalyticsError(true);
+      }
     } catch (err) {
       console.error('Failed to load analytics:', err);
+      setAnalyticsError(true);
     } finally {
       setAnalyticsLoading(false);
     }
