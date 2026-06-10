@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         .from('teams')
         .select('*')
         .eq('game_id', game.id)
-        .eq('name', name.trim())
+        .ilike('name', name.trim())
         .eq('join_code', joinCode.trim().toUpperCase())
         .single(),
       buildCustomMissionsPromise(),
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         .from('teams')
         .select('id')
         .eq('game_id', game.id)
-        .eq('name', name.trim())
+        .ilike('name', name.trim())
         .single();
 
       if (existingByName) {
@@ -157,7 +157,7 @@ export async function POST(req: Request) {
 
   // ── CLASSIC MODE ─────────────────────────────────────────────────────────────
   const [teamResult, customMissionsResult] = await Promise.all([
-    supabase.from('teams').select('*').eq('name', name.trim()).eq('game_id', game.id).single(),
+    supabase.from('teams').select('*').ilike('name', name.trim()).eq('game_id', game.id).single(),
     buildCustomMissionsPromise(),
   ]);
 
