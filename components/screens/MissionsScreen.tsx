@@ -476,6 +476,42 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
   );
 }
 
+// ── Online member bar (remote mode) ──────────────────────────────────────────
+function MemberBar({ members, currentMemberId }: {
+  members: Array<{ id: string; name: string; online: boolean }>;
+  currentMemberId?: string;
+}) {
+  if (members.length === 0) return null;
+  return (
+    <div style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '8px',
+      padding: '8px 16px',
+      background: 'var(--surface)',
+      borderBottom: '1px solid var(--border)',
+    }}>
+      {members.map(m => (
+        <div key={m.id} style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          background: m.id === currentMemberId ? 'rgba(124,189,212,0.12)' : 'var(--card)',
+          border: `1px solid ${m.id === currentMemberId ? 'rgba(124,189,212,0.4)' : 'var(--border)'}`,
+          fontSize: '12px',
+          fontWeight: m.id === currentMemberId ? 700 : 500,
+          color: 'var(--text)',
+        }}>
+          <span style={{ fontSize: '8px', color: m.online ? '#4CAF50' : 'var(--muted)' }}>●</span>
+          {m.name}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Main props ────────────────────────────────────────────────────────────────
 type Props = {
   team: Team;
@@ -486,6 +522,8 @@ type Props = {
   onTeamUpdate: (team: Team) => void;
   onGameUpdate: (game: Game) => void;
   customMissions?: Mission[];
+  memberId?: string;
+  members?: Array<{ id: string; name: string; online: boolean }>;
 };
 
 const DIFF_CLS: Record<string, string>   = { easy: 'tag-easy', medium: 'tag-medium', hard: 'tag-hard' };
@@ -526,7 +564,7 @@ function formatElapsed(ms: number) {
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, customMissions = [] }: Props) {
+export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, onGameUpdate, customMissions = [], memberId, members = [] }: Props) {
   const { t } = useTranslation();
   const { t: tMissions } = useTranslation('missions');
   const secondsLeft = useCountdown(game);
@@ -820,6 +858,10 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
 
       </nav>
+
+      {game.remote_mode && members.length > 0 && (
+        <MemberBar members={members} currentMemberId={memberId} />
+      )}
 
       <div className="container fade-in">
 
