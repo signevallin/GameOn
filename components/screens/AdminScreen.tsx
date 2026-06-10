@@ -458,7 +458,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
-  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats' | 'customers'>('leaderboard');
+  const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
   const isMobile = useIsMobile();
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
@@ -1470,7 +1470,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
                       {gamesPerWeek.map((w, i) => {
                         const barH = Math.max(4, Math.round((w.count / maxBarCount) * 80));
-                        const opacity = 0.22 + (i / 6) * 0.78;
+                        const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
                         return (
                           <div
                             key={w.weekLabel}
@@ -3962,168 +3962,6 @@ export default function AdminScreen({ onLogout }: Props) {
               onLaunchMysteryBox={launchMysteryBox}
               activeGameStatus={activeGame.status}
             />
-          </div>
-        )}
-
-        {/* ANALYTICS — super-admin only */}
-        {tab === 'customers' && isSuperAdmin && (
-          <div className="fade-in">
-            <div className="section-header">
-              <h2 style={{ fontSize: '18px' }}>Analytics</h2>
-              {analytics && <span className="badge">{analytics.kpis.totalGames} spel</span>}
-            </div>
-
-            {analyticsLoading && (
-              <div className="empty-state">Laddar analytics...</div>
-            )}
-
-            {!analyticsLoading && !analytics && (
-              <div className="empty-state">Ingen data ännu.</div>
-            )}
-
-            {analytics && (() => {
-              const { kpis, customers: analyticsCustomers, missionStats } = analytics;
-
-              function rateColor(rate: number) {
-                if (rate >= 0.8) return 'var(--accent3)';
-                if (rate >= 0.5) return 'var(--gold)';
-                return 'var(--accent2)';
-              }
-
-              return (
-                <>
-                  {/* ── KPI Cards ── */}
-                  <div className="mobile-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Totalt spel</div>
-                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.totalGames}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} avslutade</div>
-                    </div>
-                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Aktiva kunder</div>
-                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.activeCustomers}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.activeCustomers30d} aktiva senaste 30d</div>
-                    </div>
-                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Spelklar-rate</div>
-                      <div style={{ fontSize: '28px', fontWeight: 800, color: rateColor(kpis.completionRate) }}>{Math.round(kpis.completionRate * 100)}%</div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>spel som slutförts</div>
-                    </div>
-                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '6px' }}>Snitt lag/spel</div>
-                      <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>{kpis.avgTeamsPerGame}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>totalt {kpis.totalTeams} lag</div>
-                    </div>
-                  </div>
-
-                  {/* ── Two-column layout ── */}
-                  <div className="mobile-analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
-
-                    {/* Left: Customer list */}
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
-                        Kunder ({analyticsCustomers.length})
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {analyticsCustomers.length === 0 && (
-                          <div className="empty-state">Inga kunder ännu.</div>
-                        )}
-                        {analyticsCustomers.map(c => (
-                          <div key={c.id}>
-                            <div
-                              onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)}
-                              style={{
-                                background: 'var(--card)', border: '1px solid var(--border)', borderRadius: expandedCustomer === c.id ? '12px 12px 0 0' : '12px',
-                                padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
-                              }}
-                            >
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {c.email}
-                                </div>
-                                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                                  {c.lastActive ? new Date(c.lastActive).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Inget spel'}
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
-                                <div style={{ textAlign: 'right' }}>
-                                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)' }}>{c.gameCount}</div>
-                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>spel</div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--muted)' }}>{c.avgTeams}</div>
-                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>lag/spel</div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                  <div style={{ fontSize: '13px', fontWeight: 700, color: rateColor(c.completionRate) }}>{Math.round(c.completionRate * 100)}%</div>
-                                  <div style={{ fontSize: '10px', color: 'var(--muted)' }}>klar</div>
-                                </div>
-                                <div style={{ color: 'var(--muted)', fontSize: '12px' }}>{expandedCustomer === c.id ? '▲' : '▼'}</div>
-                              </div>
-                            </div>
-                            {expandedCustomer === c.id && (
-                              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '6px 0' }}>
-                                {c.games.length === 0 && (
-                                  <div style={{ padding: '12px 14px', fontSize: '12px', color: 'var(--muted)' }}>Inga spel.</div>
-                                )}
-                                {c.games.map(g => (
-                                  <div key={g.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', gap: '10px', borderBottom: '1px solid var(--border)' }}>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {g.name ?? '(namnlöst)'}
-                                      </div>
-                                      <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '1px' }}>
-                                        {g.startedAt ? new Date(g.startedAt).toLocaleDateString('sv-SE') : '—'}
-                                      </div>
-                                    </div>
-                                    <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{g.teamCount} lag</div>
-                                    <div style={{ fontSize: '11px', color: 'var(--accent)', flexShrink: 0, fontWeight: 700 }}>{g.topScore}p</div>
-                                    <div style={{ fontSize: '11px', flexShrink: 0, color: g.finished ? 'var(--accent3)' : 'var(--muted)' }}>
-                                      {g.finished ? '✓' : '—'}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right: Mission rankings */}
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
-                        Uppdragsranking
-                      </div>
-                      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px', gap: '8px', padding: '10px 14px', borderBottom: '1px solid var(--border)', fontSize: '10px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          <div>Uppdrag</div>
-                          <div style={{ textAlign: 'right' }}>Spel</div>
-                          <div style={{ textAlign: 'right' }}>Klarade</div>
-                        </div>
-                        {missionStats.length === 0 && (
-                          <div style={{ padding: '16px 14px', fontSize: '12px', color: 'var(--muted)' }}>Ingen data.</div>
-                        )}
-                        {missionStats.map(m => (
-                          <div key={m.id} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px', gap: '8px', alignItems: 'center', marginBottom: '5px' }}>
-                              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                              <div style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'right' }}>{m.gameCount}</div>
-                              <div style={{ fontSize: '12px', fontWeight: 700, color: rateColor(m.completionRate), textAlign: 'right' }}>{Math.round(m.completionRate * 100)}%</div>
-                            </div>
-                            <div style={{ height: '3px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${Math.round(m.completionRate * 100)}%`, background: rateColor(m.completionRate), borderRadius: '2px' }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-                </>
-              );
-            })()}
-
           </div>
         )}
       </div>
