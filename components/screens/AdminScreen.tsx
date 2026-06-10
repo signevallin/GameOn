@@ -3207,7 +3207,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
             >
               <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
                 size={100}
                 bgColor="#ffffff"
                 fgColor="#0f1724"
@@ -3224,7 +3224,7 @@ export default function AdminScreen({ onLogout }: Props) {
               >
                 <div style={{ background: '#fff', borderRadius: '20px', padding: '24px' }}>
                   <QRCodeSVG
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
                     size={280}
                     bgColor="#ffffff"
                     fgColor="#0f1724"
