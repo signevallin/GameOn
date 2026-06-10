@@ -9,7 +9,13 @@ import LanguagePicker from '@/components/LanguagePicker';
 const QrScanner = dynamic(() => import('@/components/QrScanner'), { ssr: false });
 
 type Props = {
-  onTeamLogin: (team: Team, game: Game, customMissions?: import('@/lib/supabase').CustomMission[]) => void;
+  onTeamLogin: (
+    team: Team,
+    game: Game,
+    customMissions?: import('@/lib/supabase').CustomMission[],
+    memberId?: string,
+    memberName?: string
+  ) => void;
   onAdminLogin: () => void;
 };
 
@@ -26,26 +32,39 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [loginStep, setLoginStep] = useState<'key' | 'fields'>('key');
+  const [joinCode, setJoinCode] = useState('');
+  const [memberName, setMemberName] = useState('');
 
   useEffect(() => {
     const key = new URLSearchParams(window.location.search).get('key');
     if (key) setGameKey(key.toUpperCase());
   }, []);
 
+  function handleGameKeyNext() {
+    setError('');
+    if (!gameKey.trim()) { setError(t('login.errGameKey')); return; }
+    setLoginStep('fields');
+  }
+
   async function handleTeamLogin() {
     setError('');
     if (!teamName.trim()) { setError(t('login.errTeamName')); return; }
-    if (!gameKey.trim()) { setError(t('login.errGameKey')); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/team/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName.trim(), gameKey: gameKey.trim() }),
+        body: JSON.stringify({
+          name: teamName.trim(),
+          gameKey: gameKey.trim(),
+          joinCode: joinCode.trim() || undefined,
+          memberName: memberName.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
-      onTeamLogin(data.team, data.game, data.customMissions ?? []);
+      onTeamLogin(data.team, data.game, data.customMissions ?? [], data.memberId, data.memberName);
     } catch {
       setError(t('login.errNetwork'));
     } finally {
@@ -130,77 +149,121 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
         <div className="card">
           {mode === 'team' ? (
             <>
-              <div className="form-group">
-                <label className="form-label">{t('login.teamNameLabel')}</label>
-                <input
-                  type="text"
-                  placeholder={t('login.teamNamePlaceholder')}
-                  maxLength={20}
-                  value={teamName}
-                  onChange={e => setTeamName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t('login.gameKeyLabel')}</label>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-                  <input
-                    type="text"
-                    placeholder={t('login.gameKeyPlaceholder')}
-                    maxLength={6}
-                    value={gameKey}
-                    onChange={e => setGameKey(e.target.value.toUpperCase())}
-                    onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
-                    style={{ letterSpacing: '4px', fontSize: '20px', textTransform: 'uppercase', flex: 1 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowScanner(true)}
-                    title="Scan QR code"
-                    style={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      padding: '0 14px',
-                      cursor: 'pointer',
-                      fontSize: '22px',
-                      flexShrink: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="7" height="7" rx="1"/>
-                      <rect x="14" y="3" width="7" height="7" rx="1"/>
-                      <rect x="3" y="14" width="7" height="7" rx="1"/>
-                      <rect x="14" y="14" width="3" height="3" rx="0.5"/>
-                      <rect x="19" y="14" width="2" height="2" rx="0.5"/>
-                      <rect x="14" y="19" width="2" height="2" rx="0.5"/>
-                      <rect x="18" y="18" width="3" height="3" rx="0.5"/>
-                    </svg>
-                  </button>
-                </div>
-                {error && mode === 'team' && (
-                  error.includes('5-team limit') ? (
-                    <div style={{ marginTop: '12px', padding: '14px 16px', background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '10px' }}>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#7CBDD4', marginBottom: '4px' }}>{t('login.errFreePlanTitle')}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.5 }}>{t('login.errFreePlanBody')}</p>
+              {loginStep === 'key' ? (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">{t('login.gameKeyLabel')}</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+                      <input
+                        type="text"
+                        placeholder={t('login.gameKeyPlaceholder')}
+                        maxLength={6}
+                        value={gameKey}
+                        onChange={e => setGameKey(e.target.value.toUpperCase())}
+                        onKeyDown={e => e.key === 'Enter' && handleGameKeyNext()}
+                        style={{ letterSpacing: '4px', fontSize: '20px', textTransform: 'uppercase', flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowScanner(true)}
+                        title="Scan QR code"
+                        style={{
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          padding: '0 14px',
+                          cursor: 'pointer',
+                          fontSize: '22px',
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="7" height="7" rx="1"/>
+                          <rect x="14" y="3" width="7" height="7" rx="1"/>
+                          <rect x="3" y="14" width="7" height="7" rx="1"/>
+                          <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                          <rect x="19" y="14" width="2" height="2" rx="0.5"/>
+                          <rect x="14" y="19" width="2" height="2" rx="0.5"/>
+                          <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+                        </svg>
+                      </button>
                     </div>
-                  ) : (
-                    <p className="error-msg">{error}</p>
-                  )
-                )}
-              </div>
-              {showScanner && (
-                <QrScanner
-                  onScan={(key) => { setGameKey(key.slice(0, 6)); setShowScanner(false); }}
-                  onClose={() => setShowScanner(false)}
-                />
+                    {error && <p className="error-msg">{error}</p>}
+                  </div>
+                  {showScanner && (
+                    <QrScanner
+                      onScan={(key) => { setGameKey(key.slice(0, 6)); setShowScanner(false); }}
+                      onClose={() => setShowScanner(false)}
+                    />
+                  )}
+                  <button className="btn btn-primary btn-full" onClick={handleGameKeyNext} disabled={loading}>
+                    {loading ? '...' : 'Next →'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setLoginStep('key'); setError(''); setTeamName(''); setJoinCode(''); setMemberName(''); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', padding: 0, fontFamily: "'Sora', sans-serif" }}
+                    >
+                      ← {gameKey}
+                    </button>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">{t('login.teamNameLabel')}</label>
+                    <input
+                      type="text"
+                      placeholder={t('login.teamNamePlaceholder')}
+                      maxLength={20}
+                      value={teamName}
+                      onChange={e => setTeamName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Team code <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 400 }}>(remote mode only)</span></label>
+                    <input
+                      type="text"
+                      placeholder="X7K2"
+                      maxLength={4}
+                      value={joinCode}
+                      onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                      style={{ letterSpacing: '6px', fontSize: '22px', fontFamily: 'monospace', textTransform: 'uppercase' }}
+                    />
+                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Same code for everyone on your team — decide it together.</p>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Your name <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 400 }}>(remote mode only)</span></label>
+                    <input
+                      type="text"
+                      placeholder="First name"
+                      maxLength={20}
+                      value={memberName}
+                      onChange={e => setMemberName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                    />
+                  </div>
+                  {error && (
+                    error.includes('5-team limit') ? (
+                      <div style={{ marginTop: '12px', padding: '14px 16px', background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '10px' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#7CBDD4', marginBottom: '4px' }}>{t('login.errFreePlanTitle')}</p>
+                        <p style={{ fontSize: '12px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.5 }}>{t('login.errFreePlanBody')}</p>
+                      </div>
+                    ) : (
+                      <p className="error-msg">{error}</p>
+                    )
+                  )}
+                  <button className="btn btn-primary btn-full" onClick={handleTeamLogin} disabled={loading}>
+                    {loading ? t('login.joiningButton') : t('login.joinButton')}
+                  </button>
+                </>
               )}
-              <button className="btn btn-primary btn-full" onClick={handleTeamLogin} disabled={loading}>
-                {loading ? t('login.joiningButton') : t('login.joinButton')}
-              </button>
             </>
           ) : (
             <>
