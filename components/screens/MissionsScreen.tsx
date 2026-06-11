@@ -1098,7 +1098,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   {visibleCustomMissions.length > 0 && customCategoryName && selectedCategory === null && (
                     <div
                       className="card"
-                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px', height: '100%', boxSizing: 'border-box' }}
+                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px', height: '100%', boxSizing: 'border-box', gridColumn: '1 / -1' }}
                       onClick={() => setSelectedCategory('__custom__' as SuperCategoryKey)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
