@@ -406,6 +406,7 @@ export default function Home() {
         game={game}
         teams={teams}
         customMissions={customMissions}
+        memberId={memberId ?? ''}
         onDone={handleChallengeDone}
         onBack={() => { setScreen('missions'); navigateSync(null); }}
       />

@@ -31,6 +31,8 @@ import ScavengerHunt from '@/components/games/ScavengerHunt';
 import TriviaQuiz from '@/components/games/TriviaQuiz';
 import MovieEmoji from '@/components/games/MovieEmoji';
 import TextQuiz from '@/components/games/TextQuiz';
+import RelayMission from '@/components/games/RelayMission';
+import SharedSecret from '@/components/games/SharedSecret';
 
 type Props = {
   missionId: string;
@@ -38,17 +40,19 @@ type Props = {
   game: Game;
   teams?: Team[];
   customMissions?: Mission[];
+  memberId?: string;
   onDone: (updatedTeam: Team, pts: number, correct: boolean, elapsed: number) => void;
   onBack: () => void;
 };
 
-export default function ChallengeScreen({ missionId, team, game, teams = [], customMissions = [], onDone, onBack }: Props) {
+export default function ChallengeScreen({ missionId, team, game, teams = [], customMissions = [], memberId = '', onDone, onBack }: Props) {
   const { t } = useTranslation();
   const { t: tMissions } = useTranslation('missions');
   const mission = (MISSIONS.find(m => m.id === missionId) ?? customMissions.find(m => m.id === missionId))!;
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
+  const startedAtMsRef = useRef(Date.now());
   const [photoSubmitted, setPhotoSubmitted] = useState(false);
 
   useEffect(() => {
@@ -222,6 +226,29 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
         return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'scavenger_hunt':
         return <ScavengerHunt team={team} gameId={game.id} missionId={missionId} onBack={onBack} />;
+      case 'relay':
+        return (
+          <RelayMission
+            mission={mission}
+            team={team}
+            game={game}
+            memberId={memberId}
+            effectiveMaxPts={effectiveMaxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'shared_secret':
+        return (
+          <SharedSecret
+            mission={mission}
+            team={team}
+            game={game}
+            memberId={memberId}
+            effectiveMaxPts={effectiveMaxPts}
+            startedAtMs={startedAtMsRef.current}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
       default:
         return null;
     }
