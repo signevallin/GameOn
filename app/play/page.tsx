@@ -49,6 +49,9 @@ export default function Home() {
   activeMissionRef.current = activeMission;
   screenRef.current = screen;
 
+  // Ref to the Realtime broadcast channel (remote mode only)
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
   // ── Restore session on first mount ──
   useEffect(() => {
     async function restoreSession() {
@@ -141,9 +144,10 @@ export default function Home() {
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
-    // Poll immediately, then every 5 seconds (or 500ms in remote mode)
+    // Poll immediately, then every 5 seconds (3s in remote mode for score/status).
+    // Nav sync in remote mode is handled instantly by the Realtime broadcast channel.
     refresh();
-    const id = setInterval(refresh, gameRef.current?.remote_mode ? 500 : 5000);
+    const id = setInterval(refresh, gameRef.current?.remote_mode ? 3000 : 5000);
     return () => clearInterval(id);
   // Only restart when the session itself changes (login/logout), not on every state update.
   // Also restart when remote_mode becomes known so the 500ms interval kicks in.
@@ -174,6 +178,38 @@ export default function Home() {
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, screen === 'missions' || screen === 'challenge' || screen === 'result']);
+
+  // ── Realtime broadcast channel for remote-mode nav sync ──────────────────
+  // Replaces the 500ms poll-based sync with a ~50ms WebSocket push.
+  // Uses Supabase Broadcast (no RLS needed, no DB read per event).
+  useEffect(() => {
+    const teamId = team?.id;
+    if (!hydrated || !game?.remote_mode || !teamId) return;
+
+    const channel = supabase
+      .channel(`remote-nav-${teamId}`)
+      .on('broadcast', { event: 'nav' }, ({ payload }: { payload: { missionId: string | null } }) => {
+        const incoming = payload.missionId ?? null;
+        if (incoming === syncedMissionRef.current) return;
+        syncedMissionRef.current = incoming;
+        if (incoming !== null && incoming !== activeMissionRef.current) {
+          setActiveMission(incoming);
+          setScreen('challenge');
+        } else if (incoming === null && screenRef.current === 'challenge') {
+          setActiveMission(null);
+          setScreen('missions');
+        }
+      })
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      realtimeChannelRef.current = null;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, team?.id, !!game?.remote_mode]);
 
   // ── Read intent from query params on first mount ──
   useEffect(() => {
@@ -284,6 +320,13 @@ export default function Home() {
     const t = teamRef.current;
     const g = gameRef.current;
     if (!t || !g?.remote_mode) return;
+    // Broadcast instantly via WebSocket to all teammates
+    realtimeChannelRef.current?.send({
+      type: 'broadcast',
+      event: 'nav',
+      payload: { missionId },
+    });
+    // Also persist to DB (so late-joiners and poll catch up)
     try {
       await fetch('/api/team/navigate', {
         method: 'POST',
