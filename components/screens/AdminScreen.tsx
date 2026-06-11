@@ -2198,7 +2198,7 @@ export default function AdminScreen({ onLogout }: Props) {
         closestQuestions: cm.type === 'closest_wins'
           ? ((d.questions as { q: string; answer: number; unit: string; hint: string }[]) ?? []).map(q => ({ ...q, answer: String(q.answer) }))
           : [],
-        clues: cm.type === 'pa_sparet' ? (d.clues as string[]) ?? [] : [],
+        clues: (cm.type === 'pa_sparet' || cm.type === 'shared_secret') ? (d.clues as string[]) ?? [] : [],
         paAnswer: cm.type === 'pa_sparet' ? (d.answer as string) ?? '' : '',
         timelineItems: cm.type === 'timeline'
           ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
