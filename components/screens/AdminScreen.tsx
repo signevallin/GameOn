@@ -451,6 +451,54 @@ function getPointOptions(maxPts: number): number[] {
   return opts;
 }
 
+type MissionEntry = { id: string; name: string; icon: string };
+
+function MissionProgressTable({ missions, sorted, accentColor }: {
+  missions: MissionEntry[];
+  sorted: Team[];
+  accentColor: string;
+}) {
+  const borderColor = accentColor.startsWith('var(') ? 'var(--border)' : `${accentColor}33`;
+  return (
+    <div style={{ background: 'var(--card)', border: `1px solid ${borderColor}`, borderRadius: '12px', overflow: 'auto' }}>
+      <table className="progress-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            {missions.map(m => (
+              <th key={m.id} title={m.name}>{m.icon}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.length === 0 ? (
+            <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
+          ) : sorted.map(t => (
+            <tr key={t.id}>
+              <td><strong>{t.name}</strong></td>
+              {missions.map(m => {
+                const done = t.completed?.includes(m.id);
+                const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
+                return (
+                  <td key={m.id}>
+                    {done
+                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: accentColor, fontWeight: 700, fontSize: '12px' }}>
+                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: accentColor, display: 'inline-block', flexShrink: 0 }} />
+                          {pts !== null ? pts : '✓'}
+                        </span>
+                      : <span style={{ color: 'var(--muted)' }}>–</span>
+                    }
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function AdminScreen({ onLogout }: Props) {
   const [view, setView] = useState<AdminView>('games');
   const [games, setGames] = useState<Game[]>([]);
@@ -3647,42 +3695,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <span style={{ fontWeight: 800, fontSize: '13px', color: cat.color, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{cat.label}</span>
                     <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
                   </div>
-                  <div style={{ background: 'var(--card)', border: `1px solid ${cat.color}33`, borderRadius: '12px', overflow: 'auto' }}>
-                    <table className="progress-table">
-                      <thead>
-                        <tr>
-                          <th>Team</th>
-                          {missions.map(m => (
-                            <th key={m.id} title={m.name}>{m.icon}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sorted.length === 0 ? (
-                          <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
-                        ) : sorted.map(t => (
-                          <tr key={t.id}>
-                            <td><strong>{t.name}</strong></td>
-                            {missions.map(m => {
-                              const done = t.completed?.includes(m.id);
-                              const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
-                              return (
-                                <td key={m.id}>
-                                  {done
-                                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: cat.color, fontWeight: 700, fontSize: '12px' }}>
-                                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
-                                        {pts !== null ? pts : '✓'}
-                                      </span>
-                                    : <span style={{ color: 'var(--muted)' }}>–</span>
-                                  }
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <MissionProgressTable missions={missions} sorted={sorted} accentColor={cat.color} />
                 </div>
               ))}
 
@@ -3697,42 +3710,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       <span style={{ fontWeight: 800, fontSize: '13px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
                       <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
                     </div>
-                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'auto' }}>
-                      <table className="progress-table">
-                        <thead>
-                          <tr>
-                            <th>Team</th>
-                            {missions.map(m => (
-                              <th key={m.id} title={m.name}>{m.icon}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sorted.length === 0 ? (
-                            <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
-                          ) : sorted.map(t => (
-                            <tr key={t.id}>
-                              <td><strong>{t.name}</strong></td>
-                              {missions.map(m => {
-                                const done = t.completed?.includes(m.id);
-                                const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
-                                return (
-                                  <td key={m.id}>
-                                    {done
-                                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--muted)', fontWeight: 700, fontSize: '12px' }}>
-                                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--muted)', display: 'inline-block', flexShrink: 0 }} />
-                                          {pts !== null ? pts : '✓'}
-                                        </span>
-                                      : <span style={{ color: 'var(--muted)' }}>–</span>
-                                    }
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <MissionProgressTable missions={missions} sorted={sorted} accentColor="var(--muted)" />
                   </div>
                 );
               })}
