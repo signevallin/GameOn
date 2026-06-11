@@ -1,13 +1,8 @@
 // components/games/RelayMission.tsx
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Mission } from '@/lib/missions';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 type RelaySegmentResult = {
   completedAt?: string;
@@ -85,15 +80,15 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
     };
   }, [team.id, mission.id]);
 
-  function clearCountdown() {
+  const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
     setCountdown(60);
-  }
+  }, []);
 
-  function startCountdown() {
+  const startCountdown = useCallback(() => {
     clearCountdown();
     setCountdown(60);
     countdownRef.current = setInterval(() => {
@@ -107,7 +102,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         return prev - 1;
       });
     }, 1000);
-  }
+  }, [clearCountdown]);
 
   function handleStart() {
     setStarted(true);
@@ -156,10 +151,10 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
 
       if (data.complete) {
         const startMs = new Date(newRelayState.startedAt).getTime();
-        const completedSegs = newRelayState.segments.filter(s => s.completedAt);
+        const completedSegs = newRelayState.segments.filter(s => !s.skipped && s.completedAt);
         const lastMs = completedSegs.length > 0
           ? new Date(completedSegs[completedSegs.length - 1].completedAt!).getTime()
-          : Date.now();
+          : startMs + game.duration_minutes * 60 * 1000; // all skipped → 0 pts
         const totalElapsedSeconds = (lastMs - startMs) / 1000;
         const decayPerSecond = effectiveMaxPts / (game.duration_minutes * 60);
         const pts = Math.max(0, effectiveMaxPts - Math.floor(totalElapsedSeconds * decayPerSecond));
