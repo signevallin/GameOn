@@ -1,13 +1,29 @@
 'use client';
 import { useState } from 'react';
 import { Statement } from '@/lib/missions';
+import { useRemoteRoundSync } from '@/hooks/useRemoteRoundSync';
 
-type Props = { statements: Statement[]; maxPts?: number; onFinish: (correct: boolean, pts?: number) => void };
+type Props = {
+  statements: Statement[];
+  maxPts?: number;
+  teamId?: string;
+  missionId?: string;
+  onFinish: (correct: boolean, pts?: number) => void;
+};
 
-export default function TrueFalse({ statements, maxPts = 150, onFinish }: Props) {
+export default function TrueFalse({ statements, maxPts = 150, teamId, missionId, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [flash, setFlash] = useState<boolean | null>(null);
+
+  const { broadcastRound } = useRemoteRoundSync({
+    teamId,
+    missionId,
+    onRemoteAdvance: (newIdx) => {
+      setIdx(newIdx);
+      setFlash(null);
+    },
+  });
 
   function answer(val: boolean) {
     if (flash !== null) return;
@@ -21,7 +37,9 @@ export default function TrueFalse({ statements, maxPts = 150, onFinish }: Props)
         const pts = Math.round(maxPts * (newScore / statements.length));
         onFinish(newScore > 0, pts);
       } else {
-        setIdx(i => i + 1);
+        const nextIdx = idx + 1;
+        setIdx(nextIdx);
+        broadcastRound(nextIdx);
       }
     }, 700);
   }

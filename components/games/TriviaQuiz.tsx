@@ -1,19 +1,31 @@
 'use client';
 import { useState } from 'react';
 import { TriviaRound } from '@/lib/missions';
+import { useRemoteRoundSync } from '@/hooks/useRemoteRoundSync';
 
 type Props = {
   rounds: TriviaRound[];
   maxPts: number;
+  teamId?: string;
+  missionId?: string;
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function TriviaQuiz({ rounds, maxPts, onFinish }: Props) {
+export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish }: Props) {
   const [qIdx, setQIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [totalPts, setTotalPts] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
+
+  const { broadcastRound } = useRemoteRoundSync({
+    teamId,
+    missionId,
+    onRemoteAdvance: (idx) => {
+      setQIdx(idx);
+      setSelected(null);
+    },
+  });
 
   const ptsPerQ = Math.round(maxPts / rounds.length);
   const q = rounds[qIdx];
@@ -34,8 +46,10 @@ export default function TriviaQuiz({ rounds, maxPts, onFinish }: Props) {
       } else {
         setTotalPts(newTotal);
         setCorrectCount(newCorrect);
-        setQIdx(i => i + 1);
+        const nextIdx = qIdx + 1;
+        setQIdx(nextIdx);
         setSelected(null);
+        broadcastRound(nextIdx);
       }
     }, 900);
   }

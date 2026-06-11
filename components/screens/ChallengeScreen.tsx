@@ -113,7 +113,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'wouldyou':
         return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} teamId={team.id} missionId={missionId} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
-        return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'photo':
         if (photoSubmitted) {
           return (
@@ -215,9 +215,9 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'timeline':
         return <TimelineSort maxPts={effectiveMaxPts} items={mission.timelineItems} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'closest_wins':
-        return <ClosestWins maxPts={effectiveMaxPts} questions={mission.closestWinsQuestions} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <ClosestWins maxPts={effectiveMaxPts} questions={mission.closestWinsQuestions} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'trivia_quiz':
-        return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'movie_emoji':
         return <MovieEmoji rounds={mission.emojiRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'text_quiz':
