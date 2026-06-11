@@ -454,6 +454,7 @@ function getPointOptions(maxPts: number): number[] {
 export default function AdminScreen({ onLogout }: Props) {
   const [view, setView] = useState<AdminView>('games');
   const [games, setGames] = useState<Game[]>([]);
+  const [analyticsGames, setAnalyticsGames] = useState<Game[]>([]);
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
@@ -624,6 +625,15 @@ export default function AdminScreen({ onLogout }: Props) {
     if (data.games) setGames(data.games);
   }, [POST]);
 
+  const loadAnalyticsGames = useCallback(async () => {
+    const res = await fetch('/api/admin/game?includeDeleted=true', {
+      headers: { Authorization: `Bearer ${authToken}` },
+      cache: 'no-store',
+    });
+    const data = await res.json();
+    if (data.games) setAnalyticsGames(data.games);
+  }, [authToken]);
+
   const loadGameData = useCallback(async (game: Game) => {
     const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
       POST('/api/admin/teams', { gameId: game.id }),
@@ -655,6 +665,12 @@ export default function AdminScreen({ onLogout }: Props) {
   }, [POST]);
 
   useEffect(() => { loadGames(); }, [loadGames]);
+
+  useEffect(() => {
+    if (view === 'my-analytics' && analyticsGames.length === 0) {
+      loadAnalyticsGames();
+    }
+  }, [view, analyticsGames.length, loadAnalyticsGames]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1803,10 +1819,10 @@ export default function AdminScreen({ onLogout }: Props) {
       return `${weeks} veckor sedan`;
     };
 
-    const totalGames = games.length;
-    const finishedCount = games.filter(g => g.status === 'finished').length;
+    const totalGames = analyticsGames.length;
+    const finishedCount = analyticsGames.filter(g => g.status === 'finished').length;
     const completionRate = totalGames > 0 ? Math.round(finishedCount / totalGames * 100) : 0;
-    const totalTeams = games.reduce((sum, g) => sum + (g.teams_count ?? 0), 0);
+    const totalTeams = analyticsGames.reduce((sum, g) => sum + (g.teams_count ?? 0), 0);
     const avgTeams = totalGames > 0 ? (totalTeams / totalGames).toFixed(1) : '—';
 
     // Last 7 ISO weeks oldest → newest
@@ -1818,7 +1834,7 @@ export default function AdminScreen({ onLogout }: Props) {
       const weekNum = parseInt(key.split('-')[1]);
       gamesPerWeek.push({ label: `V${weekNum}`, key, count: 0 });
     }
-    games.forEach(g => {
+    analyticsGames.forEach(g => {
       if (!g.started_at) return;
       const key = isoWeekKey(new Date(g.started_at));
       const entry = gamesPerWeek.find(e => e.key === key);
@@ -1827,7 +1843,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const maxCount = Math.max(...gamesPerWeek.map(w => w.count), 1);
 
     // Last 5 started games
-    const recentGames = [...games]
+    const recentGames = [...analyticsGames]
       .filter(g => g.started_at)
       .sort((a, b) => new Date(b.started_at!).getTime() - new Date(a.started_at!).getTime())
       .slice(0, 5);
