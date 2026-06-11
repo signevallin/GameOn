@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
   // Run game + team queries in parallel, team list from cache
   const [gameRes, teamRes, teams] = await Promise.all([
-    supabase.from('games').select('*').eq('game_key', gameKey.toUpperCase()).single(),
+    supabase.from('games').select('*').eq('game_key', gameKey.toUpperCase()).is('deleted_at', null).single(),
     supabase.from('teams').select('*').eq('id', teamId).single(),
     getCachedTeams(supabase, gameId),
   ]);

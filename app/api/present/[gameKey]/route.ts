@@ -22,6 +22,7 @@ export async function POST(
     .from('games')
     .select('id, name, status, started_at, duration_minutes, language')
     .eq('game_key', gameKey)
+    .is('deleted_at', null)
     .single();
 
   if (gameErr || !game) {

@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     .from('games')
     .select('*')
     .eq('game_key', gameKey.toUpperCase())
+    .is('deleted_at', null)
     .single();
 
   if (gameErr || !game) return NextResponse.json({ error: 'Wrong game key. Ask the organiser.' }, { status: 404 });
