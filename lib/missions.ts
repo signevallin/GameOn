@@ -27,7 +27,9 @@ export type MissionType =
   | 'scavenger_hunt'
   | 'trivia_quiz'
   | 'movie_emoji'
-  | 'text_quiz';
+  | 'text_quiz'
+  | 'relay'
+  | 'shared_secret';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
@@ -74,6 +76,11 @@ export type Mission = {
   closestWinsQuestions?: ClosestWinsQuestion[];
   textQuizRounds?: { question: string; answer: string; aliases?: string[] }[];
   hexColour?: string;
+  // ── Remote mission fields ──────────────────────────────────────────────────
+  /** relay: one segment per team member */
+  segments?: { prompt: string }[];
+  /** relay: 'typerace' = member must type the prompt exactly; 'button' = honor-system Done button */
+  relayMode?: 'typerace' | 'button';
 };
 
 export const MISSIONS: Mission[] = [
@@ -1503,6 +1510,68 @@ export const MISSIONS: Mission[] = [
       { label: 'GKN Aerospace acquires Fokker Technologies, expanding its composite footprint', year: 2015 },
       { label: 'Melrose Industries acquires GKN plc', year: 2018 },
     ],
+  },
+
+  // ── REMOTE ──────────────────────────────────────────────────────────────────
+  {
+    id: 'relay_typerace',
+    icon: '⌨️',
+    name: 'Ordstafett',
+    category: 'remote',
+    desc: 'Varje person skriver sin pangram så snabbt som möjligt — stafett!',
+    difficulty: 'medium' as Difficulty,
+    maxPts: 500,
+    type: 'relay' as MissionType,
+    relayMode: 'typerace',
+    segments: [
+      { prompt: 'The quick brown fox jumps over the lazy dog' },
+      { prompt: 'Pack my box with five dozen liquor jugs' },
+      { prompt: 'How vexingly quick daft zebras jump' },
+      { prompt: 'Sphinx of black quartz, judge my vow' },
+    ],
+  },
+  {
+    id: 'relay_trivia',
+    icon: '🧠',
+    name: 'Faktastafett',
+    category: 'remote',
+    desc: 'Varje person svarar på en triviafråga — sedan är nästa i tur!',
+    difficulty: 'medium' as Difficulty,
+    maxPts: 500,
+    type: 'relay' as MissionType,
+    relayMode: 'button',
+    segments: [
+      { prompt: 'Vad är Australiens huvudstad? (Svar: Canberra)' },
+      { prompt: 'Hur många ben har en vuxen människa? (Svar: 206)' },
+      { prompt: 'Vilket år föll Berlinmuren? (Svar: 1989)' },
+      { prompt: 'Vad är det kemiska tecknet för guld? (Svar: Au)' },
+    ],
+  },
+  {
+    id: 'secret_word',
+    icon: '🔍',
+    name: 'Hemligt ord',
+    category: 'remote',
+    desc: 'Var och en har en ledtråd — diskutera på videosamtalet och gissa ordet!',
+    difficulty: 'easy' as Difficulty,
+    maxPts: 400,
+    type: 'shared_secret' as MissionType,
+    clues: ['Det är vitt', 'Det finns i varje kök', 'Det används för att bevara mat', 'Det smakar salt'],
+    answer: 'salt',
+    hint: 'Tänk matlagning',
+  },
+  {
+    id: 'secret_code',
+    icon: '🔐',
+    name: 'Den försvunna koden',
+    category: 'remote',
+    desc: 'Varje person har en siffra i PIN-koden — rekonstruera den tillsammans!',
+    difficulty: 'easy' as Difficulty,
+    maxPts: 300,
+    type: 'shared_secret' as MissionType,
+    clues: ['Den första siffran är 3', 'Den andra siffran är 7', 'Den tredje siffran är 1', 'Den fjärde siffran är 9'],
+    answer: '3719',
+    hint: 'Kombinera alla siffror i rätt ordning',
   },
 ];
 

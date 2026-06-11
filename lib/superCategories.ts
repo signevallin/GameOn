@@ -1,4 +1,4 @@
-export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action' | 'gkn';
+export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action' | 'gkn' | 'remote';
 
 export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   label: string;
@@ -12,6 +12,7 @@ export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   knowledge:  { label: 'Knowledge & Trivia',    icon: '🌍', color: 'var(--accent3)', desc: 'Geography, history and general trivia' },
   action:     { label: 'Action & Creative',     icon: '⚡', color: 'var(--accent2)', desc: 'Physical, speed and creative challenges' },
   gkn:        { label: 'GKN Aerospace',          icon: '✈️', color: '#4a90d9',        desc: 'Missions about GKN Aerospace and aviation' },
+  remote:     { label: 'Remote Teamwork',        icon: '🌐', color: '#6366f1',        desc: 'Challenges designed for remote teams on a video call' },
 };
 
 /** Maps every mission id to its super-category. */
@@ -98,4 +99,10 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   gkn_pa_sparet:     'gkn',
   gkn_timeline:      'gkn',
   gkn_aircraft_quiz: 'gkn',
+
+  // Remote Teamwork
+  relay_typerace: 'remote',
+  relay_trivia:   'remote',
+  secret_word:    'remote',
+  secret_code:    'remote',
 };
