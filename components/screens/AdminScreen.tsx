@@ -612,12 +612,13 @@ export default function AdminScreen({ onLogout }: Props) {
       const token = session?.access_token ?? null;
       authTokenRef.current = token;
       setAuthToken(token);
-      // Load subscription plan once we have a token
+      // Load subscription plan and custom missions once we have a token
       if (token) {
         fetch('/api/admin/subscription', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
+        loadAdminCustomMissions();
       }
     });
     // Use getUser() for fresh server-side data (not cached JWT)
@@ -625,7 +626,6 @@ export default function AdminScreen({ onLogout }: Props) {
       setIsSuperAdmin(user?.app_metadata?.role === 'superadmin');
       setUserEmail(user?.email ?? '');
       setUserName(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '');
-      loadAdminCustomMissions();
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const token = session?.access_token ?? null;
@@ -843,6 +843,16 @@ export default function AdminScreen({ onLogout }: Props) {
     setOverridingPhotoId(null);
     setExpandedTeamId(null);
   }, [activeGameId]);
+
+  // Ensure custom missions + categories are loaded when the progress tab opens.
+  // Guards against the rare race where loadAdminCustomMissions ran before the
+  // auth token was ready on mount.
+  useEffect(() => {
+    if (tab === 'progress' && adminCustomMissions.length === 0) {
+      loadAdminCustomMissions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   async function createGame() {
     if (!gameName.trim()) { setCreateError('Enter a game name.'); return; }
