@@ -25,6 +25,7 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
   const [lastResult, setLastResult] = useState<'correct' | 'wrong' | null>(null);
   const [done, setDone] = useState(false);
   const hintUsedRef = useRef(false);
+  const doneRef = useRef(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const clues = mission.clues ?? [];
@@ -52,11 +53,13 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
       .on('broadcast', { event: 'secret-attempt' }, ({ payload }: {
         payload: { missionId: string; attempts: number; correct: boolean }
       }) => {
+        if (doneRef.current) return;
         if (payload.missionId !== mission.id) return;
         setAttempts(payload.attempts);
         if (payload.correct) {
           setLastResult('correct');
           setDone(true);
+          doneRef.current = true;
           const elapsedSeconds = (Date.now() - startedAtMs) / 1000;
           const decayPerSecond = effectiveMaxPts / (game.duration_minutes * 60);
           const hintPenalty = hintUsedRef.current ? HINT_COST : 0;
@@ -92,6 +95,7 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
 
     if (correct) {
       setDone(true);
+      doneRef.current = true;
       const elapsedSeconds = (Date.now() - startedAtMs) / 1000;
       const decayPerSecond = effectiveMaxPts / (game.duration_minutes * 60);
       const hintPenalty = hintUsedRef.current ? HINT_COST : 0;
@@ -122,7 +126,8 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
       {/* Attempt counter */}
       {attempts > 0 && (
         <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--muted)', textAlign: 'center' }}>
-          Felaktiga försök: {attempts} <span style={{ color: 'var(--accent2)' }}>(-{100 * attempts} poäng)</span>
+          Felaktiga försök: {attempts}
+          {attempts > 1 && <span style={{ color: 'var(--accent2)' }}> (-{100 * (attempts - 1)} poäng)</span>}
         </div>
       )}
 
