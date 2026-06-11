@@ -411,6 +411,12 @@ type MissionFormData = {
   timelineItems: { label: string; year: string }[];
   // photo
   photoPrompt: string;
+  // relay
+  relaySegments: string[];
+  relayMode: 'typerace' | 'button';
+  // shared_secret
+  sharedSecretAnswer: string;
+  sharedSecretHint: string;
   // seasonal window — ISO date strings ('' = unset)
   activeFrom: string;
   activeUntil: string;
@@ -420,6 +426,10 @@ const EMPTY_FORM: MissionFormData = {
   name: '', icon: '⭐', desc: '', difficulty: 'medium', maxPts: 500, type: '',
   triviaRounds: [], statements: [], closestQuestions: [],
   clues: [], paAnswer: '', timelineItems: [], photoPrompt: '',
+  relaySegments: ['', '', '', ''],
+  relayMode: 'typerace',
+  sharedSecretAnswer: '',
+  sharedSecretHint: '',
   activeFrom: '', activeUntil: '',
 };
 
@@ -2194,6 +2204,10 @@ export default function AdminScreen({ onLogout }: Props) {
           ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
           : [],
         photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
+        relaySegments: cm.type === 'relay' ? ((d.segments as string[]) ?? []) : ['', '', '', ''],
+        relayMode: cm.type === 'relay' ? ((d.relayMode as 'typerace' | 'button') ?? 'typerace') : 'typerace',
+        sharedSecretAnswer: cm.type === 'shared_secret' ? ((d.answer as string) ?? '') : '',
+        sharedSecretHint: cm.type === 'shared_secret' ? ((d.hint as string) ?? '') : '',
         activeFrom: (cm as { active_from?: string | null }).active_from
           ? new Date((cm as { active_from: string }).active_from).toISOString().slice(0, 10)
           : '',
@@ -2289,6 +2303,10 @@ export default function AdminScreen({ onLogout }: Props) {
           paAnswer?: string;
           timelineItems?: { label: string; year: string }[];
           photoPrompt?: string;
+          segments?: { prompt: string }[];
+          relayMode?: string;
+          answer?: string;
+          hint?: string;
         };
 
         if (!mission || typeof mission.type !== 'string' || typeof mission.name !== 'string') {
@@ -2311,6 +2329,10 @@ export default function AdminScreen({ onLogout }: Props) {
           paAnswer: mission.paAnswer ?? '',
           timelineItems: mission.timelineItems ?? [],
           photoPrompt: mission.photoPrompt ?? '',
+          relaySegments: mission.segments?.map((s: { prompt: string }) => s.prompt) ?? ['', '', '', ''],
+          relayMode: (mission.relayMode as 'typerace' | 'button') ?? 'typerace',
+          sharedSecretAnswer: mission.answer ?? '',
+          sharedSecretHint: mission.hint ?? '',
           activeFrom: '',
           activeUntil: '',
         });
@@ -2338,6 +2360,10 @@ export default function AdminScreen({ onLogout }: Props) {
         paAnswer: missionForm.paAnswer,
         timelineItems: missionForm.timelineItems,
         photoPrompt: missionForm.photoPrompt,
+        relaySegments: missionForm.relaySegments,
+        relayMode: missionForm.relayMode,
+        sharedSecretAnswer: missionForm.sharedSecretAnswer,
+        sharedSecretHint: missionForm.sharedSecretHint,
       });
       if (validationError) { setMissionFormError(validationError); return; }
 
@@ -2356,6 +2382,10 @@ export default function AdminScreen({ onLogout }: Props) {
         paAnswer: missionForm.paAnswer,
         timelineItems: missionForm.timelineItems,
         photoPrompt: missionForm.photoPrompt,
+        relaySegments: missionForm.relaySegments,
+        relayMode: missionForm.relayMode,
+        sharedSecretAnswer: missionForm.sharedSecretAnswer,
+        sharedSecretHint: missionForm.sharedSecretHint,
       });
       const payload = {
         name: missionForm.name.trim(),
@@ -2697,6 +2727,8 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
+                    <option value="relay">Stafett (Relay)</option>
+                    <option value="shared_secret">Hemligt ord (Shared Secret)</option>
                   </select>
                 </div>
               </div>
@@ -2847,6 +2879,89 @@ export default function AdminScreen({ onLogout }: Props) {
                     </div>
                   ))}
                   <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ triviaRounds: [...missionForm.triviaRounds, { question: '', options: ['', '', '', ''], answer: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {missionForm.type === 'relay' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>RELAY MODE</label>
+                  <select
+                    value={missionForm.relayMode}
+                    onChange={e => setF({ relayMode: e.target.value as 'typerace' | 'button' })}
+                    style={inputStyle}
+                  >
+                    <option value="typerace">Skrivstafett — deltagaren skriver texten exakt</option>
+                    <option value="button">Knapptafett — deltagaren klickar Klar</option>
+                  </select>
+                  <label style={{ ...labelStyle, marginTop: '12px' }}>SEGMENTS (one per team member)</label>
+                  {missionForm.relaySegments.map((seg, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                      <input
+                        type="text"
+                        value={seg}
+                        onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = e.target.value; setF({ relaySegments: arr }); }}
+                        placeholder={`Segment ${i + 1}`}
+                        style={{ ...inputStyle, flex: 1 }}
+                      />
+                      {missionForm.relaySegments.length > 2 && (
+                        <button
+                          onClick={() => setF({ relaySegments: missionForm.relaySegments.filter((_, j) => j !== i) })}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    className="btn btn-ghost"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={() => setF({ relaySegments: [...missionForm.relaySegments, ''] })}
+                  >+ Add segment</button>
+                </div>
+              )}
+
+              {missionForm.type === 'shared_secret' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>CLUES (one per team member)</label>
+                  {missionForm.clues.map((clue, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                      <input
+                        type="text"
+                        value={clue}
+                        onChange={e => { const c = [...missionForm.clues]; c[i] = e.target.value; setF({ clues: c }); }}
+                        placeholder={`Clue ${i + 1}`}
+                        style={{ ...inputStyle, flex: 1 }}
+                      />
+                      {missionForm.clues.length > 2 && (
+                        <button
+                          onClick={() => setF({ clues: missionForm.clues.filter((_, j) => j !== i) })}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    className="btn btn-ghost"
+                    style={{ fontSize: '11px', padding: '4px 10px', marginBottom: '10px' }}
+                    onClick={() => setF({ clues: [...missionForm.clues, ''] })}
+                  >+ Add clue</button>
+                  <label style={labelStyle}>ANSWER (the secret word/code)</label>
+                  <input
+                    type="text"
+                    value={missionForm.sharedSecretAnswer}
+                    onChange={e => setF({ sharedSecretAnswer: e.target.value })}
+                    placeholder="e.g. salt"
+                    style={inputStyle}
+                  />
+                  <label style={{ ...labelStyle, marginTop: '10px' }}>HINT (optional — revealed after 2 wrong attempts, costs -50 pts)</label>
+                  <input
+                    type="text"
+                    value={missionForm.sharedSecretHint}
+                    onChange={e => setF({ sharedSecretHint: e.target.value })}
+                    placeholder="e.g. Think cooking"
+                    style={inputStyle}
+                  />
                 </div>
               )}
 

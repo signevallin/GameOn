@@ -49,6 +49,10 @@ export function validateMissionData(
     paAnswer: string;
     timelineItems: { label: string; year: string }[];
     photoPrompt: string;
+    relaySegments?: string[];
+    relayMode?: string;
+    sharedSecretAnswer?: string;
+    sharedSecretHint?: string;
   }
 ): string | null {
   switch (type) {
@@ -88,6 +92,17 @@ export function validateMissionData(
     case 'photo':
       if (!data.photoPrompt.trim()) return 'Photo prompt is required.';
       return null;
+    case 'relay': {
+      const segs = data.relaySegments ?? [];
+      if (segs.length < 2) return 'Add at least 2 segments.';
+      if (segs.some(s => !s.trim())) return 'All segments need text.';
+      return null;
+    }
+    case 'shared_secret':
+      if (!data.sharedSecretAnswer?.trim()) return 'Answer is required.';
+      if (data.clues.length < 2) return 'Add at least 2 clues.';
+      if (data.clues.some(c => !c.trim())) return 'All clues need text.';
+      return null;
     default:
       return 'Unknown type.';
   }
@@ -104,6 +119,10 @@ export function buildMissionData(
     paAnswer: string;
     timelineItems: { label: string; year: string }[];
     photoPrompt: string;
+    relaySegments?: string[];
+    relayMode?: string;
+    sharedSecretAnswer?: string;
+    sharedSecretHint?: string;
   }
 ): Record<string, unknown> {
   switch (type) {
@@ -128,6 +147,17 @@ export function buildMissionData(
       };
     case 'photo':
       return { prompt: data.photoPrompt };
+    case 'relay':
+      return {
+        segments: (data.relaySegments ?? []).filter(s => s.trim()),
+        relayMode: data.relayMode ?? 'typerace',
+      };
+    case 'shared_secret':
+      return {
+        clues: data.clues.filter(c => c.trim()),
+        answer: data.sharedSecretAnswer ?? '',
+        hint: data.sharedSecretHint ?? '',
+      };
     default:
       return {};
   }
