@@ -1876,7 +1876,7 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
 
           {/* Chart + Recent games */}
-          <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: 12 }}>
             {/* Activity bar chart */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
               <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
