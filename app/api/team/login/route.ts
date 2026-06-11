@@ -59,11 +59,11 @@ export async function POST(req: Request) {
     }
 
     const [teamResult, customMissionsResult] = await Promise.all([
+      // Look up by join_code only — name typos must not create a duplicate team
       supabase
         .from('teams')
         .select('*')
         .eq('game_id', game.id)
-        .ilike('name', name.trim())
         .eq('join_code', joinCode.trim().toUpperCase())
         .single(),
       buildCustomMissionsPromise(),
@@ -82,22 +82,7 @@ export async function POST(req: Request) {
     let team = teamResult.data;
 
     if (!team) {
-      // Team name + code combo not found — could mean name/code mismatch on existing team,
-      // or brand new team. Check if a team with that name already exists (wrong code).
-      const { data: existingByName } = await supabase
-        .from('teams')
-        .select('id')
-        .eq('game_id', game.id)
-        .ilike('name', name.trim())
-        .single();
-
-      if (existingByName) {
-        // Team name exists but join_code doesn't match
-        return NextResponse.json(
-          { error: "Team code or name doesn't match. Check with your team." },
-          { status: 404 }
-        );
-      }
+      // No team with that join_code yet — create one
 
       // ── Enforce free-plan team limit ────────────────────────────────────────
       if (game.user_id) {
