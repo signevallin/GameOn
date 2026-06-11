@@ -3690,7 +3690,6 @@ export default function AdminScreen({ onLogout }: Props) {
               {customGroups.map(({ cat, missions }) => {
                 const label = cat ? cat.name : 'Övriga';
                 const emoji = cat ? cat.emoji : '📋';
-                const borderColor = 'rgba(255,255,255,0.1)';
                 return (
                   <div key={cat ? cat.id : '__uncategorized__'}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -3698,7 +3697,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       <span style={{ fontWeight: 800, fontSize: '13px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
                       <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
                     </div>
-                    <div style={{ background: 'var(--card)', border: `1px solid ${borderColor}`, borderRadius: '12px', overflow: 'auto' }}>
+                    <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'auto' }}>
                       <table className="progress-table">
                         <thead>
                           <tr>
