@@ -38,6 +38,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   const segmentStartRef = useRef<number>(0);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const handleAutoSkipRef = useRef<() => void>(() => {});
 
   const segments = mission.segments ?? [];
   const memberIndex = members.findIndex(m => m.id === memberId);
@@ -80,6 +81,8 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
     };
   }, [team.id, mission.id]);
 
+  handleAutoSkipRef.current = () => advance(true);
+
   const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
@@ -96,7 +99,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         if (prev <= 1) {
           clearInterval(countdownRef.current!);
           countdownRef.current = null;
-          handleAutoSkip();
+          handleAutoSkipRef.current();
           return 0;
         }
         return prev - 1;
