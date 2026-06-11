@@ -3610,7 +3610,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
         {/* PROGRESS */}
         {tab === 'progress' && (() => {
-          // Group active missions by super-category
+          // Group active missions by super-category (built-in missions only)
           const catGroups = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => ({
             catKey,
             cat: SUPER_CATEGORIES[catKey],
@@ -3619,17 +3619,34 @@ export default function AdminScreen({ onLogout }: Props) {
               .filter((m): m is NonNullable<typeof m> => !!m && MISSION_SUPER_CATEGORY[m.id] === catKey),
           })).filter(g => g.missions.length > 0);
 
+          // Group custom missions in this game by their admin category
+          const customInGame = adminCustomMissions.filter(cm =>
+            activeGame.missions.includes(cm.id)
+          );
+          const customByCatId = new Map<string | null, typeof customInGame>();
+          for (const cm of customInGame) {
+            const key = cm.category_id ?? null;
+            if (!customByCatId.has(key)) customByCatId.set(key, []);
+            customByCatId.get(key)!.push(cm);
+          }
+          const customGroups: { cat: AdminCategory | null; missions: typeof customInGame }[] = [];
+          for (const cat of [...adminCategories].sort((a, b) => a.sort_order - b.sort_order)) {
+            const missions = customByCatId.get(cat.id) ?? [];
+            if (missions.length > 0) customGroups.push({ cat, missions });
+          }
+          const uncategorized = customByCatId.get(null) ?? [];
+          if (uncategorized.length > 0) customGroups.push({ cat: null, missions: uncategorized });
+
           return (
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Built-in mission groups */}
               {catGroups.map(({ catKey, cat, missions }) => (
                 <div key={catKey}>
-                  {/* Category header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                     <span style={{ fontSize: '16px' }}>{cat.icon}</span>
                     <span style={{ fontWeight: 800, fontSize: '13px', color: cat.color, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{cat.label}</span>
                     <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
                   </div>
-                  {/* Table for this category */}
                   <div style={{ background: 'var(--card)', border: `1px solid ${cat.color}33`, borderRadius: '12px', overflow: 'auto' }}>
                     <table className="progress-table">
                       <thead>
@@ -3668,6 +3685,58 @@ export default function AdminScreen({ onLogout }: Props) {
                   </div>
                 </div>
               ))}
+
+              {/* Custom mission groups */}
+              {customGroups.map(({ cat, missions }) => {
+                const label = cat ? cat.name : 'Övriga';
+                const emoji = cat ? cat.emoji : '📋';
+                const borderColor = 'rgba(255,255,255,0.1)';
+                return (
+                  <div key={cat ? cat.id : '__uncategorized__'}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '16px' }}>{emoji}</span>
+                      <span style={{ fontWeight: 800, fontSize: '13px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div style={{ background: 'var(--card)', border: `1px solid ${borderColor}`, borderRadius: '12px', overflow: 'auto' }}>
+                      <table className="progress-table">
+                        <thead>
+                          <tr>
+                            <th>Team</th>
+                            {missions.map(m => (
+                              <th key={m.id} title={m.name}>{m.icon}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sorted.length === 0 ? (
+                            <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
+                          ) : sorted.map(t => (
+                            <tr key={t.id}>
+                              <td><strong>{t.name}</strong></td>
+                              {missions.map(m => {
+                                const done = t.completed?.includes(m.id);
+                                const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
+                                return (
+                                  <td key={m.id}>
+                                    {done
+                                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--muted)', fontWeight: 700, fontSize: '12px' }}>
+                                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--muted)', display: 'inline-block', flexShrink: 0 }} />
+                                          {pts !== null ? pts : '✓'}
+                                        </span>
+                                      : <span style={{ color: 'var(--muted)' }}>–</span>
+                                    }
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
 
               {/* Total score summary */}
               {sorted.length > 0 && (
