@@ -19,19 +19,31 @@ function adminClient() {
   );
 }
 
+/** Normalize the Supabase teams(count) join into a flat teams_count number.
+ *  For soft-deleted games the teams rows are gone, so we fall back to the
+ *  stored teams_count snapshot on the game row itself. */
+function normalizeTeamsCount(g: Record<string, unknown>): number {
+  if (g.deleted_at) return (g.teams_count as number | null) ?? 0;
+  return (g.teams as { count: number }[] | null)?.[0]?.count ?? 0;
+}
+
 export async function GET(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
 
+  const url = new URL(req.url);
+  const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
+
   let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
   if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
+  if (!includeDeleted) query = query.is('deleted_at', null);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const normalized = (data ?? []).map(g => ({
     ...g,
-    teams_count: (g.teams as { count: number }[] | null)?.[0]?.count ?? 0,
+    teams_count: normalizeTeamsCount(g as Record<string, unknown>),
     teams: undefined,
   }));
 
@@ -45,13 +57,18 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   if (body.action === 'list') {
+    const includeDeleted = body.includeDeleted === true;
+
     let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
     if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
+    if (!includeDeleted) query = query.is('deleted_at', null);
+
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
     const normalized = (data ?? []).map(g => ({
       ...g,
-      teams_count: (g.teams as { count: number }[] | null)?.[0]?.count ?? 0,
+      teams_count: normalizeTeamsCount(g as Record<string, unknown>),
       teams: undefined,
     }));
     return NextResponse.json({ games: normalized });
@@ -66,14 +83,27 @@ export async function POST(req: Request) {
     if (!game) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
     if (!admin.isSuperAdmin && game.user_id !== admin.userId) return unauthorizedResponse();
 
+    // Snapshot team count before deleting teams
+    const { count: teamsCount } = await adminClient()
+      .from('teams')
+      .select('*', { count: 'exact', head: true })
+      .eq('game_id', gameId);
+
+    // Soft-delete the game (preserve row for analytics)
+    const { error: softDeleteErr } = await adminClient()
+      .from('games')
+      .update({ deleted_at: new Date().toISOString(), teams_count: teamsCount ?? 0 })
+      .eq('id', gameId);
+    if (softDeleteErr) return NextResponse.json({ error: softDeleteErr.message }, { status: 500 });
+
+    // Hard-delete teams and photos (data no longer needed)
     const { data: gameTeams } = await adminClient().from('teams').select('id').eq('game_id', gameId);
     const teamIds = (gameTeams ?? []).map((t: { id: string }) => t.id);
     if (teamIds.length) {
       await adminClient().from('photo_submissions').delete().in('team_id', teamIds);
     }
     await adminClient().from('teams').delete().eq('game_id', gameId);
-    const { error } = await adminClient().from('games').delete().eq('id', gameId);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
     return NextResponse.json({ ok: true });
   }
 
@@ -91,7 +121,7 @@ export async function POST(req: Request) {
     attempts++;
   }
 
-  const { data: game, error } = await adminClient()
+  const { data: newGame, error } = await adminClient()
     .from('games')
     .insert({
       game_key: key,
@@ -112,5 +142,5 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ game });
+  return NextResponse.json({ game: newGame });
 }

@@ -62,6 +62,7 @@ export type Game = {
   } | null;
   remote_mode?: boolean;
   teams_count?: number;
+  deleted_at?: string | null;
 };
 
 export type CustomMission = {
