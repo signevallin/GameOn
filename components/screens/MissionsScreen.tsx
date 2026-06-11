@@ -927,6 +927,14 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             <div style={{ display: 'inline-block', marginTop: '32px', padding: '12px 24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontFamily: "'Sora', sans-serif", fontSize: '13px', color: 'var(--muted)' }}>
               {t('waiting.gameLabel')} <strong style={{ color: 'var(--accent)', letterSpacing: '3px' }}>{game.game_key}</strong>
             </div>
+            <div style={{ marginTop: '24px' }}>
+              <button
+                onClick={onLogout}
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', opacity: 0.7 }}
+              >
+                {t('waiting.logout')}
+              </button>
+            </div>
           </div>
         )}
 

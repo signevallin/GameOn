@@ -113,7 +113,8 @@
   "waiting": {
     "title": "Ich warte darauf, dass das Spiel beginnt...",
     "subtitle": "Der Administrator wird das Spiel in Kürze starten.",
-    "gameLabel": "Spiel:"
+    "gameLabel": "Spiel:",
+    "logout": "Verlassen & zurück"
   },
   "frozen": {
     "title": "DU BIST EINGEFROREN",

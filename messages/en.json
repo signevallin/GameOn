@@ -113,7 +113,8 @@
   "waiting": {
     "title": "Waiting for the game to start...",
     "subtitle": "The admin will start the game shortly.",
-    "gameLabel": "Game:"
+    "gameLabel": "Game:",
+    "logout": "Leave & go back"
   },
   "frozen": {
     "title": "YOU ARE FROZEN",

@@ -113,7 +113,8 @@
   "waiting": {
     "title": "Väntar på att spelet ska börja...",
     "subtitle": "Administratören kommer att starta spelet inom kort.",
-    "gameLabel": "Spel:"
+    "gameLabel": "Spel:",
+    "logout": "Lämna & gå tillbaka"
   },
   "frozen": {
     "title": "DU ÄR FRYSEN",

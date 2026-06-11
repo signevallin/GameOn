@@ -113,7 +113,8 @@
   "waiting": {
     "title": "En attendant le début du match...",
     "subtitle": "L'administrateur va bientôt lancer la partie.",
-    "gameLabel": "Jeu:"
+    "gameLabel": "Jeu:",
+    "logout": "Quitter & retour"
   },
   "frozen": {
     "title": "VOUS ÊTES CONGELÉ",
