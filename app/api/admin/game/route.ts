@@ -27,27 +27,28 @@ function normalizeTeamsCount(g: Record<string, unknown>): number {
   return (g.teams as { count: number }[] | null)?.[0]?.count ?? 0;
 }
 
-export async function GET(req: Request) {
-  const admin = await validateAdminToken(req).catch(() => null);
-  if (!admin) return unauthorizedResponse();
-
-  const url = new URL(req.url);
-  const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
-
+async function fetchGamesList(admin: { isSuperAdmin: boolean; userId: string }, includeDeleted: boolean) {
   let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
   if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
   if (!includeDeleted) query = query.is('deleted_at', null);
-
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const normalized = (data ?? []).map(g => ({
+  if (error) return { error: error.message };
+  const games = (data ?? []).map(g => ({
     ...g,
     teams_count: normalizeTeamsCount(g as Record<string, unknown>),
     teams: undefined,
   }));
+  return { games };
+}
 
-  return NextResponse.json({ games: normalized }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
+export async function GET(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+  const url = new URL(req.url);
+  const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
+  const result = await fetchGamesList(admin, includeDeleted);
+  if ('error' in result) return NextResponse.json({ error: result.error }, { status: 500 });
+  return NextResponse.json({ games: result.games }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }
 
 export async function POST(req: Request) {
@@ -57,52 +58,42 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   if (body.action === 'list') {
-    const includeDeleted = body.includeDeleted === true;
-
-    let query = adminClient().from('games').select('*, teams(count)').order('created_at', { ascending: false });
-    if (!admin.isSuperAdmin) query = query.eq('user_id', admin.userId);
-    if (!includeDeleted) query = query.is('deleted_at', null);
-
-    const { data, error } = await query;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    const normalized = (data ?? []).map(g => ({
-      ...g,
-      teams_count: normalizeTeamsCount(g as Record<string, unknown>),
-      teams: undefined,
-    }));
-    return NextResponse.json({ games: normalized });
+    const result = await fetchGamesList(admin, body.includeDeleted === true);
+    if ('error' in result) return NextResponse.json({ error: result.error }, { status: 500 });
+    return NextResponse.json({ games: result.games });
   }
 
   if (body.action === 'delete') {
     const { gameId } = body;
     if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
 
-    // Verify ownership
-    const { data: game } = await adminClient().from('games').select('user_id').eq('id', gameId).single();
+    const db = adminClient();
+
+    // Verify ownership (only non-deleted games)
+    const { data: game } = await db.from('games').select('user_id').eq('id', gameId).is('deleted_at', null).single();
     if (!game) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
     if (!admin.isSuperAdmin && game.user_id !== admin.userId) return unauthorizedResponse();
 
     // Snapshot team count before deleting teams
-    const { count: teamsCount } = await adminClient()
+    const { count: teamsCount } = await db
       .from('teams')
       .select('*', { count: 'exact', head: true })
       .eq('game_id', gameId);
 
     // Soft-delete the game (preserve row for analytics)
-    const { error: softDeleteErr } = await adminClient()
+    const { error: softDeleteErr } = await db
       .from('games')
       .update({ deleted_at: new Date().toISOString(), teams_count: teamsCount ?? 0 })
       .eq('id', gameId);
     if (softDeleteErr) return NextResponse.json({ error: softDeleteErr.message }, { status: 500 });
 
     // Hard-delete teams and photos (data no longer needed)
-    const { data: gameTeams } = await adminClient().from('teams').select('id').eq('game_id', gameId);
+    const { data: gameTeams } = await db.from('teams').select('id').eq('game_id', gameId);
     const teamIds = (gameTeams ?? []).map((t: { id: string }) => t.id);
     if (teamIds.length) {
-      await adminClient().from('photo_submissions').delete().in('team_id', teamIds);
+      await db.from('photo_submissions').delete().in('team_id', teamIds);
     }
-    await adminClient().from('teams').delete().eq('game_id', gameId);
+    await db.from('teams').delete().eq('game_id', gameId);
 
     return NextResponse.json({ ok: true });
   }
