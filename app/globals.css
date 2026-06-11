@@ -916,6 +916,7 @@ pre {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.7); }
 }
+.admin-game-card-bottom { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; flex-shrink: 0; }
 .admin-game-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
 .admin-game-actions-row { display: flex; gap: 6px; }
 .admin-game-confirm { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
