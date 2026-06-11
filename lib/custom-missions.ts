@@ -33,6 +33,19 @@ export function toMission(cm: CustomMission): Mission {
       return { ...base, timelineItems: (d.items as Mission['timelineItems']) ?? [] };
     case 'photo':
       return { ...base, question: d.prompt as string };
+    case 'relay':
+      return {
+        ...base,
+        relayMode: (d.relayMode as 'typerace' | 'button') ?? 'button',
+        segments: ((d.segments as string[]) ?? []).map((p: string) => ({ prompt: p })),
+      };
+    case 'shared_secret':
+      return {
+        ...base,
+        clues: (d.clues as string[]) ?? [],
+        answer: d.answer as string,
+        hint: (d.hint as string) || undefined,
+      };
     default:
       return base as Mission;
   }
@@ -155,8 +168,8 @@ export function buildMissionData(
     case 'shared_secret':
       return {
         clues: data.clues.filter(c => c.trim()),
-        answer: data.sharedSecretAnswer ?? '',
-        hint: data.sharedSecretHint ?? '',
+        answer: (data.sharedSecretAnswer ?? '').trim(),
+        hint: (data.sharedSecretHint ?? '').trim() || undefined,
       };
     default:
       return {};
