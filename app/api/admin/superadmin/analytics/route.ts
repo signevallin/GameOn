@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     supabase.auth.admin.listUsers(),
     supabase
       .from('games')
-      .select('id, name, user_id, status, started_at, missions')
+      .select('id, name, user_id, status, started_at, missions, deleted_at, teams_count')
       .order('started_at', { ascending: false }),
     supabase
       .from('teams')
@@ -143,7 +143,10 @@ export async function POST(req: Request) {
       .map(g => g.user_id)
       .filter(Boolean)
   );
-  const totalTeamCount = teams.length;
+  const deletedTeamCount = games
+    .filter(g => g.deleted_at)
+    .reduce((sum, g) => sum + ((g as unknown as { teams_count?: number }).teams_count ?? 0), 0);
+  const totalTeamCount = teams.length + deletedTeamCount;
   const avgTeamsPerGame = games.length > 0 ? totalTeamCount / games.length : 0;
 
   const kpis: AnalyticsKPIs = {
@@ -169,12 +172,16 @@ export async function POST(req: Request) {
     .map(u => {
       const userGames = gamesByUser[u.id] ?? [];
       const userGameDetails: AnalyticsGame[] = userGames.map(g => {
-        const gt = teamsByGame[g.id] ?? [];
+        const isDeleted = !!(g as unknown as { deleted_at?: string | null }).deleted_at;
+        const gt = isDeleted ? [] : (teamsByGame[g.id] ?? []);
+        const teamCount = isDeleted
+          ? ((g as unknown as { teams_count?: number }).teams_count ?? 0)
+          : gt.length;
         const topScore = gt.length > 0 ? Math.max(...gt.map(t => t.score)) : 0;
         return {
           id: g.id,
           name: g.name,
-          teamCount: gt.length,
+          teamCount,
           topScore,
           finished: g.status === 'finished',
           startedAt: g.started_at ?? null,
@@ -182,7 +189,11 @@ export async function POST(req: Request) {
       });
       const lastActive = userGames.length > 0 ? (userGames[0].started_at ?? null) : null;
       const finishedCount = userGames.filter(g => g.status === 'finished').length;
-      const totalTeamsForUser = userGames.reduce((sum, g) => sum + (teamsByGame[g.id]?.length ?? 0), 0);
+      const totalTeamsForUser = userGames.reduce((sum, g) => {
+        const isDeleted = !!(g as unknown as { deleted_at?: string | null }).deleted_at;
+        if (isDeleted) return sum + ((g as unknown as { teams_count?: number }).teams_count ?? 0);
+        return sum + (teamsByGame[g.id]?.length ?? 0);
+      }, 0);
       const avgTeams = userGames.length > 0 ? totalTeamsForUser / userGames.length : 0;
 
       return {
