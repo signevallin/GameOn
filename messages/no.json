@@ -166,7 +166,33 @@
     "photoWaiting": "Admin vil gjennomgå og vurdere bildet ditt. Poeng legges til poengsummen din når de er vurdert – gå og gjør andre oppdrag!",
     "backToMissionsBtn": "← TILBAKE TIL OPPDRAG",
     "paSparet_city": "Hvilken by eller sted?",
-    "paSparet_person": "Hvem er denne personen?"
+    "paSparet_person": "Hvem er denne personen?",
+    "relay": {
+      "loading": "Laster stafett…",
+      "progress": "Stafetten",
+      "you": "(deg)",
+      "start": "Start min tur ▶",
+      "loadingBtn": "Laster…",
+      "saving": "Lagrer…",
+      "doneBtn": "Jeg er ferdig ✓",
+      "waiting": "Venter på {{name}}…",
+      "completed": "Du har gjort din del! Venter på de andre…",
+      "typeHere": "Begynn å skrive her…",
+      "pct": "{{pct}}% ferdig"
+    },
+    "sharedSecret": {
+      "loading": "Laster…",
+      "yourClue": "Ditt hint",
+      "discuss": "Diskuter på videosamtalen og gjett det hemmelige ordet sammen!",
+      "attempts": "Feil forsøk: {{n}}",
+      "attemptPenalty": "(-{{pts}} poeng)",
+      "wrong": "❌ Feil svar — prøv igjen!",
+      "correct": "✅ Riktig!",
+      "placeholder": "Skriv svaret her…",
+      "submit": "Send svar",
+      "showHint": "💡 Vis hint (-{{cost}} poeng)",
+      "hintLabel": "Hint"
+    }
   },
   "powerups": {
     "title": "⚡ Power-Ups",

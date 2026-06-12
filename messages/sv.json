@@ -166,7 +166,33 @@
     "photoWaiting": "Administratören kommer att granska och betygsätta ditt foto. Poäng läggs till i din poäng när det är betygsatt – gör andra uppdrag!",
     "backToMissionsBtn": "← TILLBAKA TILL UPPDRAG",
     "paSparet_city": "Vilken stad eller plats?",
-    "paSparet_person": "Vem är den här personen?"
+    "paSparet_person": "Vem är den här personen?",
+    "relay": {
+      "loading": "Laddar stafetten…",
+      "progress": "Stafetten",
+      "you": "(du)",
+      "start": "Starta min del ▶",
+      "loadingBtn": "Laddar…",
+      "saving": "Sparar…",
+      "doneBtn": "Jag är klar ✓",
+      "waiting": "Väntar på {{name}}…",
+      "completed": "Du har gjort din del! Väntar på de andra…",
+      "typeHere": "Börja skriva här…",
+      "pct": "{{pct}}% klar"
+    },
+    "sharedSecret": {
+      "loading": "Laddar…",
+      "yourClue": "Din ledtråd",
+      "discuss": "Prata med ditt team på videosamtalet och gissa det hemliga ordet tillsammans!",
+      "attempts": "Felaktiga försök: {{n}}",
+      "attemptPenalty": "(-{{pts}} poäng)",
+      "wrong": "❌ Fel svar — försök igen!",
+      "correct": "✅ Rätt svar!",
+      "placeholder": "Skriv ert svar här…",
+      "submit": "Skicka svar",
+      "showHint": "💡 Visa ledtråd (-{{cost}} poäng)",
+      "hintLabel": "Ledtråd"
+    }
   },
   "powerups": {
     "title": "⚡ Power-ups",

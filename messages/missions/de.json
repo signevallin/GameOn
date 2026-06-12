@@ -234,5 +234,21 @@
   "gkn_timeline": {
     "name": "GKN-Geschichte",
     "desc": "Ordnen Sie die wichtigsten Meilensteine in der Geschichte von GKN Aerospace in die richtige chronologische Reihenfolge."
+  },
+  "relay_typerace": {
+    "name": "Wort-Staffel",
+    "desc": "Jede Person tippt ihren Pangramm so schnell wie möglich — im Staffellauf!"
+  },
+  "relay_trivia": {
+    "name": "Trivia-Staffel",
+    "desc": "Jede Person beantwortet eine Frage — dann ist die nächste Person dran!"
+  },
+  "secret_word": {
+    "name": "Geheimwort",
+    "desc": "Jeder hat einen Hinweis — besprecht es im Videoanruf und ratet das Wort!"
+  },
+  "secret_code": {
+    "name": "Der verlorene Code",
+    "desc": "Jede Person hat eine Ziffer des PIN-Codes — rekonstruiert ihn zusammen!"
   }
 }

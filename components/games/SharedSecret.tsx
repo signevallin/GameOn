@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { Mission } from '@/lib/missions';
 
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function SharedSecret({ mission, team, game, memberId, effectiveMaxPts, startedAtMs, onFinish }: Props) {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<{ id: string }[]>([]);
   const [guess, setGuess] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -113,39 +115,39 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
   }
 
   if (members.length === 0) {
-    return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Laddar…</div>;
+    return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>{t('challenge.sharedSecret.loading')}</div>;
   }
 
   return (
     <div>
       {/* Personal clue */}
       <div style={{ marginBottom: '24px', padding: '20px', background: '#0d1422', borderRadius: '12px', border: '1px solid var(--accent)', textAlign: 'center' }}>
-        <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Din ledtråd</p>
+        <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('challenge.sharedSecret.yourClue')}</p>
         <p style={{ fontSize: '22px', fontWeight: 700, color: 'var(--accent3)' }}>{myClue}</p>
       </div>
 
       <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '24px', textAlign: 'center' }}>
-        Prata med ditt team på videosamtalet och gissa det hemliga ordet tillsammans!
+        {t('challenge.sharedSecret.discuss')}
       </p>
 
       {/* Attempt counter */}
       {attempts > 0 && (
         <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--muted)', textAlign: 'center' }}>
-          Felaktiga försök: {attempts}
-          {attempts > 1 && <span style={{ color: 'var(--accent2)' }}> (-{100 * (attempts - 1)} poäng)</span>}
+          {t('challenge.sharedSecret.attempts', { n: attempts })}
+          {attempts > 1 && <span style={{ color: 'var(--accent2)' }}> {t('challenge.sharedSecret.attemptPenalty', { pts: 100 * (attempts - 1) })}</span>}
         </div>
       )}
 
       {/* Feedback */}
       {lastResult === 'wrong' && (
         <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--accent2)', borderRadius: '8px', textAlign: 'center', color: 'var(--accent2)' }}>
-          ❌ Fel svar — försök igen!
+          {t('challenge.sharedSecret.wrong')}
         </div>
       )}
 
       {lastResult === 'correct' && (
         <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(34,197,94,0.1)', border: '1px solid var(--accent3)', borderRadius: '8px', textAlign: 'center', color: 'var(--accent3)' }}>
-          ✅ Rätt svar!
+          {t('challenge.sharedSecret.correct')}
         </div>
       )}
 
@@ -155,7 +157,7 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
           <input
             type="text"
             value={guess}
-            placeholder="Skriv ert svar här…"
+            placeholder={t('challenge.sharedSecret.placeholder')}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             autoComplete="off"
@@ -166,7 +168,7 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
             onClick={handleSubmit}
             disabled={!guess.trim()}
           >
-            Skicka svar
+            {t('challenge.sharedSecret.submit')}
           </button>
         </>
       )}
@@ -178,13 +180,13 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
           style={{ width: '100%', marginTop: '12px', opacity: 0.8 }}
           onClick={handleRevealHint}
         >
-          💡 Visa ledtråd (-{HINT_COST} poäng)
+          {t('challenge.sharedSecret.showHint', { cost: HINT_COST })}
         </button>
       )}
 
       {hint && showHint && (
         <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(251,191,36,0.1)', border: '1px solid var(--gold)', borderRadius: '8px', textAlign: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ledtråd</span>
+          <span style={{ fontSize: '12px', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('challenge.sharedSecret.hintLabel')}</span>
           <p style={{ marginTop: '6px', color: 'var(--fg)' }}>{hint}</p>
         </div>
       )}

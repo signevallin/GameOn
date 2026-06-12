@@ -166,7 +166,33 @@
     "photoWaiting": "Der Administrator wird dein Foto prüfen und bewerten. Nach der Bewertung werden deinem Punktestand Punkte gutgeschrieben – mach dich auf den Weg zu anderen Missionen!",
     "backToMissionsBtn": "← ZURÜCK ZU DEN MISSIONEN",
     "paSparet_city": "Welche Stadt oder welcher Ort?",
-    "paSparet_person": "Wer ist diese Person?"
+    "paSparet_person": "Wer ist diese Person?",
+    "relay": {
+      "loading": "Staffel wird geladen…",
+      "progress": "Staffel",
+      "you": "(du)",
+      "start": "Meine Runde starten ▶",
+      "loadingBtn": "Laden…",
+      "saving": "Speichern…",
+      "doneBtn": "Ich bin fertig ✓",
+      "waiting": "Warte auf {{name}}…",
+      "completed": "Du hast deinen Teil erledigt! Warte auf die anderen…",
+      "typeHere": "Hier tippen…",
+      "pct": "{{pct}}% fertig"
+    },
+    "sharedSecret": {
+      "loading": "Laden…",
+      "yourClue": "Dein Hinweis",
+      "discuss": "Besprecht euch im Videoanruf und ratet das Geheimwort zusammen!",
+      "attempts": "Falsche Versuche: {{n}}",
+      "attemptPenalty": "(-{{pts}} Punkte)",
+      "wrong": "❌ Falsche Antwort — versuch es nochmal!",
+      "correct": "✅ Richtig!",
+      "placeholder": "Antwort hier eingeben…",
+      "submit": "Abschicken",
+      "showHint": "💡 Tipp anzeigen (-{{cost}} Punkte)",
+      "hintLabel": "Tipp"
+    }
   },
   "powerups": {
     "title": "⚡ Power-Ups",

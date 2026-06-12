@@ -166,7 +166,33 @@
     "photoWaiting": "Adminen vil gennemgå og bedømme dit foto. Point vil blive tilføjet til din score, når de er bedømt – gå ud og udfør andre missioner!",
     "backToMissionsBtn": "← TILBAGE TIL MISSIONER",
     "paSparet_city": "Hvilken by eller sted?",
-    "paSparet_person": "Hvem er denne person?"
+    "paSparet_person": "Hvem er denne person?",
+    "relay": {
+      "loading": "Indlæser stafet…",
+      "progress": "Stafetten",
+      "you": "(dig)",
+      "start": "Start min tur ▶",
+      "loadingBtn": "Indlæser…",
+      "saving": "Gemmer…",
+      "doneBtn": "Jeg er færdig ✓",
+      "waiting": "Venter på {{name}}…",
+      "completed": "Du har gjort din del! Venter på de andre…",
+      "typeHere": "Begynd at skrive her…",
+      "pct": "{{pct}}% færdig"
+    },
+    "sharedSecret": {
+      "loading": "Indlæser…",
+      "yourClue": "Dit fingerpeg",
+      "discuss": "Diskuter på videoopkaldet og gæt det hemmelige ord sammen!",
+      "attempts": "Forkerte forsøg: {{n}}",
+      "attemptPenalty": "(-{{pts}} point)",
+      "wrong": "❌ Forkert svar — prøv igen!",
+      "correct": "✅ Korrekt!",
+      "placeholder": "Skriv dit svar her…",
+      "submit": "Send svar",
+      "showHint": "💡 Vis fingerpeg (-{{cost}} point)",
+      "hintLabel": "Fingerpeg"
+    }
   },
   "powerups": {
     "title": "⚡ Power-Ups",

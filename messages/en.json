@@ -166,7 +166,33 @@
     "photoWaiting": "Admin will review and rate your photo. Points will be added to your score once rated — go do other missions!",
     "backToMissionsBtn": "← BACK TO MISSIONS",
     "paSparet_city": "Which city or place?",
-    "paSparet_person": "Who is this person?"
+    "paSparet_person": "Who is this person?",
+    "relay": {
+      "loading": "Loading relay…",
+      "progress": "Relay",
+      "you": "(you)",
+      "start": "Start my turn ▶",
+      "loadingBtn": "Loading…",
+      "saving": "Saving…",
+      "doneBtn": "I'm done ✓",
+      "waiting": "Waiting for {{name}}…",
+      "completed": "You've done your part! Waiting for the others…",
+      "typeHere": "Start typing here…",
+      "pct": "{{pct}}% done"
+    },
+    "sharedSecret": {
+      "loading": "Loading…",
+      "yourClue": "Your clue",
+      "discuss": "Discuss on the video call and guess the secret word together!",
+      "attempts": "Wrong attempts: {{n}}",
+      "attemptPenalty": "(-{{pts}} points)",
+      "wrong": "❌ Wrong answer — try again!",
+      "correct": "✅ Correct!",
+      "placeholder": "Type your answer here…",
+      "submit": "Submit",
+      "showHint": "💡 Show hint (-{{cost}} points)",
+      "hintLabel": "Hint"
+    }
   },
   "powerups": {
     "title": "⚡ Power-Ups",

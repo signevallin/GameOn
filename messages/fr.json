@@ -166,7 +166,33 @@
     "photoWaiting": "L'administrateur examinera et notera votre photo. Des points seront ajoutés à votre score une fois la photo notée ; passez à d'autres missions !",
     "backToMissionsBtn": "← RETOUR AUX MISSIONS",
     "paSparet_city": "Quelle ville ou quel lieu ?",
-    "paSparet_person": "Qui est cette personne ?"
+    "paSparet_person": "Qui est cette personne ?",
+    "relay": {
+      "loading": "Chargement du relais…",
+      "progress": "Relais",
+      "you": "(toi)",
+      "start": "Démarrer mon tour ▶",
+      "loadingBtn": "Chargement…",
+      "saving": "Enregistrement…",
+      "doneBtn": "J'ai fini ✓",
+      "waiting": "En attente de {{name}}…",
+      "completed": "Tu as fait ta part ! En attente des autres…",
+      "typeHere": "Commencer à taper ici…",
+      "pct": "{{pct}}% terminé"
+    },
+    "sharedSecret": {
+      "loading": "Chargement…",
+      "yourClue": "Votre indice",
+      "discuss": "Discutez en appel vidéo et devinez le mot secret ensemble !",
+      "attempts": "Mauvaises tentatives : {{n}}",
+      "attemptPenalty": "(-{{pts}} points)",
+      "wrong": "❌ Mauvaise réponse — réessayez !",
+      "correct": "✅ Correct !",
+      "placeholder": "Tapez votre réponse ici…",
+      "submit": "Envoyer",
+      "showHint": "💡 Voir l'indice (-{{cost}} points)",
+      "hintLabel": "Indice"
+    }
   },
   "powerups": {
     "title": "⚡ Bonus",

@@ -1,6 +1,7 @@
 // components/games/RelayMission.tsx
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { Mission } from '@/lib/missions';
 
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function RelayMission({ mission, team, game, memberId, effectiveMaxPts, onFinish }: Props) {
+  const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
   const [relayState, setRelayState] = useState<RelayMissionState | null>(null);
   const [typed, setTyped] = useState('');
@@ -180,7 +182,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   }
 
   if (members.length === 0) {
-    return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Laddar stafetten…</div>;
+    return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>{t('challenge.relay.loading')}</div>;
   }
 
   const completedCount = relayState?.segments.length ?? 0;
@@ -191,8 +193,8 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       {/* Progress bar */}
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--muted)', marginBottom: '6px' }}>
-          <span>Stafetten</span>
-          <span>{completedCount}/{segments.length} klara</span>
+          <span>{t('challenge.relay.progress')}</span>
+          <span>{completedCount}/{segments.length}</span>
         </div>
         <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${pct}%`, background: 'var(--accent)', borderRadius: '3px', transition: 'width 0.4s ease' }} />
@@ -216,7 +218,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               opacity: isNext ? 0.5 : 1,
             }}>
               <span style={{ fontSize: '18px' }}>{isDone ? '✅' : isActive ? '▶️' : '⏳'}</span>
-              <span style={{ fontWeight: isActive ? 700 : 400 }}>{m.name}{m.id === memberId ? ' (du)' : ''}</span>
+              <span style={{ fontWeight: isActive ? 700 : 400 }}>{m.name}{m.id === memberId ? ` ${t('challenge.relay.you')}` : ''}</span>
               {isActive && started && (
                 <span style={{ marginLeft: 'auto', fontSize: '12px', color: countdown <= 10 ? 'var(--accent2)' : 'var(--muted)' }}>
                   {countdown}s
@@ -236,7 +238,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
 
           {!started ? (
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleStart} disabled={loading}>
-              {loading ? 'Laddar…' : 'Starta min del ▶'}
+              {loading ? t('challenge.relay.loadingBtn') : t('challenge.relay.start')}
             </button>
           ) : mission.relayMode === 'typerace' ? (
             <>
@@ -267,14 +269,14 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
                 ref={inputRef}
                 type="text"
                 value={typed}
-                placeholder="Börja skriva här…"
+                placeholder={t('challenge.relay.typeHere')}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
                 onChange={e => handleTyped(e.target.value)}
               />
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
-                {mySegment ? Math.round((typed.length / mySegment.prompt.length) * 100) : 0}% klar
+                {t('challenge.relay.pct', { pct: mySegment ? Math.round((typed.length / mySegment.prompt.length) * 100) : 0 })}
               </p>
             </>
           ) : (
@@ -284,7 +286,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               onClick={() => advance(false)}
               disabled={loading}
             >
-              {loading ? 'Sparar…' : 'Jag är klar ✓'}
+              {loading ? t('challenge.relay.saving') : t('challenge.relay.doneBtn')}
             </button>
           )}
         </div>
@@ -293,14 +295,14 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       {isWaiting && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
-          <p>Väntar på {members[active]?.name ?? '…'}…</p>
+          <p>{t('challenge.relay.waiting', { name: members[active]?.name ?? '…' })}</p>
         </div>
       )}
 
       {isPast && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--accent3)' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
-          <p>Du har gjort din del! Väntar på de andra…</p>
+          <p>{t('challenge.relay.completed')}</p>
         </div>
       )}
     </div>

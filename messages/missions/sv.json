@@ -234,5 +234,21 @@
   "gkn_timeline": {
     "name": "GKN-historia",
     "desc": "Sortera viktiga milstolpar i GKN Aerospaces historia i rätt kronologisk ordning."
+  },
+  "relay_typerace": {
+    "name": "Ordstafett",
+    "desc": "Varje person skriver sin pangram så snabbt som möjligt — stafett!"
+  },
+  "relay_trivia": {
+    "name": "Faktastafett",
+    "desc": "Varje person svarar på en triviafråga — sedan är nästa i tur!"
+  },
+  "secret_word": {
+    "name": "Hemligt ord",
+    "desc": "Var och en har en ledtråd — diskutera på videosamtalet och gissa ordet!"
+  },
+  "secret_code": {
+    "name": "Den försvunna koden",
+    "desc": "Varje person har en siffra i PIN-koden — rekonstruera den tillsammans!"
   }
 }
