@@ -2683,7 +2683,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       rows={3}
                       value={aiPrompt}
                       onChange={e => setAiPrompt(e.target.value)}
-                      placeholder={'e.g. "5 trivia questions about football", "Apple product timeline", "let AI choose a type about our company GKN Aerospace"'}
+                      placeholder={'e.g. "5 trivia questions about our company history", "Famous landmarks timeline", "True or false about space exploration"'}
                       style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text)', fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
                     />
                   </div>
