@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin Analytics – Full Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #dce4ee; font-family: 'Segoe UI', system-ui, sans-serif; padding: 0 0 80px; }
+
+  /* ── Page header ── */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid #1e2a3a;
+  }
+  .page-header-left h1 { font-size: 22px; font-weight: 800; }
+  .page-header-left p { font-size: 12px; color: #4a5568; margin-top: 3px; }
+  .refresh-btn {
+    font-size: 11px; font-weight: 700; color: #6b7a8d;
+    background: #141b27; border: 1px solid #1e2a3a;
+    padding: 7px 14px; border-radius: 8px; cursor: pointer; letter-spacing: 0.3px;
+  }
+
+  .content { padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+
+  /* ── KPI row ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi-card {
+    background: #141b27; border: 1px solid #1e2a3a; border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .kpi-label { font-size: 10px; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px; }
+  .kpi-value { font-size: 30px; font-weight: 900; color: #dce4ee; line-height: 1; }
+  .kpi-value.accent { color: #6ec6f5; }
+  .kpi-value.green { color: #8cbf9b; }
+  .kpi-value.gold { color: #d4b761; }
+  .kpi-sub { font-size: 11px; color: #4a5568; margin-top: 5px; }
+  .kpi-trend-up { color: #8cbf9b; }
+  .kpi-trend-down { color: #d4756e; }
+
+  /* ── Row layouts ── */
+  .row-2-3 { display: grid; grid-template-columns: 2fr 3fr; gap: 16px; margin-bottom: 16px; }
+  .row-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; margin-bottom: 16px; }
+  .row-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  /* ── Section card ── */
+  .section-card {
+    background: #141b27; border: 1px solid #1e2a3a; border-radius: 14px; overflow: hidden;
+  }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid #1e2a3a;
+  }
+  .section-title { font-size: 13px; font-weight: 700; color: #dce4ee; }
+  .section-badge {
+    font-size: 10px; font-weight: 700; color: #6b7a8d;
+    background: #0d1117; border: 1px solid #1e2a3a;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .section-body { padding: 16px 18px; }
+
+  /* ── Activity chart ── */
+  .chart-wrap { display: flex; align-items: flex-end; gap: 5px; height: 100px; padding-bottom: 4px; }
+  .chart-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; }
+  .chart-bar { width: 100%; border-radius: 3px 3px 0 0; transition: opacity 0.15s; }
+  .chart-bar:hover { opacity: 0.8; }
+  .chart-lbl { font-size: 8px; color: #4a5568; margin-top: 4px; white-space: nowrap; }
+  .chart-legend { display: flex; gap: 12px; margin-top: 10px; }
+  .chart-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #6b7a8d; }
+  .chart-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* ── Customer list ── */
+  .customer-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #1a2333;
+  }
+  .customer-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .customer-avatar {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; flex-shrink: 0;
+  }
+  .customer-info { flex: 1; min-width: 0; }
+  .customer-email { font-size: 12px; font-weight: 600; color: #dce4ee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .customer-meta { font-size: 10px; color: #4a5568; margin-top: 1px; }
+  .customer-stat { text-align: right; flex-shrink: 0; }
+  .customer-stat-num { font-size: 13px; font-weight: 700; }
+  .customer-stat-lbl { font-size: 9px; color: #4a5568; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .status-active { background: #8cbf9b; }
+  .status-risk { background: #d4b761; }
+  .status-churned { background: #4a5568; }
+
+  /* ── Plan distribution ── */
+  .plan-bar-wrap { margin-bottom: 12px; }
+  .plan-bar-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+  .plan-bar-label span:first-child { font-weight: 600; }
+  .plan-bar-track { height: 8px; background: #1a2333; border-radius: 4px; overflow: hidden; }
+  .plan-bar-fill { height: 100%; border-radius: 4px; }
+  .plan-total { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #1a2333; }
+  .plan-total-item { flex: 1; text-align: center; }
+  .plan-total-num { font-size: 22px; font-weight: 900; }
+  .plan-total-lbl { font-size: 9px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+  /* ── Activity feed ── */
+  .feed-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #1a2333;
+  }
+  .feed-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .feed-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-title { font-size: 12px; color: #dce4ee; font-weight: 600; }
+  .feed-sub { font-size: 10px; color: #4a5568; margin-top: 2px; }
+  .feed-right { text-align: right; flex-shrink: 0; }
+  .feed-time { font-size: 10px; color: #4a5568; }
+  .feed-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-top: 3px; display: inline-block; }
+  .badge-green { background: rgba(140,191,155,0.12); color: #8cbf9b; }
+  .badge-blue { background: rgba(110,198,245,0.1); color: #6ec6f5; }
+  .badge-muted { background: rgba(74,85,104,0.2); color: #6b7a8d; }
+
+  /* ── Mission table ── */
+  .mission-row { padding: 9px 0; border-bottom: 1px solid #1a2333; }
+  .mission-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .mission-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .mission-name { font-size: 12px; font-weight: 600; color: #dce4ee; flex: 1; }
+  .mission-pct { font-size: 12px; font-weight: 800; }
+  .mission-bar-track { height: 4px; background: #1a2333; border-radius: 2px; overflow: hidden; }
+  .mission-bar-fill { height: 100%; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>📊 Analytics</h1>
+    <p>Uppdateras i realtid · Synlig bara för dig</p>
+  </div>
+  <button class="refresh-btn">↻ Uppdatera</button>
+</div>
+
+<div class="content">
+
+  <!-- KPI row -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Aktiva kunder</div>
+      <div class="kpi-value accent">12</div>
+      <div class="kpi-sub"><span class="kpi-trend-up">↑ 3</span> senaste 30d</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Spel totalt</div>
+      <div class="kpi-value">47</div>
+      <div class="kpi-sub">6 den här månaden</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Slutförandegrad</div>
+      <div class="kpi-value green">84%</div>
+      <div class="kpi-sub">39 av 47 avslutade</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Snitt lag/spel</div>
+      <div class="kpi-value">8.2</div>
+      <div class="kpi-sub">342 lag totalt</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pro-kunder</div>
+      <div class="kpi-value gold">9</div>
+      <div class="kpi-sub">75% av kunderna</div>
+    </div>
+  </div>
+
+  <!-- Row 1: Activity chart + Customer status -->
+  <div class="row-3-2">
+
+    <!-- Activity chart -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-title">Aktivitet</div>
+        <div style="display:flex;gap:6px">
+          <span class="section-badge" style="background:rgba(110,198,245,0.1);color:#6ec6f5;border-color:rgba(110,198,245,0.2)">Vecka</span>
+          <span class="section-badge">Månad</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="chart-wrap">
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:35%;background:rgba(110,198,245,0.25)"></div>
+            <div class="chart-lbl">V18</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:50%;background:rgba(110,198,245,0.25)"></div>
+            <div class="chart-lbl">V19</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:30%;background:rgba(110,198,245,0.25)"></div>
+            <div class="chart-lbl">V20</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:65%;background:rgba(110,198,245,0.35)"></div>
+            <div class="chart-lbl">V21</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:45%;background:rgba(110,198,245,0.35)"></div>
+            <div class="chart-lbl">V22</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:80%;background:rgba(110,198,245,0.6)"></div>
+            <div class="chart-lbl">V23</div>
+          </div>
+          <div class="chart-bar-group">
+            <div class="chart-bar" style="height:100%;background:#6ec6f5"></div>
+            <div class="chart-lbl">V24 ←</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#6ec6f5"></div> Spel spelades</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer status -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-title">Kundstatus</div>
+        <span class="section-badge">12 kunder</span>
+      </div>
+      <div class="section-body">
+        <div class="customer-row">
+          <div class="status-dot status-active"></div>
+          <div class="customer-avatar" style="background:rgba(140,191,155,0.12);color:#8cbf9b">A</div>
+          <div class="customer-info">
+            <div class="customer-email">anna@företag.se</div>
+            <div class="customer-meta">Senast aktiv: 2 dagar sedan</div>
+          </div>
+          <div class="customer-stat">
+            <div class="customer-stat-num" style="color:#6ec6f5">12</div>
+            <div class="customer-stat-lbl">spel</div>
+          </div>
+        </div>
+        <div class="customer-row">
+          <div class="status-dot status-active"></div>
+          <div class="customer-avatar" style="background:rgba(110,198,245,0.1);color:#6ec6f5">M</div>
+          <div class="customer-info">
+            <div class="customer-email">mark@corp.com</div>
+            <div class="customer-meta">Senast aktiv: igår</div>
+          </div>
+          <div class="customer-stat">
+            <div class="customer-stat-num" style="color:#6ec6f5">7</div>
+            <div class="customer-stat-lbl">spel</div>
+          </div>
+        </div>
+        <div class="customer-row">
+          <div class="status-dot status-risk"></div>
+          <div class="customer-avatar" style="background:rgba(212,183,97,0.1);color:#d4b761">S</div>
+          <div class="customer-info">
+            <div class="customer-email">sara@startup.io</div>
+            <div class="customer-meta">⚠ Inte aktiv på 18 dagar</div>
+          </div>
+          <div class="customer-stat">
+            <div class="customer-stat-num" style="color:#d4b761">3</div>
+            <div class="customer-stat-lbl">spel</div>
+          </div>
+        </div>
+        <div class="customer-row">
+          <div class="status-dot status-churned"></div>
+          <div class="customer-avatar" style="background:rgba(74,85,104,0.15);color:#6b7a8d">P</div>
+          <div class="customer-info">
+            <div class="customer-email">peter@old.se</div>
+            <div class="customer-meta">Inte aktiv på 45 dagar</div>
+          </div>
+          <div class="customer-stat">
+            <div class="customer-stat-num" style="color:#4a5568">1</div>
+            <div class="customer-stat-lbl">spel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Recent activity feed + Plan dist + Mission ranking -->
+  <div style="display:grid;grid-template-columns:2fr 1fr 1.5fr;gap:16px;margin-bottom:16px">
+
+    <!-- Recent activity feed -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-title">Senaste spel</div>
+        <span class="section-badge">Live</span>
+      </div>
+      <div class="section-body">
+        <div class="feed-row">
+          <div class="feed-icon" style="background:rgba(140,191,155,0.12)">🎮</div>
+          <div class="feed-body">
+            <div class="feed-title">IT Day 2026</div>
+            <div class="feed-sub">anna@företag.se · 14 uppdrag · 45 min</div>
+          </div>
+          <div class="feed-right">
+            <div class="feed-time">2h sedan</div>
+            <div class="feed-badge badge-green">12 lag</div>
+          </div>
+        </div>
+        <div class="feed-row">
+          <div class="feed-icon" style="background:rgba(110,198,245,0.1)">🎮</div>
+          <div class="feed-body">
+            <div class="feed-title">Team Building Q2</div>
+            <div class="feed-sub">mark@corp.com · 10 uppdrag · 60 min</div>
+          </div>
+          <div class="feed-right">
+            <div class="feed-time">igår</div>
+            <div class="feed-badge badge-blue">8 lag</div>
+          </div>
+        </div>
+        <div class="feed-row">
+          <div class="feed-icon" style="background:rgba(110,198,245,0.1)">🎮</div>
+          <div class="feed-body">
+            <div class="feed-title">Kickoff Höst</div>
+            <div class="feed-sub">mark@corp.com · 12 uppdrag · 45 min</div>
+          </div>
+          <div class="feed-right">
+            <div class="feed-time">3 dagar</div>
+            <div class="feed-badge badge-blue">6 lag</div>
+          </div>
+        </div>
+        <div class="feed-row">
+          <div class="feed-icon" style="background:rgba(74,85,104,0.15)">🎮</div>
+          <div class="feed-body">
+            <div class="feed-title">(namnlöst spel)</div>
+            <div class="feed-sub">sara@startup.io · 8 uppdrag · 30 min</div>
+          </div>
+          <div class="feed-right">
+            <div class="feed-time">18 dagar</div>
+            <div class="feed-badge badge-muted">3 lag</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan distribution -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-title">Planfördelning</div>
+      </div>
+      <div class="section-body">
+        <div class="plan-bar-wrap">
+          <div class="plan-bar-label">
+            <span>Pro</span>
+            <span style="color:#d4b761;font-weight:700">9 kunder</span>
+          </div>
+          <div class="plan-bar-track">
+            <div class="plan-bar-fill" style="width:75%;background:#d4b761"></div>
+          </div>
+        </div>
+        <div class="plan-bar-wrap">
+          <div class="plan-bar-label">
+            <span>Free</span>
+            <span style="color:#4a5568;font-weight:700">3 kunder</span>
+          </div>
+          <div class="plan-bar-track">
+            <div class="plan-bar-fill" style="width:25%;background:#4a5568"></div>
+          </div>
+        </div>
+        <div class="plan-total">
+          <div class="plan-total-item">
+            <div class="plan-total-num" style="color:#d4b761">75%</div>
+            <div class="plan-total-lbl">Pro-rate</div>
+          </div>
+          <div class="plan-total-item">
+            <div class="plan-total-num" style="color:#dce4ee">12</div>
+            <div class="plan-total-lbl">Totalt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission ranking -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-title">Uppdragsranking</div>
+        <span class="section-badge">Klarade</span>
+      </div>
+      <div class="section-body">
+        <div class="mission-row">
+          <div class="mission-row-top">
+            <div class="mission-name">📸 Fota ett träd</div>
+            <div class="mission-pct" style="color:#8cbf9b">94%</div>
+          </div>
+          <div class="mission-bar-track"><div class="mission-bar-fill" style="width:94%;background:#8cbf9b"></div></div>
+        </div>
+        <div class="mission-row">
+          <div class="mission-row-top">
+            <div class="mission-name">🎤 Sjung en låt</div>
+            <div class="mission-pct" style="color:#8cbf9b">88%</div>
+          </div>
+          <div class="mission-bar-track"><div class="mission-bar-fill" style="width:88%;background:#8cbf9b"></div></div>
+        </div>
+        <div class="mission-row">
+          <div class="mission-row-top">
+            <div class="mission-name">🧩 Lös gåtan</div>
+            <div class="mission-pct" style="color:#d4b761">62%</div>
+          </div>
+          <div class="mission-bar-track"><div class="mission-bar-fill" style="width:62%;background:#d4b761"></div></div>
+        </div>
+        <div class="mission-row">
+          <div class="mission-row-top">
+            <div class="mission-name">🏃 Sprinta 100m</div>
+            <div class="mission-pct" style="color:#d4756e">38%</div>
+          </div>
+          <div class="mission-bar-track"><div class="mission-bar-fill" style="width:38%;background:#d4756e"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

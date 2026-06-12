@@ -1,0 +1,9 @@
+{"type":"server-started","port":65234,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65234","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/layout-options.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/layout-options.html"}
+{"source":"user-event","type":"click","text":"Layout B\n    SaaS-dashboard\n    KPI-kort i toppen, kundlista + aktivitets­diagram bredvid varandra. Standard för moderna admin-verktyg.\n    \n      \n        \n          \n            12\n            AKTIVA KUNDER\n            ↑ 3 senaste 30d\n          \n          \n            47\n            SPEL TOTALT\n            ↑ 6 den här månaden\n          \n          \n            84%\n            SLUTFÖRANDEGRAD\n            Stabil\n          \n        \n        \n          \n            Senaste kunder\n            12 spel\n            4 spel\n            7 spel\n            2 spel\n          \n          \n            Spel per vecka","choice":"b","id":null,"timestamp":1781121352452}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/full-page-mockup.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/full-page-mockup.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/tabs-mockup.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/15783-1781121206/content/tabs-mockup.html"}
+{"type":"server-stopped","reason":"idle timeout"}

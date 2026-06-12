@@ -761,12 +761,21 @@ pre {
   /* Game key font size — prevent overflow on narrow screens */
   .mobile-game-key {
     font-family: 'Sora', sans-serif;
-    font-size: clamp(28px, 8vw, 48px) !important;
+    font-size: clamp(26px, 7.5vw, 48px) !important;
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: clamp(3px, 1.5vw, 8px) !important;
+    letter-spacing: clamp(2px, 1.2vw, 8px) !important;
     line-height: 1;
   }
+
+  /* Leaderboard rows — reduce padding on mobile */
+  .lb-row {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .lb-rank { width: 28px; font-size: 16px; }
+  .lb-name { font-size: 14px; }
+  .lb-score { font-size: 16px; }
 
   /* Photo grid — single column on phones */
   .mobile-photo-grid {
@@ -835,7 +844,7 @@ pre {
 
 .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; }
 
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
 .divider { height: 1px; background: var(--border); margin: 32px 0; }
 
 /* ── LOGIN TABS ── */

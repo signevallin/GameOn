@@ -3635,17 +3635,17 @@ export default function AdminScreen({ onLogout }: Props) {
           </button>
         )}
         {/* GAME KEY + QR + START */}
-        <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ padding: isMobile ? '16px 0 16px' : '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '14px' : '24px', alignItems: 'flex-start' }}>
             {/* QR code — click to expand */}
             <div
               onClick={() => setQrExpanded(true)}
               title="Click to enlarge"
-              style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
+              style={{ background: '#fff', borderRadius: '10px', padding: isMobile ? '7px' : '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
             >
               <QRCodeSVG
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
-                size={100}
+                size={isMobile ? 72 : 100}
                 bgColor="#ffffff"
                 fgColor="#0f1724"
                 level="M"
@@ -3710,32 +3710,32 @@ export default function AdminScreen({ onLogout }: Props) {
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', alignItems: 'center' }}>
             {(activeGame.status === 'active' || activeGame.status === 'finished') && (
               <button
                 className="btn btn-ghost"
                 onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
-                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
                 title="Open presenter view (for projector or TV)"
               >
-                📺 Presenter
+                📺{isMobile ? '' : ' Presenter'}
               </button>
             )}
             {activeGame.status === 'draft' && (
-              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: '15px', padding: '14px 28px' }}>
+              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: isMobile ? '14px' : '15px', padding: isMobile ? '12px 22px' : '14px 28px' }}>
                 ▶ START GAME
               </button>
             )}
             {activeGame.status === 'active' && (
-              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: '12px 20px' }}>
-                ⏹ END GAME
+              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px' }}>
+                ⏹{isMobile ? ' END' : ' END GAME'}
               </button>
             )}
             {(activeGame.status === 'finished' || activeGame.status === 'active') && (
               <button className="btn btn-ghost" onClick={() => startOrStop('restart')}
-                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)' }}
                 title="Reset game to Draft so you can start it again">
-                ↺ RESTART
+                ↺{isMobile ? '' : ' RESTART'}
               </button>
             )}
             {activeGame.status === 'finished' && (
@@ -3746,18 +3746,18 @@ export default function AdminScreen({ onLogout }: Props) {
                     onClick={() => handleUpgrade('pro')}
                     disabled={upgradeLoading}
                     title="Upgrade to Pro to download PDF reports"
-                    style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                    style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
                   >
-                    🔒 Download Report (Pro)
+                    🔒{isMobile ? ' Report' : ' Download Report (Pro)'}
                   </button>
                 ) : (
                   <button
                     className="btn btn-ghost"
                     disabled={reportLoading}
                     onClick={downloadReport}
-                    style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                    style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)' }}
                   >
-                    {reportLoading ? '⏳ Generating…' : '📄 Download Report'}
+                    {reportLoading ? '⏳' : '📄'}{isMobile ? (reportLoading ? '' : ' Report') : (reportLoading ? ' Generating…' : ' Download Report')}
                   </button>
                 )}
                 {reportError && (
@@ -3946,7 +3946,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <h2 style={{ fontSize: '18px', margin: 0 }}>Photo Submissions</h2>
                 <span className="badge" style={{ marginTop: '4px' }}>{pendingPhotos.length} pending</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 {(photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0 ||
                   scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0) && (
                   <button

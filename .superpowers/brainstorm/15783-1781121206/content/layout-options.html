@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics – Layout Options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #dce4ee; font-family: 'Segoe UI', system-ui, sans-serif; padding: 32px 24px 80px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: #6b7a8d; margin-bottom: 36px; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #141b27;
+    border: 2px solid #222d3d;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.18s, transform 0.15s;
+    position: relative;
+  }
+  .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+  .card.selected { border-color: #6ec6f5; }
+  .card.selected::after {
+    content: '✓ VALD';
+    position: absolute;
+    top: 10px; right: 12px;
+    font-size: 10px; font-weight: 800; letter-spacing: 1px;
+    color: #6ec6f5; background: rgba(110,198,245,0.12);
+    padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(110,198,245,0.3);
+  }
+
+  .card-label { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 0; color: #6b7a8d; }
+  .card-title { font-size: 16px; font-weight: 700; padding: 4px 16px 10px; color: #dce4ee; }
+  .card-desc { font-size: 12px; color: #6b7a8d; padding: 0 16px 14px; line-height: 1.5; border-bottom: 1px solid #1e2a3a; }
+  .card-mockup { padding: 16px; }
+
+  /* --- Mockup A: Command center --- */
+  .cmd { display: flex; gap: 8px; height: 180px; }
+  .cmd-side { width: 52px; background: #0d1117; border-radius: 8px; padding: 10px 6px; display: flex; flex-direction: column; gap: 6px; }
+  .cmd-dot { height: 28px; border-radius: 6px; background: #1a2535; }
+  .cmd-dot.active { background: rgba(110,198,245,0.2); border: 1px solid rgba(110,198,245,0.3); }
+  .cmd-main { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .cmd-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .cmd-kpi { background: #1a2535; border-radius: 6px; padding: 7px; }
+  .cmd-kpi-num { font-size: 16px; font-weight: 800; color: #6ec6f5; }
+  .cmd-kpi-lbl { font-size: 8px; color: #4a5568; margin-top: 1px; }
+  .cmd-row { display: grid; grid-template-columns: 2fr 1fr; gap: 6px; flex: 1; }
+  .cmd-table { background: #1a2535; border-radius: 6px; padding: 8px; }
+  .cmd-row-item { height: 10px; background: #222d3d; border-radius: 3px; margin-bottom: 5px; }
+  .cmd-row-item:last-child { margin-bottom: 0; width: 75%; }
+  .cmd-chart { background: #1a2535; border-radius: 6px; padding: 8px; display: flex; align-items: flex-end; gap: 4px; justify-content: center; }
+  .bar { border-radius: 3px 3px 0 0; width: 10px; background: rgba(110,198,245,0.4); }
+
+  /* --- Mockup B: SaaS dashboard --- */
+  .saas { display: flex; flex-direction: column; gap: 8px; height: 180px; }
+  .saas-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .saas-kpi { background: #1a2535; border-radius: 8px; padding: 9px 10px; }
+  .saas-kpi-num { font-size: 18px; font-weight: 800; color: #dce4ee; }
+  .saas-kpi-lbl { font-size: 8px; color: #4a5568; margin-top: 2px; }
+  .saas-kpi-trend { font-size: 8px; color: #8cbf9b; margin-top: 1px; }
+  .saas-row { display: grid; grid-template-columns: 3fr 2fr; gap: 6px; flex: 1; }
+  .saas-card { background: #1a2535; border-radius: 8px; padding: 8px; overflow: hidden; }
+  .saas-table-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid #1e2a3a; }
+  .saas-dot { width: 6px; height: 6px; border-radius: 50%; background: #8cbf9b; flex-shrink: 0; }
+  .saas-line { height: 7px; background: #222d3d; border-radius: 2px; flex: 1; }
+  .saas-num { font-size: 9px; color: #6ec6f5; font-weight: 700; }
+  .saas-chart-bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; padding: 8px 6px 4px; }
+  .saas-bar { border-radius: 2px 2px 0 0; flex: 1; }
+
+  /* --- Mockup C: Story-driven --- */
+  .story { display: flex; flex-direction: column; gap: 8px; height: 180px; }
+  .story-hero { background: linear-gradient(135deg, #0d2137 0%, #0d1117 100%); border: 1px solid rgba(110,198,245,0.2); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 16px; }
+  .story-big { font-size: 36px; font-weight: 900; color: #6ec6f5; line-height: 1; }
+  .story-context { }
+  .story-context-title { font-size: 12px; font-weight: 700; color: #dce4ee; }
+  .story-context-sub { font-size: 9px; color: #4a5568; margin-top: 2px; }
+  .story-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .story-metric { background: #1a2535; border-radius: 7px; padding: 8px 10px; border-left: 2px solid transparent; }
+  .story-metric.green { border-left-color: #8cbf9b; }
+  .story-metric.gold { border-left-color: #d4b761; }
+  .story-metric.blue { border-left-color: #6ec6f5; }
+  .story-metric-num { font-size: 14px; font-weight: 800; color: #dce4ee; }
+  .story-metric-lbl { font-size: 8px; color: #4a5568; margin-top: 2px; }
+  .story-feed { background: #1a2535; border-radius: 7px; padding: 8px 10px; }
+  .story-feed-title { font-size: 8px; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .story-feed-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .story-feed-line { height: 7px; background: #222d3d; border-radius: 2px; flex: 1; }
+  .story-feed-badge { font-size: 7px; color: #8cbf9b; background: rgba(140,191,155,0.12); padding: 1px 5px; border-radius: 10px; }
+</style>
+</head>
+<body>
+<h1>Hur ska analytics-sidan struktureras?</h1>
+<p class="subtitle">Tre inriktningar — klicka för att välja. Du kan ändra dig fritt.</p>
+
+<div class="cards">
+
+  <!-- A: Command center -->
+  <div class="card" onclick="toggleSelect(this)" data-choice="a">
+    <div class="card-label">Layout A</div>
+    <div class="card-title">Command center</div>
+    <div class="card-desc">Sidebar-nav med sektioner, tät data, sidescroll inom varje vy. Passar om du vill ha mycket info på en gång.</div>
+    <div class="card-mockup">
+      <div class="cmd">
+        <div class="cmd-side">
+          <div class="cmd-dot active"></div>
+          <div class="cmd-dot"></div>
+          <div class="cmd-dot"></div>
+          <div class="cmd-dot"></div>
+        </div>
+        <div class="cmd-main">
+          <div class="cmd-kpis">
+            <div class="cmd-kpi"><div class="cmd-kpi-num">12</div><div class="cmd-kpi-lbl">KUNDER</div></div>
+            <div class="cmd-kpi"><div class="cmd-kpi-num">47</div><div class="cmd-kpi-lbl">SPEL</div></div>
+            <div class="cmd-kpi"><div class="cmd-kpi-num">84%</div><div class="cmd-kpi-lbl">KLARA</div></div>
+            <div class="cmd-kpi"><div class="cmd-kpi-num">8.2</div><div class="cmd-kpi-lbl">LAG/SPEL</div></div>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd-table">
+              <div class="cmd-row-item" style="width:90%"></div>
+              <div class="cmd-row-item" style="width:70%"></div>
+              <div class="cmd-row-item" style="width:85%"></div>
+              <div class="cmd-row-item" style="width:60%"></div>
+              <div class="cmd-row-item" style="width:75%"></div>
+            </div>
+            <div class="cmd-chart">
+              <div class="bar" style="height:40px"></div>
+              <div class="bar" style="height:55px"></div>
+              <div class="bar" style="height:30px"></div>
+              <div class="bar" style="height:65px; background: rgba(110,198,245,0.8)"></div>
+              <div class="bar" style="height:45px"></div>
+              <div class="bar" style="height:70px; background: rgba(110,198,245,0.8)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: SaaS dashboard -->
+  <div class="card" onclick="toggleSelect(this)" data-choice="b">
+    <div class="card-label">Layout B</div>
+    <div class="card-title">SaaS-dashboard</div>
+    <div class="card-desc">KPI-kort i toppen, kundlista + aktivitets­diagram bredvid varandra. Standard för moderna admin-verktyg.</div>
+    <div class="card-mockup">
+      <div class="saas">
+        <div class="saas-kpis">
+          <div class="saas-kpi">
+            <div class="saas-kpi-num">12</div>
+            <div class="saas-kpi-lbl">AKTIVA KUNDER</div>
+            <div class="saas-kpi-trend">↑ 3 senaste 30d</div>
+          </div>
+          <div class="saas-kpi">
+            <div class="saas-kpi-num">47</div>
+            <div class="saas-kpi-lbl">SPEL TOTALT</div>
+            <div class="saas-kpi-trend">↑ 6 den här månaden</div>
+          </div>
+          <div class="saas-kpi">
+            <div class="saas-kpi-num">84%</div>
+            <div class="saas-kpi-lbl">SLUTFÖRANDEGRAD</div>
+            <div class="saas-kpi-trend">Stabil</div>
+          </div>
+        </div>
+        <div class="saas-row">
+          <div class="saas-card">
+            <div style="font-size:8px;color:#4a5568;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:5px">Senaste kunder</div>
+            <div class="saas-table-row"><div class="saas-dot"></div><div class="saas-line" style="max-width:90px"></div><div class="saas-num">12 spel</div></div>
+            <div class="saas-table-row"><div class="saas-dot" style="background:#d4b761"></div><div class="saas-line" style="max-width:70px"></div><div class="saas-num">4 spel</div></div>
+            <div class="saas-table-row"><div class="saas-dot"></div><div class="saas-line" style="max-width:80px"></div><div class="saas-num">7 spel</div></div>
+            <div class="saas-table-row" style="border-bottom:none"><div class="saas-dot" style="background:#6b7a8d"></div><div class="saas-line" style="max-width:60px"></div><div class="saas-num">2 spel</div></div>
+          </div>
+          <div class="saas-card">
+            <div style="font-size:8px;color:#4a5568;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:3px">Spel per vecka</div>
+            <div class="saas-chart-bars">
+              <div class="saas-bar" style="height:30%;background:rgba(110,198,245,0.25)"></div>
+              <div class="saas-bar" style="height:50%;background:rgba(110,198,245,0.25)"></div>
+              <div class="saas-bar" style="height:40%;background:rgba(110,198,245,0.25)"></div>
+              <div class="saas-bar" style="height:70%;background:rgba(110,198,245,0.35)"></div>
+              <div class="saas-bar" style="height:55%;background:rgba(110,198,245,0.35)"></div>
+              <div class="saas-bar" style="height:85%;background:rgba(110,198,245,0.7)"></div>
+              <div class="saas-bar" style="height:65%;background:rgba(110,198,245,0.5)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: Story-driven -->
+  <div class="card" onclick="toggleSelect(this)" data-choice="c">
+    <div class="card-label">Layout C</div>
+    <div class="card-title">Story-driven</div>
+    <div class="card-desc">Stort "headline-nummer" i toppen som sätter tonen, sedan sekundära metrics och en aktivitetsfeed. Mindre tät men mer läsbar.</div>
+    <div class="card-mockup">
+      <div class="story">
+        <div class="story-hero">
+          <div class="story-big">47</div>
+          <div class="story-context">
+            <div class="story-context-title">spel har spelats</div>
+            <div class="story-context-sub">av 12 kunder · 84% slutförda</div>
+          </div>
+        </div>
+        <div class="story-metrics">
+          <div class="story-metric green">
+            <div class="story-metric-num">3</div>
+            <div class="story-metric-lbl">AKTIVA SENASTE 7D</div>
+          </div>
+          <div class="story-metric gold">
+            <div class="story-metric-num">8.2</div>
+            <div class="story-metric-lbl">LAG PER SPEL</div>
+          </div>
+          <div class="story-metric blue">
+            <div class="story-metric-num">342</div>
+            <div class="story-metric-lbl">LAG TOTALT</div>
+          </div>
+        </div>
+        <div class="story-feed">
+          <div class="story-feed-title">Senaste aktivitet</div>
+          <div class="story-feed-row"><div class="story-feed-line" style="max-width:110px"></div><div class="story-feed-badge">12 lag</div></div>
+          <div class="story-feed-row"><div class="story-feed-line" style="max-width:85px"></div><div class="story-feed-badge">6 lag</div></div>
+          <div class="story-feed-row"><div class="story-feed-line" style="max-width:100px"></div><div class="story-feed-badge">9 lag</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.recordChoice) window.recordChoice(el.dataset.choice, el.querySelector('.card-title').textContent);
+}
+</script>
+</body>
+</html>

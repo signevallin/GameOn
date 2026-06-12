@@ -1,0 +1,155 @@
+<h2>Design — tre förbättringar</h2>
+<p class="subtitle">Så här ser de tre ändringarna ut. Berätta om något behöver justeras.</p>
+
+<!-- Feature 1: Analytics -->
+<div class="section">
+  <div class="label">1 · Analytics under profil</div>
+  <p style="font-size:13px;color:#999;margin-bottom:12px;">En "📊 Analytics"-länk läggs till i profil-dropdownen. Öppnar en dedikerad sida med din spelstatistik.</p>
+
+  <div class="split">
+    <div class="mockup" style="flex:0 0 200px;">
+      <div class="mockup-header">Profil-dropdown</div>
+      <div class="mockup-body" style="padding:12px;background:#0d1420;font-size:12px;">
+        <div style="color:#aaa;margin-bottom:8px;">signevallin@gmail.com</div>
+        <div style="display:inline-block;background:#1a3a2a;color:#4ade80;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:12px;">⚡ Pro</div>
+        <div style="border-top:1px solid #1e2d3d;padding-top:10px;display:flex;flex-direction:column;gap:8px;">
+          <div style="color:#6ec6f5;font-weight:600;cursor:pointer;">📊 Analytics</div>
+          <div style="color:#ccc;">🔑 Change password</div>
+          <div style="color:#ccc;">💳 Manage subscription</div>
+          <div style="border-top:1px solid #1e2d3d;padding-top:8px;color:#888;">→ Log out</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockup" style="flex:1;">
+      <div class="mockup-header">Analytics-sidan (din statistik)</div>
+      <div class="mockup-body" style="padding:14px;background:#0d1420;">
+        <!-- Back + title -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="color:#6ec6f5;font-size:12px;cursor:pointer;">← Tillbaka</span>
+          <span style="font-size:14px;font-weight:700;color:#fff;margin-left:8px;">📊 Din statistik</span>
+        </div>
+
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+          <div style="background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#6ec6f5;">12</div>
+            <div style="font-size:9px;color:#666;margin-top:2px;">Spel totalt</div>
+          </div>
+          <div style="background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#4ade80;">78%</div>
+            <div style="font-size:9px;color:#666;margin-top:2px;">Slutförandegrad</div>
+          </div>
+          <div style="background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#fff;">4.2</div>
+            <div style="font-size:9px;color:#666;margin-top:2px;">Snitt lag/spel</div>
+          </div>
+          <div style="background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:#f59e0b;">51</div>
+            <div style="font-size:9px;color:#666;margin-top:2px;">Lag totalt</div>
+          </div>
+        </div>
+
+        <!-- Chart + Recent games side by side -->
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:8px;">
+          <!-- Chart -->
+          <div style="background:#1a2332;border-radius:8px;padding:10px;">
+            <div style="font-size:9px;color:#666;margin-bottom:8px;">SPEL PER VECKA</div>
+            <div style="display:flex;gap:4px;align-items:flex-end;height:50px;">
+              <div style="flex:1;background:rgba(110,198,245,0.15);border-radius:2px 2px 0 0;height:25%;"></div>
+              <div style="flex:1;background:rgba(110,198,245,0.27);border-radius:2px 2px 0 0;height:40%;"></div>
+              <div style="flex:1;background:rgba(110,198,245,0.39);border-radius:2px 2px 0 0;height:30%;"></div>
+              <div style="flex:1;background:rgba(110,198,245,0.51);border-radius:2px 2px 0 0;height:55%;"></div>
+              <div style="flex:1;background:rgba(110,198,245,0.63);border-radius:2px 2px 0 0;height:45%;"></div>
+              <div style="flex:1;background:rgba(110,198,245,0.78);border-radius:2px 2px 0 0;height:70%;"></div>
+              <div style="flex:1;background:#6ec6f5;border-radius:2px 2px 0 0;height:100%;"></div>
+            </div>
+            <div style="display:flex;gap:4px;margin-top:4px;">
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V18</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V19</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V20</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V21</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V22</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V23</div>
+              <div style="flex:1;text-align:center;font-size:7px;color:#444;">V24</div>
+            </div>
+          </div>
+          <!-- Recent games -->
+          <div style="background:#1a2332;border-radius:8px;padding:10px;">
+            <div style="font-size:9px;color:#666;margin-bottom:8px;">SENASTE SPEL</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div>
+                <div style="font-size:10px;color:#ccc;">Fredagspuben mars</div>
+                <div style="font-size:9px;color:#555;">6 lag · 3 dagar sedan</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#ccc;">Teambuilding Q2</div>
+                <div style="font-size:9px;color:#555;">3 lag · 1 vecka sedan</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#888;">Onboarding april</div>
+                <div style="font-size:9px;color:#444;">0 lag · Utkast</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feature 2: Spacing -->
+<div class="section">
+  <div class="label">2 · Mer utrymme i spelkortet</div>
+  <p style="font-size:13px;color:#999;margin-bottom:12px;">Fler px gap och lite mer padding mellan spelkod, status-pill och "Save as template"-knappen.</p>
+
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Innan</div>
+      <div class="mockup-body" style="padding:10px;background:#0d1420;">
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+          <div style="font-family:monospace;font-size:13px;font-weight:700;color:#6ec6f5;background:#1a2332;padding:4px 8px;border-radius:6px;">KT4X2</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4ade80;background:#1a2e1a;padding:3px 8px;border-radius:20px;">
+            <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;"></span> Aktiv
+          </div>
+          <button style="padding:4px 8px;border-radius:6px;border:1px solid #2a3a4a;background:transparent;color:#666;font-size:11px;cursor:pointer;">Save as template</button>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Efter</div>
+      <div class="mockup-body" style="padding:10px;background:#0d1420;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 0;">
+          <div style="font-family:monospace;font-size:13px;font-weight:700;color:#6ec6f5;background:#1a2332;padding:4px 8px;border-radius:6px;">KT4X2</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#4ade80;background:#1a2e1a;padding:3px 8px;border-radius:20px;">
+            <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;"></span> Aktiv
+          </div>
+          <button style="padding:6px 12px;border-radius:6px;border:1px solid #2a3a4a;background:transparent;color:#888;font-size:11px;cursor:pointer;">Save as template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feature 3: QR fix -->
+<div class="section">
+  <div class="label">3 · QR-kod → direkt till spelet</div>
+  <p style="font-size:13px;color:#999;margin-bottom:12px;">QR-kodens URL ändras från <code style="background:#1a2332;padding:2px 6px;border-radius:4px;font-size:11px;">playgameon.app/?key=KT4X2</code> till <code style="background:#1a2332;padding:2px 6px;border-radius:4px;font-size:11px;">playgameon.app/play?key=KT4X2</code> — spelaren hamnar direkt i join-flödet, inte på landningssidan.</p>
+  <div style="display:flex;gap:16px;align-items:flex-start;">
+    <div style="text-align:center;">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;">Innan</div>
+      <div style="background:#1a2332;padding:12px;border-radius:8px;font-size:11px;color:#888;">
+        Skannar QR →<br/>🏠 Landningssida<br/><span style="color:#555;font-size:9px;">(måste klicka sig vidare)</span>
+      </div>
+    </div>
+    <div style="font-size:20px;color:#444;padding-top:28px;">→</div>
+    <div style="text-align:center;">
+      <div style="font-size:11px;color:#4ade80;margin-bottom:6px;">Efter</div>
+      <div style="background:#1a2e1a;padding:12px;border-radius:8px;font-size:11px;color:#ccc;border:1px solid #2a4a2a;">
+        Skannar QR →<br/>🎮 Join-sidan direkt<br/><span style="color:#4ade80;font-size:9px;">(spelkoden auto-ifylld)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle">Ser detta rätt ut? Bekräfta i chatten så skriver jag specen.</p>
