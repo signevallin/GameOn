@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
+import { toMission } from '@/lib/custom-missions';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
@@ -874,8 +875,11 @@ export default function AdminScreen({ onLogout }: Props) {
     // Only include custom pts that differ from the mission default
     const customPts: Record<string, number> = {};
     for (const id of selectedMissions) {
-      const m = MISSIONS.find(x => x.id === id);
-      if (m && missionMaxPts[id] !== m.maxPts) customPts[id] = missionMaxPts[id];
+      const builtIn = MISSIONS.find(x => x.id === id);
+      const customM = adminCustomMissions.find(x => x.id === id);
+      const defaultPts = builtIn?.maxPts ?? customM?.max_pts ?? 500;
+      const currentPts = missionMaxPts[id] ?? defaultPts;
+      if (currentPts !== defaultPts) customPts[id] = currentPts;
     }
     const res = await fetch('/api/admin/game', {
       method: 'POST',
@@ -4018,7 +4022,8 @@ export default function AdminScreen({ onLogout }: Props) {
               <>
               <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                 {pendingFiltered.slice(0, visiblePendingCount).map(sub => {
-                  const mission = MISSIONS.find(m => m.id === sub.mission_id);
+                  const _customM = adminCustomMissions.find(cm => cm.id === sub.mission_id);
+                  const mission = MISSIONS.find(m => m.id === sub.mission_id) ?? (_customM ? toMission(_customM) : undefined);
                   const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
                   const pointOptions = getPointOptions(missionMaxPts);
                   return (
@@ -4118,7 +4123,9 @@ export default function AdminScreen({ onLogout }: Props) {
                 <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
                   {allRated.slice(0, visibleRatedCount).map(sub => {
                     if (sub._type === 'regular') {
-                      const mission = MISSIONS.find(m => m.id === (sub as typeof ratedRegular[0]).mission_id);
+                      const _rMissionId = (sub as typeof ratedRegular[0]).mission_id;
+                      const _rCustomM = adminCustomMissions.find(cm => cm.id === _rMissionId);
+                      const mission = MISSIONS.find(m => m.id === _rMissionId) ?? (_rCustomM ? toMission(_rCustomM) : undefined);
                       return (
                         <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
                           <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -4142,7 +4149,7 @@ export default function AdminScreen({ onLogout }: Props) {
                           </div>
                           {overridingPhotoId === sub.id ? (
                             <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
-                              {getPointOptions(activeGame.mission_max_pts?.[(sub as typeof ratedRegular[0]).mission_id] ?? MISSIONS.find(m => m.id === (sub as typeof ratedRegular[0]).mission_id)?.maxPts ?? 500).map(pts => (
+                              {getPointOptions(activeGame.mission_max_pts?.[_rMissionId] ?? mission?.maxPts ?? 500).map(pts => (
                                 <button key={pts} onClick={() => { ratePhoto(sub as PhotoSubmission, pts); setOverridingPhotoId(null); }}
                                   style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? 'var(--accent)' : 'var(--surface)', color: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? '#0a0e19' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '11px' }}>
                                   {pts}p
