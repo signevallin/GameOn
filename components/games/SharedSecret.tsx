@@ -36,15 +36,16 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
   const clueIndex = Math.min(memberIndex < 0 ? 0 : memberIndex, Math.max(0, clues.length - 1));
   const myClue = clues[clueIndex] ?? '';
 
+  // Fetch team members via server route — bypasses RLS on team_members
   useEffect(() => {
-    supabase
-      .from('team_members')
-      .select('id')
-      .eq('team_id', team.id)
-      .order('created_at')
-      .then(({ data }) => {
-        if (data) setMembers(data as { id: string }[]);
-      });
+    fetch('/api/team/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId: team.id }),
+      cache: 'no-store',
+    })
+      .then(r => r.json())
+      .then(data => { if (data.members) setMembers(data.members as { id: string }[]); });
   }, [team.id]);
 
   useEffect(() => {
@@ -109,6 +110,10 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
     setShowHint(true);
     setHintUsed(true);
     hintUsedRef.current = true;
+  }
+
+  if (members.length === 0) {
+    return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Laddar…</div>;
   }
 
   return (

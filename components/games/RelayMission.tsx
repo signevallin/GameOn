@@ -50,16 +50,16 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   const isWaiting = active < mySegmentIndex;
   const isPast = active > mySegmentIndex;
 
-  // Fetch team members ordered by join time
+  // Fetch team members ordered by join time (via server route — bypasses RLS on team_members)
   useEffect(() => {
-    supabase
-      .from('team_members')
-      .select('id, name')
-      .eq('team_id', team.id)
-      .order('created_at')
-      .then(({ data }) => {
-        if (data) setMembers(data as Member[]);
-      });
+    fetch('/api/team/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId: team.id }),
+      cache: 'no-store',
+    })
+      .then(r => r.json())
+      .then(data => { if (data.members) setMembers(data.members as Member[]); });
   }, [team.id]);
 
   // Subscribe to relay-advance events on the shared channel
