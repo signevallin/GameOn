@@ -176,9 +176,10 @@
       "saving": "Enregistrement…",
       "doneBtn": "J'ai fini ✓",
       "waiting": "En attente de {{name}}…",
-      "completed": "Tu as fait ta part ! En attente des autres…",
+      "completed": "Relais terminé !",
       "typeHere": "Commencer à taper ici…",
-      "pct": "{{pct}}% terminé"
+      "pct": "{{pct}}% terminé",
+      "myTurnsDone": "Tu as fait ta part ! En attente des autres…"
     },
     "sharedSecret": {
       "loading": "Chargement…",
@@ -191,7 +192,8 @@
       "placeholder": "Tapez votre réponse ici…",
       "submit": "Envoyer",
       "showHint": "💡 Voir l'indice (-{{cost}} points)",
-      "hintLabel": "Indice"
+      "hintLabel": "Indice",
+      "yourClueN": "Ton indice {{n}}"
     }
   },
   "powerups": {

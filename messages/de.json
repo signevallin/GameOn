@@ -176,9 +176,10 @@
       "saving": "Speichern…",
       "doneBtn": "Ich bin fertig ✓",
       "waiting": "Warte auf {{name}}…",
-      "completed": "Du hast deinen Teil erledigt! Warte auf die anderen…",
+      "completed": "Staffel abgeschlossen!",
       "typeHere": "Hier tippen…",
-      "pct": "{{pct}}% fertig"
+      "pct": "{{pct}}% fertig",
+      "myTurnsDone": "Du hast deinen Teil erledigt! Warte auf die anderen…"
     },
     "sharedSecret": {
       "loading": "Laden…",
@@ -191,7 +192,8 @@
       "placeholder": "Antwort hier eingeben…",
       "submit": "Abschicken",
       "showHint": "💡 Tipp anzeigen (-{{cost}} Punkte)",
-      "hintLabel": "Tipp"
+      "hintLabel": "Tipp",
+      "yourClueN": "Dein Hinweis {{n}}"
     }
   },
   "powerups": {

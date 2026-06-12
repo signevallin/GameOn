@@ -43,14 +43,31 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   const handleAutoSkipRef = useRef<() => void>(() => {});
 
   const segments = mission.segments ?? [];
+
+  // ── Member position ───────────────────────────────────────────────────────
   const memberIndex = members.findIndex(m => m.id === memberId);
   const effectiveIndex = memberIndex < 0 ? 0 : memberIndex;
-  const mySegmentIndex = Math.min(effectiveIndex, segments.length - 1);
-  const mySegment = segments[mySegmentIndex];
+  const memberCount = members.length > 0 ? members.length : 1;
+
+  // ── Relay state ───────────────────────────────────────────────────────────
   const active = relayState ? relayState.activeIndex : 0;
-  const isMyTurn = active === mySegmentIndex;
-  const isWaiting = active < mySegmentIndex;
-  const isPast = active > mySegmentIndex;
+  const relayDone = active >= segments.length;
+
+  // Round-robin: segment i is handled by member (i % memberCount).
+  // This means with 2 members and 4 segments: member 0 → segs 0,2; member 1 → segs 1,3.
+  const activeMemberIndex = relayDone ? -1 : active % memberCount;
+  const isMyTurn = !relayDone && activeMemberIndex === effectiveIndex;
+
+  // Current segment (only valid when isMyTurn)
+  const myCurrentSegment = isMyTurn ? segments[active] : null;
+
+  // Does this player have any more turns after the current active segment?
+  const hasMoreTurns = segments.some((_, segIdx) => segIdx > active && segIdx % memberCount === effectiveIndex);
+  const myPartsDone = !isMyTurn && !relayDone && !hasMoreTurns &&
+    // Edge case: I'm waiting but my first turn hasn't come yet
+    segments.filter((_, segIdx) => segIdx < active && segIdx % memberCount === effectiveIndex).length > 0;
+
+  const isWaiting = !isMyTurn && !relayDone;
 
   // Fetch team members ordered by join time (via server route — bypasses RLS on team_members)
   useEffect(() => {
@@ -170,13 +187,10 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
     }
   }, [loading, started, team.id, mission.id, segments.length, effectiveMaxPts, game.duration_minutes, onFinish]);
 
-  function handleAutoSkip() {
-    advance(true);
-  }
-
   function handleTyped(val: string) {
     setTyped(val);
-    if (mySegment && val === mySegment.prompt) {
+    const currentSegment = segments[active];
+    if (currentSegment && val === currentSegment.prompt) {
       advance(false);
     }
   }
@@ -201,25 +215,34 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         </div>
       </div>
 
-      {/* Queue view */}
+      {/* Queue view — shows members; active member highlighted by round-robin position */}
       <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {members.map((m, i) => {
-          const segIdx = Math.min(i, segments.length - 1);
-          const isDone = relayState != null && i < active;
-          const isActive = active === segIdx && i === active;
-          const isNext = !isActive && !isDone;
+          const isMemberActive = !relayDone && active % memberCount === i;
+          // Has this member already completed at least one segment AND has no more turns?
+          const memberSegmentsDone = segments.filter((_, si) => si < active && si % memberCount === i).length;
+          const memberSegmentsFuture = segments.filter((_, si) => si >= active && si % memberCount === i).length;
+          const memberPartsDone = !isMemberActive && memberSegmentsDone > 0 && memberSegmentsFuture === 0;
+          const icon = relayDone
+            ? '✅'
+            : isMemberActive ? '▶️'
+            : memberPartsDone ? '✅'
+            : '⏳';
+          const isWaitingMember = !relayDone && !isMemberActive && !memberPartsDone;
           return (
             <div key={m.id} style={{
               display: 'flex', alignItems: 'center', gap: '10px',
               padding: '10px 14px',
               borderRadius: '8px',
-              border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
-              background: isActive ? 'rgba(99,102,241,0.08)' : 'var(--card)',
-              opacity: isNext ? 0.5 : 1,
+              border: `1px solid ${isMemberActive ? 'var(--accent)' : 'var(--border)'}`,
+              background: isMemberActive ? 'rgba(99,102,241,0.08)' : 'var(--card)',
+              opacity: isWaitingMember ? 0.5 : 1,
             }}>
-              <span style={{ fontSize: '18px' }}>{isDone ? '✅' : isActive ? '▶️' : '⏳'}</span>
-              <span style={{ fontWeight: isActive ? 700 : 400 }}>{m.name}{m.id === memberId ? ` ${t('challenge.relay.you')}` : ''}</span>
-              {isActive && started && (
+              <span style={{ fontSize: '18px' }}>{icon}</span>
+              <span style={{ fontWeight: isMemberActive ? 700 : 400, color: memberPartsDone && !relayDone ? 'var(--muted)' : undefined }}>
+                {m.name}{m.id === memberId ? ` ${t('challenge.relay.you')}` : ''}
+              </span>
+              {isMemberActive && started && (
                 <span style={{ marginLeft: 'auto', fontSize: '12px', color: countdown <= 10 ? 'var(--accent2)' : 'var(--muted)' }}>
                   {countdown}s
                 </span>
@@ -230,10 +253,10 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       </div>
 
       {/* Active member interaction */}
-      {isMyTurn && !isPast && (
+      {isMyTurn && (
         <div>
           <div className="challenge-question" style={{ marginBottom: '16px' }}>
-            {mySegment?.prompt}
+            {myCurrentSegment?.prompt}
           </div>
 
           {!started ? (
@@ -247,19 +270,19 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
                 letterSpacing: '1px', marginBottom: '16px', background: '#0d1422',
                 padding: '16px', borderRadius: '8px', border: '1px solid var(--border)',
               }}>
-                {(mySegment?.prompt ?? '').split('').map((ch, i) => {
+                {(myCurrentSegment?.prompt ?? '').split('').map((ch, idx) => {
                   let color = 'var(--muted)';
                   let bg = 'transparent';
                   let textDecoration = 'none';
-                  if (i < typed.length) {
-                    color = typed[i] === ch ? 'var(--accent3)' : 'var(--accent2)';
-                    textDecoration = typed[i] !== ch ? 'underline' : 'none';
-                  } else if (i === typed.length) {
+                  if (idx < typed.length) {
+                    color = typed[idx] === ch ? 'var(--accent3)' : 'var(--accent2)';
+                    textDecoration = typed[idx] !== ch ? 'underline' : 'none';
+                  } else if (idx === typed.length) {
                     bg = 'var(--accent)';
                     color = '#0a0e19';
                   }
                   return (
-                    <span key={i} style={{ color, background: bg, borderRadius: '2px', textDecoration }}>
+                    <span key={idx} style={{ color, background: bg, borderRadius: '2px', textDecoration }}>
                       {ch}
                     </span>
                   );
@@ -276,7 +299,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
                 onChange={e => handleTyped(e.target.value)}
               />
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
-                {t('challenge.relay.pct', { pct: mySegment ? Math.round((typed.length / mySegment.prompt.length) * 100) : 0 })}
+                {t('challenge.relay.pct', { pct: myCurrentSegment ? Math.round((typed.length / myCurrentSegment.prompt.length) * 100) : 0 })}
               </p>
             </>
           ) : (
@@ -292,14 +315,24 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         </div>
       )}
 
-      {isWaiting && (
+      {/* Waiting — it's someone else's turn and I still have turns coming */}
+      {isWaiting && !myPartsDone && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
-          <p>{t('challenge.relay.waiting', { name: members[active]?.name ?? '…' })}</p>
+          <p>{t('challenge.relay.waiting', { name: members[activeMemberIndex < 0 ? 0 : activeMemberIndex]?.name ?? '…' })}</p>
         </div>
       )}
 
-      {isPast && (
+      {/* My parts are done — waiting for relay to finish */}
+      {myPartsDone && (
+        <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
+          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
+          <p>{t('challenge.relay.myTurnsDone')}</p>
+        </div>
+      )}
+
+      {/* Relay complete */}
+      {relayDone && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--accent3)' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
           <p>{t('challenge.relay.completed')}</p>

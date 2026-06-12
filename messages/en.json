@@ -176,9 +176,10 @@
       "saving": "Saving…",
       "doneBtn": "I'm done ✓",
       "waiting": "Waiting for {{name}}…",
-      "completed": "You've done your part! Waiting for the others…",
+      "completed": "Relay complete!",
       "typeHere": "Start typing here…",
-      "pct": "{{pct}}% done"
+      "pct": "{{pct}}% done",
+      "myTurnsDone": "You've done your part! Waiting for the others…"
     },
     "sharedSecret": {
       "loading": "Loading…",
@@ -191,7 +192,8 @@
       "placeholder": "Type your answer here…",
       "submit": "Submit",
       "showHint": "💡 Show hint (-{{cost}} points)",
-      "hintLabel": "Hint"
+      "hintLabel": "Hint",
+      "yourClueN": "Your clue {{n}}"
     }
   },
   "powerups": {

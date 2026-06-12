@@ -176,9 +176,10 @@
       "saving": "Sparar…",
       "doneBtn": "Jag är klar ✓",
       "waiting": "Väntar på {{name}}…",
-      "completed": "Du har gjort din del! Väntar på de andra…",
+      "completed": "Stafetten klar!",
       "typeHere": "Börja skriva här…",
-      "pct": "{{pct}}% klar"
+      "pct": "{{pct}}% klar",
+      "myTurnsDone": "Du har gjort din del! Väntar på de andra…"
     },
     "sharedSecret": {
       "loading": "Laddar…",
@@ -191,7 +192,8 @@
       "placeholder": "Skriv ert svar här…",
       "submit": "Skicka svar",
       "showHint": "💡 Visa ledtråd (-{{cost}} poäng)",
-      "hintLabel": "Ledtråd"
+      "hintLabel": "Ledtråd",
+      "yourClueN": "Din ledtråd {{n}}"
     }
   },
   "powerups": {

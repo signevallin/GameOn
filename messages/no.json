@@ -176,9 +176,10 @@
       "saving": "Lagrer…",
       "doneBtn": "Jeg er ferdig ✓",
       "waiting": "Venter på {{name}}…",
-      "completed": "Du har gjort din del! Venter på de andre…",
+      "completed": "Stafetten er ferdig!",
       "typeHere": "Begynn å skrive her…",
-      "pct": "{{pct}}% ferdig"
+      "pct": "{{pct}}% ferdig",
+      "myTurnsDone": "Du har gjort din del! Venter på de andre…"
     },
     "sharedSecret": {
       "loading": "Laster…",
@@ -191,7 +192,8 @@
       "placeholder": "Skriv svaret her…",
       "submit": "Send svar",
       "showHint": "💡 Vis hint (-{{cost}} poeng)",
-      "hintLabel": "Hint"
+      "hintLabel": "Hint",
+      "yourClueN": "Din ledetråd {{n}}"
     }
   },
   "powerups": {

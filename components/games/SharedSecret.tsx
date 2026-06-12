@@ -35,8 +35,13 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
   const hint = mission.hint ?? null;
 
   const memberIndex = members.findIndex(m => m.id === memberId);
-  const clueIndex = Math.min(memberIndex < 0 ? 0 : memberIndex, Math.max(0, clues.length - 1));
-  const myClue = clues[clueIndex] ?? '';
+  const clueIndex = memberIndex < 0 ? 0 : memberIndex;
+  const memberCount = members.length > 0 ? members.length : 1;
+
+  // Round-robin distribution: player i owns clues at positions i, i+memberCount, i+2*memberCount, …
+  // E.g. 2 players, 4 clues → player 0 gets clues 0 & 2, player 1 gets clues 1 & 3.
+  // This ensures every clue is always visible regardless of team size.
+  const myClues = clues.filter((_, i) => i % memberCount === clueIndex);
 
   // Fetch team members via server route — bypasses RLS on team_members
   useEffect(() => {
@@ -120,10 +125,18 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
 
   return (
     <div>
-      {/* Personal clue */}
-      <div style={{ marginBottom: '24px', padding: '20px', background: '#0d1422', borderRadius: '12px', border: '1px solid var(--accent)', textAlign: 'center' }}>
-        <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('challenge.sharedSecret.yourClue')}</p>
-        <p style={{ fontSize: '22px', fontWeight: 700, color: 'var(--accent3)' }}>{myClue}</p>
+      {/* Personal clue(s) — round-robin distributed */}
+      <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {myClues.map((clue, idx) => (
+          <div key={idx} style={{ padding: '16px 20px', background: '#0d1422', borderRadius: '12px', border: '1px solid var(--accent)', textAlign: 'center' }}>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              {myClues.length > 1
+                ? t('challenge.sharedSecret.yourClueN', { n: idx + 1 })
+                : t('challenge.sharedSecret.yourClue')}
+            </p>
+            <p style={{ fontSize: '22px', fontWeight: 700, color: 'var(--accent3)' }}>{clue}</p>
+          </div>
+        ))}
       </div>
 
       <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '24px', textAlign: 'center' }}>
