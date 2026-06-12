@@ -7,6 +7,7 @@ import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import type { GameTemplate } from '@/lib/templates';
+import JSZip from 'jszip';
 import MysteryBoxAR from '@/components/MysteryBoxAR';
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
@@ -524,6 +525,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [visiblePendingCount, setVisiblePendingCount] = useState(10);
   const [visibleScavengerCount, setVisibleScavengerCount] = useState(10);
   const [visibleRatedCount, setVisibleRatedCount] = useState(20);
+  const [downloadingZip, setDownloadingZip] = useState(false);
   const [qrExpanded, setQrExpanded] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
   const [rated, setRated] = useState<Set<string>>(new Set());
@@ -942,6 +944,52 @@ export default function AdminScreen({ onLogout }: Props) {
     setDeletingId(null);
     setConfirmDeleteId(null);
     await loadGames();
+  }
+
+  async function downloadPhotosZip() {
+    setDownloadingZip(true);
+    try {
+      const zip = new JSZip();
+      const allPhotos: { url: string; filename: string }[] = [];
+
+      const regularFiltered = photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter);
+      const scavengerFiltered = scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter);
+
+      for (const sub of regularFiltered) {
+        const ext = sub.photo_url.split('?')[0].split('.').pop() ?? 'jpg';
+        const safeMission = sub.mission_id.replace(/[^a-z0-9_-]/gi, '_');
+        const safeTeam = sub.team_name.replace(/[^a-z0-9_-]/gi, '_');
+        allPhotos.push({ url: sub.photo_url, filename: `${safeTeam}/${safeMission}.${ext}` });
+      }
+
+      for (const sub of scavengerFiltered) {
+        const ext = sub.photo_url.split('?')[0].split('.').pop() ?? 'jpg';
+        const safeLabel = (sub.item_label ?? sub.item_id).replace(/[^a-z0-9_-]/gi, '_');
+        const safeTeam = sub.team_name.replace(/[^a-z0-9_-]/gi, '_');
+        allPhotos.push({ url: sub.photo_url, filename: `${safeTeam}/scavenger_${safeLabel}.${ext}` });
+      }
+
+      if (allPhotos.length === 0) return;
+
+      await Promise.all(allPhotos.map(async ({ url, filename }) => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          zip.file(filename, blob);
+        } catch {
+          // skip photos that fail to fetch
+        }
+      }));
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = `gameon-photos-${Date.now()}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } finally {
+      setDownloadingZip(false);
+    }
   }
 
   async function ratePhoto(sub: PhotoSubmission, pts: number) {
@@ -3914,6 +3962,25 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {/* Download ZIP button */}
+            {(photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0 ||
+              scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0) && (
+              <div style={{ marginBottom: '16px' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={downloadPhotosZip}
+                  disabled={downloadingZip}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  {downloadingZip ? (
+                    <>⏳ Laddar ner…</>
+                  ) : (
+                    <>⬇️ Ladda ner alla bilder som ZIP ({photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length + scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length} st)</>
+                  )}
+                </button>
               </div>
             )}
 
