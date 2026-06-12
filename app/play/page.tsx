@@ -341,6 +341,7 @@ export default function Home() {
     setTeam(updatedTeam);
     setResult({ missionId: activeMission!, pts, correct, elapsed });
     setScreen('result');
+    navigateSync(null); // bring all teammates back to missions screen
   }
 
   async function handleLogout() {
