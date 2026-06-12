@@ -984,7 +984,8 @@ export default function AdminScreen({ onLogout }: Props) {
       const content = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(content);
-      a.download = `gameon-photos-${Date.now()}.zip`;
+      const safeName = (activeGame?.name ?? 'game').replace(/[^a-z0-9_-]/gi, '-').replace(/-+/g, '-');
+      a.download = `GameOn-photos-${safeName}.zip`;
       a.click();
       URL.revokeObjectURL(a.href);
     } finally {
