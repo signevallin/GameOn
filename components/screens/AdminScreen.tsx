@@ -3919,17 +3919,30 @@ export default function AdminScreen({ onLogout }: Props) {
                 <h2 style={{ fontSize: '18px', margin: 0 }}>Photo Submissions</h2>
                 <span className="badge" style={{ marginTop: '4px' }}>{pendingPhotos.length} pending</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>AI rating</span>
-                <div
-                  onClick={() => toggleAiRating(!aiRatingEnabled)}
-                  style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiRatingEnabled ? 'var(--accent)' : 'var(--border)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}
-                >
-                  <div style={{ position: 'absolute', top: '2px', left: aiRatingEnabled ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {(photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0 ||
+                  scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0) && (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={downloadPhotosZip}
+                    disabled={downloadingZip}
+                    style={{ fontSize: '13px', padding: '8px 14px', border: '1px solid var(--border)' }}
+                  >
+                    {downloadingZip ? '⏳' : '📦'} {downloadingZip ? 'Downloading…' : 'Download ZIP'}
+                  </button>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>AI rating</span>
+                  <div
+                    onClick={() => toggleAiRating(!aiRatingEnabled)}
+                    style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiRatingEnabled ? 'var(--accent)' : 'var(--border)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <div style={{ position: 'absolute', top: '2px', left: aiRatingEnabled ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: aiRatingEnabled ? 'var(--accent)' : 'var(--muted)' }}>
+                    {aiRatingEnabled ? 'ON' : 'OFF'}
+                  </span>
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: aiRatingEnabled ? 'var(--accent)' : 'var(--muted)' }}>
-                  {aiRatingEnabled ? 'ON' : 'OFF'}
-                </span>
               </div>
             </div>
 
@@ -3963,25 +3976,6 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
-              </div>
-            )}
-
-            {/* Download ZIP button */}
-            {(photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0 ||
-              scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0) && (
-              <div style={{ marginBottom: '16px' }}>
-                <button
-                  className="btn btn-secondary"
-                  onClick={downloadPhotosZip}
-                  disabled={downloadingZip}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  {downloadingZip ? (
-                    <>⏳ Downloading…</>
-                  ) : (
-                    <>⬇️ Download all photos as ZIP ({photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length + scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length} photos)</>
-                  )}
-                </button>
               </div>
             )}
 
