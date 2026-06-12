@@ -611,6 +611,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
+  const [categoryEmojiPickerOpen, setCategoryEmojiPickerOpen] = useState(false);
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
@@ -2288,6 +2289,7 @@ export default function AdminScreen({ onLogout }: Props) {
         setCategoryFormOpen(false);
         setCategoryFormName('');
         setCategoryFormEmoji('📋');
+        setCategoryEmojiPickerOpen(false);
       } catch {
         setCategoryError('Failed to save category.');
       } finally {
@@ -2522,7 +2524,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       <button
                         className="btn btn-ghost"
                         style={{ fontSize: '11px', padding: '4px 10px' }}
-                        onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); }}
+                        onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); setCategoryEmojiPickerOpen(false); }}
                       >
                         {categoryFormOpen ? '✕ Cancel' : '+ New category'}
                       </button>
@@ -2576,14 +2578,38 @@ export default function AdminScreen({ onLogout }: Props) {
 
                     {categoryFormOpen && (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
-                        <input
-                          type="text"
-                          value={categoryFormEmoji}
-                          onChange={e => setCategoryFormEmoji(e.target.value.slice(-2) || '📋')}
-                          style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '18px', padding: '8px 4px', flexShrink: 0 }}
-                          maxLength={2}
-                          placeholder="📋"
-                        />
+                        {/* Emoji picker button */}
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <button
+                            type="button"
+                            onClick={() => setCategoryEmojiPickerOpen(v => !v)}
+                            style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '20px', padding: '6px 4px', cursor: 'pointer', background: categoryEmojiPickerOpen ? 'var(--surface)' : undefined }}
+                            title="Choose emoji"
+                          >
+                            {categoryFormEmoji}
+                          </button>
+                          {categoryEmojiPickerOpen && (
+                            <div style={{
+                              position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+                              background: 'var(--card)', border: '1px solid var(--border)',
+                              borderRadius: '10px', padding: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                              display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', width: '216px',
+                            }}>
+                              {['🎮','🎯','🧩','🎲','🏆','⚡','🔥','💡','🌍','🎨','📸','🎵','🎬','🧠','🚀','⭐','💎','🎪','🎭','🎸','🎤','🏅','🎊','🎁','🔮','🦁','🦊','🐉','🌈','🍕','🎩','🃏','♟️','🎳','🪄','🧪','📋','🏋️','💪','🤝','🎓','🌟'].map(e => (
+                                <button
+                                  key={e}
+                                  type="button"
+                                  onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
+                                  style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                  onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                  onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                                >
+                                  {e}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="text"
                           value={categoryFormName}
@@ -2591,6 +2617,7 @@ export default function AdminScreen({ onLogout }: Props) {
                           placeholder="Category name…"
                           style={{ ...inputStyle, flex: 1 }}
                           onKeyDown={async e => { if (e.key === 'Enter' && categoryFormName.trim()) await saveCategory(); }}
+                          onClick={() => setCategoryEmojiPickerOpen(false)}
                         />
                         <button
                           className="btn btn-primary"
