@@ -3328,7 +3328,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="form-group">
             <label className="form-label">Game Name (optional)</label>
-            <input type="text" placeholder="E.g. IT Day 2026" value={gameName} onChange={e => setGameName(e.target.value)} />
+            <input type="text" placeholder="E.g. Offsite 2026" value={gameName} onChange={e => setGameName(e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Duration: {duration} minutes</label>
