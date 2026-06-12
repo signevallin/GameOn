@@ -3976,9 +3976,9 @@ export default function AdminScreen({ onLogout }: Props) {
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
                   {downloadingZip ? (
-                    <>⏳ Laddar ner…</>
+                    <>⏳ Downloading…</>
                   ) : (
-                    <>⬇️ Ladda ner alla bilder som ZIP ({photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length + scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length} st)</>
+                    <>⬇️ Download all photos as ZIP ({photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length + scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length} photos)</>
                   )}
                 </button>
               </div>
