@@ -16,7 +16,7 @@ export default function TrueFalse({ statements, maxPts = 150, teamId, missionId,
   const [score, setScore] = useState(0);
   const [flash, setFlash] = useState<boolean | null>(null);
 
-  const { broadcastRound } = useRemoteRoundSync({
+  const { broadcastRound, clearRound } = useRemoteRoundSync({
     teamId,
     missionId,
     onRemoteAdvance: (newIdx) => {
@@ -34,6 +34,7 @@ export default function TrueFalse({ statements, maxPts = 150, teamId, missionId,
     setTimeout(() => {
       setFlash(null);
       if (idx + 1 >= statements.length) {
+        clearRound();
         const pts = Math.round(maxPts * (newScore / statements.length));
         onFinish(newScore > 0, pts);
       } else {

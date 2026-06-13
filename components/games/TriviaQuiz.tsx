@@ -18,7 +18,7 @@ export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
 
-  const { broadcastRound } = useRemoteRoundSync({
+  const { broadcastRound, clearRound } = useRemoteRoundSync({
     teamId,
     missionId,
     onRemoteAdvance: (idx) => {
@@ -41,6 +41,7 @@ export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish
 
     setTimeout(() => {
       if (qIdx + 1 >= rounds.length) {
+        clearRound();
         setDone(true);
         onFinish(newCorrect === rounds.length, newTotal);
       } else {

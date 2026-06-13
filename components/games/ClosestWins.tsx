@@ -32,7 +32,7 @@ export default function ClosestWins({ maxPts, questions: propQuestions, teamId, 
   const [totalPts, setTotalPts]   = useState(0);
   const [done, setDone]           = useState(false);
 
-  const { broadcastRound } = useRemoteRoundSync({
+  const { broadcastRound, clearRound } = useRemoteRoundSync({
     teamId,
     missionId,
     onRemoteAdvance: (idx) => {
@@ -60,6 +60,7 @@ export default function ClosestWins({ maxPts, questions: propQuestions, teamId, 
   function next() {
     const newTotal = totalPts + (result?.pts ?? 0);
     if (qIdx + 1 >= questions.length) {
+      clearRound();
       setDone(true);
       onFinish(newTotal > 0, newTotal);
     } else {

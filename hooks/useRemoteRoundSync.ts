@@ -4,9 +4,10 @@ import { supabase } from '@/lib/supabase';
 /**
  * Syncs round/question index across all players in a remote game.
  *
- * When any player advances to a new round, they broadcast the new index on
- * `round-sync-{teamId}-{missionId}`. All other players' components receive
- * the event and jump to that index (Supabase does NOT echo back to the sender).
+ * Two-layer sync:
+ * 1. Supabase Broadcast for real-time low-latency delivery
+ * 2. DB persistence via /api/team/round as a fallback for late-joiners or
+ *    dropped broadcasts (Player B fetches the current index on mount)
  *
  * Pass `teamId` and `missionId` only in remote mode; leave undefined for local.
  */
@@ -25,6 +26,7 @@ export function useRemoteRoundSync({
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
+  // Broadcast channel for real-time sync
   useEffect(() => {
     if (!enabled) return;
     const channel = supabase
@@ -40,10 +42,43 @@ export function useRemoteRoundSync({
     };
   }, [enabled, teamId, missionId]);
 
-  const broadcastRound = useCallback((idx: number) => {
-    if (!enabled || !channelRef.current) return;
-    channelRef.current.send({ type: 'broadcast', event: 'round', payload: { idx } });
-  }, [enabled]);
+  // On mount, fetch the current round from DB so late-joiners or players who
+  // missed a broadcast can catch up immediately.
+  useEffect(() => {
+    if (!enabled) return;
+    fetch(`/api/team/round?teamId=${encodeURIComponent(teamId!)}&missionId=${encodeURIComponent(missionId!)}`, {
+      cache: 'no-store',
+    })
+      .then(r => r.json())
+      .then(data => {
+        const idx = typeof data.qIdx === 'number' ? data.qIdx : 0;
+        if (idx > 0) callbackRef.current(idx);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, teamId, missionId]);
 
-  return { broadcastRound };
+  const broadcastRound = useCallback((idx: number) => {
+    // Persist to DB (fallback for anyone who missed the broadcast)
+    if (enabled && teamId && missionId) {
+      fetch('/api/team/round', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId, missionId, qIdx: idx }),
+      }).catch(() => {});
+    }
+    // Broadcast for real-time delivery
+    if (!channelRef.current) return;
+    channelRef.current.send({ type: 'broadcast', event: 'round', payload: { idx } });
+  }, [enabled, teamId, missionId]);
+
+  // Clear DB state when the mission completes so replays always start fresh
+  const clearRound = useCallback(() => {
+    if (!enabled || !teamId || !missionId) return;
+    fetch(`/api/team/round?teamId=${encodeURIComponent(teamId)}&missionId=${encodeURIComponent(missionId)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
+  }, [enabled, teamId, missionId]);
+
+  return { broadcastRound, clearRound };
 }
