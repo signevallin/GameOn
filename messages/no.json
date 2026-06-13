@@ -78,7 +78,9 @@
     "mystery_box_expired_msg": "Mystery boksen forsvant… ingen var rask nok ⏰",
     "inverterad_skarm_msg": "INVERTERAD/INVERTED SCREEN! Er skärm är spegelvänd i 60 sekunder.",
     "double_agent_msg": "DOUBLE AGENT aktiv i 90 sekunder! Dubbla poäng — men misslyckas ni går de till sista laget!",
-    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!"
+    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!",
+    "smoke_screen": "RØYKSKJERM!",
+    "smoke_screen_msg": "RØYKSKJERM! Skjermen din er uskarp i 60 sekunder. Lykke til med å treffe noe!"
   },
   "leaderboard": {
     "yourTeam": "Teamet ditt",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Kansellere",
     "confirmDoneConfirm": "Ja, vi er ferdige!",
     "logoutButton": "Logg ut",
-    "logoutConfirm": "Er du sikker på at du vil logge ut?"
+    "logoutConfirm": "Er du sikker på at du vil logge ut?",
+    "smokeScreenTitle": "RØYKSKJERM",
+    "smokeScreenDesc": "Skjermen er uskarp – konsentrer deg og prøv å klikke riktig!"
   },
   "difficulty": {
     "easy": "Lett",
@@ -226,7 +230,9 @@
     "robin_hood_label": "Robin Hood",
     "robin_hood_desc": "Stjel 300 poeng fra et rikt lag – automatisk gitt til det dårligste laget.",
     "sendLabel": "{{icon}} Send {{label}}",
-    "activateLabel": "{{icon}} Aktiver {{label}}"
+    "activateLabel": "{{icon}} Aktiver {{label}}",
+    "smoke_screen_label": "Røykskjerm",
+    "smoke_screen_desc": "Gjør rivallagets skjerm uskarp i 60 sekunder – knappene er der, bare nesten usynlige."
   },
   "language": {
     "pickerLabel": "Språk",

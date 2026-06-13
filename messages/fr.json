@@ -78,7 +78,9 @@
     "mystery_box_expired_msg": "La mystery box a disparu… personne n'était assez rapide ⏰",
     "inverterad_skarm_msg": "INVERTERAD/INVERTED SCREEN! Er skärm är spegelvänd i 60 sekunder.",
     "double_agent_msg": "DOUBLE AGENT aktiv i 90 sekunder! Dubbla poäng — men misslyckas ni går de till sista laget!",
-    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!"
+    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!",
+    "smoke_screen": "ÉCRAN DE FUMÉE!",
+    "smoke_screen_msg": "ÉCRAN DE FUMÉE! Votre interface est floue pendant 60 secondes. Bonne chance pour cliquer juste!"
   },
   "leaderboard": {
     "yourTeam": "Votre équipe",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Annuler",
     "confirmDoneConfirm": "Oui, c'est terminé !",
     "logoutButton": "Déconnexion",
-    "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?"
+    "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "smokeScreenTitle": "ÉCRAN DE FUMÉE",
+    "smokeScreenDesc": "Votre écran est flou — concentrez-vous et essayez de cliquer au bon endroit!"
   },
   "difficulty": {
     "easy": "Facile",
@@ -226,7 +230,9 @@
     "robin_hood_label": "Robin des Bois",
     "robin_hood_desc": "Volez 300 points à une équipe riche — ils seront automatiquement donnés à l'équipe la plus pauvre.",
     "sendLabel": "{{icon}} Envoyer {{label}}",
-    "activateLabel": "{{icon}} Activer {{label}}"
+    "activateLabel": "{{icon}} Activer {{label}}",
+    "smoke_screen_label": "Écran de fumée",
+    "smoke_screen_desc": "Rendez l'écran d'une équipe rivale flou pendant 60 s — les boutons sont là, presque invisibles."
   },
   "language": {
     "pickerLabel": "Langue",

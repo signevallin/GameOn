@@ -78,7 +78,9 @@
     "mystery_box_expired_msg": "Mystery boksen forsvandt… ingen var hurtig nok ⏰",
     "inverterad_skarm_msg": "INVERTERAD/INVERTED SCREEN! Er skärm är spegelvänd i 60 sekunder.",
     "double_agent_msg": "DOUBLE AGENT aktiv i 90 sekunder! Dubbla poäng — men misslyckas ni går de till sista laget!",
-    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!"
+    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!",
+    "smoke_screen": "RØGSKÆRM!",
+    "smoke_screen_msg": "RØGSKÆRM! Din skærm er sløret i 60 sekunder. Held og lykke med at ramme noget!"
   },
   "leaderboard": {
     "yourTeam": "Dit hold",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Ophæve",
     "confirmDoneConfirm": "Ja, vi er færdige!",
     "logoutButton": "Log ud",
-    "logoutConfirm": "Er du sikker på, at du vil logge ud?"
+    "logoutConfirm": "Er du sikker på, at du vil logge ud?",
+    "smokeScreenTitle": "RØGSKÆRM",
+    "smokeScreenDesc": "Skærmen er sløret – koncentrer dig og forsøg at klikke rigtigt!"
   },
   "difficulty": {
     "easy": "Let",
@@ -226,7 +230,9 @@
     "robin_hood_label": "Robin Hood",
     "robin_hood_desc": "Stjæl 300 point fra et rigt hold — gives automatisk til det dårligste hold.",
     "sendLabel": "{{icon}} Send {{label}}",
-    "activateLabel": "{{icon}} Aktivér {{label}}"
+    "activateLabel": "{{icon}} Aktivér {{label}}",
+    "smoke_screen_label": "Røgskærm",
+    "smoke_screen_desc": "Slør et rivalholds skærm i 60 sekunder – knapperne er der, men næsten usynlige."
   },
   "language": {
     "pickerLabel": "Sprog",

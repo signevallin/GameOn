@@ -941,3 +941,6 @@ pre {
 
 /* Inverterad skärm power-up */
 .sabotage-inverse { transform: scaleX(-1); }
+
+/* Smoke Screen power-up */
+.sabotage-smoke { filter: blur(4px) grayscale(50%); transition: filter 0.5s ease; }

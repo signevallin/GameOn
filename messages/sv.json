@@ -78,7 +78,9 @@
     "mystery_box_msg": "En mystery box dök upp! Tävla om att öppna den!",
     "mystery_box_won_msg": "Du fick mystery boxen! +1 {{powerup}}-laddning upplåst.",
     "mystery_box_taken_msg": "{{team}} tog mystery boxen! 💨",
-    "mystery_box_expired_msg": "Mystery boxen försvann… ingen var snabb nog ⏰"
+    "mystery_box_expired_msg": "Mystery boxen försvann… ingen var snabb nog ⏰",
+    "smoke_screen": "RÖKRIDÅ!",
+    "smoke_screen_msg": "RÖKRIDÅ! Er skärm är suddig i 60 sekunder. Lycka till med att pricka rätt!"
   },
   "leaderboard": {
     "yourTeam": "Ditt team",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Avboka",
     "confirmDoneConfirm": "Ja, vi är klara!",
     "logoutButton": "Logga ut",
-    "logoutConfirm": "Är du säker på att du vill logga ut?"
+    "logoutConfirm": "Är du säker på att du vill logga ut?",
+    "smokeScreenTitle": "RÖKRIDÅ",
+    "smokeScreenDesc": "Er skärm är suddig – koncentrera er och försök klicka rätt!"
   },
   "difficulty": {
     "easy": "Lätt",
@@ -224,7 +228,9 @@
     "robin_hood_label": "Robin Hood",
     "robin_hood_desc": "Stjäl 300 poäng från ett rikt lag — ges automatiskt till det sämsta laget.",
     "sendLabel": "{{icon}} Skicka {{label}}",
-    "activateLabel": "{{icon}} Aktivera {{label}}"
+    "activateLabel": "{{icon}} Aktivera {{label}}",
+    "smoke_screen_label": "Rökridå",
+    "smoke_screen_desc": "Sudda ut ett rivallags skärm i 60 sekunder – knapparna finns kvar men syns knappt."
   },
   "language": {
     "pickerLabel": "Språk",

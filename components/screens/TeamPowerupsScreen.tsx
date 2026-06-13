@@ -27,6 +27,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
     { id: 'shield',         icon: '🛡️', label: t('powerups.shield_label'),         desc: t('powerups.shield_desc'),         color: 'var(--accent)',  offensive: false },
     { id: 'freeze',         icon: '❄️', label: t('powerups.freeze_label'),          desc: t('powerups.freeze_desc'),          color: '#7ec8e3',        offensive: true  },
     { id: 'inverterad_skarm', icon: '🪞', label: t('powerups.inverterad_skarm_label'), desc: t('powerups.inverterad_skarm_desc'), color: 'var(--accent2)', offensive: true  },
+    { id: 'smoke_screen',    icon: '💨', label: t('powerups.smoke_screen_label'),    desc: t('powerups.smoke_screen_desc'),    color: '#94a3b8',        offensive: true  },
     { id: 'all_in',           icon: '🎲', label: t('powerups.all_in_label'),           desc: t('powerups.all_in_desc'),           color: 'var(--gold)',    offensive: true  },
     { id: 'double_agent',     icon: '🕵️', label: t('powerups.double_agent_label'),     desc: t('powerups.double_agent_desc'),     color: '#a78bfa',        offensive: false },
     { id: 'robin_hood',     icon: '🏹', label: t('powerups.robin_hood_label'),      desc: t('powerups.robin_hood_desc'),      color: 'var(--accent3)', offensive: true  },

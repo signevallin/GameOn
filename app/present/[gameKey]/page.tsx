@@ -42,6 +42,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   en: {
     frozen_msg:             { emoji: '❄️', title: 'FROZEN!',          subtitle: (_, t) => `${t} has been frozen!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'INVERTED SCREEN!', subtitle: (_, t) => `${t}'s screen is now mirrored!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'SMOKE SCREEN!',    subtitle: (_, t) => `${t}'s screen is blurred for 60 seconds!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',   subtitle: (_, t) => `${t} activated Double Agent — 90s of double points!` },
     shield_msg:             { emoji: '🛡️', title: 'SHIELD ACTIVE!',   subtitle: (_, t) => `${t} is protected` },
     all_in_lost_msg:        { emoji: '🎲', title: 'BET LOST!',        subtitle: (p, t) => `${t} lost ${p.wager ?? ''} pts` },
@@ -61,6 +62,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   sv: {
     frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} har frysts!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'INVERTERAD SKÄRM!',  subtitle: (_, t) => `${t}s skärm är nu spegelvänd!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'RÖKRIDÅ!',             subtitle: (_, t) => `${t}s skärm är suddig i 60 sekunder!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',       subtitle: (_, t) => `${t} aktiverade Double Agent — 90s dubbla poäng!` },
     shield_msg:             { emoji: '🛡️', title: 'SKÖLD AKTIVERAD!',    subtitle: (_, t) => `${t} skyddade sig` },
     all_in_lost_msg:        { emoji: '🎲', title: 'GAMBLADE BORT!',      subtitle: (p, t) => `${t} förlorade ${p.wager ?? ''} poäng` },
@@ -80,6 +82,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   no: {
     frozen_msg:             { emoji: '❄️', title: 'FRYST!',              subtitle: (_, t) => `${t} har blitt fryst!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'INVERTERT SKJERM!',  subtitle: (_, t) => `${t}s skjerm er nå speilvendt!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'RØYKSKJERM!',          subtitle: (_, t) => `${t}s skjerm er uskarp i 60 sekunder!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',       subtitle: (_, t) => `${t} aktiverte Double Agent — 90s doble poeng!` },
     shield_msg:             { emoji: '🛡️', title: 'SKJOLD AKTIVERT!',    subtitle: (_, t) => `${t} beskyttet seg` },
     all_in_lost_msg:        { emoji: '🎲', title: 'TAPTE INNSATSEN!',    subtitle: (p, t) => `${t} tapte ${p.wager ?? ''} poeng` },
@@ -99,6 +102,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   da: {
     frozen_msg:             { emoji: '❄️', title: 'FROSSET!',            subtitle: (_, t) => `${t} er blevet frosset!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'INVERTERET SKÆRM!',  subtitle: (_, t) => `${t}s skærm er nu spejlvendt!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'RØGSKÆRM!',            subtitle: (_, t) => `${t}s skærm er sløret i 60 sekunder!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',       subtitle: (_, t) => `${t} aktiverede Double Agent — 90s dobbelt point!` },
     shield_msg:             { emoji: '🛡️', title: 'SKJOLD AKTIVERET!',   subtitle: (_, t) => `${t} beskyttede sig` },
     all_in_lost_msg:        { emoji: '🎲', title: 'TABTE INDSATSEN!',    subtitle: (p, t) => `${t} tabte ${p.wager ?? ''} point` },
@@ -118,6 +122,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   de: {
     frozen_msg:             { emoji: '❄️', title: 'EINGEFROREN!',        subtitle: (_, t) => `${t} wurde eingefroren!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'INVERTIERTER BILDSCHIRM!', subtitle: (_, t) => `${t}s Bildschirm ist jetzt gespiegelt!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'RAUCHVORHANG!',        subtitle: (_, t) => `${t}s Bildschirm ist 60 Sek. verschwommen!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',       subtitle: (_, t) => `${t} hat Double Agent aktiviert — 90s doppelte Punkte!` },
     shield_msg:             { emoji: '🛡️', title: 'SCHILD AKTIV!',       subtitle: (_, t) => `${t} ist geschützt` },
     all_in_lost_msg:        { emoji: '🎲', title: 'VERLOREN!',           subtitle: (p, t) => `${t} verlor ${p.wager ?? ''} Punkte` },
@@ -137,6 +142,7 @@ const OV: Record<Lang, Record<string, { emoji: string; title: string; subtitle: 
   fr: {
     frozen_msg:             { emoji: '❄️', title: 'GELÉ!',               subtitle: (_, t) => `${t} a été gelé!` },
     inverterad_skarm_msg:   { emoji: '🪞', title: 'ÉCRAN INVERSÉ!',      subtitle: (_, t) => `L'écran de ${t} est maintenant en miroir!` },
+    smoke_screen_msg:       { emoji: '💨', title: 'ÉCRAN DE FUMÉE!',      subtitle: (_, t) => `L'écran de ${t} est flou pendant 60 secondes!` },
     double_agent_msg:       { emoji: '🕵️', title: 'DOUBLE AGENT!',       subtitle: (_, t) => `${t} a activé Double Agent — 90s de points doublés!` },
     shield_msg:             { emoji: '🛡️', title: 'BOUCLIER ACTIF!',     subtitle: (_, t) => `${t} est protégé` },
     all_in_lost_msg:        { emoji: '🎲', title: 'PARI PERDU!',         subtitle: (p, t) => `${t} a perdu ${p.wager ?? ''} pts` },

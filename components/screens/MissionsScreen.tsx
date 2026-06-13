@@ -103,6 +103,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
     powerup_self:       { emoji: '⚡', title: t('notifications.powerup_self'),       btnLabel: t('notifications.btn_letsGo'), color: 'var(--accent3)' },
     powerup_received:   { emoji: '😈', title: t('notifications.powerup_received'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
     inverterad_skarm:   { emoji: '🪞', title: t('notifications.inverterad_skarm'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    smoke_screen:       { emoji: '💨', title: t('notifications.smoke_screen'),       btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
     hot_potato:         { emoji: '💣', title: t('notifications.hot_potato'),         btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'   },
     hot_potato_penalty: { emoji: '💥', title: t('notifications.hot_potato_penalty'), btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
     mystery_box_won:     { emoji: '🎁', title: t('notifications.mystery_box_won'),     btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'    },
@@ -635,6 +636,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until as string) : null;
   const inverteradUntil = effects.inverterad_skarm_until ? new Date(effects.inverterad_skarm_until as string) : null;
   const doubleAgentUntil = effects.double_agent_until ? new Date(effects.double_agent_until as string) : null;
+  const smokeScreenUntil = effects.smoke_screen_until ? new Date(effects.smoke_screen_until as string) : null;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
   const isFrozen = freezeUntil ? freezeUntil.getTime() > now : false;
@@ -643,6 +645,8 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const inverteradSecsLeft = isInverted ? Math.ceil((inverteradUntil!.getTime() - now) / 1000) : 0;
   const isDoubleAgent = doubleAgentUntil ? doubleAgentUntil.getTime() > now : false;
   const doubleAgentSecsLeft = isDoubleAgent ? Math.ceil((doubleAgentUntil!.getTime() - now) / 1000) : 0;
+  const isSmokeScreen = smokeScreenUntil ? smokeScreenUntil.getTime() > now : false;
+  const smokeScreenSecsLeft = isSmokeScreen ? Math.ceil((smokeScreenUntil!.getTime() - now) / 1000) : 0;
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
@@ -964,7 +968,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <div className={`container fade-in${isInverted ? ' sabotage-inverse' : ''}`}>
+      <div className={`container fade-in${isInverted ? ' sabotage-inverse' : ''}${isSmokeScreen ? ' sabotage-smoke' : ''}`}>
 
         {/* WAITING */}
         {isDraft && (
@@ -1066,6 +1070,21 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '13px', color: '#a78bfa', letterSpacing: '.5px' }}>{t('missions.doubleAgentTitle')} — {doubleAgentSecsLeft}s</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>{t('missions.doubleAgentDesc')}</div>
+                </div>
+              </div>
+            )}
+
+            {/* ── SMOKE SCREEN BANNER ── */}
+            {isSmokeScreen && (
+              <div style={{
+                padding: '12px 18px', background: 'rgba(208,117,125,0.10)',
+                border: '1px solid var(--accent2)', borderRadius: '12px', marginTop: '16px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', gap: '12px',
+              }}>
+                <span style={{ fontSize: '28px' }}>💨</span>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--accent2)', letterSpacing: '.5px' }}>{t('missions.smokeScreenTitle')} — {smokeScreenSecsLeft}s</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>{t('missions.smokeScreenDesc')}</div>
                 </div>
               </div>
             )}

@@ -78,7 +78,9 @@
     "mystery_box_expired_msg": "Die Mystery Box ist verschwunden… niemand war schnell genug ⏰",
     "inverterad_skarm_msg": "INVERTERAD/INVERTED SCREEN! Er skärm är spegelvänd i 60 sekunder.",
     "double_agent_msg": "DOUBLE AGENT aktiv i 90 sekunder! Dubbla poäng — men misslyckas ni går de till sista laget!",
-    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!"
+    "double_agent_last_msg": "🕵️ Double Agent slog till! Ni fick {{pts}} poäng!",
+    "smoke_screen": "RAUCHVORHANG!",
+    "smoke_screen_msg": "RAUCHVORHANG! Dein Interface ist 60 Sekunden lang verschwommen. Viel Glück beim Treffen!"
   },
   "leaderboard": {
     "yourTeam": "Ihr Team",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Stornieren",
     "confirmDoneConfirm": "Ja, wir sind fertig!",
     "logoutButton": "Abmelden",
-    "logoutConfirm": "Möchten Sie sich wirklich abmelden?"
+    "logoutConfirm": "Möchten Sie sich wirklich abmelden?",
+    "smokeScreenTitle": "RAUCHVORHANG",
+    "smokeScreenDesc": "Dein Bildschirm ist verschwommen – konzentriere dich und versuche richtig zu klicken!"
   },
   "difficulty": {
     "easy": "Einfach",
@@ -226,7 +230,9 @@
     "robin_hood_label": "Robin Hood",
     "robin_hood_desc": "Einem reichen Team werden 300 Punkte gestohlen – diese werden automatisch dem ärmsten Team gutgeschrieben.",
     "sendLabel": "{{icon}} Senden {{label}}",
-    "activateLabel": "{{icon}} Aktivieren Sie {{label}}"
+    "activateLabel": "{{icon}} Aktivieren Sie {{label}}",
+    "smoke_screen_label": "Rauchvorhang",
+    "smoke_screen_desc": "Mache den Bildschirm eines Rivalenteams 60 Sek. lang verschwommen – Buttons da, aber kaum sichtbar."
   },
   "language": {
     "pickerLabel": "Sprache",

@@ -78,7 +78,9 @@
     "mystery_box_msg": "A mystery box appeared! Race to open it!",
     "mystery_box_won_msg": "You got the mystery box! +1 {{powerup}} charge unlocked.",
     "mystery_box_taken_msg": "{{team}} grabbed the mystery box! 💨",
-    "mystery_box_expired_msg": "The mystery box disappeared… no one was fast enough ⏰"
+    "mystery_box_expired_msg": "The mystery box disappeared… no one was fast enough ⏰",
+    "smoke_screen": "SMOKE SCREEN!",
+    "smoke_screen_msg": "SMOKE SCREEN! Your interface is blurred for 60 seconds. Good luck hitting anything!"
   },
   "leaderboard": {
     "yourTeam": "Your team",
@@ -141,7 +143,9 @@
     "confirmDoneCancel": "Cancel",
     "confirmDoneConfirm": "Yes, we're done!",
     "logoutButton": "Log out",
-    "logoutConfirm": "Are you sure you want to log out?"
+    "logoutConfirm": "Are you sure you want to log out?",
+    "smokeScreenTitle": "SMOKE SCREEN",
+    "smokeScreenDesc": "Your screen is blurred – focus hard and try to click the right things!"
   },
   "difficulty": {
     "easy": "Easy",
@@ -226,7 +230,9 @@
     "robin_hood_label": "Robin Hood",
     "robin_hood_desc": "Steal 300 pts from a rich team — automatically given to the poorest team.",
     "sendLabel": "{{icon}} Send {{label}}",
-    "activateLabel": "{{icon}} Activate {{label}}"
+    "activateLabel": "{{icon}} Activate {{label}}",
+    "smoke_screen_label": "Smoke Screen",
+    "smoke_screen_desc": "Blur a rival team's screen for 60 seconds – the buttons are still there, just invisible."
   },
   "language": {
     "pickerLabel": "Language",
