@@ -206,7 +206,8 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         fetch(`/api/team/relay?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(mission.id)}`, {
           method: 'DELETE',
         }).catch(() => {});
-        onFinish(true, pts);
+        // correct = at least one segment was answered correctly (not skipped)
+        onFinish(completedSegs.length > 0, pts);
       }
     } catch {
       setLoading(false);
