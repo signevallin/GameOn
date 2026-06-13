@@ -75,7 +75,7 @@ export async function POST(req: Request) {
   const supabase = adminClient();
 
   // Fetch in parallel
-  const [usersResult, gamesResult, teamsResult] = await Promise.all([
+  const [usersResult, gamesResult, teamsResult, customMissionsResult] = await Promise.all([
     supabase.auth.admin.listUsers(),
     supabase
       .from('games')
@@ -84,6 +84,9 @@ export async function POST(req: Request) {
     supabase
       .from('teams')
       .select('game_id, score, completed, finished_at'),
+    supabase
+      .from('custom_missions')
+      .select('id, name'),
   ]);
 
   if (usersResult.error) {
@@ -127,9 +130,12 @@ export async function POST(req: Request) {
     });
   }
 
-  // Build a lookup: mission_id → mission name
+  // Build a lookup: mission_id → mission name (built-ins + custom)
   const missionNameById: Record<string, string> = {};
   for (const m of MISSIONS) {
+    missionNameById[m.id] = m.name;
+  }
+  for (const m of (customMissionsResult.data ?? [])) {
     missionNameById[m.id] = m.name;
   }
 
