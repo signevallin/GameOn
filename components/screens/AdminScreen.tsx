@@ -3625,7 +3625,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 />
                 Hide already played{playedMissionIds.length > 0 ? ` (${playedMissionIds.length})` : ''}
               </label>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions(MISSIONS.map(m => m.id))}>All on</button>
+              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])}>All on</button>
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
             </div>
           </div>
