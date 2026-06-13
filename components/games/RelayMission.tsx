@@ -71,6 +71,16 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
 
   const isWaiting = !isMyTurn && !relayDone;
 
+  // Fetch current relay state from DB on mount (handles late-join / page-refresh scenarios)
+  useEffect(() => {
+    fetch(`/api/team/relay?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(mission.id)}`, {
+      cache: 'no-store',
+    })
+      .then(r => r.json())
+      .then(data => { if (data.relayState) setRelayState(data.relayState as RelayMissionState); })
+      .catch(() => {});
+  }, [team.id, mission.id]);
+
   // Fetch team members ordered by join time (via server route — bypasses RLS on team_members)
   useEffect(() => {
     fetch('/api/team/members', {

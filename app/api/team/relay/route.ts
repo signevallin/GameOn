@@ -11,6 +11,32 @@ function getSupabase() {
   );
 }
 
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const teamId = searchParams.get('teamId');
+  const missionId = searchParams.get('missionId');
+
+  if (!teamId || !missionId) {
+    return NextResponse.json({ error: 'Missing teamId or missionId.' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+  const { data: team, error } = await supabase
+    .from('teams')
+    .select('relay_state')
+    .eq('id', teamId)
+    .single();
+
+  if (error || !team) {
+    return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
+  }
+
+  const existing = (team.relay_state as Record<string, unknown> | null) ?? {};
+  const missionState = existing[missionId] ?? null;
+
+  return NextResponse.json({ relayState: missionState });
+}
+
 export async function POST(req: Request) {
   let body: { teamId?: unknown; missionId?: unknown; action?: unknown; elapsedMs?: unknown; segmentCount?: unknown };
   try {
