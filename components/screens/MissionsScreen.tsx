@@ -1146,26 +1146,48 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   })}
 
                   {/* ── Custom categories — one card per distinct category ── */}
-                  {selectedCategory === null && customCategoryGroups.map(grp => (
-                    <div
-                      key={grp.name}
-                      className="card"
-                      style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px', height: '100%', boxSizing: 'border-box', gridColumn: '1 / -1' }}
-                      onClick={() => setSelectedCategory((`__custom__:${grp.name}`) as SuperCategoryKey)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '24px' }}>⭐</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#9b59b6' }}>{grp.name.toUpperCase()}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{grp.minPts}–{grp.maxPts} pts</div>
+                  {selectedCategory === null && customCategoryGroups.map(grp => {
+                    const allGrpDone = grp.done === grp.missions.length;
+                    // category name is "🐉 Dragon" — split emoji from label
+                    const emojiMatch = grp.name.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
+                    const icon = emojiMatch ? emojiMatch[0].trim() : '📋';
+                    const label = emojiMatch ? grp.name.slice(emojiMatch[0].length) : grp.name;
+                    const color = '#9b59b6';
+                    return (
+                      <div
+                        key={grp.name}
+                        onClick={() => setSelectedCategory((`__custom__:${grp.name}`) as SuperCategoryKey)}
+                        style={{
+                          background: 'var(--card)',
+                          border: `1px solid ${allGrpDone ? color : 'var(--border)'}`,
+                          borderRadius: '14px',
+                          padding: '16px 14px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          minHeight: '120px',
+                          height: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: color, borderRadius: '14px 14px 0 0' }} />
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
+                          {label.toUpperCase()}
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 800, fontSize: '16px', color: '#9b59b6' }}>{grp.done}/{grp.missions.length}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--muted)' }}>done</div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
+                          {t('missions.missionsCount', { done: grp.done, total: grp.missions.length })}
                         </div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color, letterSpacing: '0.5px' }}>
+                          {grp.minPts === grp.maxPts ? t('missions.upToPts', { pts: grp.minPts }) : t('missions.ptsRange', { min: grp.minPts, max: grp.maxPts })}
+                        </div>
+                        {allGrpDone && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* We're done */}
