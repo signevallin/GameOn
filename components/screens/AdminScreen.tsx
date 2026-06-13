@@ -4925,7 +4925,7 @@ export default function AdminScreen({ onLogout }: Props) {
             >
               <QRCodeSVG
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
-                size={isMobile ? 72 : 100}
+                size={isMobile ? 110 : 140}
                 bgColor="#ffffff"
                 fgColor="#0f1724"
                 level="M"
