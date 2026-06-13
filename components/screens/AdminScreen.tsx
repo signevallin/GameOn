@@ -1650,27 +1650,42 @@ export default function AdminScreen({ onLogout }: Props) {
 
       const allMissionIds = [...generatePreview.selectedMissionIds, ...createdIds];
 
-      // Save template
-      const res = await fetch('/api/admin/templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: generatePreview.name,
-          icon: generatePreview.icon,
-          description: generatePreview.description,
-          missionIds: allMissionIds,
-          isBuiltin: false,
-          activeFrom: generatePreview.activeFrom,
-          activeTo: generatePreview.activeTo,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to save template');
-      const { template } = await res.json();
-      setTemplates(prev => [...prev, template]);
-      setShowGenerateModal(false);
-      setGeneratePrompt('');
-      setGeneratePreview(null);
-      showToast('Template created!');
+      // Save template with cleanup on failure
+      try {
+        const res = await fetch('/api/admin/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            name: generatePreview.name,
+            icon: generatePreview.icon,
+            description: generatePreview.description,
+            missionIds: allMissionIds,
+            isBuiltin: false,
+            activeFrom: generatePreview.activeFrom,
+            activeTo: generatePreview.activeTo,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to save template');
+        const { template } = await res.json();
+        setTemplates(prev => [...prev, template]);
+        setShowGenerateModal(false);
+        setGeneratePrompt('');
+        setGeneratePreview(null);
+        showToast('Template created!');
+      } catch (err) {
+        // Attempt to clean up orphaned missions if template save failed
+        if (createdIds.length > 0) {
+          await Promise.allSettled(
+            createdIds.map(id =>
+              fetch(`/api/admin/custom-missions/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+              })
+            )
+          );
+        }
+        throw err; // Re-throw to outer catch
+      }
     } catch (err) {
       console.error(err);
       showToast('Failed to save template', 'error');
@@ -3856,7 +3871,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <button
                   onClick={generateTemplate}
                   disabled={generateLoading || !generatePrompt.trim()}
-                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: !generatePrompt.trim() ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
+                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: (generateLoading || !generatePrompt.trim()) ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
                 >
                   {generateLoading ? 'Generating...' : 'Generate →'}
                 </button>
