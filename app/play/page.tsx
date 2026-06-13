@@ -24,6 +24,7 @@ export default function Home() {
   const [result, setResult] = useState<ResultState | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [customMissions, setCustomMissions] = useState<Mission[]>([]);
+  const [categoryColorMap, setCategoryColorMap] = useState<Record<string, string>>({});
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
   const [memberId, setMemberId] = useState<string | null>(null);
   const [memberName, setMemberName] = useState<string | null>(null);
@@ -302,6 +303,13 @@ export default function Home() {
   async function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = [], mId?: string, mName?: string) {
     setTeam(t);
     setGame(g);
+    const colorMap: Record<string, string> = {};
+    for (const cm of cms) {
+      const cat = (cm as { custom_mission_categories?: { name: string; emoji: string; color?: string | null } | null }).custom_mission_categories;
+      const label = cat ? `${cat.emoji} ${cat.name}` : (cm.category_name ?? 'My Missions');
+      if (cat?.color) colorMap[label] = cat.color;
+    }
+    setCategoryColorMap(colorMap);
     const missions = cms.map(toMission);
     setCustomMissions(missions);
     try { localStorage.setItem('gameon_custom_missions', JSON.stringify(missions)); } catch { /* storage full */ }
@@ -410,6 +418,7 @@ export default function Home() {
         game={game}
         teams={teams}
         customMissions={customMissions}
+        categoryColorMap={categoryColorMap}
         onSelectMission={handleSelectMission}
         onLogout={handleLogout}
         onTeamUpdate={setTeam}

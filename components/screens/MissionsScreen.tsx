@@ -522,6 +522,7 @@ type Props = {
   onTeamUpdate: (team: Team) => void;
   onGameUpdate: (game: Game) => void;
   customMissions?: Mission[];
+  categoryColorMap?: Record<string, string>;
   memberId?: string;
   members?: Array<{ id: string; name: string; online: boolean }>;
 };
@@ -564,7 +565,7 @@ function formatElapsed(ms: number) {
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, onGameUpdate, customMissions = [], memberId, members = [] }: Props) {
+export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, onGameUpdate, customMissions = [], categoryColorMap = {}, memberId, members = [] }: Props) {
   const { t } = useTranslation();
   const { t: tMissions } = useTranslation('missions');
   const secondsLeft = useCountdown(game);
@@ -1148,7 +1149,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                     const emojiMatch = grp.name.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
                     const icon = emojiMatch ? emojiMatch[0].trim() : '📋';
                     const label = emojiMatch ? grp.name.slice(emojiMatch[0].length) : grp.name;
-                    const color = '#9b59b6';
+                    const color = categoryColorMap[grp.name] ?? '#9b59b6';
                     return (
                       <div
                         key={grp.name}
@@ -1272,7 +1273,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         <span style={{
                           fontWeight: 800,
                           fontSize: '15px',
-                          color: '#9b59b6',
+                          color: selectedCustomCategoryName ? (categoryColorMap[selectedCustomCategoryName] ?? '#9b59b6') : '#9b59b6',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
