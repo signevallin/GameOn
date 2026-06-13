@@ -1273,7 +1273,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                       </>
                     ) : (
                       <>
-                        <span style={{ fontSize: '16px', flexShrink: 0 }}>⭐</span>
                         <span style={{
                           fontWeight: 800,
                           fontSize: '15px',
