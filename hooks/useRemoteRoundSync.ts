@@ -23,6 +23,8 @@ export function useRemoteRoundSync({
   const callbackRef = useRef(onRemoteAdvance);
   callbackRef.current = onRemoteAdvance;
 
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
   useEffect(() => {
     if (!enabled) return;
     const channel = supabase
@@ -31,15 +33,17 @@ export function useRemoteRoundSync({
         callbackRef.current(payload.idx as number);
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    channelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
   }, [enabled, teamId, missionId]);
 
   const broadcastRound = useCallback((idx: number) => {
-    if (!enabled) return;
-    supabase
-      .channel(`round-sync-${teamId}-${missionId}`)
-      .send({ type: 'broadcast', event: 'round', payload: { idx } });
-  }, [enabled, teamId, missionId]);
+    if (!enabled || !channelRef.current) return;
+    channelRef.current.send({ type: 'broadcast', event: 'round', payload: { idx } });
+  }, [enabled]);
 
   return { broadcastRound };
 }
