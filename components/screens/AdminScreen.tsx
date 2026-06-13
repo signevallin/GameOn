@@ -1027,7 +1027,7 @@ export default function AdminScreen({ onLogout }: Props) {
   async function completeOnboarding(navigateToCreate = false) {
     setShowOnboarding(false);
     setOnboardingStep(0);
-    await fetch('/api/admin/onboarding/complete', {
+    await fetch('/api/admin/onboarding', {
       method: 'POST',
       headers: { Authorization: `Bearer ${authTokenRef.current}` },
     }).catch(() => {});
