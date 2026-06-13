@@ -961,6 +961,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
   const [missionFilterCategory, setMissionFilterCategory] = useState<string | null>(null);
   const [missionFilterType, setMissionFilterType] = useState<string | null>(null);
+  const [draggingMissionId, setDraggingMissionId] = useState<string | null>(null);
+  const [dropTargetCatId, setDropTargetCatId] = useState<string | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
@@ -3106,6 +3108,21 @@ export default function AdminScreen({ onLogout }: Props) {
       loadAdminCustomMissions();
     }
 
+    async function moveMissionToCategory(missionId: string, categoryId: string | null) {
+      // Optimistic update
+      setAdminCustomMissions(prev =>
+        prev.map(m => m.id === missionId ? { ...m, category_id: categoryId } : m)
+      );
+      await fetch(`/api/admin/custom-missions/${missionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ category_id: categoryId }),
+      });
+    }
+
     const setF = (patch: Partial<MissionFormData>) => setMissionForm(prev => ({ ...prev, ...patch }));
     const inputStyle = { width: '100%', padding: '8px 12px', fontSize: '13px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontFamily: "'Sora', sans-serif" };
     const labelStyle = { fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--muted)', display: 'block', marginBottom: '4px' };
@@ -3242,7 +3259,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   </div>
           </div>
 
-          {/* Mission filters */}
+          {/* Mission filters / drag-and-drop targets */}
           {adminCustomMissions.length > 0 && (() => {
             const usedTypes = [...new Set(adminCustomMissions.map(m => m.type))].sort();
             const usedCatIds = [...new Set(adminCustomMissions.map(m => m.category_id).filter(Boolean))];
@@ -3254,6 +3271,67 @@ export default function AdminScreen({ onLogout }: Props) {
               color: active ? 'var(--accent)' : 'var(--muted)',
               fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
             });
+            const dropZoneStyle = (hovered: boolean): React.CSSProperties => ({
+              padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+              border: `2px dashed ${hovered ? 'var(--accent)' : 'rgba(124,189,212,0.35)'}`,
+              background: hovered ? 'rgba(124,189,212,0.18)' : 'rgba(124,189,212,0.05)',
+              color: hovered ? 'var(--accent)' : 'rgba(124,189,212,0.7)',
+              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
+              cursor: 'copy', transition: 'all .12s',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            });
+            const noneZoneStyle = (hovered: boolean): React.CSSProperties => ({
+              padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+              border: `2px dashed ${hovered ? 'var(--muted)' : 'rgba(128,128,128,0.3)'}`,
+              background: hovered ? 'rgba(128,128,128,0.12)' : 'transparent',
+              color: hovered ? 'var(--text)' : 'var(--muted)',
+              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
+              cursor: 'copy', transition: 'all .12s',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            });
+
+            if (draggingMissionId) {
+              // DnD mode: show all categories as drop zones (all categories, not just used ones)
+              const draggedMission = adminCustomMissions.find(m => m.id === draggingMissionId);
+              const hasCat = !!draggedMission?.category_id;
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600, letterSpacing: '.05em', marginRight: '2px' }}>DROP TO:</span>
+                  {adminCategories.map(cat => (
+                    <div
+                      key={cat.id}
+                      style={dropZoneStyle(dropTargetCatId === cat.id)}
+                      onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
+                      onDragLeave={() => setDropTargetCatId(null)}
+                      onDrop={e => {
+                        e.preventDefault();
+                        moveMissionToCategory(draggingMissionId, cat.id);
+                        setDraggingMissionId(null);
+                        setDropTargetCatId(null);
+                      }}
+                    >
+                      {cat.emoji} {cat.name}
+                    </div>
+                  ))}
+                  {hasCat && (
+                    <div
+                      style={noneZoneStyle(dropTargetCatId === 'none')}
+                      onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
+                      onDragLeave={() => setDropTargetCatId(null)}
+                      onDrop={e => {
+                        e.preventDefault();
+                        moveMissionToCategory(draggingMissionId, null);
+                        setDraggingMissionId(null);
+                        setDropTargetCatId(null);
+                      }}
+                    >
+                      ✕ Remove from category
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (usedCats.length > 0 || usedTypes.length > 1) ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
                 {usedCats.length > 0 && (<>
@@ -3287,7 +3365,19 @@ export default function AdminScreen({ onLogout }: Props) {
             ).map(cm => {
               const cat = cm.category_id ? adminCategories.find(c => c.id === cm.category_id) : null;
               return (
-              <div key={cm.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                key={cm.id}
+                draggable={adminCategories.length > 0}
+                onDragStart={() => setDraggingMissionId(cm.id)}
+                onDragEnd={() => { setDraggingMissionId(null); setDropTargetCatId(null); }}
+                style={{
+                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  cursor: adminCategories.length > 0 ? 'grab' : 'default',
+                  opacity: draggingMissionId === cm.id ? 0.4 : 1,
+                  transition: 'opacity .1s',
+                }}
+              >
                 <span style={{ fontSize: '22px' }}>{cm.icon}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '14px' }}>{cm.name}</div>
