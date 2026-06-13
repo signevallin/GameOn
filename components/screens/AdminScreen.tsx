@@ -1642,7 +1642,7 @@ export default function AdminScreen({ onLogout }: Props) {
         const res = await fetch('/api/admin/custom-missions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ name: nm.title, type: nm.type, max_pts: nm.points, desc: nm.description, icon: '⭐', difficulty: 'medium', data: {} }),
+          body: JSON.stringify({ name: nm.title, type: nm.type, max_pts: nm.points, desc: nm.description, icon: nm.icon || '⭐', difficulty: 'medium', data: {} }),
         });
         if (!res.ok) throw new Error('Failed to create mission');
         const { mission } = await res.json();

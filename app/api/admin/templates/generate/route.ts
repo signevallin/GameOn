@@ -31,6 +31,7 @@ function parseJSON(text: string): Record<string, unknown> | null {
 
 export interface GeneratedMission {
   title: string;
+  icon: string;
   type: string;
   points: number;
   description: string;
@@ -97,6 +98,7 @@ Schema:
   "newMissions": [
     {
       "title": "Mission title (max 40 chars)",
+      "icon": "Single relevant emoji for this specific mission",
       "type": "photo",
       "points": 300,
       "description": "One sentence: what teams must do"
