@@ -771,6 +771,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
 
   // Load auth token on mount and subscribe to changes
   useEffect(() => {
@@ -785,6 +787,10 @@ export default function AdminScreen({ onLogout }: Props) {
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
         loadAdminCustomMissions();
+        fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(d => { if (!d.onboarded_at) setShowOnboarding(true); })
+          .catch(() => {});
       }
     });
     // Use getUser() for fresh server-side data (not cached JWT)
