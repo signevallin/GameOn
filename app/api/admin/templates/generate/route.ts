@@ -97,7 +97,7 @@ Schema:
   "newMissions": [
     {
       "title": "Mission title (max 40 chars)",
-      "type": "photo | trivia_quiz | truefalse | closest_wins | timeline | pa_sparet",
+      "type": "photo",
       "points": 300,
       "description": "One sentence: what teams must do"
     }
@@ -107,6 +107,7 @@ Schema:
 Rules:
 - Select 6-12 missions from the pool that best fit the event. Prefer existing missions when they fit.
 - Only add newMissions when the pool lacks enough suitable missions for the theme (target: at least 3 new if theme is very specific).
+- newMissions MUST always use type "photo" — no other types are supported for new missions.
 - newMissions.points: 200-600 depending on difficulty.
 - Set activeFrom/activeTo only for clearly seasonal events (Halloween, Christmas, summer, etc.).
 - Return ONLY the JSON object.`;
@@ -146,6 +147,11 @@ Rules:
     if (filtered > 0) {
       console.warn(`[templates/generate] Filtered ${filtered} hallucinated mission IDs`);
     }
+  }
+
+  // Force all new missions to type "photo" — other types require structured data we can't generate
+  if (Array.isArray(parsed.newMissions)) {
+    parsed.newMissions = (parsed.newMissions as GeneratedMission[]).map(m => ({ ...m, type: 'photo' }));
   }
 
   return NextResponse.json(parsed as unknown as GeneratedTemplate);
