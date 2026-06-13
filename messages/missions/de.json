@@ -250,5 +250,37 @@
   "secret_code": {
     "name": "Der verlorene Code",
     "desc": "Jede Person hat eine Ziffer des PIN-Codes — rekonstruiert ihn zusammen!"
+  },
+  "relay_geo": {
+    "name": "Geographie-Quiz",
+    "desc": "Beantwortet abwechselnd Geographiefragen im Videoanruf!"
+  },
+  "relay_movies": {
+    "name": "Film-Quiz",
+    "desc": "Klappe, Action, Trivia! Beantwortet abwechselnd Filmfragen."
+  },
+  "relay_science": {
+    "name": "Wissenschafts-Quiz",
+    "desc": "Wie gut kennt euer Team die Wissenschaft? Findet es gemeinsam heraus!"
+  },
+  "relay_story": {
+    "name": "Geschichte bauen",
+    "desc": "Baut gemeinsam eine verrückte Geschichte — ein Satz pro Person!"
+  },
+  "secret_einstein": {
+    "name": "Berühmter Wissenschaftler",
+    "desc": "Jeder hat einen Hinweis zum selben Wissenschaftler — wer ist es?"
+  },
+  "secret_animal": {
+    "name": "Rätsel-Tier",
+    "desc": "Jeder hat einen Hinweis zum selben Tier — welches ist es?"
+  },
+  "secret_titanic": {
+    "name": "Film erraten",
+    "desc": "Jeder Hinweis beschreibt denselben berühmten Film — nennt ihn!"
+  },
+  "secret_venice": {
+    "name": "Rätsel-Stadt",
+    "desc": "Setzt die Hinweise zusammen und nennt die mysteriöse Stadt!"
   }
 }

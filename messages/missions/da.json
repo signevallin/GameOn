@@ -250,5 +250,37 @@
   "secret_code": {
     "name": "Den tabte kode",
     "desc": "Hver person har et ciffer i PIN-koden — rekonstruer den sammen!"
+  },
+  "relay_geo": {
+    "name": "Geografiquiz",
+    "desc": "Besvar geografispørgsmål på skift i videoopkaldet!"
+  },
+  "relay_movies": {
+    "name": "Filmquiz",
+    "desc": "Lys, kamera, trivia! Besvar filmspørgsmål på skift."
+  },
+  "relay_science": {
+    "name": "Naturvidenskabsquiz",
+    "desc": "Hvor godt kender dit team naturvidenskab? Find ud af det sammen!"
+  },
+  "relay_story": {
+    "name": "Historiebygger",
+    "desc": "Byg en skør historie sammen — én sætning per person!"
+  },
+  "secret_einstein": {
+    "name": "Berømt videnskabsmand",
+    "desc": "Alle har et fingerpeg om den samme berømte videnskabsmand — hvem er det?"
+  },
+  "secret_animal": {
+    "name": "Mystisk dyr",
+    "desc": "Alle har et fingerpeg om det samme dyr — hvilket er det?"
+  },
+  "secret_titanic": {
+    "name": "Gæt filmen",
+    "desc": "Hvert fingerpeg beskriver den samme berømte film — navngiv den!"
+  },
+  "secret_venice": {
+    "name": "Mystisk by",
+    "desc": "Sæt fingerpegende sammen og navngiv den mystiske by!"
   }
 }

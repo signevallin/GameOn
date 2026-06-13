@@ -250,5 +250,37 @@
   "secret_code": {
     "name": "Den försvunna koden",
     "desc": "Varje person har en siffra i PIN-koden — rekonstruera den tillsammans!"
+  },
+  "relay_geo": {
+    "name": "Geografiquiz",
+    "desc": "Svara på geografifrågor i tur och ordning på videosamtalet!"
+  },
+  "relay_movies": {
+    "name": "Filmquiz",
+    "desc": "Ljus, kamera, trivia! Ta tur med att svara på filmfrågor."
+  },
+  "relay_science": {
+    "name": "Naturvetenskapquiz",
+    "desc": "Hur väl kan ditt lag naturvetenskap? Ta reda på det tillsammans!"
+  },
+  "relay_story": {
+    "name": "Berättelsebygget",
+    "desc": "Bygg en galen berättelse tillsammans — en mening per person!"
+  },
+  "secret_einstein": {
+    "name": "Berömd vetenskapsman",
+    "desc": "Var och en har en ledtråd om samma berömd vetenskapsman — vem är det?"
+  },
+  "secret_animal": {
+    "name": "Hemligt djur",
+    "desc": "Var och en har en ledtråd om samma djur — vilket är det?"
+  },
+  "secret_titanic": {
+    "name": "Gissa filmen",
+    "desc": "Varje ledtråd beskriver samma berömda film — namnge den!"
+  },
+  "secret_venice": {
+    "name": "Mystisk stad",
+    "desc": "Pussla ihop ledtrådarna och namnge den mystiska staden!"
   }
 }

@@ -250,5 +250,37 @@
   "secret_code": {
     "name": "The Lost Code",
     "desc": "Each person has a digit of the PIN code — reconstruct it together!"
+  },
+  "relay_geo": {
+    "name": "Geography Quiz",
+    "desc": "Take turns answering geography questions on the video call!"
+  },
+  "relay_movies": {
+    "name": "Movie Quiz",
+    "desc": "Lights, camera, trivia! Take turns answering movie questions."
+  },
+  "relay_science": {
+    "name": "Science Quiz",
+    "desc": "How well does your team know science? Find out together!"
+  },
+  "relay_story": {
+    "name": "Story Builder",
+    "desc": "Build a crazy story together — one sentence per person!"
+  },
+  "secret_einstein": {
+    "name": "Famous Scientist",
+    "desc": "Each person has a clue about the same famous scientist — figure out who it is!"
+  },
+  "secret_animal": {
+    "name": "Mystery Animal",
+    "desc": "Everyone has a clue about the same animal — what is it?"
+  },
+  "secret_titanic": {
+    "name": "Guess the Movie",
+    "desc": "Each clue describes the same famous film — name it!"
+  },
+  "secret_venice": {
+    "name": "Mystery City",
+    "desc": "Piece together the clues and name the mystery city!"
   }
 }
