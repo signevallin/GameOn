@@ -21,8 +21,12 @@ function adminClient() {
 }
 
 function parseJSON(text: string): Record<string, unknown> | null {
-  const stripped = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-  try { return JSON.parse(stripped); } catch { return null; }
+  // Try direct parse first
+  try { return JSON.parse(text.trim()); } catch { /* fall through */ }
+  // Extract first {...} block (handles preamble text and markdown fences)
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try { return JSON.parse(match[0]); } catch { return null; }
 }
 
 export interface GeneratedMission {
@@ -113,7 +117,7 @@ Rules:
   try {
     const response = await getClient().messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2000,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     });
@@ -129,6 +133,19 @@ Rules:
   if (!parsed) {
     console.error('[templates/generate] Failed to parse JSON:', raw.slice(0, 200));
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+  }
+
+  // Build set of all known IDs so we can filter hallucinated ones
+  const knownIds = new Set([...builtinPool, ...customPool].map(m => m.id));
+  if (Array.isArray(parsed.selectedMissionIds)) {
+    const before = (parsed.selectedMissionIds as string[]).length;
+    parsed.selectedMissionIds = (parsed.selectedMissionIds as string[]).filter(
+      (id): id is string => typeof id === 'string' && knownIds.has(id)
+    );
+    const filtered = before - (parsed.selectedMissionIds as string[]).length;
+    if (filtered > 0) {
+      console.warn(`[templates/generate] Filtered ${filtered} hallucinated mission IDs`);
+    }
   }
 
   return NextResponse.json(parsed as unknown as GeneratedTemplate);
