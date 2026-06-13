@@ -1089,7 +1089,7 @@ export default function AdminScreen({ onLogout }: Props) {
     setMysteryBoxActive(sd.mystery_box ?? null);
   }, [POST]);
 
-  useEffect(() => { loadGames(); }, [loadGames]);
+  useEffect(() => { if (authToken) loadGames(); }, [loadGames, authToken]);
 
   useEffect(() => {
     if (view === 'my-analytics' && analyticsGames.length === 0) {
@@ -1098,11 +1098,12 @@ export default function AdminScreen({ onLogout }: Props) {
   }, [view, analyticsGames.length, loadAnalyticsGames]);
 
   useEffect(() => {
+    if (!authToken) return;
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch('/api/admin/played-missions', {
-          headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+          headers: { 'Authorization': `Bearer ${authToken}` },
           cache: 'no-store',
         });
         if (!res.ok) return;
