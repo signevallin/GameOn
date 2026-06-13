@@ -659,6 +659,9 @@ export default function AdminScreen({ onLogout }: Props) {
   );
   const [hideLeaderboard, setHideLeaderboard] = useState(false);
   const [remoteMode, setRemoteMode] = useState(false);
+  const [brandLogoUrl, setBrandLogoUrl] = useState('');
+  const [brandPrimaryColor, setBrandPrimaryColor] = useState('');
+  const [brandName, setBrandName] = useState('');
   const [gameLanguage, setGameLanguage] = useState('en');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
@@ -884,7 +887,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode, brand_logo_url: brandLogoUrl || null, brand_primary_color: brandPrimaryColor || null, brand_name: brandName || null }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -3436,6 +3439,67 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
               <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: remoteMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
                 <div style={{ position: 'absolute', top: '2px', left: remoteMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Branding ─────────────────────────────────────────────── */}
+        <div style={{ marginBottom: '24px', padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+          <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '4px' }}>🎨 White-label Branding <span style={{ fontWeight: 400, fontSize: '11px', color: 'var(--muted)' }}>(optional)</span></div>
+          <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '14px' }}>Add your company logo, brand color and name to the player view.</div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Brand name */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Brand name</label>
+              <input
+                className="form-input"
+                placeholder="Acme Corp"
+                value={brandName}
+                onChange={e => setBrandName(e.target.value)}
+                style={{ fontSize: '13px' }}
+              />
+            </div>
+
+            {/* Logo URL */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Logo URL <span style={{ color: 'var(--muted)' }}>(PNG/SVG, transparent background recommended)</span></label>
+              <input
+                className="form-input"
+                placeholder="https://example.com/logo.png"
+                value={brandLogoUrl}
+                onChange={e => setBrandLogoUrl(e.target.value)}
+                style={{ fontSize: '13px' }}
+              />
+              {brandLogoUrl && (
+                <div style={{ marginTop: '8px', padding: '10px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src={brandLogoUrl} alt="Logo preview" style={{ height: '36px', maxWidth: '120px', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Preview</span>
+                </div>
+              )}
+            </div>
+
+            {/* Primary color */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Primary color</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="color"
+                  value={brandPrimaryColor || '#6c63ff'}
+                  onChange={e => setBrandPrimaryColor(e.target.value)}
+                  style={{ width: '44px', height: '36px', padding: '2px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--card)', cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'monospace' }}>{brandPrimaryColor || '#6c63ff'}</span>
+                {brandPrimaryColor && (
+                  <button
+                    className="btn btn-ghost"
+                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                    onClick={() => setBrandPrimaryColor('')}
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
           </div>

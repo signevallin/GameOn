@@ -44,7 +44,7 @@ export async function GET(
   // 1. Fetch game + verify ownership
   const { data: game, error: gameErr } = await supabase
     .from('games')
-    .select('id, name, started_at, duration_minutes, user_id, status')
+    .select('id, name, started_at, duration_minutes, user_id, status, brand_logo_url, brand_name')
     .eq('id', params.id)
     .single();
 
@@ -142,12 +142,20 @@ export async function GET(
     }
   }
 
+  // 6c. Fetch brand logo as base64 if present
+  let brandLogoBase64: string | null = null;
+  if (game.brand_logo_url) {
+    brandLogoBase64 = await toBase64(game.brand_logo_url).catch(() => null);
+  }
+
   // 7. Render PDF
   const data: ReportData = {
     game: {
       name: game.name,
       started_at: game.started_at ?? new Date().toISOString(),
       duration_minutes: game.duration_minutes,
+      brand_name: game.brand_name ?? null,
+      brand_logo_base64: brandLogoBase64,
     },
     teams,
     photos: reportPhotos,

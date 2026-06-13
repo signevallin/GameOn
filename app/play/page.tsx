@@ -211,6 +211,19 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, team?.id, !!game?.remote_mode]);
 
+  // ── Inject brand primary color as CSS variable ──
+  useEffect(() => {
+    const color = game?.brand_primary_color;
+    if (color) {
+      document.documentElement.style.setProperty('--accent', color);
+    } else {
+      document.documentElement.style.removeProperty('--accent');
+    }
+    return () => {
+      document.documentElement.style.removeProperty('--accent');
+    };
+  }, [game?.brand_primary_color]);
+
   // ── Read intent from query params on first mount ──
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

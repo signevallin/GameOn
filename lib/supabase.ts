@@ -63,6 +63,9 @@ export type Game = {
   remote_mode?: boolean;
   teams_count?: number;
   deleted_at?: string | null;
+  brand_logo_url?: string | null;
+  brand_primary_color?: string | null;
+  brand_name?: string | null;
 };
 
 export type CustomMission = {

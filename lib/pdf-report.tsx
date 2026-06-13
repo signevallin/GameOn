@@ -51,6 +51,8 @@ export type ReportData = {
     name: string;
     started_at: string;
     duration_minutes: number;
+    brand_name?: string | null;
+    brand_logo_base64?: string | null;
   };
   teams: ReportTeam[];   // sorted by score desc
   photos: ReportPhoto[];
@@ -141,6 +143,14 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
           <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
         </View>
 
+        {/* Brand logo */}
+        {game.brand_logo_base64 && (
+          <Image
+            src={game.brand_logo_base64}
+            style={{ height: 48, marginBottom: 16, objectFit: 'contain' }}
+          />
+        )}
+
         {/* Game name */}
         <Text style={{
           fontSize: 30,
@@ -160,6 +170,11 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
           paddingHorizontal: 32,
           alignItems: 'center',
         }}>
+          {game.brand_name && (
+            <Text style={{ color: C.accent, fontSize: 11, fontFamily: 'Helvetica-Bold', marginBottom: 8, letterSpacing: 1 }}>
+              {game.brand_name.toUpperCase()}
+            </Text>
+          )}
           <Text style={{ color: C.muted, fontSize: 12, marginBottom: 5 }}>
             {formatDate(game.started_at)}
           </Text>

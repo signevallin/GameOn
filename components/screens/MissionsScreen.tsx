@@ -904,6 +904,32 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
       </nav>
 
+      {/* ── Brand logo strip ── */}
+      {(game.brand_logo_url || game.brand_name) && (
+        <div style={{
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          padding: '8px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+        }}>
+          {game.brand_logo_url && (
+            <img
+              src={game.brand_logo_url}
+              alt={game.brand_name ?? 'Brand logo'}
+              style={{ height: '24px', maxWidth: '100px', objectFit: 'contain' }}
+            />
+          )}
+          {game.brand_name && (
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.5px' }}>
+              {game.brand_name}
+            </span>
+          )}
+        </div>
+      )}
+
       {game.remote_mode && showMembers && members.length > 0 && (
         <div style={{
           background: 'var(--surface)',
