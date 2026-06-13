@@ -511,6 +511,177 @@ function MissionProgressTable({ missions, sorted, accentColor }: {
   );
 }
 
+const ONBOARDING_STEPS = [
+  {
+    icon: '🎮',
+    title: 'Welcome to GameOn',
+    subtitle: 'Create and run live scavenger hunts & team games in minutes. Here\'s how it works:',
+    bullets: [
+      'Pick missions from the library or create your own',
+      'Share the game code — teams join on their phones',
+      'Watch scores update live and control the game from here',
+    ],
+  },
+  {
+    icon: '🗺️',
+    title: 'Create your first game',
+    subtitle: 'Tap + New Game to pick a template, choose missions, and set a time limit. It takes less than 2 minutes.',
+    bullets: [
+      'Start from a template or build from scratch',
+      'Mix standard missions with your own custom ones',
+      'Add custom branding for your organisation',
+    ],
+  },
+  {
+    icon: '🚀',
+    title: "You're ready to play",
+    subtitle: 'Share the 4-letter game code with your teams. Once everyone\'s joined, hit Start Game from the dashboard.',
+    bullets: [
+      'Teams join at playgameon.app — no app download needed',
+      'Live leaderboard updates as missions are completed',
+      'Rate photo submissions manually or let AI do it automatically',
+    ],
+  },
+];
+
+function OnboardingModal({
+  step,
+  onNext,
+  onBack,
+  onSkip,
+  onFinish,
+}: {
+  step: number;
+  onNext: () => void;
+  onBack: () => void;
+  onSkip: () => void;
+  onFinish: () => void;
+}) {
+  const s = ONBOARDING_STEPS[step];
+  const isLast = step === ONBOARDING_STEPS.length - 1;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(10,14,25,0.75)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'var(--card)',
+        border: '1px solid var(--border)',
+        borderRadius: '14px',
+        width: '100%', maxWidth: '440px',
+        position: 'relative',
+        overflow: 'hidden',
+        fontFamily: "'Sora', sans-serif",
+      }}>
+        {/* Top accent bar */}
+        <div style={{
+          height: '3px',
+          background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))',
+        }} />
+
+        <div style={{ padding: '28px 28px 24px' }}>
+          {/* Close button */}
+          <button
+            onClick={onSkip}
+            style={{
+              position: 'absolute', top: '14px', right: '14px',
+              background: 'transparent', border: 'none',
+              color: 'var(--muted)', fontSize: '18px', cursor: 'pointer',
+              lineHeight: 1, padding: '4px',
+            }}
+            aria-label="Close"
+          >✕</button>
+
+          {/* Progress bars */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
+            {ONBOARDING_STEPS.map((_, i) => (
+              <div key={i} style={{
+                height: '4px', flex: 1, borderRadius: '2px',
+                background: i < step
+                  ? 'rgba(117,171,200,0.45)'
+                  : i === step
+                    ? 'var(--accent)'
+                    : 'var(--border)',
+              }} />
+            ))}
+          </div>
+
+          {/* Step icon */}
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '14px',
+            background: 'var(--accent-dim)',
+            border: '1px solid var(--accent-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '24px', marginBottom: '16px',
+          }}>
+            {s.icon}
+          </div>
+
+          {/* Title */}
+          <h2 style={{
+            fontSize: '18px', fontWeight: 700, color: 'var(--text)',
+            marginBottom: '8px', lineHeight: 1.3,
+          }}>
+            {s.title}
+          </h2>
+
+          {/* Subtitle */}
+          <p style={{
+            fontSize: '13px', color: 'var(--muted)',
+            lineHeight: 1.6, marginBottom: '20px',
+          }}>
+            {s.subtitle}
+          </p>
+
+          {/* Bullets */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+            {s.bullets.map((b, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text)' }}>
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                  background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
+                  color: 'var(--accent)', fontSize: '11px', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginTop: '1px',
+                }}>
+                  {i + 1}
+                </div>
+                <span>{b}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {isLast ? (
+              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}>← Back</button>
+            ) : step === 0 ? (
+              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onSkip}>Skip tour</button>
+            ) : (
+              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}>← Back</button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
+              {isLast ? (
+                <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onFinish}>
+                  Create my first game 🎉
+                </button>
+              ) : (
+                <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onNext}>
+                  {step === 0 ? 'Get started →' : 'Next →'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── BrandingView ──────────────────────────────────────────────────────────
 function BrandingView({ authToken, onBack, profileMenu }: {
   authToken: string | null;
@@ -828,6 +999,15 @@ export default function AdminScreen({ onLogout }: Props) {
   // Polls that started BEFORE a command are discarded to prevent race conditions.
   const lastCommandAtRef = useRef(0);
   const aiAbortRef = useRef<AbortController | null>(null);
+
+  async function completeOnboarding(navigateToCreate = false) {
+    setShowOnboarding(false);
+    await fetch('/api/admin/onboarding/complete', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${authToken}` },
+    }).catch(() => {});
+    if (navigateToCreate) { loadTemplates(); setView('templates'); }
+  }
 
   const POST = useCallback((url: string, body?: object) => fetch(url, {
     method: 'POST',
@@ -2255,6 +2435,15 @@ export default function AdminScreen({ onLogout }: Props) {
   // ── GAMES LIST ──
   if (view === 'games') return (
     <>
+      {showOnboarding && (
+        <OnboardingModal
+          step={onboardingStep}
+          onNext={() => setOnboardingStep(s => s + 1)}
+          onBack={() => setOnboardingStep(s => s - 1)}
+          onSkip={() => completeOnboarding(false)}
+          onFinish={() => completeOnboarding(true)}
+        />
+      )}
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
