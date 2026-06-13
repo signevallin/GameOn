@@ -11,6 +11,33 @@ function getSupabase() {
   );
 }
 
+export async function DELETE(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const teamId = searchParams.get('teamId');
+  const missionId = searchParams.get('missionId');
+
+  if (!teamId || !missionId) {
+    return NextResponse.json({ error: 'Missing teamId or missionId.' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+  const { data: team, error: fetchErr } = await supabase
+    .from('teams')
+    .select('relay_state')
+    .eq('id', teamId)
+    .single();
+
+  if (fetchErr || !team) return NextResponse.json({ ok: true });
+
+  const existing = (team.relay_state as Record<string, unknown> | null) ?? {};
+  const updated = { ...existing };
+  delete updated[missionId];
+
+  await supabase.from('teams').update({ relay_state: updated }).eq('id', teamId);
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const teamId = searchParams.get('teamId');

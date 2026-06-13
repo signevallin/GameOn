@@ -71,15 +71,22 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
 
   const isWaiting = !isMyTurn && !relayDone;
 
-  // Fetch current relay state from DB on mount (handles late-join / page-refresh scenarios)
+  // Fetch current relay state from DB on mount (handles late-join / page-refresh scenarios).
+  // Only restore if the relay is still in progress — a completed relay clears itself so the
+  // next play of the same mission always starts fresh.
   useEffect(() => {
     fetch(`/api/team/relay?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(mission.id)}`, {
       cache: 'no-store',
     })
       .then(r => r.json())
-      .then(data => { if (data.relayState) setRelayState(data.relayState as RelayMissionState); })
+      .then(data => {
+        const rs = data.relayState as RelayMissionState | null;
+        if (rs && rs.activeIndex < segments.length) {
+          setRelayState(rs);
+        }
+      })
       .catch(() => {});
-  }, [team.id, mission.id]);
+  }, [team.id, mission.id, segments.length]);
 
   // Fetch team members ordered by join time (via server route — bypasses RLS on team_members)
   useEffect(() => {
@@ -195,6 +202,10 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         const totalElapsedSeconds = (lastMs - startMs) / 1000;
         const decayPerSecond = effectiveMaxPts / (game.duration_minutes * 60);
         const pts = Math.max(0, effectiveMaxPts - Math.floor(totalElapsedSeconds * decayPerSecond));
+        // Clear DB state so a replay of this mission always starts fresh
+        fetch(`/api/team/relay?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(mission.id)}`, {
+          method: 'DELETE',
+        }).catch(() => {});
         onFinish(true, pts);
       }
     } catch {
