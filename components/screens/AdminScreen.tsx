@@ -923,6 +923,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [aiRatingInstructions, setAiRatingInstructions] = useState('');
   const [overridingPhotoId, setOverridingPhotoId] = useState<string | null>(null);
   const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
+  const [stripeManaged, setStripeManaged] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -987,7 +988,7 @@ export default function AdminScreen({ onLogout }: Props) {
         fetch('/api/admin/subscription', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
+        }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); if (d.stripe_managed) setStripeManaged(true); }).catch(() => {});
         loadAdminCustomMissions();
         // Check onboarding: skip if already dismissed locally (guards against stale-token 401 responses)
         if (!localStorage.getItem('gameon_onboarded')) {
@@ -1964,7 +1965,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <span style={{ fontSize: '16px' }}>⚡</span>
                     <span>{upgradeLoading ? 'Loading...' : 'Upgrade to Pro'}</span>
                   </button>
-                ) : (
+                ) : stripeManaged ? (
                   <button
                     onClick={() => { setShowProfile(false); handlePortal(); }}
                     style={{
@@ -1982,7 +1983,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <span style={{ fontSize: '16px' }}>💳</span>
                     <span>{portalLoading ? 'Loading...' : 'Manage subscription'}</span>
                   </button>
-                )}
+                ) : null}
 
                 <div style={{ height: '1px', background: 'var(--border)', margin: '8px 4px' }} />
 

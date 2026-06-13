@@ -13,5 +13,6 @@ export async function POST(req: Request) {
     plan: sub.plan,
     status: sub.status,
     current_period_end: sub.current_period_end,
+    stripe_managed: typeof sub.stripe_customer_id === 'string' && sub.stripe_customer_id.startsWith('cus_'),
   });
 }
