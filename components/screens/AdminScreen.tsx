@@ -989,10 +989,19 @@ export default function AdminScreen({ onLogout }: Props) {
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); }).catch(() => {});
         loadAdminCustomMissions();
-        fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${token}` } })
-          .then(r => r.json())
-          .then(d => { if (!d.onboarded_at) setShowOnboarding(true); })
-          .catch(() => {});
+        // Check onboarding: skip if already dismissed locally (guards against stale-token 401 responses)
+        if (!localStorage.getItem('gameon_onboarded')) {
+          fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+              if (d?.onboarded_at) {
+                localStorage.setItem('gameon_onboarded', '1');
+              } else if (d !== null) {
+                setShowOnboarding(true);
+              }
+            })
+            .catch(() => {});
+        }
       }
     });
     // Use getUser() for fresh server-side data (not cached JWT)
@@ -1032,6 +1041,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const aiAbortRef = useRef<AbortController | null>(null);
 
   async function completeOnboarding(navigateToCreate = false) {
+    localStorage.setItem('gameon_onboarded', '1');
     setShowOnboarding(false);
     setOnboardingStep(0);
     await fetch('/api/admin/onboarding', {
@@ -3297,8 +3307,7 @@ export default function AdminScreen({ onLogout }: Props) {
           {/* Mission filters / drag-and-drop targets */}
           {adminCustomMissions.length > 0 && (() => {
             const usedTypes = [...new Set(adminCustomMissions.map(m => m.type))].sort();
-            const usedCatIds = [...new Set(adminCustomMissions.map(m => m.category_id).filter(Boolean))];
-            const usedCats = adminCategories.filter(c => usedCatIds.includes(c.id));
+            const usedCats = adminCategories; // show all categories, not just those with missions
             const chipStyle = (active: boolean): React.CSSProperties => ({
               padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', border: '1px solid',
               borderColor: active ? 'var(--accent)' : 'var(--border)',
