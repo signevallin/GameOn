@@ -892,6 +892,17 @@ export default function AdminScreen({ onLogout }: Props) {
   const [newTemplateMissions, setNewTemplateMissions] = useState<string[]>([]);
   const [showNewTemplateForm, setShowNewTemplateForm] = useState(false);
   const [manageTemplatesLoading, setManageTemplatesLoading] = useState(false);
+  // New template form — extra fields
+  const [newTemplateDesc, setNewTemplateDesc] = useState('');
+  const [newTemplateActiveFrom, setNewTemplateActiveFrom] = useState('');
+  const [newTemplateActiveTo, setNewTemplateActiveTo] = useState('');
+  const [newTemplateDescLoading, setNewTemplateDescLoading] = useState(false);
+
+  // Edit template form — extra fields
+  const [editTemplateDesc, setEditTemplateDesc] = useState('');
+  const [editTemplateActiveFrom, setEditTemplateActiveFrom] = useState('');
+  const [editTemplateActiveTo, setEditTemplateActiveTo] = useState('');
+  const [editTemplateDescLoading, setEditTemplateDescLoading] = useState(false);
   // AI photo rating
   const [aiPhotoRating, setAiPhotoRating] = useState(false);
   const [aiPhotoInstructions, setAiPhotoInstructions] = useState('');
@@ -1516,7 +1527,7 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
-  async function updateBuiltinTemplate(id: string, name: string, icon: string, missionIds: string[]) {
+  async function updateBuiltinTemplate(id: string, name: string, icon: string, missionIds: string[], description: string, activeFrom: string, activeTo: string) {
     setEditTemplateLoading(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
@@ -1526,7 +1537,12 @@ export default function AdminScreen({ onLogout }: Props) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ name, icon, missionIds }),
+        body: JSON.stringify({
+          name, icon, missionIds,
+          description: description || null,
+          activeFrom: activeFrom || null,
+          activeTo: activeTo || null,
+        }),
       });
       if (!res.ok) throw new Error('Failed to update template');
       const { template } = await res.json();
@@ -1555,7 +1571,31 @@ export default function AdminScreen({ onLogout }: Props) {
     showToast('Template deleted');
   }
 
-  async function createBuiltinTemplate(name: string, icon: string, missionIds: string[]) {
+  async function suggestTemplateDescription(
+    name: string,
+    missionIds: string[],
+    setter: (v: string) => void,
+    setLoading: (v: boolean) => void
+  ) {
+    setLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates/describe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ name, missionIds }),
+      });
+      const data = await res.json();
+      if (data.description) setter(data.description);
+      else showToast('Could not generate description', 'error');
+    } catch {
+      showToast('Could not generate description', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function createBuiltinTemplate(name: string, icon: string, missionIds: string[], description: string, activeFrom: string, activeTo: string) {
     setManageTemplatesLoading(true);
     try {
       const session = (await supabase.auth.getSession()).data.session;
@@ -1565,7 +1605,12 @@ export default function AdminScreen({ onLogout }: Props) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ name, icon, missionIds, isBuiltin: true }),
+        body: JSON.stringify({
+          name, icon, missionIds, isBuiltin: true,
+          description: description || null,
+          activeFrom: activeFrom || null,
+          activeTo: activeTo || null,
+        }),
       });
       if (!res.ok) throw new Error('Failed to create template');
       const { template } = await res.json();
@@ -1574,6 +1619,10 @@ export default function AdminScreen({ onLogout }: Props) {
       setNewTemplateName('');
       setNewTemplateIcon('🎮');
       setNewTemplateMissions([]);
+      setNewTemplateDesc('');
+      setNewTemplateActiveFrom('');
+      setNewTemplateActiveTo('');
+      showToast('Template created');
     } catch (err) {
       console.error('Failed to create template:', err);
       showToast('Failed to create template');
@@ -3505,16 +3554,62 @@ export default function AdminScreen({ onLogout }: Props) {
                 );
               })}
             </div>
+            {/* Description with AI suggest */}
+            <div style={{ marginTop: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700 }}>Description</span>
+                <button
+                  onClick={() => suggestTemplateDescription(newTemplateName, newTemplateMissions, setNewTemplateDesc, setNewTemplateDescLoading)}
+                  disabled={newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
+                  style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", opacity: (!newTemplateName.trim() || newTemplateMissions.length === 0) ? 0.5 : 1 }}
+                >
+                  {newTemplateDescLoading ? '...' : '✨ Suggest'}
+                </button>
+              </div>
+              <textarea
+                value={newTemplateDesc}
+                onChange={e => setNewTemplateDesc(e.target.value)}
+                placeholder="What's this template about?"
+                rows={3}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Seasonal date range */}
+            <div style={{ marginTop: 10, marginBottom: 14 }}>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700, marginBottom: 6 }}>Show only between (optional)</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>From</span>
+                <input
+                  type="text"
+                  value={newTemplateActiveFrom}
+                  onChange={e => setNewTemplateActiveFrom(e.target.value)}
+                  placeholder="MM-DD"
+                  maxLength={5}
+                  style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                />
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>To</span>
+                <input
+                  type="text"
+                  value={newTemplateActiveTo}
+                  onChange={e => setNewTemplateActiveTo(e.target.value)}
+                  placeholder="MM-DD"
+                  maxLength={5}
+                  style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                />
+              </div>
+            </div>
+
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                onClick={() => createBuiltinTemplate(newTemplateName, newTemplateIcon, newTemplateMissions)}
+                onClick={() => createBuiltinTemplate(newTemplateName, newTemplateIcon, newTemplateMissions, newTemplateDesc, newTemplateActiveFrom, newTemplateActiveTo)}
                 disabled={manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
                 style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
               >
                 {manageTemplatesLoading ? 'Saving...' : 'CREATE'}
               </button>
               <button
-                onClick={() => { setShowNewTemplateForm(false); setNewTemplateName(''); setNewTemplateIcon('🎮'); setNewTemplateMissions([]); }}
+                onClick={() => { setShowNewTemplateForm(false); setNewTemplateName(''); setNewTemplateIcon('🎮'); setNewTemplateMissions([]); setNewTemplateDesc(''); setNewTemplateActiveFrom(''); setNewTemplateActiveTo(''); }}
                 style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
               >
                 Cancel
@@ -3532,10 +3627,15 @@ export default function AdminScreen({ onLogout }: Props) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.missionIds.length} missions</div>
+                  {t.activeFrom && t.activeTo && (
+                    <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: 2 }}>
+                      🗓 {t.activeFrom} – {t.activeTo}
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button
-                    onClick={() => { setEditingTemplateId(t.id); setEditTemplateName(t.name); setEditTemplateIcon(t.icon); setEditTemplateMissions([...t.missionIds]); }}
+                    onClick={() => { setEditingTemplateId(t.id); setEditTemplateName(t.name); setEditTemplateIcon(t.icon); setEditTemplateMissions([...t.missionIds]); setEditTemplateDesc(t.description ?? ''); setEditTemplateActiveFrom(t.activeFrom ?? ''); setEditTemplateActiveTo(t.activeTo ?? ''); }}
                     style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
                   >
                     ✏️ Edit
@@ -3579,9 +3679,55 @@ export default function AdminScreen({ onLogout }: Props) {
                       );
                     })}
                   </div>
+                  {/* Description with AI suggest */}
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700 }}>Description</span>
+                      <button
+                        onClick={() => suggestTemplateDescription(editTemplateName, editTemplateMissions, setEditTemplateDesc, setEditTemplateDescLoading)}
+                        disabled={editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
+                        style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", opacity: (!editTemplateName.trim() || editTemplateMissions.length === 0) ? 0.5 : 1 }}
+                      >
+                        {editTemplateDescLoading ? '...' : '✨ Suggest'}
+                      </button>
+                    </div>
+                    <textarea
+                      value={editTemplateDesc}
+                      onChange={e => setEditTemplateDesc(e.target.value)}
+                      placeholder="What's this template about?"
+                      rows={3}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* Seasonal date range */}
+                  <div style={{ marginTop: 10, marginBottom: 14 }}>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700, marginBottom: 6 }}>Show only between (optional)</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>From</span>
+                      <input
+                        type="text"
+                        value={editTemplateActiveFrom}
+                        onChange={e => setEditTemplateActiveFrom(e.target.value)}
+                        placeholder="MM-DD"
+                        maxLength={5}
+                        style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>To</span>
+                      <input
+                        type="text"
+                        value={editTemplateActiveTo}
+                        onChange={e => setEditTemplateActiveTo(e.target.value)}
+                        placeholder="MM-DD"
+                        maxLength={5}
+                        style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                      />
+                    </div>
+                  </div>
+
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      onClick={() => updateBuiltinTemplate(t.id, editTemplateName, editTemplateIcon, editTemplateMissions)}
+                      onClick={() => updateBuiltinTemplate(t.id, editTemplateName, editTemplateIcon, editTemplateMissions, editTemplateDesc, editTemplateActiveFrom, editTemplateActiveTo)}
                       disabled={editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
                       style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
                     >
