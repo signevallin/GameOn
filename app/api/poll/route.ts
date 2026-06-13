@@ -32,6 +32,36 @@ async function getCachedTeams(supabase: ReturnType<typeof getSupabase>, gameId: 
   return teams;
 }
 
+// ── Server-side game cache ────────────────────────────────────────────────────
+// The game object rarely changes mid-session (only status transitions matter).
+// Cache for 4s — same window as the team list — so hundreds of players hitting
+// the same game only cost one DB read per 4s instead of one per poll per player.
+// When auto-finish fires we write the updated game back into the cache immediately
+// so subsequent requests within the same window see the finished state.
+const gameCache = new Map<string, { data: unknown; expiresAt: number }>();
+
+async function getCachedGame(supabase: ReturnType<typeof getSupabase>, gameKey: string) {
+  const key = gameKey.toUpperCase();
+  const cached = gameCache.get(key);
+  if (cached && Date.now() < cached.expiresAt) return { data: cached.data as ReturnType<typeof Object>, fromCache: true };
+
+  const { data: game, error } = await supabase
+    .from('games')
+    .select('*')
+    .eq('game_key', key)
+    .is('deleted_at', null)
+    .single();
+
+  if (error || !game) return { data: null, fromCache: false };
+
+  gameCache.set(key, { data: game, expiresAt: Date.now() + 4000 });
+  return { data: game, fromCache: false };
+}
+
+function updateGameCache(gameKey: string, game: unknown) {
+  gameCache.set(gameKey.toUpperCase(), { data: game, expiresAt: Date.now() + 4000 });
+}
+
 // ── Combined poll endpoint ────────────────────────────────────────────────────
 // Replaces 3 separate API calls (game + team/status + team/list) with one.
 // Reduces HTTP connections and DB load significantly at scale.
@@ -44,21 +74,22 @@ export async function POST(req: Request) {
 
   const supabase = getSupabase();
 
-  // Run game + team queries in parallel, team list from cache
-  const [gameRes, teamRes, teams] = await Promise.all([
-    supabase.from('games').select('*').eq('game_key', gameKey.toUpperCase()).is('deleted_at', null).single(),
+  // Run game (cached) + team queries in parallel, team list from cache
+  const [{ data: gameData }, teamRes, teams] = await Promise.all([
+    getCachedGame(supabase, gameKey),
     supabase.from('teams').select('*').eq('id', teamId).single(),
     getCachedTeams(supabase, gameId),
   ]);
 
-  if (gameRes.error || !gameRes.data) {
+  if (!gameData) {
     return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
   }
   if (teamRes.error || !teamRes.data) {
     return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
   }
 
-  let game = gameRes.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let game = gameData as any;
   const team = teamRes.data;
 
   // Auto-finish if timer has expired
@@ -71,7 +102,12 @@ export async function POST(req: Request) {
         .eq('id', game.id)
         .select()
         .single();
-      if (finished) game = finished;
+      if (finished) {
+        game = finished;
+        // Write finished state back to cache immediately so other pollers
+        // within the same 4s window see the updated status without a DB hit.
+        updateGameCache(gameKey, game);
+      }
     }
   }
 
