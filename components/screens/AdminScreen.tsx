@@ -15,7 +15,7 @@ import {
   LayoutGrid, MoreHorizontal, ArrowLeft, ChevronRight,
   Pencil, Settings2, Search, Wind, Flame,
   X, Trash2, Target, Monitor,
-  Key, CreditCard, CircleHelp,
+  Key, CreditCard, CircleHelp, Palette, Bomb,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -297,7 +297,7 @@ function PowerUpsCard({
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '20px' }}>💣</span>
+          <Ic><Bomb size={20} /></Ic>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Time Bomb</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 500 pts</div>
@@ -346,7 +346,7 @@ function PowerUpsCard({
               disabled={!hotPotatoMissionId || hotPotatoLoading}
               onClick={onHotPotato}
             >
-              {hotPotatoLoading ? '...' : '💣 ACTIVATE'}
+              {hotPotatoLoading ? '...' : <><Bomb size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} /> ACTIVATE</>}
             </button>
           </div>
         )}
@@ -1947,7 +1947,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{ fontSize: '16px' }}>🎨</span>
+                  <Ic><Palette size={16} /></Ic>
                   <span>White-label Branding</span>
                 </button>
 
