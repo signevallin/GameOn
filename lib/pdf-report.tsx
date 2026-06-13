@@ -62,7 +62,7 @@ export type ReportData = {
 // ── Helpers ───────────────────────────────────────────────────────────────
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
@@ -164,7 +164,7 @@ function CoverPage({ game, teamCount }: { game: ReportData['game']; teamCount: n
             {formatDate(game.started_at)}
           </Text>
           <Text style={{ color: C.muted, fontSize: 12 }}>
-            {game.duration_minutes} minuter · {teamCount} lag
+            {game.duration_minutes} minutes · {teamCount} teams
           </Text>
         </View>
       </View>
@@ -189,8 +189,8 @@ function StandingsPage({ teams }: { teams: ReportTeam[] }) {
       }}>
         <Text style={{ width: 44, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold' }}>#</Text>
         <Text style={{ flex: 1, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold' }}>TEAM</Text>
-        <Text style={{ width: 70, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>POÄNG</Text>
-        <Text style={{ width: 70, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>UPPDRAG</Text>
+        <Text style={{ width: 70, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>POINTS</Text>
+        <Text style={{ width: 70, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>MISSIONS</Text>
       </View>
 
       {teams.map((t, i) => (
@@ -266,11 +266,11 @@ function MissionAnalyticsPage({
     <Page size="A4" style={shared.page}>
       <Text style={shared.heading}>MISSION ANALYTICS</Text>
       <Text style={{ fontSize: 9, color: C.muted, marginBottom: 12 }}>
-        Sorterat efter completion rate
+        Sorted by completion rate
       </Text>
 
       {rows.length === 0 ? (
-        <Text style={{ color: C.muted, fontSize: 11 }}>Inga uppdrag klarades under detta spel.</Text>
+        <Text style={{ color: C.muted, fontSize: 11 }}>No missions were completed in this game.</Text>
       ) : (
         <>
           {/* ── Table header ── */}
@@ -281,11 +281,11 @@ function MissionAnalyticsPage({
             borderBottomWidth: 1,
             marginBottom: 2,
           }}>
-            <Text style={{ flex: 2, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold' }}>UPPDRAG</Text>
-            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'center' }}>KLARADE</Text>
+            <Text style={{ flex: 2, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold' }}>MISSION</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'center' }}>COMPLETED</Text>
             <Text style={{ width: 50, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'center' }}>RATE</Text>
-            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>SNITT</Text>
-            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>TOPP</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>AVG</Text>
+            <Text style={{ width: 55, fontSize: 9, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>TOP</Text>
           </View>
 
           {/* ── Table rows ── */}
@@ -369,8 +369,8 @@ function BestMissionPage({
         marginBottom: 2,
       }}>
         <Text style={{ flex: 1, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold' }}>TEAM</Text>
-        <Text style={{ flex: 2, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold' }}>UPPDRAG</Text>
-        <Text style={{ width: 60, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>POÄNG</Text>
+        <Text style={{ flex: 2, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold' }}>MISSION</Text>
+        <Text style={{ width: 60, fontSize: 10, color: C.muted, fontFamily: 'Helvetica-Bold', textAlign: 'right' }}>POINTS</Text>
       </View>
 
       {rows.map((r, i) => (
@@ -431,17 +431,17 @@ function FunStatsPage({
 
   const cards = [
     {
-      title: 'SNABBASTE LAG',
+      title: 'FASTEST TEAM',
       main: fastest?.name ?? '–',
-      sub: fastest ? formatDuration(fastest.secs) : 'Inget lag klart',
+      sub: fastest ? formatDuration(fastest.secs) : 'No team finished',
     },
     {
-      title: 'MEST AKTIVA LAG',
+      title: 'MOST ACTIVE TEAM',
       main: mostActive?.name ?? '–',
-      sub: `${(mostActive?.completed ?? []).length} uppdrag`,
+      sub: `${(mostActive?.completed ?? []).length} missions`,
     },
     {
-      title: 'BÄSTA PRESTATION',
+      title: 'BEST PERFORMANCE',
       main: bestPerf?.teamName ?? '–',
       sub: bestPerf ? `${bestPerf.missionLabel} · ${bestPerf.pts} pts` : '–',
     },
