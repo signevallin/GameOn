@@ -391,7 +391,7 @@ function PowerUpsCard({
 type Props = { onLogout: () => void };
 type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics' | 'my-analytics' | 'branding';
 
-type AdminCategory = { id: string; name: string; emoji: string; sort_order: number };
+type AdminCategory = { id: string; name: string; emoji: string; color?: string | null; sort_order: number };
 
 type MissionFormData = {
   name: string;
@@ -967,10 +967,17 @@ export default function AdminScreen({ onLogout }: Props) {
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
+  const [categoryFormColor, setCategoryFormColor] = useState('');
   const [categoryEmojiPickerOpen, setCategoryEmojiPickerOpen] = useState(false);
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryEmoji, setEditCategoryEmoji] = useState('');
+  const [editCategoryColor, setEditCategoryColor] = useState('');
+  const [editCategoryEmojiPickerOpen, setEditCategoryEmojiPickerOpen] = useState(false);
+  const [editCategorySaving, setEditCategorySaving] = useState(false);
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
@@ -2835,7 +2842,7 @@ export default function AdminScreen({ onLogout }: Props) {
             'Content-Type': 'application/json',
             ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
           },
-          body: JSON.stringify({ name: categoryFormName.trim(), emoji: categoryFormEmoji || '📋' }),
+          body: JSON.stringify({ name: categoryFormName.trim(), emoji: categoryFormEmoji || '📋', color: categoryFormColor || null }),
         });
         if (!res.ok) { setCategoryError('Failed to save category.'); return; }
         const data = await res.json() as { category: AdminCategory };
@@ -2843,11 +2850,36 @@ export default function AdminScreen({ onLogout }: Props) {
         setCategoryFormOpen(false);
         setCategoryFormName('');
         setCategoryFormEmoji('📋');
+        setCategoryFormColor('');
         setCategoryEmojiPickerOpen(false);
       } catch {
         setCategoryError('Failed to save category.');
       } finally {
         setCategorySaving(false);
+      }
+    }
+
+    async function saveEditCategory(id: string) {
+      if (!editCategoryName.trim()) return;
+      setEditCategorySaving(true);
+      try {
+        const res = await fetch('/api/admin/mission-categories', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({ id, name: editCategoryName.trim(), emoji: editCategoryEmoji || '📋', color: editCategoryColor || null }),
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { category: AdminCategory };
+        setAdminCategories(prev => prev.map(c => c.id === id ? data.category : c));
+        setEditingCategoryId(null);
+        setEditCategoryEmojiPickerOpen(false);
+      } catch {
+        /* silent */
+      } finally {
+        setEditCategorySaving(false);
       }
     }
 
@@ -3173,48 +3205,98 @@ export default function AdminScreen({ onLogout }: Props) {
                     {adminCategories.length === 0 && !categoryFormOpen && (
                       <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 8px' }}>No categories yet. Create one to organise your missions.</p>
                     )}
-                    {adminCategories.map(cat => (
-                      <div key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '18px', width: '28px', textAlign: 'center' }}>{cat.emoji}</span>
-                        <span style={{ flex: 1, fontSize: '14px' }}>{cat.name}</span>
-                        {pendingDeleteCategoryId === cat.id ? (
-                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                            <button
-                              onClick={async () => {
-                                const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, {
-                                  method: 'DELETE',
-                                  headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
-                                });
-                                if (res.ok) {
-                                  setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
-                                  setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
-                                } else {
-                                  setCategoryError('Failed to delete category.');
-                                }
-                                setPendingDeleteCategoryId(null);
-                              }}
-                              style={{ fontSize: '11px', color: 'var(--danger, #e74c3c)', background: 'none', border: '1px solid var(--danger, #e74c3c)', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px', fontFamily: 'inherit' }}
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => setPendingDeleteCategoryId(null)}
-                              style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setPendingDeleteCategoryId(cat.id)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }}
-                            title="Delete category"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                    {(() => {
+                      const CAT_COLORS = ['#7cbdd4','#a78bfa','#f472b6','#34d399','#fb923c','#facc15','#60a5fa','#f87171','#a3e635','#e879f9'];
+                      const smallBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '11px', padding: '2px 7px', borderRadius: '4px' };
+                      return adminCategories.map(cat => (
+                        <div key={cat.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                          {editingCategoryId === cat.id ? (
+                            /* ── Edit row ── */
+                            <div style={{ padding: '10px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                {/* Emoji picker */}
+                                <div style={{ position: 'relative', flexShrink: 0 }}>
+                                  <button type="button" onClick={() => setEditCategoryEmojiPickerOpen(v => !v)}
+                                    style={{ ...inputStyle, width: '44px', textAlign: 'center', fontSize: '20px', padding: '5px 4px', cursor: 'pointer' }}>
+                                    {editCategoryEmoji}
+                                  </button>
+                                  {editCategoryEmojiPickerOpen && (
+                                    <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 60, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                                      <input type="text" placeholder="Type or paste emoji…" maxLength={4}
+                                        style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                        onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditCategoryEmoji(v); setEditCategoryEmojiPickerOpen(false); } }} />
+                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '200px', overflowY: 'auto' }}>
+                                        {['🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬','🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻','🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥','🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡','🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃','💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗','💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐','👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸'].map(e => (
+                                          <button key={e} type="button" onClick={() => { setEditCategoryEmoji(e); setEditCategoryEmojiPickerOpen(false); }}
+                                            style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                            onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                            onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Name */}
+                                <input type="text" value={editCategoryName} onChange={e => setEditCategoryName(e.target.value)}
+                                  style={{ ...inputStyle, flex: 1 }}
+                                  onKeyDown={e => { if (e.key === 'Enter') saveEditCategory(cat.id); if (e.key === 'Escape') setEditingCategoryId(null); }}
+                                  onClick={() => setEditCategoryEmojiPickerOpen(false)} autoFocus />
+                              </div>
+                              {/* Color palette */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--muted)', marginRight: '2px' }}>Color:</span>
+                                <button type="button" onClick={() => setEditCategoryColor('')}
+                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === '' ? '2px solid var(--accent)' : '2px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--muted)' }}
+                                  title="No color">✕</button>
+                                {CAT_COLORS.map(c => (
+                                  <button key={c} type="button" onClick={() => setEditCategoryColor(c)}
+                                    style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === c ? '2px solid var(--text)' : '2px solid transparent', background: c, cursor: 'pointer' }} />
+                                ))}
+                                <input type="color" value={editCategoryColor || '#7cbdd4'} onChange={e => setEditCategoryColor(e.target.value)}
+                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'none' }} title="Custom color" />
+                              </div>
+                              {/* Actions */}
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                <button className="btn btn-primary" style={{ padding: '5px 14px', fontSize: '12px' }}
+                                  disabled={!editCategoryName.trim() || editCategorySaving} onClick={() => saveEditCategory(cat.id)}>
+                                  {editCategorySaving ? '…' : 'Save'}
+                                </button>
+                                <button style={{ ...smallBtn, color: 'var(--muted)' }} onClick={() => { setEditingCategoryId(null); setEditCategoryEmojiPickerOpen(false); }}>Cancel</button>
+                              </div>
+                            </div>
+                          ) : (
+                            /* ── Display row ── */
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
+                              {cat.color ? (
+                                <span style={{ width: '8px', height: '28px', borderRadius: '3px', background: cat.color, flexShrink: 0 }} />
+                              ) : null}
+                              <span style={{ fontSize: '18px', width: '28px', textAlign: 'center' }}>{cat.emoji}</span>
+                              <span style={{ flex: 1, fontSize: '14px' }}>{cat.name}</span>
+                              {pendingDeleteCategoryId === cat.id ? (
+                                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                  <button onClick={async () => {
+                                    const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, { method: 'DELETE', headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+                                    if (res.ok) {
+                                      setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
+                                      setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
+                                    } else { setCategoryError('Failed to delete category.'); }
+                                    setPendingDeleteCategoryId(null);
+                                  }} style={{ ...smallBtn, color: 'var(--danger, #e74c3c)', border: '1px solid var(--danger, #e74c3c)' }}>Delete</button>
+                                  <button onClick={() => setPendingDeleteCategoryId(null)} style={{ ...smallBtn, color: 'var(--muted)' }}>Cancel</button>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <button onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); setEditCategoryEmoji(cat.emoji); setEditCategoryColor(cat.color ?? ''); setEditCategoryEmojiPickerOpen(false); setPendingDeleteCategoryId(null); }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '0 5px' }} title="Edit">✎</button>
+                                  <button onClick={() => { setPendingDeleteCategoryId(cat.id); setEditingCategoryId(null); }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }} title="Delete">×</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ));
+                    })()}
 
                     {categoryFormOpen && (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
@@ -3416,11 +3498,16 @@ export default function AdminScreen({ onLogout }: Props) {
             return hasAnyFilter ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
                 <button style={chipStyle(!missionFilterCategory && !missionFilterType)} onClick={() => { setMissionFilterCategory(null); setMissionFilterType(null); }}>All</button>
-                {usedCats.map(cat => (
-                  <button key={cat.id} style={chipStyle(missionFilterCategory === cat.id)} onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
-                    {cat.emoji} {cat.name}
-                  </button>
-                ))}
+                {usedCats.map(cat => {
+                  const active = missionFilterCategory === cat.id;
+                  return (
+                    <button key={cat.id}
+                      style={cat.color ? { ...chipStyle(active), borderColor: active ? cat.color : `${cat.color}66`, color: active ? cat.color : `${cat.color}99`, background: active ? `${cat.color}22` : 'transparent' } : chipStyle(active)}
+                      onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
+                      {cat.emoji} {cat.name}
+                    </button>
+                  );
+                })}
                 {[...superCatLabels].map(label => (
                   <button key={label} style={chipStyle(missionFilterCategory === `name:${label}`)} onClick={() => setMissionFilterCategory(v => v === `name:${label}` ? null : `name:${label}`)}>
                     {label}
@@ -3477,7 +3564,12 @@ export default function AdminScreen({ onLogout }: Props) {
                   <div style={{ fontWeight: 700, fontSize: '14px' }}>{cm.name}</div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                     {cat && (
-                      <span style={{ background: 'rgba(155,89,182,0.12)', color: '#b07fd4', border: '1px solid rgba(155,89,182,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                      <span style={{
+                        background: cat.color ? `${cat.color}22` : 'rgba(155,89,182,0.12)',
+                        color: cat.color ?? '#b07fd4',
+                        border: `1px solid ${cat.color ? `${cat.color}55` : 'rgba(155,89,182,0.25)'}`,
+                        borderRadius: '4px', padding: '1px 6px', fontWeight: 600,
+                      }}>
                         {cat.emoji} {cat.name}
                       </span>
                     )}
