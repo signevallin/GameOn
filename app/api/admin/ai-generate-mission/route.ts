@@ -14,8 +14,8 @@ function getClient() {
 const MISSION_SCHEMAS = `Schemas (use EXACTLY these field names):
 
 trivia_quiz — multiple choice questions:
-{"type":"trivia_quiz","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"triviaRounds":[{"question":"...","options":["A","B","C","D"],"answer":"A"}]}
-Generate 3-5 questions. options is always exactly 4 strings. answer must match one of the options exactly (the full option text).
+{"type":"trivia_quiz","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"triviaRounds":[{"question":"What is the capital of France?","options":["London","Berlin","Paris","Rome"],"answer":"Paris"}]}
+Generate 3-5 questions. options is always exactly 4 full-text strings (never A/B/C/D letters). answer MUST be copied verbatim from one of the options — exact same string, character for character.
 
 truefalse — true or false statements:
 {"type":"truefalse","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":400,"statements":[{"text":"...","answer":true}]}
