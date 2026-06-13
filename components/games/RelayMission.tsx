@@ -31,6 +31,7 @@ type Props = {
 export default function RelayMission({ mission, team, game, memberId, effectiveMaxPts, onFinish }: Props) {
   const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
+  const [membersLoaded, setMembersLoaded] = useState(false);
   const [relayState, setRelayState] = useState<RelayMissionState | null>(null);
   const [typed, setTyped] = useState('');
   const [started, setStarted] = useState(false);
@@ -79,7 +80,8 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       cache: 'no-store',
     })
       .then(r => r.json())
-      .then(data => { if (data.members) setMembers(data.members as Member[]); });
+      .then(data => { if (data.members) setMembers(data.members as Member[]); })
+      .finally(() => setMembersLoaded(true));
   }, [team.id]);
 
   // Subscribe to relay-advance events on the shared channel
@@ -198,7 +200,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
     }
   }
 
-  if (members.length === 0) {
+  if (!membersLoaded) {
     return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>{t('challenge.relay.loading')}</div>;
   }
 
