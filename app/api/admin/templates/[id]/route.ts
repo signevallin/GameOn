@@ -29,11 +29,24 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (!existing.is_builtin && existing.user_id !== admin.userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const body = await req.json();
+  const mmddRe = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined) updates.name = body.name;
   if (body.icon !== undefined) updates.icon = body.icon;
   if (body.description !== undefined) updates.description = body.description;
   if (body.missionIds !== undefined) updates.mission_ids = body.missionIds;
+  if (body.activeFrom !== undefined) {
+    if (body.activeFrom !== null && !mmddRe.test(body.activeFrom)) {
+      return NextResponse.json({ error: 'activeFrom must be MM-DD' }, { status: 400 });
+    }
+    updates.active_from = body.activeFrom;
+  }
+  if (body.activeTo !== undefined) {
+    if (body.activeTo !== null && !mmddRe.test(body.activeTo)) {
+      return NextResponse.json({ error: 'activeTo must be MM-DD' }, { status: 400 });
+    }
+    updates.active_to = body.activeTo;
+  }
 
   const { data, error } = await db
     .from('game_templates')
