@@ -15,7 +15,7 @@ import {
   LayoutGrid, MoreHorizontal, ArrowLeft, ChevronRight,
   Pencil, Settings2, Search, Wind, Flame,
   X, Trash2, Target, Monitor,
-  Key, CreditCard,
+  Key, CreditCard, CircleHelp,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -1915,7 +1915,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{ fontSize: '16px' }}>❓</span>
+                  <Ic><CircleHelp size={16} /></Ic>
                   <span>How it works</span>
                 </button>
 
