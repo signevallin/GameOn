@@ -35,15 +35,30 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
   const [loginStep, setLoginStep] = useState<'key' | 'fields'>('key');
   const [joinCode, setJoinCode] = useState('');
   const [memberName, setMemberName] = useState('');
+  const [isRemoteMode, setIsRemoteMode] = useState(false);
 
   useEffect(() => {
     const key = new URLSearchParams(window.location.search).get('key');
     if (key) setGameKey(key.toUpperCase());
   }, []);
 
-  function handleGameKeyNext() {
+  async function handleGameKeyNext() {
     setError('');
     if (!gameKey.trim()) { setError(t('login.errGameKey')); return; }
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from('games')
+        .select('remote_mode')
+        .eq('game_key', gameKey.trim().toUpperCase())
+        .is('deleted_at', null)
+        .single();
+      setIsRemoteMode(!!(data?.remote_mode));
+    } catch {
+      setIsRemoteMode(false);
+    } finally {
+      setLoading(false);
+    }
     setLoginStep('fields');
   }
 
@@ -225,30 +240,34 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                       onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
                     />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Team code <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 400 }}>(remote mode only)</span></label>
-                    <input
-                      type="text"
-                      placeholder="X7K2"
-                      maxLength={4}
-                      value={joinCode}
-                      onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                      onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
-                      style={{ letterSpacing: '6px', fontSize: '22px', fontFamily: 'monospace', textTransform: 'uppercase' }}
-                    />
-                    <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Same code for everyone on your team — decide it together.</p>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Your name <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 400 }}>(remote mode only)</span></label>
-                    <input
-                      type="text"
-                      placeholder="First name"
-                      maxLength={20}
-                      value={memberName}
-                      onChange={e => setMemberName(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
-                    />
-                  </div>
+                  {isRemoteMode && (
+                    <>
+                      <div className="form-group">
+                        <label className="form-label">Team code</label>
+                        <input
+                          type="text"
+                          placeholder="X7K2"
+                          maxLength={4}
+                          value={joinCode}
+                          onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                          onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                          style={{ letterSpacing: '6px', fontSize: '22px', fontFamily: 'monospace', textTransform: 'uppercase' }}
+                        />
+                        <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Same code for everyone on your team — decide it together.</p>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Your name</label>
+                        <input
+                          type="text"
+                          placeholder="First name"
+                          maxLength={20}
+                          value={memberName}
+                          onChange={e => setMemberName(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleTeamLogin()}
+                        />
+                      </div>
+                    </>
+                  )}
                   {error && (
                     error.includes('5-team limit') ? (
                       <div style={{ marginTop: '12px', padding: '14px 16px', background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.25)', borderRadius: '10px' }}>
