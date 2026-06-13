@@ -1717,6 +1717,22 @@ export default function AdminScreen({ onLogout }: Props) {
               {/* Actions */}
               <div style={{ padding: '8px' }}>
                 <button
+                  onClick={() => { setShowProfile(false); setOnboardingStep(0); setShowOnboarding(true); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ fontSize: '16px' }}>❓</span>
+                  <span>How it works</span>
+                </button>
+
+                <button
                   onClick={() => { setShowProfile(false); setView('my-analytics'); }}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: '8px',
