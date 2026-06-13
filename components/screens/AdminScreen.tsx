@@ -953,8 +953,11 @@ export default function AdminScreen({ onLogout }: Props) {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiType, setAiType] = useState('');
   const [aiLanguage, setAiLanguage] = useState('en');
+  const [aiCount, setAiCount] = useState(1);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [aiBulkPreview, setAiBulkPreview] = useState<Array<{ selected: boolean; mission: Record<string, unknown> }> | null>(null);
+  const [aiBulkSaving, setAiBulkSaving] = useState(false);
   const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
   const [missionFilterCategory, setMissionFilterCategory] = useState<string | null>(null);
   const [missionFilterType, setMissionFilterType] = useState<string | null>(null);
@@ -2840,11 +2843,27 @@ export default function AdminScreen({ onLogout }: Props) {
       if (!aiPrompt.trim()) return;
       setAiGenerating(true);
       setAiError('');
+      setAiBulkPreview(null);
       // Cancel any in-flight request
       aiAbortRef.current?.abort();
       const ctrl = new AbortController();
       aiAbortRef.current = ctrl;
       try {
+        const excludedNames = (() => {
+          const newest = [...games].sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0];
+          if (!newest || !Array.isArray(newest.missions)) return [];
+          const customById = new Map(adminCustomMissions.map(cm => [cm.id, cm.name] as const));
+          const standardById = new Map(MISSIONS.map(m => [m.id, m.name] as const));
+          const names: string[] = [];
+          for (const id of newest.missions) {
+            const n = customById.get(id) ?? standardById.get(id);
+            if (n) names.push(n);
+          }
+          return names;
+        })();
+
         const res = await fetch('/api/admin/ai-generate-mission', {
           method: 'POST',
           signal: ctrl.signal,
@@ -2856,21 +2875,8 @@ export default function AdminScreen({ onLogout }: Props) {
             prompt: aiPrompt,
             ...(aiType ? { type: aiType } : {}),
             language: aiLanguage,
-            excludedNames: (() => {
-              // Names of standard + custom missions used in the most recently created game.
-              const newest = [...games].sort(
-                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-              )[0];
-              if (!newest || !Array.isArray(newest.missions)) return [];
-              const customById = new Map(adminCustomMissions.map(cm => [cm.id, cm.name] as const));
-              const standardById = new Map(MISSIONS.map(m => [m.id, m.name] as const));
-              const names: string[] = [];
-              for (const id of newest.missions) {
-                const n = customById.get(id) ?? standardById.get(id);
-                if (n) names.push(n);
-              }
-              return names;
-            })(),
+            excludedNames,
+            ...(aiCount > 1 ? { count: aiCount } : {}),
           }),
         });
 
@@ -2883,7 +2889,23 @@ export default function AdminScreen({ onLogout }: Props) {
           return;
         }
 
-        const mission = await res.json() as {
+        const data = await res.json() as Record<string, unknown>;
+
+        // Bulk mode — show preview list
+        if (Array.isArray(data.missions)) {
+          const missions = (data.missions as Record<string, unknown>[]).filter(
+            m => typeof m.type === 'string' && typeof m.name === 'string'
+          );
+          if (missions.length === 0) {
+            setAiError('Generation failed — try rephrasing your prompt.');
+            return;
+          }
+          setAiBulkPreview(missions.map(m => ({ selected: true, mission: m })));
+          return;
+        }
+
+        // Single mode — pre-fill form as before
+        const mission = data as {
           type: string; name: string; icon: string; desc: string;
           difficulty: 'easy' | 'medium' | 'hard'; maxPts: number;
           triviaRounds?: { question: string; options: [string, string, string, string]; answer: string }[];
@@ -2937,6 +2959,54 @@ export default function AdminScreen({ onLogout }: Props) {
         setAiError('Generation failed — try rephrasing your prompt.');
       } finally {
         setAiGenerating(false);
+      }
+    }
+
+    async function saveBulkMissions() {
+      if (!aiBulkPreview) return;
+      const selected = aiBulkPreview.filter(p => p.selected).map(p => p.mission);
+      if (selected.length === 0) return;
+      setAiBulkSaving(true);
+      try {
+        for (const m of selected) {
+          const body: Record<string, unknown> = {
+            name: m.name,
+            icon: m.icon ?? '⭐',
+            desc: m.desc ?? '',
+            difficulty: m.difficulty ?? 'medium',
+            maxPts: m.maxPts ?? 400,
+            type: m.type,
+            categoryId: null,
+            activeFrom: null,
+            activeUntil: null,
+          };
+          // Pass through type-specific data
+          if (m.triviaRounds) body.triviaRounds = m.triviaRounds;
+          if (m.statements) body.statements = m.statements;
+          if (m.closestQuestions) body.closestQuestions = m.closestQuestions;
+          if (m.clues) body.clues = m.clues;
+          if (m.paAnswer) body.paAnswer = m.paAnswer;
+          if (m.timelineItems) body.timelineItems = m.timelineItems;
+          if (m.photoPrompt) body.photoPrompt = m.photoPrompt;
+
+          await fetch('/api/admin/missions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            },
+            body: JSON.stringify(body),
+          });
+        }
+        // Refresh missions list
+        await loadAdminCustomMissions();
+        setAiBulkPreview(null);
+        setAiPanelOpen(false);
+        setAiPrompt('');
+        setAiType('');
+        setAiCount(1);
+      } finally {
+        setAiBulkSaving(false);
       }
     }
 
@@ -3271,7 +3341,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '12px', marginBottom: '16px' }}>
                     <div>
                       <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>TYPE (OPTIONAL)</label>
                       <select
@@ -3303,6 +3373,20 @@ export default function AdminScreen({ onLogout }: Props) {
                         <option value="fr">Français</option>
                       </select>
                     </div>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>COUNT</label>
+                      <select
+                        value={aiCount}
+                        onChange={e => { setAiCount(Number(e.target.value)); setAiBulkPreview(null); }}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                      </select>
+                    </div>
                   </div>
 
                   {aiError === 'pro_required' ? (
@@ -3320,8 +3404,67 @@ export default function AdminScreen({ onLogout }: Props) {
                     disabled={!aiPrompt.trim() || aiGenerating}
                     onClick={generateWithAI}
                   >
-                    {aiGenerating ? '✨ Generating…' : '✨ Generate'}
+                    {aiGenerating ? '✨ Generating…' : aiCount > 1 ? `✨ Generate ${aiCount} missions` : '✨ Generate'}
                   </button>
+
+                  {/* Bulk preview */}
+                  {aiBulkPreview && (
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', marginBottom: '10px' }}>
+                        SELECT MISSIONS TO SAVE
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                        {aiBulkPreview.map((item, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => setAiBulkPreview(prev => prev ? prev.map((p, i) => i === idx ? { ...p, selected: !p.selected } : p) : prev)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '10px',
+                              background: item.selected ? 'rgba(124,189,212,0.08)' : 'var(--surface)',
+                              border: `1px solid ${item.selected ? 'rgba(124,189,212,0.35)' : 'var(--border)'}`,
+                              borderRadius: '10px', padding: '10px 14px', cursor: 'pointer',
+                              opacity: item.selected ? 1 : 0.55, transition: 'all .15s',
+                            }}
+                          >
+                            <div style={{
+                              width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
+                              border: `2px solid ${item.selected ? '#7CBDD4' : 'var(--muted)'}`,
+                              background: item.selected ? '#7CBDD4' : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {item.selected && <span style={{ color: '#000', fontSize: '12px', fontWeight: 700, lineHeight: 1 }}>✓</span>}
+                            </div>
+                            <span style={{ fontSize: '20px', flexShrink: 0 }}>{String(item.mission.icon ?? '⭐')}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {String(item.mission.name ?? '')}
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                                {String(item.mission.type ?? '').replace(/_/g, ' ')} · {String(item.mission.difficulty ?? '')} · {Number(item.mission.maxPts ?? 0)} pts
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          className="btn btn-primary"
+                          style={{ flex: 1, padding: '11px', opacity: (aiBulkSaving || aiBulkPreview.every(p => !p.selected)) ? 0.5 : 1 }}
+                          disabled={aiBulkSaving || aiBulkPreview.every(p => !p.selected)}
+                          onClick={saveBulkMissions}
+                        >
+                          {aiBulkSaving ? 'Saving…' : `Save ${aiBulkPreview.filter(p => p.selected).length} mission${aiBulkPreview.filter(p => p.selected).length !== 1 ? 's' : ''}`}
+                        </button>
+                        <button
+                          className="btn btn-ghost"
+                          style={{ padding: '11px 16px' }}
+                          onClick={() => { setAiBulkPreview(null); }}
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

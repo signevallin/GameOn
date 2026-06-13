@@ -11,12 +11,7 @@ function getClient() {
   return new Anthropic({ apiKey: key });
 }
 
-const SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
-Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
-
-Choose the most interesting type for the topic unless the user specifies one.
-
-Schemas (use EXACTLY these field names):
+const MISSION_SCHEMAS = `Schemas (use EXACTLY these field names):
 
 trivia_quiz — multiple choice questions:
 {"type":"trivia_quiz","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"triviaRounds":[{"question":"...","options":["A","B","C","D"],"answer":"A"}]}
@@ -48,15 +43,32 @@ Field rules:
 - desc: one sentence describing what players do (not the answer)
 - difficulty: easy = common knowledge, medium = requires thought, hard = specialists only
 - maxPts: 300-400 for easy, 400-600 for medium/hard
-- Write ALL content in the language specified in the user message
+- Write ALL content in the language specified in the user message`;
+
+const SINGLE_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
+
+Choose the most interesting type for the topic unless the user specifies one.
+
+${MISSION_SCHEMAS}
 - Return ONLY the JSON object`;
 
-async function callClaude(userMessage: string): Promise<string> {
+const BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+Return ONLY a valid JSON object with a "missions" key containing an array — no markdown, no explanation, no code fences.
+
+Choose the most interesting and VARIED types across missions unless the user specifies one type.
+
+${MISSION_SCHEMAS}
+- Return ONLY: {"missions": [mission1, mission2, ...]}
+- Each mission must be on a DIFFERENT aspect or angle of the topic
+- Vary the mission types as much as possible (don't use the same type for all missions)`;
+
+async function callClaude(userMessage: string, systemPrompt: string, maxTokens: number): Promise<string> {
   const message = await getClient().messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 2048,
+    max_tokens: maxTokens,
     messages: [{ role: 'user', content: userMessage }],
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
   });
   const block = message.content[0];
   if (block.type !== 'text') throw new Error('Unexpected response type');
@@ -69,7 +81,10 @@ function parseJSON(text: string): Record<string, unknown> | null {
   try {
     return JSON.parse(stripped);
   } catch {
-    return null;
+    // Try extracting first {...} block
+    const match = stripped.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    try { return JSON.parse(match[0]); } catch { return null; }
   }
 }
 
@@ -83,13 +98,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown };
+  let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown; count?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
-  const { prompt, type, language, excludedNames } = body;
+  const { prompt, type, language, excludedNames, count } = body;
 
   let safeExcluded: string[] = [];
   if (excludedNames !== undefined && excludedNames !== null) {
@@ -116,38 +131,79 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_type' }, { status: 400 });
   }
 
+  const safeCount = typeof count === 'number' && Number.isInteger(count) && count >= 2 && count <= 5
+    ? count
+    : 1;
+
   const typeInstruction = (typeof type === 'string' && type) ? `Mission type: ${type}` : 'Choose the best mission type for this content.';
   const exclusionLine = safeExcluded.length > 0
-    ? `\n\nDo NOT create a mission about any of these topics (already used): ${safeExcluded.join(', ')}`
+    ? `\n\nDo NOT create missions about any of these topics (already used): ${safeExcluded.join(', ')}`
     : '';
-  const userMessage = `${typeInstruction}
+
+  if (safeCount === 1) {
+    // Single mission — existing behaviour
+    const userMessage = `${typeInstruction}
 Language: ${language}
 Topic/description: ${prompt}${exclusionLine}`;
 
-  // First attempt
+    let raw: string;
+    try {
+      raw = await callClaude(userMessage, SINGLE_SYSTEM_PROMPT, 2048);
+    } catch (err) {
+      console.error('Claude API error:', err);
+      return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+    }
+    let parsed = parseJSON(raw);
+
+    if (!parsed) {
+      try {
+        raw = await callClaude(userMessage + '\n\nIMPORTANT: Return ONLY the JSON object. No other text.', SINGLE_SYSTEM_PROMPT, 2048);
+      } catch (err) {
+        console.error('Claude API retry error:', err);
+        return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+      }
+      parsed = parseJSON(raw);
+    }
+
+    if (!parsed) {
+      return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+    }
+
+    return NextResponse.json(parsed);
+  }
+
+  // Bulk mode — ask Claude to return { missions: [...] }
+  const userMessage = `Generate exactly ${safeCount} distinct missions.
+${typeInstruction}
+Language: ${language}
+Topic/description: ${prompt}${exclusionLine}`;
+
   let raw: string;
   try {
-    raw = await callClaude(userMessage);
+    raw = await callClaude(userMessage, BULK_SYSTEM_PROMPT, 2048 * safeCount);
   } catch (err) {
-    console.error('Claude API error:', err);
+    console.error('Claude API error (bulk):', err);
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
   }
   let parsed = parseJSON(raw);
 
-  // Retry once if invalid JSON
-  if (!parsed) {
+  if (!parsed || !Array.isArray(parsed.missions)) {
     try {
-      raw = await callClaude(userMessage + '\n\nIMPORTANT: Return ONLY the JSON object. No other text.');
+      raw = await callClaude(
+        userMessage + '\n\nIMPORTANT: Return ONLY {"missions": [...]}. No other text.',
+        BULK_SYSTEM_PROMPT,
+        2048 * safeCount,
+      );
     } catch (err) {
-      console.error('Claude API retry error:', err);
+      console.error('Claude API retry error (bulk):', err);
       return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
     }
     parsed = parseJSON(raw);
   }
 
-  if (!parsed) {
+  if (!parsed || !Array.isArray(parsed.missions) || parsed.missions.length === 0) {
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
   }
 
-  return NextResponse.json(parsed);
+  return NextResponse.json({ missions: parsed.missions });
 }
