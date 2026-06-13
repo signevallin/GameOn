@@ -3627,6 +3627,7 @@ export default function AdminScreen({ onLogout }: Props) {
               <input
                 value={newTemplateIcon}
                 onChange={e => setNewTemplateIcon(e.target.value)}
+                onFocus={e => e.target.select()}
                 style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
               />
               <input
@@ -3755,6 +3756,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <input
                       value={editTemplateIcon}
                       onChange={e => setEditTemplateIcon(e.target.value)}
+                      onFocus={e => e.target.select()}
                       style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
                     />
                     <input
