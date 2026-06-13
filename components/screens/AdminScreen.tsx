@@ -10,6 +10,18 @@ import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/li
 import type { GameTemplate } from '@/lib/templates';
 import JSZip from 'jszip';
 import MysteryBoxAR from '@/components/MysteryBoxAR';
+import {
+  Trophy, BarChart2, Camera, TrendingUp, Zap, Lock,
+  LayoutGrid, MoreHorizontal, ArrowLeft, ChevronRight,
+  Pencil, Settings2, Search, Wind, Flame,
+  X, Trash2, Target, Monitor,
+  Key, CreditCard,
+} from 'lucide-react';
+
+const IC = '#75abc8';
+const Ic = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', color: IC }}>{children}</span>
+);
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -162,10 +174,10 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
-    { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
-    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: true },
-    { type: 'smoke_screen', icon: '💨', label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
+    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
+    { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', btn: 'ACTIVATE', allowAll: true },
+    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', btn: 'SEND', allowAll: true },
+    { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
@@ -184,7 +196,7 @@ function PowerUpsCard({
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '22px', flexShrink: 0 }}>🔥</span>
+          <span style={{ flexShrink: 0, display: 'inline-flex' }}><Flame size={22} color={IC} /></span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: finalFrenzyUsed ? 'var(--muted)' : 'var(--accent2)' }}>Final Frenzy</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>Doubles all points for ALL teams instantly</div>
@@ -221,7 +233,7 @@ function PowerUpsCard({
           <div key={type} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
+                <span style={{ flexShrink: 0, display: 'inline-flex' }}>{icon}</span>
                 <span style={{ fontSize: '14px', fontWeight: 700 }}>{label}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -233,7 +245,7 @@ function PowerUpsCard({
               >
                 <option value="">Select team…</option>
                 {allowAll && (
-                  <option value="all" disabled={allUsed}>{allUsed ? '✓ All teams (used)' : '📢 All teams'}</option>
+                  <option value="all" disabled={allUsed}>{allUsed ? '✓ All teams (used)' : 'All teams'}</option>
                 )}
                 {teams.map(t => {
                   const tUsed = isUsedKey(`${type}_${t.id}`) || allUsed;
@@ -594,7 +606,7 @@ function OnboardingModal({
               lineHeight: 1, padding: '4px',
             }}
             aria-label="Close"
-          >✕</button>
+          ><X size={16} color={IC} /></button>
 
           {/* Progress bars */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
@@ -658,11 +670,11 @@ function OnboardingModal({
           {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {isLast ? (
-              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}>← Back</button>
+              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
             ) : step === 0 ? (
               <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onSkip}>Skip tour</button>
             ) : (
-              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}>← Back</button>
+              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
@@ -734,7 +746,7 @@ function BrandingView({ authToken, onBack, profileMenu }: {
   return (
     <>
       <nav className="nav">
-        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={onBack}>← Back</button>
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
         <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>White-label Branding</div>
         {profileMenu}
       </nav>
@@ -1836,7 +1848,7 @@ export default function AdminScreen({ onLogout }: Props) {
     setTimeout(() => setResetSent(false), 5000);
   }
 
-  const planLabel = plan === 'studio' ? '✦ Studio' : plan === 'pro' ? '⚡ Pro' : 'Starter';
+  const planLabel = plan === 'studio' ? '✦ Studio' : plan === 'pro' ? 'Pro' : 'Starter';
   const initials = userName
     ? userName.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
     : userEmail?.[0]?.toUpperCase() ?? '?';
@@ -1919,7 +1931,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{ fontSize: '16px' }}>📊</span>
+                  <BarChart2 size={16} color={IC} />
                   <span>Analytics</span>
                 </button>
 
@@ -1951,7 +1963,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{ fontSize: '16px' }}>🔑</span>
+                  <Key size={16} color={IC} />
                   <span>{resetSent ? 'Reset link sent to your email!' : 'Change password'}</span>
                 </button>
 
@@ -1970,7 +1982,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     disabled={upgradeLoading}
                   >
-                    <span style={{ fontSize: '16px' }}>⚡</span>
+                    <Zap size={16} color={IC} />
                     <span>{upgradeLoading ? 'Loading...' : 'Upgrade to Pro'}</span>
                   </button>
                 ) : stripeManaged ? (
@@ -1988,7 +2000,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     disabled={portalLoading}
                   >
-                    <span style={{ fontSize: '16px' }}>💳</span>
+                    <CreditCard size={16} color={IC} />
                     <span>{portalLoading ? 'Loading...' : 'Manage subscription'}</span>
                   </button>
                 ) : null}
@@ -2007,7 +2019,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <span style={{ fontSize: '16px' }}>→</span>
+                  <ChevronRight size={16} color={IC} />
                   <span>Log out</span>
                 </button>
               </div>
@@ -2055,10 +2067,10 @@ export default function AdminScreen({ onLogout }: Props) {
             style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
             onClick={() => setView('games')}
           >
-            ← Back
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
           </button>
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontWeight: 700, fontSize: '15px', color: 'var(--text)' }}>
-            📊 Analytics
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontWeight: 700, fontSize: '15px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <BarChart2 size={15} color={IC} /> Analytics
           </div>
           <div className="nav-right">
             <button
@@ -2536,10 +2548,10 @@ export default function AdminScreen({ onLogout }: Props) {
                 fontFamily: "'Sora', sans-serif",
               }}
             >
-              ← Tillbaka
+              <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Tillbaka
             </button>
             <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text)' }}>
-              📊 Din statistik
+              <BarChart2 size={16} color={IC} style={{marginRight:6}} />Din statistik
             </h1>
           </div>
 
@@ -2647,7 +2659,7 @@ export default function AdminScreen({ onLogout }: Props) {
               onClick={() => handleUpgrade('pro')}
               disabled={upgradeLoading}
             >
-              {upgradeLoading ? '...' : '⚡ UPGRADE'}
+              {upgradeLoading ? '...' : <><Ic><Zap size={13} /></Ic> UPGRADE</>}
             </button>
           )}
           <ProfileMenu />
@@ -2658,15 +2670,15 @@ export default function AdminScreen({ onLogout }: Props) {
           <h2 style={{ margin: 0 }}>Your Games</h2>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {plan === 'free' ? (
-              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>🔒 My Missions (Pro)</button>
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}><Lock size={12} color={IC} /> My Missions (Pro)</button>
             ) : (
-              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}>✏️ My Missions</button>
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}><Pencil size={12} color={IC} /> My Missions</button>
             )}
             {isSuperAdmin && (
-              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('analytics'); loadAnalytics(); }}>📊 Analytics</button>
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { setView('analytics'); loadAnalytics(); }}><BarChart2 size={12} color={IC} /> Analytics</button>
             )}
             {isSuperAdmin && (
-              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}>⚙️ Templates</button>
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}><Settings2 size={12} color={IC} /> Templates</button>
             )}
             <button className="btn btn-primary" onClick={() => { loadTemplates(); setView('templates'); }}>+ NEW GAME</button>
           </div>
@@ -2674,7 +2686,7 @@ export default function AdminScreen({ onLogout }: Props) {
         {plan === 'free' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.15)', borderRadius: '10px', marginBottom: '16px' }}>
             <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1 }}>
-              <span style={{ color: '#DCE4EE', fontWeight: 700 }}>Starter plan</span> — max 5 teams per game · <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade to Pro →</span>
+              <span style={{ color: '#DCE4EE', fontWeight: 700 }}>Starter plan</span> — max 5 teams per game · <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade to Pro</span>
             </span>
           </div>
         )}
@@ -2740,7 +2752,7 @@ export default function AdminScreen({ onLogout }: Props) {
                           <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
                             title="Delete game"
                             style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
-                            🗑
+                            <Trash2 size={14} color={IC} />
                           </button>
                         </div>
                         {saveTemplateId === g.id && (
@@ -3185,7 +3197,7 @@ export default function AdminScreen({ onLogout }: Props) {
         </nav>
         <div className="container fade-in">
           <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}>← Back</button>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
             <h2 style={{ margin: 0 }}>My Missions</h2>
           </div>
 
@@ -3199,7 +3211,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         style={{ fontSize: '11px', padding: '4px 10px' }}
                         onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); setCategoryEmojiPickerOpen(false); }}
                       >
-                        {categoryFormOpen ? '✕ Cancel' : '+ New category'}
+                        {categoryFormOpen ? 'Cancel' : '+ New category'}
                       </button>
                     </div>
 
@@ -3248,7 +3260,7 @@ export default function AdminScreen({ onLogout }: Props) {
                                 <span style={{ fontSize: '11px', color: 'var(--muted)', marginRight: '2px' }}>Color:</span>
                                 <button type="button" onClick={() => setEditCategoryColor('')}
                                   style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === '' ? '2px solid var(--accent)' : '2px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--muted)' }}
-                                  title="No color">✕</button>
+                                  title="No color"><X size={16} color={IC} /></button>
                                 {CAT_COLORS.map(c => (
                                   <button key={c} type="button" onClick={() => setEditCategoryColor(c)}
                                     style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === c ? '2px solid var(--text)' : '2px solid transparent', background: c, cursor: 'pointer' }} />
@@ -4073,7 +4085,7 @@ export default function AdminScreen({ onLogout }: Props) {
           <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
-              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}>✕</button>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
             </div>
             {!generatePreview ? (
               <>
@@ -4142,7 +4154,7 @@ export default function AdminScreen({ onLogout }: Props) {
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}>← BACK</button>
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '680px' }}>
@@ -4281,13 +4293,13 @@ export default function AdminScreen({ onLogout }: Props) {
                     onClick={() => { setEditingTemplateId(t.id); setEditTemplateName(t.name); setEditTemplateIcon(t.icon); setEditTemplateMissions([...t.missionIds]); setEditTemplateDesc(t.description ?? ''); setEditTemplateActiveFrom(t.activeFrom ?? ''); setEditTemplateActiveTo(t.activeTo ?? ''); }}
                     style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
                   >
-                    ✏️ Edit
+                    <Pencil size={13} color={IC} style={{marginRight:4}} /> Edit
                   </button>
                   <button
                     onClick={() => { if (confirm(`Delete "${t.name}"?`)) deleteBuiltinTemplate(t.id); }}
                     style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: '#ef4444', fontSize: '14px', cursor: 'pointer' }}
                   >
-                    🗑
+                    <Trash2 size={14} color={IC} />
                   </button>
                 </div>
               </div>
@@ -4400,7 +4412,7 @@ export default function AdminScreen({ onLogout }: Props) {
           <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
-              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}>✕</button>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
             </div>
 
             {!generatePreview ? (
@@ -4472,7 +4484,7 @@ export default function AdminScreen({ onLogout }: Props) {
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setView('games')}>← BACK</button>
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setView('games')}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '680px' }}>
@@ -4509,7 +4521,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions{t.description ? ` · ${t.description}` : ''}</div>
                   </div>
-                  <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+                  <ChevronRight size={18} color={IC} />
                 </button>
               ))}
             </div>
@@ -4536,7 +4548,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
                         <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions</div>
                       </div>
-                      <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+                      <ChevronRight size={18} color={IC} />
                     </button>
                     <button
                       onClick={async () => {
@@ -4550,7 +4562,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       title="Delete template"
                       style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}
                     >
-                      🗑
+                      <Trash2 size={14} color={IC} />
                     </button>
                   </div>
                 ))}
@@ -4564,12 +4576,12 @@ export default function AdminScreen({ onLogout }: Props) {
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
             >
-              <span style={{ fontSize: '28px', flexShrink: 0 }}>✏️</span>
+              <span style={{ flexShrink: 0, display: 'inline-flex' }}><Pencil size={28} color={IC} /></span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>Blank game</div>
                 <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Choose missions manually</div>
               </div>
-              <span style={{ color: 'var(--muted)', fontSize: '18px' }}>→</span>
+              <ChevronRight size={18} color={IC} />
             </button>
           </>
         )}
@@ -4584,7 +4596,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '720px' }}>
@@ -4899,7 +4911,7 @@ export default function AdminScreen({ onLogout }: Props) {
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
           >
-            ← Games
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Games
           </button>
         )}
         {/* GAME KEY + QR + START */}
@@ -4918,7 +4930,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 fgColor="#0f1724"
                 level="M"
               />
-              <div style={{ position: 'absolute', bottom: '4px', right: '6px', fontSize: '10px', color: '#aaa' }}>🔍</div>
+              <div style={{ position: 'absolute', bottom: '4px', right: '6px' }}><Search size={10} color="#aaa" /></div>
             </div>
 
             {/* QR expanded modal */}
@@ -5016,7 +5028,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     title="Upgrade to Pro to download PDF reports"
                     style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
                   >
-                    🔒{isMobile ? ' Report' : ' Download Report (Pro)'}
+                    <Lock size={13} color={IC} style={{marginRight:4}} />{isMobile ? ' Report' : ' Download Report (Pro)'}
                   </button>
                 ) : (
                   <button
@@ -5040,19 +5052,19 @@ export default function AdminScreen({ onLogout }: Props) {
 
         {/* TABS */}
         <div className="admin-tabs">
-          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')}>🏆 Scores</button>
-          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}>📊 Progress</button>
+          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')}><Ic><Trophy size={14} /></Ic> Scores</button>
+          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}><Ic><BarChart2 size={14} /></Ic> Progress</button>
           <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative' }}>
-            📸 Photos
+            <Ic><Camera size={14} /></Ic> Photos
             {totalPendingPhotos > 0 && (
               <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent2)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                 {totalPendingPhotos}
               </span>
             )}
           </button>
-          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>📈 Stats</button>
+          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}><Ic><TrendingUp size={14} /></Ic> Stats</button>
           {activeGame.status === 'active' && (
-            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups{plan === 'free' ? ' 🔒' : ''}</button>
+            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}><Ic><Zap size={14} /></Ic> Power-ups{plan === 'free' ? <Ic><Lock size={12} /></Ic> : ''}</button>
           )}
         </div>
 
@@ -5419,11 +5431,11 @@ export default function AdminScreen({ onLogout }: Props) {
                                   {pts}p
                                 </button>
                               ))}
-                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}>✕</button>
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}><X size={16} color={IC} /></button>
                             </div>
                           ) : (
                             <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
-                              {(sub as typeof ratedRegular[0]).ai_rated ? 'Override ✨' : '✏️ Change'}
+                              {(sub as typeof ratedRegular[0]).ai_rated ? 'Override ✨' : 'Change'}
                             </button>
                           )}
                         </div>
@@ -5459,11 +5471,11 @@ export default function AdminScreen({ onLogout }: Props) {
                                   {pts}p
                                 </button>
                               ))}
-                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}>✕</button>
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}><X size={16} color={IC} /></button>
                             </div>
                           ) : (
                             <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
-                              {s.ai_rated ? 'Override ✨' : '✏️ Change'}
+                              {s.ai_rated ? 'Override ✨' : 'Change'}
                             </button>
                           )}
                         </div>
@@ -5651,11 +5663,11 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
             {plan === 'free' && (
               <div style={{ background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '12px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚡</div>
+                <div style={{ marginBottom: '8px' }}><Zap size={32} color={IC} /></div>
                 <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: 'var(--text)' }}>Power-ups ingår i Pro</div>
                 <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px' }}>Sabotage, dubbelpoäng, falsk ledtråd och mer — uppgradera för att aktivera dem live under spelet.</div>
                 <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', fontWeight: 800 }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>
-                  {upgradeLoading ? '...' : '⚡ Upgrade to Pro'}
+                  {upgradeLoading ? '...' : 'Upgrade to Pro'}
                 </button>
               </div>
             )}
@@ -5722,13 +5734,13 @@ export default function AdminScreen({ onLogout }: Props) {
                   className="mobile-more-sheet-item"
                   onClick={() => { setTab('progress'); setMobileMoreOpen(false); }}
                 >
-                  📊 Progress
+                  <BarChart2 size={14} color={IC} style={{marginRight:6}} /> Progress
                 </button>
                 <button
                   className="mobile-more-sheet-item"
                   onClick={() => { setTab('stats'); setMobileMoreOpen(false); }}
                 >
-                  📈 Stats
+                  <TrendingUp size={14} color={IC} style={{marginRight:6}} /> Stats
                 </button>
               </div>
             </>
@@ -5749,14 +5761,14 @@ export default function AdminScreen({ onLogout }: Props) {
               className="mobile-bottom-nav-item"
               onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
             >
-              <span className="mobile-nav-icon">🎮</span>
+              <span className="mobile-nav-icon"><LayoutGrid size={20} color={IC} /></span>
               <span className="mobile-nav-label">Games</span>
             </button>
             <button
               className={`mobile-bottom-nav-item${tab === 'leaderboard' ? ' active' : ''}`}
               onClick={() => { setTab('leaderboard'); setMobileMoreOpen(false); }}
             >
-              <span className="mobile-nav-icon">🏆</span>
+              <span className="mobile-nav-icon"><Trophy size={20} color={IC} /></span>
               <span className="mobile-nav-label">Leaderboard</span>
             </button>
             <button
@@ -5764,7 +5776,7 @@ export default function AdminScreen({ onLogout }: Props) {
               onClick={() => { setTab('photos'); setMobileMoreOpen(false); }}
               style={{ position: 'relative' }}
             >
-              <span className="mobile-nav-icon">📸</span>
+              <span className="mobile-nav-icon"><Camera size={20} color={IC} /></span>
               <span className="mobile-nav-label">
                 Photos{totalPendingPhotos > 0 ? ` · ${totalPendingPhotos}` : ''}
               </span>
@@ -5773,7 +5785,7 @@ export default function AdminScreen({ onLogout }: Props) {
               className={`mobile-bottom-nav-item${tab === 'powerups' ? ' active' : ''}`}
               onClick={() => { setTab('powerups'); setMobileMoreOpen(false); }}
             >
-              <span className="mobile-nav-icon">⚡</span>
+              <span className="mobile-nav-icon"><Zap size={20} color={IC} /></span>
               <span className="mobile-nav-label">Power-ups</span>
             </button>
             <button
@@ -5781,7 +5793,7 @@ export default function AdminScreen({ onLogout }: Props) {
               onClick={() => setMobileMoreOpen(o => !o)}
               aria-expanded={mobileMoreOpen}
             >
-              <span className="mobile-nav-icon" style={{ letterSpacing: '-2px' }}>···</span>
+              <span className="mobile-nav-icon"><MoreHorizontal size={20} color={IC} /></span>
               <span className="mobile-nav-label">More</span>
             </button>
           </nav>
