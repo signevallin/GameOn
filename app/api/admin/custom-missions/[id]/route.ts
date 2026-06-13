@@ -58,7 +58,20 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (type !== undefined) updateFields.type = type;
   if (data !== undefined) updateFields.data = data;
   if (sort_order !== undefined) updateFields.sort_order = sort_order;
-  if (category_id !== undefined) updateFields.category_id = category_id ?? null;
+  if (category_id !== undefined) {
+    updateFields.category_id = category_id ?? null;
+    // Keep the stored category_name snapshot in sync
+    if (category_id) {
+      const { data: cat } = await getSupabase()
+        .from('mission_categories')
+        .select('name, emoji')
+        .eq('id', category_id)
+        .single();
+      updateFields.category_name = cat ? `${cat.emoji} ${cat.name}` : 'My Missions';
+    } else {
+      updateFields.category_name = 'My Missions';
+    }
+  }
   if (activeFromParsed) updateFields.active_from = activeFromParsed.value;
   if (activeUntilParsed) updateFields.active_until = activeUntilParsed.value;
 

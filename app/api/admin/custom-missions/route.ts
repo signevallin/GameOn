@@ -48,11 +48,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid category_id.' }, { status: 400 });
   }
 
+  // Resolve actual category name from the DB so it's always in sync
+  let resolvedCategoryName = category_name ?? 'My Missions';
+  if (category_id) {
+    const { data: cat } = await getSupabase()
+      .from('mission_categories')
+      .select('name, emoji')
+      .eq('id', category_id)
+      .single();
+    if (cat) resolvedCategoryName = `${cat.emoji} ${cat.name}`;
+  }
+
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
     .insert({
       user_id: admin.userId,
-      category_name: category_name ?? 'My Missions',
+      category_name: resolvedCategoryName,
       category_id: category_id ?? null,
       name: name.trim(),
       icon: icon ?? '⭐',
