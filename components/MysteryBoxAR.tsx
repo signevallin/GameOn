@@ -44,9 +44,9 @@ type Props = {
 const POWERUP_ICONS: Record<string, string> = {
   shield: '🛡️',
   freeze: '❄️',
-  double_trouble: '😈',
+  inverterad_skarm: '🪞',
   all_in: '🎲',
-  point_steal: '🎰',
+  double_agent: '🕵️',
   robin_hood: '🏹',
 };
 

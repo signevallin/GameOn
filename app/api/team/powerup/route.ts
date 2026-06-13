@@ -11,7 +11,7 @@ function getSupabase() {
   );
 }
 
-const VALID_TYPES = ['freeze', 'double_trouble', 'shield', 'all_in', 'point_steal', 'robin_hood'] as const;
+const VALID_TYPES = ['freeze', 'inverterad_skarm', 'shield', 'all_in', 'double_agent', 'robin_hood'] as const;
 type PowerUpType = typeof VALID_TYPES[number];
 
 function markPowerupUsed(
@@ -101,26 +101,11 @@ export async function POST(req: Request) {
     }).eq('id', targetTeamId);
   }
 
-  if (type === 'double_trouble') {
-    // Fetch the game to get its mission list
-    const { data: game } = await supabase.from('games').select('missions').eq('id', target.game_id).single();
-    const gameMissionIds: string[] = game?.missions ?? [];
-    const completed = (target.completed ?? []) as string[];
-    const undone = MISSIONS.filter(m =>
-      (gameMissionIds.length === 0 || gameMissionIds.includes(m.id)) &&
-      !completed.includes(m.id) &&
-      m.type !== 'photo'  // exclude photo missions — teams can't be forced to submit photos
-    );
-    const shuffled = [...undone].sort(() => Math.random() - 0.5);
-    const penaltyIds = shuffled.slice(0, 2).map(m => m.id);
-
+  if (type === 'inverterad_skarm') {
+    const inverteradUntil = new Date(Date.now() + 60 * 1000).toISOString();
     await supabase.from('teams').update({
-      active_effects: {
-        ...targetEffects,
-        double_trouble_remaining: 2,
-        double_trouble_missions: penaltyIds,
-      },
-      pending_notification: { type: 'powerup_received', msgKey: 'double_trouble_msg', params: {} },
+      active_effects: { ...targetEffects, inverterad_skarm_until: inverteradUntil },
+      pending_notification: { type: 'powerup_received', msgKey: 'inverterad_skarm_msg', params: {} },
     }).eq('id', targetTeamId);
   }
 
@@ -164,23 +149,16 @@ export async function POST(req: Request) {
     }
   }
 
-  if (type === 'point_steal') {
-    const targetScore = target.score ?? 0;
-    const senderScore = sender.score ?? 0;
-    const stolen = Math.min(500, targetScore);
-
+  if (type === 'double_agent') {
+    // Self-targeting — no target team needed (targetTeamId is ignored)
+    const doubleAgentUntil = new Date(Date.now() + 90 * 1000).toISOString();
+    const senderEffects = sender.active_effects ?? {};
     await supabase.from('teams').update({
-      score: Math.max(0, targetScore - stolen),
-      pending_notification: { type: 'point_steal_from', msgKey: 'point_steal_from_msg', params: { stolen } },
-    }).eq('id', targetTeamId);
-
-    await supabase.from('teams').update({
-      score: senderScore + stolen,
+      active_effects: { ...senderEffects, double_agent_until: doubleAgentUntil },
       ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
-      pending_notification: { type: 'point_steal_to', msgKey: 'point_steal_to_msg', params: { stolen, target: target.name } },
+      pending_notification: { type: 'powerup_self', msgKey: 'double_agent_msg', params: {} },
     }).eq('id', senderTeamId);
-
-    return NextResponse.json({ ok: true, stolen, resultMessage: `🤑 You stole ${stolen} pts from ${target.name}!` });
+    return NextResponse.json({ ok: true, resultMessage: '🕵️ Double Agent active for 90 seconds! Double points — but failure feeds the last-place team.' });
   }
 
   if (type === 'robin_hood') {

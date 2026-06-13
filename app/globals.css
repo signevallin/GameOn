@@ -938,3 +938,6 @@ pre {
   .admin-game-actions { flex-direction: row; }
   .admin-game-confirm { flex-wrap: wrap; }
 }
+
+/* Inverterad skärm power-up */
+.sabotage-inverse { transform: scaleX(-1); }

@@ -102,8 +102,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
     photo_rated:        { emoji: '📸', title: t('notifications.photo_rated'),        btnLabel: t('notifications.btn_nice'),   color: 'var(--accent3)' },
     powerup_self:       { emoji: '⚡', title: t('notifications.powerup_self'),       btnLabel: t('notifications.btn_letsGo'), color: 'var(--accent3)' },
     powerup_received:   { emoji: '😈', title: t('notifications.powerup_received'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
-    point_steal_from:   { emoji: '😱', title: t('notifications.point_steal'),        btnLabel: t('notifications.btn_noWay'),  color: 'var(--accent2)' },
-    point_steal_to:     { emoji: '🤑', title: t('notifications.point_steal'),        btnLabel: t('notifications.btn_yesss'),  color: 'var(--accent3)' },
+    inverterad_skarm:   { emoji: '🪞', title: t('notifications.inverterad_skarm'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
     hot_potato:         { emoji: '💣', title: t('notifications.hot_potato'),         btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'   },
     hot_potato_penalty: { emoji: '💥', title: t('notifications.hot_potato_penalty'), btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
     mystery_box_won:     { emoji: '🎁', title: t('notifications.mystery_box_won'),     btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'    },
@@ -633,11 +632,17 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
   // Freeze effect
   const effects = team.active_effects ?? {};
-  const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until) : null;
+  const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until as string) : null;
+  const inverteradUntil = effects.inverterad_skarm_until ? new Date(effects.inverterad_skarm_until as string) : null;
+  const doubleAgentUntil = effects.double_agent_until ? new Date(effects.double_agent_until as string) : null;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
   const isFrozen = freezeUntil ? freezeUntil.getTime() > now : false;
   const freezeSecsLeft = isFrozen ? Math.ceil((freezeUntil!.getTime() - now) / 1000) : 0;
+  const isInverted = inverteradUntil ? inverteradUntil.getTime() > now : false;
+  const inverteradSecsLeft = isInverted ? Math.ceil((inverteradUntil!.getTime() - now) / 1000) : 0;
+  const isDoubleAgent = doubleAgentUntil ? doubleAgentUntil.getTime() > now : false;
+  const doubleAgentSecsLeft = isDoubleAgent ? Math.ceil((doubleAgentUntil!.getTime() - now) / 1000) : 0;
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
@@ -959,7 +964,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         </div>
       )}
 
-      <div className="container fade-in">
+      <div className={`container fade-in${isInverted ? ' sabotage-inverse' : ''}`}>
 
         {/* WAITING */}
         {isDraft && (
@@ -1050,50 +1055,22 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── MISSIONS TAB ── */}
             {activeTab === 'missions' && (<>
 
-            {/* ── DOUBLE TROUBLE PENALTY VIEW ── */}
-            {effects.double_trouble_remaining && (effects.double_trouble_remaining as number) > 0 ? (() => {
-              const penaltyIds = (effects.double_trouble_missions as string[] | undefined) ?? [];
-              const penaltyMissions = MISSIONS.filter(m => penaltyIds.includes(m.id));
-              return (
-                <div style={{ paddingTop: '16px' }}>
-                  <div style={{
-                    padding: '16px 18px',
-                    background: 'rgba(208,117,125,0.10)',
-                    border: '1px solid var(--accent2)',
-                    borderRadius: '12px',
-                    marginBottom: '20px',
-                    textAlign: 'center',
-                  }}>
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>😈</div>
-                    <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--accent2)', letterSpacing: '1px', marginBottom: '6px' }}>{t('missions.doubleTroubleTitle')}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.6 }}>
-                      {penaltyMissions.length === 1 ? t('missions.doubleTroubleDescSingular') : t('missions.doubleTroubleDesc', { count: penaltyMissions.length })}<br />
-                      <strong style={{ color: 'var(--text)' }}>{t('missions.doubleTroubleRemaining', { remaining: effects.double_trouble_remaining as number })}</strong>
-                    </div>
-                  </div>
-                  <div className="missions-grid">
-                    {penaltyMissions.map(m => {
-                      const done = team.completed?.includes(m.id);
-                      return (
-                        <div
-                          key={m.id}
-                          className={`mission-card${done ? ' done' : ''}`}
-                          onClick={() => !done && onSelectMission(m.id)}
-                        >
-                          <span className="mission-icon">{m.icon}</span>
-                          <div className="mission-name">{tMissions(`${m.id}.name`, { defaultValue: m.name })}</div>
-                          <div className="mission-desc">{tMissions(`${m.id}.desc`, { defaultValue: m.desc })}</div>
-                          <div className="mission-meta">
-                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{t(`difficulty.${m.difficulty}`)}</span>
-                            <span className="mission-pts">{t('missions.upToPts', { pts: game.mission_max_pts?.[m.id] ?? m.maxPts })}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {/* ── DOUBLE AGENT BANNER ── */}
+            {isDoubleAgent && (
+              <div style={{
+                padding: '12px 18px', background: 'rgba(167,139,250,0.12)',
+                border: '1px solid #a78bfa', borderRadius: '12px', marginTop: '16px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', gap: '12px',
+              }}>
+                <span style={{ fontSize: '28px' }}>🕵️</span>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '13px', color: '#a78bfa', letterSpacing: '.5px' }}>{t('missions.doubleAgentTitle')} — {doubleAgentSecsLeft}s</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>{t('missions.doubleAgentDesc')}</div>
                 </div>
-              );
-            })() : (<>
+              </div>
+            )}
+
+            {(<>
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
@@ -1342,7 +1319,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 )}
               </>
             )}
-            </>)}{/* closes double_trouble false-branch and ternary */}
+            </>)}{/* closes missions content */}
             </>)}{/* closes activeTab missions */}
             </>)}{/* closes !showPowerups */}
 

@@ -22,8 +22,8 @@ export type Team = {
   active_effects: {
     freeze_until?: string;
     shield_until?: string;
-    double_trouble_remaining?: number;
-    double_trouble_missions?: string[];
+    inverterad_skarm_until?: string;
+    double_agent_until?: string;
   };
   team_powerups_used: string[];
   mission_answers: Record<string, string>;

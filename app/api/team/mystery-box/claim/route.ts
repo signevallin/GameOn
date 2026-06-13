@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 
 const POWERUP_POOL = [
-  'shield', 'freeze', 'double_trouble', 'all_in', 'point_steal', 'robin_hood',
+  'shield', 'freeze', 'inverterad_skarm', 'all_in', 'double_agent', 'robin_hood',
 ] as const;
 
 function getSupabase() {
