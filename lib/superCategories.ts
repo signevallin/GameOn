@@ -101,8 +101,16 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   gkn_aircraft_quiz: 'gkn',
 
   // Remote Teamwork
-  relay_typerace: 'remote',
-  relay_trivia:   'remote',
-  secret_word:    'remote',
-  secret_code:    'remote',
+  relay_typerace:   'remote',
+  relay_trivia:     'remote',
+  secret_word:      'remote',
+  secret_code:      'remote',
+  relay_geo:        'remote',
+  relay_movies:     'remote',
+  relay_science:    'remote',
+  relay_story:      'remote',
+  secret_einstein:  'remote',
+  secret_animal:    'remote',
+  secret_titanic:   'remote',
+  secret_venice:    'remote',
 };
