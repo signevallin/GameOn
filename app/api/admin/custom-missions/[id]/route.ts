@@ -63,7 +63,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     // Keep the stored category_name snapshot in sync
     if (category_id) {
       const { data: cat } = await getSupabase()
-        .from('mission_categories')
+        .from('custom_mission_categories')
         .select('name, emoji')
         .eq('id', category_id)
         .single();

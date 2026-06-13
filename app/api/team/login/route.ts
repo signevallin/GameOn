@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const nowIso = new Date().toISOString();
     return supabase
       .from('custom_missions')
-      .select('*, mission_categories(name, emoji)')
+      .select('*, custom_mission_categories(name, emoji)')
       .eq('user_id', game.user_id)
       .or(`active_from.is.null,active_from.lte.${nowIso}`)
       .or(`active_until.is.null,active_until.gte.${nowIso}`)

@@ -6,9 +6,9 @@ import { CustomMission } from '@/lib/supabase';
  * Converts a CustomMission DB row into the Mission shape
  * the game components expect. All game components work unchanged.
  */
-export function toMission(cm: CustomMission & { mission_categories?: { name: string; emoji: string } | null }): Mission {
+export function toMission(cm: CustomMission & { custom_mission_categories?: { name: string; emoji: string } | null }): Mission {
   // Prefer the live-joined category name over the stored snapshot (which may be stale)
-  const joinedCat = cm.mission_categories;
+  const joinedCat = cm.custom_mission_categories;
   const categoryLabel = joinedCat
     ? `${joinedCat.emoji} ${joinedCat.name}`
     : cm.category_name ?? 'My Missions';
