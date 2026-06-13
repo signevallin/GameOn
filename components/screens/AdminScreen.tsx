@@ -2815,12 +2815,21 @@ export default function AdminScreen({ onLogout }: Props) {
                 No missions yet. Add your first one below.
               </div>
             )}
-            {adminCustomMissions.map(cm => (
+            {adminCustomMissions.map(cm => {
+              const cat = cm.category_id ? adminCategories.find(c => c.id === cm.category_id) : null;
+              return (
               <div key={cm.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '22px' }}>{cm.icon}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '14px' }}>{cm.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{cm.type.replace('_', ' ')} · {cm.difficulty} · {cm.max_pts} pts</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                    {cat && (
+                      <span style={{ background: 'rgba(155,89,182,0.12)', color: '#b07fd4', border: '1px solid rgba(155,89,182,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                        {cat.emoji} {cat.name}
+                      </span>
+                    )}
+                    <span>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</span>
+                  </div>
                 </div>
                 <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => openEditForm(cm)}>Edit</button>
                 <button
@@ -2832,7 +2841,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   {deletingMissionId === cm.id ? '...' : 'Delete'}
                 </button>
               </div>
-            ))}
+            );})}
           </div>
 
           {/* Add / Edit form */}
