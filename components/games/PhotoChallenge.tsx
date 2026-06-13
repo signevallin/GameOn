@@ -16,6 +16,7 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted,
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState('');
   const [wordRevealed, setWordRevealed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,18 +29,49 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted,
     setError('');
   }
 
+  // Resize + compress to JPEG client-side before uploading.
+  // Typical phone camera photo: 4–8 MB → ~300 KB after compression.
+  function compressImage(src: File, maxWidth = 1200, quality = 0.85): Promise<File> {
+    return new Promise(resolve => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(src);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          blob => {
+            if (!blob) { resolve(src); return; } // fallback: upload original
+            resolve(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(src); };
+      img.src = objectUrl;
+    });
+  }
+
   async function upload() {
     if (!file) { setError('Please select a photo first.'); return; }
     setUploading(true);
+    setCompressing(true);
     setError('');
 
     try {
-      const ext = file.name.split('.').pop();
-      const path = `${team.id}/${missionId}-${Date.now()}.${ext}`;
+      const compressed = await compressImage(file);
+      setCompressing(false);
+
+      const path = `${team.id}/${missionId}-${Date.now()}.jpg`;
 
       const { error: storageErr } = await supabase.storage
         .from('photos')
-        .upload(path, file, { upsert: true });
+        .upload(path, compressed, { upsert: true, contentType: 'image/jpeg' });
 
       if (storageErr) { setError('Upload failed: ' + storageErr.message); setUploading(false); return; }
 
@@ -153,7 +185,7 @@ export default function PhotoChallenge({ question, missionId, team, onSubmitted,
         {error && <p style={{ color: 'var(--accent2)', fontSize: '13px' }}>{error}</p>}
 
         <button className="btn btn-primary btn-full" onClick={upload} disabled={!file || uploading}>
-          {uploading ? 'UPLOADING...' : 'SUBMIT PHOTO →'}
+          {compressing ? 'COMPRESSING…' : uploading ? 'UPLOADING…' : 'SUBMIT PHOTO →'}
         </button>
       </div>
     </>
