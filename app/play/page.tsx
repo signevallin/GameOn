@@ -78,6 +78,10 @@ export default function Home() {
               if (m.memberId) { setMemberId(m.memberId); setMemberName(m.memberName ?? null); }
             }
           } catch { /* ignore corrupted member storage */ }
+          try {
+            const savedCms = localStorage.getItem('gameon_custom_missions');
+            if (savedCms) setCustomMissions(JSON.parse(savedCms));
+          } catch { /* ignore corrupted storage */ }
         }
       } catch { /* corrupted storage – start fresh */ }
       setHydrated(true);
@@ -261,6 +265,7 @@ export default function Home() {
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
       localStorage.removeItem('gameon_member');
+      localStorage.removeItem('gameon_custom_missions');
     } else if ((screen === 'missions' || screen === 'challenge' || screen === 'result') && team && game) {
       localStorage.setItem('gameon_screen', 'missions');
       localStorage.setItem('gameon_team', JSON.stringify(team));
@@ -275,6 +280,7 @@ export default function Home() {
       localStorage.removeItem('gameon_team');
       localStorage.removeItem('gameon_game');
       localStorage.removeItem('gameon_member');
+      localStorage.removeItem('gameon_custom_missions');
     }
   }, [screen, team, game, hydrated, memberId, memberName]);
 
@@ -296,7 +302,9 @@ export default function Home() {
   async function handleTeamLogin(t: Team, g: Game, cms: CustomMission[] = [], mId?: string, mName?: string) {
     setTeam(t);
     setGame(g);
-    setCustomMissions(cms.map(toMission));
+    const missions = cms.map(toMission);
+    setCustomMissions(missions);
+    try { localStorage.setItem('gameon_custom_missions', JSON.stringify(missions)); } catch { /* storage full */ }
     // Initialize i18n with player's saved language, falling back to game default
     const savedLang = localStorage.getItem('gameon_lang');
     const lang = savedLang ?? (g as { language?: string }).language ?? 'en';
