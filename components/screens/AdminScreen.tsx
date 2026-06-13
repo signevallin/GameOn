@@ -956,6 +956,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
   const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
+  const [missionFilterCategory, setMissionFilterCategory] = useState<string | null>(null);
+  const [missionFilterType, setMissionFilterType] = useState<string | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
@@ -3170,6 +3172,38 @@ export default function AdminScreen({ onLogout }: Props) {
                   </div>
           </div>
 
+          {/* Mission filters */}
+          {adminCustomMissions.length > 0 && (() => {
+            const usedTypes = [...new Set(adminCustomMissions.map(m => m.type))].sort();
+            const usedCatIds = [...new Set(adminCustomMissions.map(m => m.category_id).filter(Boolean))];
+            const usedCats = adminCategories.filter(c => usedCatIds.includes(c.id));
+            const chipStyle = (active: boolean): React.CSSProperties => ({
+              padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', border: '1px solid',
+              borderColor: active ? 'var(--accent)' : 'var(--border)',
+              background: active ? 'rgba(124,189,212,0.15)' : 'transparent',
+              color: active ? 'var(--accent)' : 'var(--muted)',
+              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
+            });
+            return (usedCats.length > 0 || usedTypes.length > 1) ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                {usedCats.length > 0 && (<>
+                  <button style={chipStyle(!missionFilterCategory && !missionFilterType)} onClick={() => { setMissionFilterCategory(null); setMissionFilterType(null); }}>All</button>
+                  {usedCats.map(cat => (
+                    <button key={cat.id} style={chipStyle(missionFilterCategory === cat.id)} onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
+                      {cat.emoji} {cat.name}
+                    </button>
+                  ))}
+                  {usedTypes.length > 1 && <span style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0 2px' }} />}
+                </>)}
+                {usedTypes.length > 1 && usedTypes.map(type => (
+                  <button key={type} style={chipStyle(missionFilterType === type)} onClick={() => setMissionFilterType(v => v === type ? null : type)}>
+                    {type.replace(/_/g, ' ')}
+                  </button>
+                ))}
+              </div>
+            ) : null;
+          })()}
+
           {/* Mission list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
             {adminCustomMissions.length === 0 && !showMissionForm && (
@@ -3177,7 +3211,10 @@ export default function AdminScreen({ onLogout }: Props) {
                 No missions yet. Add your first one below.
               </div>
             )}
-            {adminCustomMissions.map(cm => {
+            {adminCustomMissions.filter(cm =>
+              (!missionFilterCategory || cm.category_id === missionFilterCategory) &&
+              (!missionFilterType || cm.type === missionFilterType)
+            ).map(cm => {
               const cat = cm.category_id ? adminCategories.find(c => c.id === cm.category_id) : null;
               return (
               <div key={cm.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
