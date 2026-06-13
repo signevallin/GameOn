@@ -911,7 +911,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [generatePreview, setGeneratePreview] = useState<{
     name: string; icon: string; description: string;
     activeFrom: string | null; activeTo: string | null;
-    selectedMissionIds: string[]; newMissions: Array<{ title: string; type: string; points: number; description: string }>;
+    selectedMissionIds: string[]; newMissions: Array<{ title: string; icon: string; type: string; points: number; description: string }>;
   } | null>(null);
   const [generateSaving, setGenerateSaving] = useState(false);
   const [generateIsBuiltin, setGenerateIsBuiltin] = useState(false);
