@@ -233,8 +233,17 @@ export default function ScavengerHunt({ team, gameId, missionId, onBack }: Props
 
       {error && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '16px' }}>{error}</p>}
 
-      <button className="btn btn-primary btn-full" onClick={onBack}>
-        ← BACK TO MISSIONS
+      {submittedCount < SCAVENGER_ITEMS.length && (
+        <p style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', marginBottom: '10px' }}>
+          {SCAVENGER_ITEMS.length - submittedCount} photo{SCAVENGER_ITEMS.length - submittedCount !== 1 ? 's' : ''} remaining — upload all to finish
+        </p>
+      )}
+      <button
+        className="btn btn-primary btn-full"
+        onClick={onBack}
+        disabled={submittedCount < SCAVENGER_ITEMS.length}
+      >
+        {submittedCount >= SCAVENGER_ITEMS.length ? '← BACK TO MISSIONS' : `📷 ${submittedCount}/${SCAVENGER_ITEMS.length} uploaded`}
       </button>
 
       {/* Photo preview modal */}

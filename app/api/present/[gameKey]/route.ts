@@ -37,13 +37,30 @@ export async function POST(
 
   const teamIds = (teams ?? []).map((t: { id: string }) => t.id);
 
-  const { data: photos } = await supabase
-    .from('photo_submissions')
-    .select('id, photo_url, team_id, created_at')
-    .eq('status', 'rated')
-    .in('team_id', teamIds.length > 0 ? teamIds : ['00000000-0000-0000-0000-000000000000'])
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const safeTeamIds = teamIds.length > 0 ? teamIds : ['00000000-0000-0000-0000-000000000000'];
+
+  const [{ data: photos }, { data: scavengerPhotos }] = await Promise.all([
+    supabase
+      .from('photo_submissions')
+      .select('id, photo_url, team_id, created_at')
+      .eq('status', 'rated')
+      .in('team_id', safeTeamIds)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('scavenger_submissions')
+      .select('id, photo_url, team_id, created_at')
+      .eq('status', 'rated')
+      .in('team_id', safeTeamIds)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
+
+  const allPhotos = [
+    ...(photos ?? []),
+    ...(scavengerPhotos ?? []),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+   .slice(0, 30);
 
   return NextResponse.json(
     {
@@ -55,7 +72,7 @@ export async function POST(
         language: game.language ?? 'en',
       },
       teams: teams ?? [],
-      photos: photos ?? [],
+      photos: allPhotos,
     },
     { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
   );
