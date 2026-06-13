@@ -6,7 +6,11 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+function getClient() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+  return new Anthropic({ apiKey: key });
+}
 
 function adminClient() {
   return createClient(
@@ -31,10 +35,11 @@ export async function POST(req: Request) {
 
   // Fetch mission titles from custom_missions (builtin missions don't have a DB row)
   const db = adminClient();
-  const { data: customMissions } = await db
+  const { data: customMissions, error: dbError } = await db
     .from('custom_missions')
     .select('id, name')
     .in('id', missionIds);
+  if (dbError) console.error('[templates/describe] DB error', dbError);
 
   const missionNames = (customMissions ?? []).map(m => m.name);
 
@@ -46,7 +51,7 @@ Missions included: ${missionNames.length > 0 ? missionNames.join(', ') : 'variou
 Write a 1-2 sentence description for event organizers explaining what this template is good for and what makes it fun. Be concise and energetic. Return ONLY the description text, no quotes.`;
 
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: 'claude-haiku-4-5',
       max_tokens: 200,
       messages: [{ role: 'user', content: prompt }],
