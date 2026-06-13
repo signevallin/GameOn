@@ -3215,21 +3215,52 @@ export default function AdminScreen({ onLogout }: Props) {
                             <div style={{
                               position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
                               background: 'var(--card)', border: '1px solid var(--border)',
-                              borderRadius: '10px', padding: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                              display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', width: '216px',
+                              borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                              width: '280px',
                             }}>
-                              {['🎮','🎯','🧩','🎲','🏆','⚡','🔥','💡','🌍','🎨','📸','🎵','🎬','🧠','🚀','⭐','💎','🎪','🎭','🎸','🎤','🏅','🎊','🎁','🔮','🦁','🦊','🐉','🌈','🍕','🎩','🃏','♟️','🎳','🪄','🧪','📋','🏋️','💪','🤝','🎓','🌟'].map(e => (
-                                <button
-                                  key={e}
-                                  type="button"
-                                  onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
-                                  style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
-                                  onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
-                                  onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
-                                >
-                                  {e}
-                                </button>
-                              ))}
+                              {/* Free-text input */}
+                              <input
+                                type="text"
+                                placeholder="Type or paste any emoji…"
+                                maxLength={4}
+                                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                onChange={e => {
+                                  const v = [...e.target.value].filter(c => c.trim()).join('');
+                                  if (v) { setCategoryFormEmoji(v); setCategoryEmojiPickerOpen(false); }
+                                }}
+                              />
+                              {/* Grid */}
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '240px', overflowY: 'auto' }}>
+                                {[
+                                  // Games & sports
+                                  '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬',
+                                  // Music & performance
+                                  '🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻',
+                                  // Nature & animals
+                                  '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥',
+                                  // Space & science
+                                  '🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡',
+                                  // Food & drink
+                                  '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃',
+                                  // People & activities
+                                  '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗',
+                                  // Objects & symbols
+                                  '💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐',
+                                  // Misc fun
+                                  '👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸',
+                                ].map(e => (
+                                  <button
+                                    key={e}
+                                    type="button"
+                                    onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
+                                    style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                    onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                    onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                                  >
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
