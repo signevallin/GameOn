@@ -914,6 +914,7 @@ export default function AdminScreen({ onLogout }: Props) {
     selectedMissionIds: string[]; newMissions: Array<{ title: string; type: string; points: number; description: string }>;
   } | null>(null);
   const [generateSaving, setGenerateSaving] = useState(false);
+  const [generateIsBuiltin, setGenerateIsBuiltin] = useState(false);
 
   // AI photo rating
   const [aiPhotoRating, setAiPhotoRating] = useState(false);
@@ -1660,7 +1661,7 @@ export default function AdminScreen({ onLogout }: Props) {
             icon: generatePreview.icon,
             description: generatePreview.description,
             missionIds: allMissionIds,
-            isBuiltin: false,
+            isBuiltin: generateIsBuiltin,
             activeFrom: generatePreview.activeFrom,
             activeTo: generatePreview.activeTo,
           }),
@@ -3604,6 +3605,77 @@ export default function AdminScreen({ onLogout }: Props) {
 
   if (view === 'manage-templates') return (
     <>
+      {showGenerateModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}>✕</button>
+            </div>
+            {!generatePreview ? (
+              <>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>Describe your event — theme, duration, number of teams, vibe...</p>
+                <textarea
+                  value={generatePrompt}
+                  onChange={e => setGeneratePrompt(e.target.value)}
+                  placeholder="e.g. Halloween scavenger hunt for 8 teams, spooky and competitive, around 45 minutes"
+                  rows={4}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13, fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                />
+                <button
+                  onClick={generateTemplate}
+                  disabled={generateLoading || !generatePrompt.trim()}
+                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: (generateLoading || !generatePrompt.trim()) ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
+                >
+                  {generateLoading ? 'Generating...' : 'Generate →'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 24 }}>{generatePreview.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
+                      {generatePreview.activeFrom && generatePreview.activeTo && (
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2 }}>🗓 {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 12px' }}>{generatePreview.description}</p>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Missions ({generatePreview.selectedMissionIds.length + generatePreview.newMissions.length} total)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
+                    {generatePreview.newMissions.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, background: 'rgba(117,171,200,0.15)', color: 'var(--accent)', borderRadius: 4, padding: '1px 5px', flexShrink: 0 }}>NEW</span>
+                        {m.title}
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>+ {generatePreview.selectedMissionIds.length} existing missions</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => setGeneratePreview(null)}
+                    style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={saveGeneratedTemplate}
+                    disabled={generateSaving}
+                    style={{ flex: 2, padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 13, cursor: generateSaving ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {generateSaving ? 'Saving...' : 'Save template'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <div className="nav-right">
@@ -3616,7 +3688,15 @@ export default function AdminScreen({ onLogout }: Props) {
             <h2 style={{ margin: '0 0 4px' }}>Manage Templates</h2>
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Edit built-in templates visible to all admins</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowNewTemplateForm(true)} style={{ fontSize: '13px' }}>+ NEW TEMPLATE</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => { setGenerateIsBuiltin(true); setShowGenerateModal(true); }}
+              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+            >
+              ✨ Generate with AI
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowNewTemplateForm(true)} style={{ fontSize: '13px' }}>+ NEW TEMPLATE</button>
+          </div>
         </div>
 
         {/* New template form */}
@@ -3939,7 +4019,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
           </div>
           <button
-            onClick={() => setShowGenerateModal(true)}
+            onClick={() => { setGenerateIsBuiltin(false); setShowGenerateModal(true); }}
             style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", flexShrink: 0, marginTop: 4 }}
           >
             ✨ Generate with AI
