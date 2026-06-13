@@ -179,7 +179,11 @@
       "completed": "Relay complete!",
       "typeHere": "Start typing here…",
       "pct": "{{pct}}% done",
-      "myTurnsDone": "You've done your part! Waiting for the others…"
+      "myTurnsDone": "You've done your part! Waiting for the others…",
+      "revealAnswer": "Reveal Answer 👁",
+      "answerLabel": "Answer",
+      "correct": "Correct ✓",
+      "wrong": "Wrong ✗"
     },
     "sharedSecret": {
       "loading": "Loading…",

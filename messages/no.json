@@ -179,7 +179,11 @@
       "completed": "Stafetten er ferdig!",
       "typeHere": "Begynn å skrive her…",
       "pct": "{{pct}}% ferdig",
-      "myTurnsDone": "Du har gjort din del! Venter på de andre…"
+      "myTurnsDone": "Du har gjort din del! Venter på de andre…",
+      "revealAnswer": "Vis svar 👁",
+      "answerLabel": "Svar",
+      "correct": "Riktig ✓",
+      "wrong": "Feil ✗"
     },
     "sharedSecret": {
       "loading": "Laster…",

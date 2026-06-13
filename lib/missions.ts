@@ -78,7 +78,7 @@ export type Mission = {
   hexColour?: string;
   // ── Remote mission fields ──────────────────────────────────────────────────
   /** relay: one segment per team member */
-  segments?: { prompt: string }[];
+  segments?: { prompt: string; answer?: string }[];
   /** relay: 'typerace' = member must type the prompt exactly; 'button' = honor-system Done button */
   relayMode?: 'typerace' | 'button';
 };
@@ -1541,10 +1541,10 @@ export const MISSIONS: Mission[] = [
     type: 'relay',
     relayMode: 'button',
     segments: [
-      { prompt: "What is Australia's capital city? (Answer: Canberra)" },
-      { prompt: 'How many bones does an adult human have? (Answer: 206)' },
-      { prompt: 'In what year did the Berlin Wall fall? (Answer: 1989)' },
-      { prompt: 'What is the chemical symbol for gold? (Answer: Au)' },
+      { prompt: "What is Australia's capital city?", answer: 'Canberra' },
+      { prompt: 'How many bones does an adult human have?', answer: '206' },
+      { prompt: 'In what year did the Berlin Wall fall?', answer: '1989' },
+      { prompt: 'What is the chemical symbol for gold?', answer: 'Au' },
     ],
   },
   {

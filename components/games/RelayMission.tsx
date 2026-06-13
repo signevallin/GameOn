@@ -34,6 +34,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   const [relayState, setRelayState] = useState<RelayMissionState | null>(null);
   const [typed, setTyped] = useState('');
   const [started, setStarted] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +91,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         setRelayState(payload.relayState);
         setTyped('');
         setStarted(false);
+        setShowAnswer(false);
         clearCountdown();
       })
       .subscribe();
@@ -162,6 +164,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       setRelayState(newRelayState);
       setTyped('');
       setStarted(false);
+      setShowAnswer(false);
       setLoading(false);
 
       // Broadcast to all other members
@@ -301,6 +304,52 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
                 {t('challenge.relay.pct', { pct: myCurrentSegment ? Math.round((typed.length / myCurrentSegment.prompt.length) * 100) : 0 })}
               </p>
+            </>
+          ) : myCurrentSegment?.answer ? (
+            /* Trivia mode: reveal answer first, then mark correct or skip */
+            <>
+              {!showAnswer ? (
+                <button
+                  className="btn btn-primary"
+                  style={{ width: '100%' }}
+                  onClick={() => setShowAnswer(true)}
+                >
+                  {t('challenge.relay.revealAnswer')}
+                </button>
+              ) : (
+                <>
+                  <div style={{
+                    marginBottom: '16px', padding: '16px 20px',
+                    background: 'rgba(34,197,94,0.08)', border: '1px solid var(--accent3)',
+                    borderRadius: '12px', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '11px', color: 'var(--accent3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                      {t('challenge.relay.answerLabel')}
+                    </div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--fg)' }}>
+                      {myCurrentSegment.answer}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      className="btn"
+                      style={{ flex: 1, borderColor: 'var(--accent2)', color: 'var(--accent2)' }}
+                      onClick={() => advance(true)}
+                      disabled={loading}
+                    >
+                      {t('challenge.relay.wrong')}
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      style={{ flex: 1 }}
+                      onClick={() => advance(false)}
+                      disabled={loading}
+                    >
+                      {loading ? t('challenge.relay.saving') : t('challenge.relay.correct')}
+                    </button>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <button

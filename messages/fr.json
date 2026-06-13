@@ -179,7 +179,11 @@
       "completed": "Relais terminé !",
       "typeHere": "Commencer à taper ici…",
       "pct": "{{pct}}% terminé",
-      "myTurnsDone": "Tu as fait ta part ! En attente des autres…"
+      "myTurnsDone": "Tu as fait ta part ! En attente des autres…",
+      "revealAnswer": "Révéler la réponse 👁",
+      "answerLabel": "Réponse",
+      "correct": "Correct ✓",
+      "wrong": "Incorrect ✗"
     },
     "sharedSecret": {
       "loading": "Chargement…",

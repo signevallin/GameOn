@@ -179,7 +179,11 @@
       "completed": "Staffel abgeschlossen!",
       "typeHere": "Hier tippen…",
       "pct": "{{pct}}% fertig",
-      "myTurnsDone": "Du hast deinen Teil erledigt! Warte auf die anderen…"
+      "myTurnsDone": "Du hast deinen Teil erledigt! Warte auf die anderen…",
+      "revealAnswer": "Antwort anzeigen 👁",
+      "answerLabel": "Antwort",
+      "correct": "Richtig ✓",
+      "wrong": "Falsch ✗"
     },
     "sharedSecret": {
       "loading": "Laden…",
