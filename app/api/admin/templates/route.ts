@@ -7,6 +7,8 @@ import { isTemplateActive } from '@/lib/template-utils';
 
 export const dynamic = 'force-dynamic';
 
+const mmddRe = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,11 +55,10 @@ export async function POST(req: Request) {
   }
 
   // Validate MM-DD format if provided
-  const mmddRe = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
-  if (activeFrom && !mmddRe.test(activeFrom)) {
+  if (activeFrom != null && !mmddRe.test(activeFrom)) {
     return NextResponse.json({ error: 'activeFrom must be MM-DD' }, { status: 400 });
   }
-  if (activeTo && !mmddRe.test(activeTo)) {
+  if (activeTo != null && !mmddRe.test(activeTo)) {
     return NextResponse.json({ error: 'activeTo must be MM-DD' }, { status: 400 });
   }
 
@@ -71,8 +72,8 @@ export async function POST(req: Request) {
       mission_ids: missionIds,
       is_builtin: isBuiltin ?? false,
       user_id: isBuiltin ? null : admin.userId,
-      active_from: activeFrom || null,
-      active_to: activeTo || null,
+      active_from: activeFrom ?? null,
+      active_to: activeTo ?? null,
     })
     .select()
     .single();
