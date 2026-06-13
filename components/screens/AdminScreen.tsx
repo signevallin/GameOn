@@ -4673,6 +4673,11 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         </div>
 
+        {createError && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>{createError}</p>}
+        <button className="btn btn-primary btn-full" style={{ marginBottom: '32px' }} onClick={createGame} disabled={creating}>
+          {creating ? 'CREATING...' : '🎮 CREATE GAME →'}
+        </button>
+
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <label className="form-label" style={{ margin: 0 }}>Select Missions ({selectedMissions.length} selected)</label>
@@ -4835,7 +4840,6 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         </div>
 
-        {createError && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>{createError}</p>}
         <button className="btn btn-primary btn-full" onClick={createGame} disabled={creating}>
           {creating ? 'CREATING...' : '🎮 CREATE GAME →'}
         </button>
