@@ -17,6 +17,7 @@ export type BrandingSettings = {
   brand_primary_color: string | null;
   brand_name: string | null;
   apply_to_all_games: boolean;
+  onboarded_at: string | null;
 };
 
 /** GET — fetch branding settings for the current admin */
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
 
   const { data } = await adminClient()
     .from('admin_branding')
-    .select('brand_logo_url, brand_primary_color, brand_name, apply_to_all_games')
+    .select('brand_logo_url, brand_primary_color, brand_name, apply_to_all_games, onboarded_at')
     .eq('user_id', admin.userId)
     .maybeSingle();
 
@@ -35,6 +36,7 @@ export async function GET(req: Request) {
     brand_primary_color: data?.brand_primary_color ?? null,
     brand_name: data?.brand_name ?? null,
     apply_to_all_games: data?.apply_to_all_games ?? false,
+    onboarded_at: data?.onboarded_at ?? null,
   });
 }
 
