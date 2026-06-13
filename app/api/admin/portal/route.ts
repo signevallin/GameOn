@@ -13,17 +13,21 @@ export async function POST(req: Request) {
 
   const sub = await getSubscription(admin.userId);
 
-  if (!sub.stripe_customer_id) {
+  if (!sub.stripe_customer_id || !sub.stripe_customer_id.startsWith('cus_')) {
     return NextResponse.json(
       { error: 'No active subscription found.' },
       { status: 404 }
     );
   }
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: sub.stripe_customer_id,
-    return_url: `${BASE_URL}/play`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: sub.stripe_customer_id,
+      return_url: `${BASE_URL}/play`,
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error('[portal] Stripe error:', err);
+    return NextResponse.json({ error: 'Failed to open billing portal.' }, { status: 500 });
+  }
 }

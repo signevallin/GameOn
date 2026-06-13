@@ -1751,24 +1751,17 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function handlePortal() {
     setPortalLoading(true);
-    // Open window immediately (before await) so browsers don't block it as a popup
-    const win = window.open('', '_blank', 'noopener,noreferrer');
     try {
       const res = await POST('/api/admin/portal');
       const data = await res.json();
       if (data.url) {
-        if (win) win.location.href = data.url;
-        else window.location.href = data.url;
+        window.location.href = data.url;
+      } else if (res.status === 404) {
+        handleUpgrade('pro');
       } else {
-        win?.close();
-        if (res.status === 404) {
-          handleUpgrade('pro');
-        } else {
-          showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
-        }
+        showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
       }
     } catch {
-      win?.close();
       showToast('Network error. Please try again.', 'error');
     } finally {
       setPortalLoading(false);
