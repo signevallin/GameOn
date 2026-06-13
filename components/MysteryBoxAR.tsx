@@ -45,7 +45,6 @@ const POWERUP_ICONS: Record<string, string> = {
   shield: '🛡️',
   freeze: '❄️',
   inverterad_skarm: '🪞',
-  smoke_screen: '💨',
   all_in: '🎲',
   double_agent: '🕵️',
   robin_hood: '🏹',

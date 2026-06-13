@@ -18,9 +18,10 @@ const MSG_KEYS: Record<string, string> = {
   sabotage: 'sabotage_msg',
   double_points: 'double_points_msg',
   final_frenzy: 'final_frenzy_msg',
+  smoke_screen: 'smoke_screen_msg',
 };
 
-const VALID_TYPES = ['sabotage', 'double_points', 'fake_hint', 'final_frenzy', 'hot_potato'];
+const VALID_TYPES = ['sabotage', 'double_points', 'fake_hint', 'final_frenzy', 'hot_potato', 'smoke_screen'];
 
 export async function POST(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
@@ -77,6 +78,30 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true, expiresAt });
+  }
+
+  // ── SMOKE SCREEN (reusable, no powerups_used tracking) ──────────────────────
+  if (type === 'smoke_screen') {
+    if (!targetTeamId) return NextResponse.json({ error: 'Missing targetTeamId.' }, { status: 400 });
+
+    const { data: team, error: teamErr } = await supabase
+      .from('teams').select('active_effects').eq('id', targetTeamId).single();
+    if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
+
+    const effects = (team.active_effects as Record<string, unknown>) ?? {};
+    const shieldUntil = effects.shield_until ? new Date(effects.shield_until as string) : null;
+    if (shieldUntil && shieldUntil > new Date()) {
+      return NextResponse.json({ error: 'That team has a shield active! Smoke Screen blocked.' }, { status: 400 });
+    }
+
+    const smokeUntil = new Date(Date.now() + 60 * 1000).toISOString();
+    await supabase.from('teams').update({
+      active_effects: { ...effects, smoke_screen_until: smokeUntil },
+      pending_notification: { type: 'smoke_screen', msgKey: 'smoke_screen_msg', params: {} },
+      updated_at: new Date().toISOString(),
+    }).eq('id', targetTeamId);
+
+    return NextResponse.json({ ok: true });
   }
 
   // final_frenzy and "all" broadcasts

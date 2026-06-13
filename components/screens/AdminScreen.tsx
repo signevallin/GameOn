@@ -165,6 +165,7 @@ function PowerUpsCard({
     { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
     { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
     { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: true },
+    { type: 'smoke_screen', icon: '💨', label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');

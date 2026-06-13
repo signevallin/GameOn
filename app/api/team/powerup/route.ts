@@ -11,7 +11,7 @@ function getSupabase() {
   );
 }
 
-const VALID_TYPES = ['freeze', 'inverterad_skarm', 'shield', 'all_in', 'double_agent', 'robin_hood', 'smoke_screen'] as const;
+const VALID_TYPES = ['freeze', 'inverterad_skarm', 'shield', 'all_in', 'double_agent', 'robin_hood'] as const;
 type PowerUpType = typeof VALID_TYPES[number];
 
 function markPowerupUsed(
@@ -106,14 +106,6 @@ export async function POST(req: Request) {
     await supabase.from('teams').update({
       active_effects: { ...targetEffects, inverterad_skarm_until: inverteradUntil },
       pending_notification: { type: 'powerup_received', msgKey: 'inverterad_skarm_msg', params: {} },
-    }).eq('id', targetTeamId);
-  }
-
-  if (type === 'smoke_screen') {
-    const smokeUntil = new Date(Date.now() + 60 * 1000).toISOString();
-    await supabase.from('teams').update({
-      active_effects: { ...targetEffects, smoke_screen_until: smokeUntil },
-      pending_notification: { type: 'powerup_received', msgKey: 'smoke_screen_msg', params: {} },
     }).eq('id', targetTeamId);
   }
 
