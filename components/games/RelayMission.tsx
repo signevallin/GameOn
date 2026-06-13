@@ -97,7 +97,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   // Subscribe to relay-advance events on the shared channel
   useEffect(() => {
     const channel = supabase
-      .channel(`remote-nav-${team.id}`)
+      .channel(`relay-sync-${team.id}`)
       .on('broadcast', { event: 'relay-advance' }, ({ payload }: { payload: { missionId: string; relayState: RelayMissionState } }) => {
         if (payload.missionId !== mission.id) return;
         setRelayState(payload.relayState);
