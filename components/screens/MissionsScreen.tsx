@@ -707,14 +707,31 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
     return { key, missions, minPts, maxPts, done: doneMissions.length };
   }).filter(Boolean) as { key: SuperCategoryKey; missions: typeof visibleMissions; minPts: number; maxPts: number; done: number }[];
 
-  const customCategoryName = visibleCustomMissions[0]?.category ?? null;
-  const customCategoryDone = visibleCustomMissions.filter(m => team.completed?.includes(m.id)).length;
-  const customMinPts = visibleCustomMissions.length
-    ? Math.min(...visibleCustomMissions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts))
-    : 0;
-  const customMaxPts = visibleCustomMissions.length
-    ? Math.max(...visibleCustomMissions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts))
-    : 0;
+  // Group custom missions by category — one card per distinct category
+  const customCategoryGroups = (() => {
+    const order: string[] = [];
+    const map = new Map<string, typeof visibleCustomMissions>();
+    for (const m of visibleCustomMissions) {
+      const name = m.category ?? 'Custom';
+      if (!map.has(name)) { order.push(name); map.set(name, []); }
+      map.get(name)!.push(m);
+    }
+    return order.map(name => {
+      const missions = map.get(name)!;
+      const pts = missions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts);
+      return {
+        name,
+        missions,
+        minPts: Math.min(...pts),
+        maxPts: Math.max(...pts),
+        done: missions.filter(m => team.completed?.includes(m.id)).length,
+      };
+    });
+  })();
+
+  // Helpers for the selected custom category (selectedCategory = '__custom__:<name>')
+  const isCustomCategory = typeof selectedCategory === 'string' && selectedCategory.startsWith('__custom__:');
+  const selectedCustomCategoryName = isCustomCategory ? (selectedCategory as string).slice('__custom__:'.length) : null;
 
   return (
     <>
@@ -1102,26 +1119,27 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                     );
                   })}
 
-                  {/* ── Custom category ── */}
-                  {visibleCustomMissions.length > 0 && customCategoryName && selectedCategory === null && (
+                  {/* ── Custom categories — one card per distinct category ── */}
+                  {selectedCategory === null && customCategoryGroups.map(grp => (
                     <div
+                      key={grp.name}
                       className="card"
                       style={{ cursor: 'pointer', borderColor: '#9b59b6', opacity: 1, minHeight: '120px', height: '100%', boxSizing: 'border-box', gridColumn: '1 / -1' }}
-                      onClick={() => setSelectedCategory('__custom__' as SuperCategoryKey)}
+                      onClick={() => setSelectedCategory((`__custom__:${grp.name}`) as SuperCategoryKey)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span style={{ fontSize: '24px' }}>⭐</span>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#9b59b6' }}>{customCategoryName.toUpperCase()}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{customMinPts}–{customMaxPts} pts</div>
+                          <div style={{ fontWeight: 800, fontSize: '14px', color: '#9b59b6' }}>{grp.name.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{grp.minPts}–{grp.maxPts} pts</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 800, fontSize: '16px', color: '#9b59b6' }}>{customCategoryDone}/{visibleCustomMissions.length}</div>
+                          <div style={{ fontWeight: 800, fontSize: '16px', color: '#9b59b6' }}>{grp.done}/{grp.missions.length}</div>
                           <div style={{ fontSize: '10px', color: 'var(--muted)' }}>done</div>
                         </div>
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
 
                 {/* We're done */}
@@ -1191,18 +1209,18 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
                     <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t('missions.breadcrumbMissions')}</span>
                     <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
-                    {selectedCategory !== ('__custom__' as SuperCategoryKey) ? (
+                    {!isCustomCategory ? (
                       <>
-                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory!].icon}</span>
                         <span style={{
                           fontWeight: 800,
                           fontSize: '15px',
-                          color: SUPER_CATEGORIES[selectedCategory].color,
+                          color: SUPER_CATEGORIES[selectedCategory!].color,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}>
-                          {SUPER_CATEGORIES[selectedCategory].label}
+                          {SUPER_CATEGORIES[selectedCategory!].label}
                         </span>
                       </>
                     ) : (
@@ -1216,7 +1234,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}>
-                          {customCategoryName ?? 'Custom'}
+                          {selectedCustomCategoryName ?? 'Custom'}
                         </span>
                       </>
                     )}
@@ -1224,7 +1242,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 </div>
 
                 {/* Standard category missions */}
-                {selectedCategory !== ('__custom__' as SuperCategoryKey) && (
+                {!isCustomCategory && (
                   <div className="missions-grid" style={{ paddingBottom: '40px' }}>
                     {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
                       const done = team.completed?.includes(m.id);
@@ -1250,9 +1268,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 )}
 
                 {/* ── Custom category missions list ── */}
-                {selectedCategory === ('__custom__' as SuperCategoryKey) && visibleCustomMissions.length > 0 && (
+                {isCustomCategory && (
                   <div className="missions-grid" style={{ paddingBottom: '40px' }}>
-                    {visibleCustomMissions.map(m => {
+                    {(customCategoryGroups.find(g => g.name === selectedCustomCategoryName)?.missions ?? []).map(m => {
                       const done = team.completed?.includes(m.id);
                       const pts = game.mission_max_pts?.[m.id] ?? m.maxPts;
                       return (
