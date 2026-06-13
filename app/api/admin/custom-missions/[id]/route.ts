@@ -26,7 +26,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   if (existing.user_id !== admin.userId && !admin.isSuperAdmin) return unauthorizedResponse();
 
-  const { category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
+  const { category_id, category_name: explicitCategoryName, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
 
   if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
 
@@ -68,6 +68,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         .eq('id', category_id)
         .single();
       updateFields.category_name = cat ? `${cat.emoji} ${cat.name}` : 'My Missions';
+    } else if (typeof explicitCategoryName === 'string' && explicitCategoryName.trim()) {
+      // Super-category or any explicit label when no admin category is set
+      updateFields.category_name = explicitCategoryName.trim();
     } else {
       updateFields.category_name = 'My Missions';
     }

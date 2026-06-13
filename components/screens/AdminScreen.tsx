@@ -3105,10 +3105,14 @@ export default function AdminScreen({ onLogout }: Props) {
       loadAdminCustomMissions();
     }
 
-    async function moveMissionToCategory(missionId: string, categoryId: string | null) {
+    async function moveMissionToCategory(missionId: string, categoryId: string | null, categoryName?: string) {
       // Optimistic update
       setAdminCustomMissions(prev =>
-        prev.map(m => m.id === missionId ? { ...m, category_id: categoryId } : m)
+        prev.map(m => m.id === missionId ? {
+          ...m,
+          category_id: categoryId,
+          category_name: categoryName ?? (categoryId ? m.category_name : 'My Missions'),
+        } : m)
       );
       await fetch(`/api/admin/custom-missions/${missionId}`, {
         method: 'PUT',
@@ -3116,7 +3120,10 @@ export default function AdminScreen({ onLogout }: Props) {
           'Content-Type': 'application/json',
           ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         },
-        body: JSON.stringify({ category_id: categoryId }),
+        body: JSON.stringify({
+          category_id: categoryId,
+          ...(categoryName ? { category_name: categoryName } : {}),
+        }),
       });
     }
 
@@ -3319,58 +3326,98 @@ export default function AdminScreen({ onLogout }: Props) {
             });
 
             if (draggingMissionId) {
-              // DnD mode: show all categories as drop zones (all categories, not just used ones)
+              // DnD mode: show admin categories + super categories as drop zones
               const draggedMission = adminCustomMissions.find(m => m.id === draggingMissionId);
-              const hasCat = !!draggedMission?.category_id;
+              const hasCat = !!draggedMission?.category_id || (draggedMission?.category_name && draggedMission.category_name !== 'My Missions');
+              const superCats = Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string; color: string }][];
               return (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600, letterSpacing: '.05em', marginRight: '2px' }}>DROP TO:</span>
-                  {adminCategories.map(cat => (
-                    <div
-                      key={cat.id}
-                      style={dropZoneStyle(dropTargetCatId === cat.id)}
-                      onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
-                      onDragLeave={() => setDropTargetCatId(null)}
-                      onDrop={e => {
-                        e.preventDefault();
-                        moveMissionToCategory(draggingMissionId, cat.id);
-                        setDraggingMissionId(null);
-                        setDropTargetCatId(null);
-                      }}
-                    >
-                      {cat.emoji} {cat.name}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                  {adminCategories.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>MY CATS</span>
+                      {adminCategories.map(cat => (
+                        <div
+                          key={cat.id}
+                          style={dropZoneStyle(dropTargetCatId === cat.id)}
+                          onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
+                          onDragLeave={() => setDropTargetCatId(null)}
+                          onDrop={e => {
+                            e.preventDefault();
+                            moveMissionToCategory(draggingMissionId, cat.id);
+                            setDraggingMissionId(null);
+                            setDropTargetCatId(null);
+                          }}
+                        >
+                          {cat.emoji} {cat.name}
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>BUILT-IN</span>
+                    {superCats.map(([key, sc]) => {
+                      const zoneId = `super:${key}`;
+                      return (
+                        <div
+                          key={key}
+                          style={{ ...dropZoneStyle(dropTargetCatId === zoneId), borderColor: dropTargetCatId === zoneId ? sc.color : `${sc.color}55` }}
+                          onDragOver={e => { e.preventDefault(); setDropTargetCatId(zoneId); }}
+                          onDragLeave={() => setDropTargetCatId(null)}
+                          onDrop={e => {
+                            e.preventDefault();
+                            moveMissionToCategory(draggingMissionId, null, `${sc.icon} ${sc.label}`);
+                            setDraggingMissionId(null);
+                            setDropTargetCatId(null);
+                          }}
+                        >
+                          {sc.icon} {sc.label}
+                        </div>
+                      );
+                    })}
+                  </div>
                   {hasCat && (
-                    <div
-                      style={noneZoneStyle(dropTargetCatId === 'none')}
-                      onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
-                      onDragLeave={() => setDropTargetCatId(null)}
-                      onDrop={e => {
-                        e.preventDefault();
-                        moveMissionToCategory(draggingMissionId, null);
-                        setDraggingMissionId(null);
-                        setDropTargetCatId(null);
-                      }}
-                    >
-                      ✕ Remove from category
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}></span>
+                      <div
+                        style={noneZoneStyle(dropTargetCatId === 'none')}
+                        onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
+                        onDragLeave={() => setDropTargetCatId(null)}
+                        onDrop={e => {
+                          e.preventDefault();
+                          moveMissionToCategory(draggingMissionId, null);
+                          setDraggingMissionId(null);
+                          setDropTargetCatId(null);
+                        }}
+                      >
+                        ✕ Remove from category
+                      </div>
                     </div>
                   )}
                 </div>
               );
             }
 
-            return (usedCats.length > 0 || usedTypes.length > 1) ? (
+            // Super categories in use (missions assigned via drag to built-in cats)
+            const superCatLabels = new Set(
+              adminCustomMissions
+                .filter(m => !m.category_id && m.category_name && m.category_name !== 'My Missions')
+                .map(m => m.category_name)
+            );
+            const hasAnyFilter = usedCats.length > 0 || superCatLabels.size > 0 || usedTypes.length > 1;
+            return hasAnyFilter ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                {usedCats.length > 0 && (<>
-                  <button style={chipStyle(!missionFilterCategory && !missionFilterType)} onClick={() => { setMissionFilterCategory(null); setMissionFilterType(null); }}>All</button>
-                  {usedCats.map(cat => (
-                    <button key={cat.id} style={chipStyle(missionFilterCategory === cat.id)} onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
-                      {cat.emoji} {cat.name}
-                    </button>
-                  ))}
-                  {usedTypes.length > 1 && <span style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0 2px' }} />}
-                </>)}
+                <button style={chipStyle(!missionFilterCategory && !missionFilterType)} onClick={() => { setMissionFilterCategory(null); setMissionFilterType(null); }}>All</button>
+                {usedCats.map(cat => (
+                  <button key={cat.id} style={chipStyle(missionFilterCategory === cat.id)} onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
+                    {cat.emoji} {cat.name}
+                  </button>
+                ))}
+                {[...superCatLabels].map(label => (
+                  <button key={label} style={chipStyle(missionFilterCategory === `name:${label}`)} onClick={() => setMissionFilterCategory(v => v === `name:${label}` ? null : `name:${label}`)}>
+                    {label}
+                  </button>
+                ))}
+                {usedTypes.length > 1 && <span style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0 2px' }} />}
                 {usedTypes.length > 1 && usedTypes.map(type => (
                   <button key={type} style={chipStyle(missionFilterType === type)} onClick={() => setMissionFilterType(v => v === type ? null : type)}>
                     {type.replace(/_/g, ' ')}
@@ -3387,21 +3434,31 @@ export default function AdminScreen({ onLogout }: Props) {
                 No missions yet. Add your first one below.
               </div>
             )}
-            {adminCustomMissions.filter(cm =>
-              (!missionFilterCategory || cm.category_id === missionFilterCategory) &&
-              (!missionFilterType || cm.type === missionFilterType)
-            ).map(cm => {
+            {adminCustomMissions.filter(cm => {
+              if (missionFilterCategory) {
+                if (missionFilterCategory.startsWith('name:')) {
+                  // Super-category filter: match by category_name
+                  if (cm.category_name !== missionFilterCategory.slice(5)) return false;
+                } else {
+                  // Admin-category filter: match by UUID
+                  if (cm.category_id !== missionFilterCategory) return false;
+                }
+              }
+              if (missionFilterType && cm.type !== missionFilterType) return false;
+              return true;
+            }).map(cm => {
               const cat = cm.category_id ? adminCategories.find(c => c.id === cm.category_id) : null;
+              const superCatLabel = !cm.category_id && cm.category_name && cm.category_name !== 'My Missions' ? cm.category_name : null;
               return (
               <div
                 key={cm.id}
-                draggable={adminCategories.length > 0}
+                draggable
                 onDragStart={() => setDraggingMissionId(cm.id)}
                 onDragEnd={() => { setDraggingMissionId(null); setDropTargetCatId(null); }}
                 style={{
                   background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px',
                   display: 'flex', alignItems: 'center', gap: '12px',
-                  cursor: adminCategories.length > 0 ? 'grab' : 'default',
+                  cursor: 'grab',
                   opacity: draggingMissionId === cm.id ? 0.4 : 1,
                   transition: 'opacity .1s',
                 }}
@@ -3413,6 +3470,11 @@ export default function AdminScreen({ onLogout }: Props) {
                     {cat && (
                       <span style={{ background: 'rgba(155,89,182,0.12)', color: '#b07fd4', border: '1px solid rgba(155,89,182,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
                         {cat.emoji} {cat.name}
+                      </span>
+                    )}
+                    {superCatLabel && !cat && (
+                      <span style={{ background: 'rgba(100,149,237,0.12)', color: '#6495ed', border: '1px solid rgba(100,149,237,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                        {superCatLabel}
                       </span>
                     )}
                     <span>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</span>
