@@ -3561,7 +3561,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <button
                   onClick={() => suggestTemplateDescription(newTemplateName, newTemplateMissions, setNewTemplateDesc, setNewTemplateDescLoading)}
                   disabled={newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
-                  style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", opacity: (!newTemplateName.trim() || newTemplateMissions.length === 0) ? 0.5 : 1 }}
+                  style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: (newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0) ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif", opacity: (newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0) ? 0.5 : 1 }}
                 >
                   {newTemplateDescLoading ? '...' : '✨ Suggest'}
                 </button>
@@ -3686,7 +3686,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       <button
                         onClick={() => suggestTemplateDescription(editTemplateName, editTemplateMissions, setEditTemplateDesc, setEditTemplateDescLoading)}
                         disabled={editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
-                        style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", opacity: (!editTemplateName.trim() || editTemplateMissions.length === 0) ? 0.5 : 1 }}
+                        style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: (editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0) ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif", opacity: (editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0) ? 0.5 : 1 }}
                       >
                         {editTemplateDescLoading ? '...' : '✨ Suggest'}
                       </button>
@@ -3734,7 +3734,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       {editTemplateLoading ? 'Saving...' : 'SAVE'}
                     </button>
                     <button
-                      onClick={() => setEditingTemplateId(null)}
+                      onClick={() => { setEditingTemplateId(null); setEditTemplateDescLoading(false); }}
                       style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
                     >
                       Cancel
