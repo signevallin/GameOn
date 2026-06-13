@@ -903,6 +903,18 @@ export default function AdminScreen({ onLogout }: Props) {
   const [editTemplateActiveFrom, setEditTemplateActiveFrom] = useState('');
   const [editTemplateActiveTo, setEditTemplateActiveTo] = useState('');
   const [editTemplateDescLoading, setEditTemplateDescLoading] = useState(false);
+
+  // AI generate modal
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generatePrompt, setGeneratePrompt] = useState('');
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [generatePreview, setGeneratePreview] = useState<{
+    name: string; icon: string; description: string;
+    activeFrom: string | null; activeTo: string | null;
+    selectedMissionIds: string[]; newMissions: Array<{ title: string; type: string; points: number; description: string }>;
+  } | null>(null);
+  const [generateSaving, setGenerateSaving] = useState(false);
+
   // AI photo rating
   const [aiPhotoRating, setAiPhotoRating] = useState(false);
   const [aiPhotoInstructions, setAiPhotoInstructions] = useState('');
@@ -1592,6 +1604,78 @@ export default function AdminScreen({ onLogout }: Props) {
       showToast('Could not generate description', 'error');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function generateTemplate() {
+    if (!generatePrompt.trim()) return;
+    setGenerateLoading(true);
+    setGeneratePreview(null);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ prompt: generatePrompt }),
+      });
+      if (!res.ok) throw new Error('generation_failed');
+      const data = await res.json();
+      setGeneratePreview(data);
+    } catch {
+      showToast('Could not generate template', 'error');
+    } finally {
+      setGenerateLoading(false);
+    }
+  }
+
+  async function saveGeneratedTemplate() {
+    if (!generatePreview) return;
+    setGenerateSaving(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const token = session?.access_token;
+
+      // Create new missions first
+      const createdIds: string[] = [];
+      for (const nm of generatePreview.newMissions) {
+        const res = await fetch('/api/admin/custom-missions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ name: nm.title, type: nm.type, max_pts: nm.points, desc: nm.description, icon: '⭐', difficulty: 'medium', data: {} }),
+        });
+        if (!res.ok) throw new Error('Failed to create mission');
+        const { mission } = await res.json();
+        createdIds.push(mission.id);
+      }
+
+      const allMissionIds = [...generatePreview.selectedMissionIds, ...createdIds];
+
+      // Save template
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: generatePreview.name,
+          icon: generatePreview.icon,
+          description: generatePreview.description,
+          missionIds: allMissionIds,
+          isBuiltin: false,
+          activeFrom: generatePreview.activeFrom,
+          activeTo: generatePreview.activeTo,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save template');
+      const { template } = await res.json();
+      setTemplates(prev => [...prev, template]);
+      setShowGenerateModal(false);
+      setGeneratePrompt('');
+      setGeneratePreview(null);
+      showToast('Template created!');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save template', 'error');
+    } finally {
+      setGenerateSaving(false);
     }
   }
 
@@ -3751,6 +3835,80 @@ export default function AdminScreen({ onLogout }: Props) {
 
   if (view === 'templates') return (
     <>
+      {showGenerateModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}>✕</button>
+            </div>
+
+            {!generatePreview ? (
+              <>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>Describe your event — theme, duration, number of teams, vibe...</p>
+                <textarea
+                  value={generatePrompt}
+                  onChange={e => setGeneratePrompt(e.target.value)}
+                  placeholder="e.g. Halloween scavenger hunt for 8 teams, spooky and competitive, around 45 minutes"
+                  rows={4}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13, fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                />
+                <button
+                  onClick={generateTemplate}
+                  disabled={generateLoading || !generatePrompt.trim()}
+                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: !generatePrompt.trim() ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
+                >
+                  {generateLoading ? 'Generating...' : 'Generate →'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 24 }}>{generatePreview.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
+                      {generatePreview.activeFrom && generatePreview.activeTo && (
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2 }}>🗓 {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 12px' }}>{generatePreview.description}</p>
+
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Missions ({generatePreview.selectedMissionIds.length + generatePreview.newMissions.length} total)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
+                    {generatePreview.newMissions.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, background: 'rgba(117,171,200,0.15)', color: 'var(--accent)', borderRadius: 4, padding: '1px 5px', flexShrink: 0 }}>NEW</span>
+                        {m.title}
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>+ {generatePreview.selectedMissionIds.length} existing missions</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => setGeneratePreview(null)}
+                    style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={saveGeneratedTemplate}
+                    disabled={generateSaving}
+                    style={{ flex: 2, padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 13, cursor: generateSaving ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {generateSaving ? 'Saving...' : 'Save template'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <div className="nav-right">
@@ -3758,9 +3916,17 @@ export default function AdminScreen({ onLogout }: Props) {
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '680px' }}>
-        <div style={{ padding: '32px 0 24px' }}>
-          <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
-          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
+        <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
+            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
+          </div>
+          <button
+            onClick={() => setShowGenerateModal(true)}
+            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", flexShrink: 0, marginTop: 4 }}
+          >
+            ✨ Generate with AI
+          </button>
         </div>
 
         {templatesLoading ? (
