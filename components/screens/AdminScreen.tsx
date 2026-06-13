@@ -2970,34 +2970,31 @@ export default function AdminScreen({ onLogout }: Props) {
       if (selected.length === 0) return;
       setAiBulkSaving(true);
       try {
+        const { buildMissionData } = await import('@/lib/custom-missions');
         for (const m of selected) {
-          const body: Record<string, unknown> = {
-            name: m.name,
-            icon: m.icon ?? '⭐',
-            desc: m.desc ?? '',
-            difficulty: m.difficulty ?? 'medium',
-            maxPts: m.maxPts ?? 400,
-            type: m.type,
-            categoryId: null,
-            activeFrom: null,
-            activeUntil: null,
-          };
-          // Pass through type-specific data
-          if (m.triviaRounds) body.triviaRounds = m.triviaRounds;
-          if (m.statements) body.statements = m.statements;
-          if (m.closestQuestions) body.closestQuestions = m.closestQuestions;
-          if (m.clues) body.clues = m.clues;
-          if (m.paAnswer) body.paAnswer = m.paAnswer;
-          if (m.timelineItems) body.timelineItems = m.timelineItems;
-          if (m.photoPrompt) body.photoPrompt = m.photoPrompt;
-
-          await fetch('/api/admin/missions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-            },
-            body: JSON.stringify(body),
+          const type = String(m.type ?? '');
+          // Build the nested `data` object the API expects
+          const data = buildMissionData(type, {
+            triviaRounds: (m.triviaRounds as { question: string; options: string[]; answer: string }[]) ?? [],
+            statements: (m.statements as { text: string; answer: boolean }[]) ?? [],
+            closestQuestions: (m.closestQuestions as { q: string; answer: string; unit: string; hint: string }[]) ?? [],
+            clues: (m.clues as string[]) ?? [],
+            paAnswer: String(m.paAnswer ?? ''),
+            timelineItems: (m.timelineItems as { label: string; year: string }[]) ?? [],
+            photoPrompt: String(m.photoPrompt ?? ''),
+          });
+          await POST('/api/admin/custom-missions', {
+            name: String(m.name ?? '').trim(),
+            icon: String(m.icon ?? '⭐'),
+            desc: String(m.desc ?? ''),
+            difficulty: String(m.difficulty ?? 'medium'),
+            max_pts: Number(m.maxPts ?? 400),
+            type,
+            data,
+            category_id: null,
+            active_from: null,
+            active_until: null,
+            sort_order: adminCustomMissions.length,
           });
         }
         // Refresh missions list
