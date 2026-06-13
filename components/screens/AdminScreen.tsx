@@ -389,7 +389,7 @@ function PowerUpsCard({
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics' | 'my-analytics';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics' | 'my-analytics' | 'branding';
 
 type AdminCategory = { id: string; name: string; emoji: string; sort_order: number };
 
@@ -508,6 +508,158 @@ function MissionProgressTable({ missions, sorted, accentColor }: {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// ── BrandingView ──────────────────────────────────────────────────────────
+function BrandingView({ authToken, onBack, profileMenu }: {
+  authToken: string | null;
+  onBack: () => void;
+  profileMenu: React.ReactNode;
+}) {
+  const [logoUrl, setLogoUrl] = useState('');
+  const [color, setColor] = useState('');
+  const [name, setName] = useState('');
+  const [applyToAll, setApplyToAll] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!authToken) return;
+    fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${authToken}` } })
+      .then(r => r.json())
+      .then(d => {
+        setLogoUrl(d.brand_logo_url ?? '');
+        setColor(d.brand_primary_color ?? '');
+        setName(d.brand_name ?? '');
+        setApplyToAll(d.apply_to_all_games ?? false);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, [authToken]);
+
+  async function save() {
+    setSaving(true);
+    setSaved(false);
+    setError('');
+    const res = await fetch('/api/admin/branding', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({
+        brand_logo_url: logoUrl || null,
+        brand_primary_color: color || null,
+        brand_name: name || null,
+        apply_to_all_games: applyToAll,
+      }),
+    });
+    setSaving(false);
+    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+    else setError('Could not save. Please try again.');
+  }
+
+  return (
+    <>
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={onBack}>← Back</button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>White-label Branding</div>
+        {profileMenu}
+      </nav>
+
+      <div className="container" style={{ maxWidth: 560, paddingTop: '32px' }}>
+        {!loaded ? (
+          <p style={{ color: 'var(--muted)', textAlign: 'center', paddingTop: '60px' }}>Loading…</p>
+        ) : (
+          <>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '28px', lineHeight: 1.6 }}>
+              Add your company identity to the player view. The logo appears in a slim strip below the nav, and the primary color replaces the default GameOn accent color for buttons and highlights.
+            </p>
+
+            {/* Apply to all toggle */}
+            <div
+              onClick={() => setApplyToAll(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '14px 16px', background: 'var(--surface)', border: `1px solid ${applyToAll ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px', marginBottom: '24px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>Apply to all my games</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  When on, every new game you create will automatically use this branding.
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: applyToAll ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '16px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: applyToAll ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Brand name */}
+              <div>
+                <label className="form-label">Brand name</label>
+                <input
+                  className="form-input"
+                  placeholder="Acme Corp"
+                  value={name}
+                  onChange={e => { setName(e.target.value); setSaved(false); }}
+                />
+              </div>
+
+              {/* Logo URL */}
+              <div>
+                <label className="form-label">Logo URL</label>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px' }}>PNG or SVG with transparent background recommended</div>
+                <input
+                  className="form-input"
+                  placeholder="https://example.com/logo.png"
+                  value={logoUrl}
+                  onChange={e => { setLogoUrl(e.target.value); setSaved(false); }}
+                />
+                {logoUrl && (
+                  <div style={{ marginTop: '10px', padding: '12px 16px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img src={logoUrl} alt="Logo preview" style={{ height: '36px', maxWidth: '140px', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Preview</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Primary color */}
+              <div>
+                <label className="form-label">Primary color</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="color"
+                    value={color || '#7cbdd4'}
+                    onChange={e => { setColor(e.target.value); setSaved(false); }}
+                    style={{ width: '48px', height: '40px', padding: '2px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--card)', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '13px', color: 'var(--muted)', fontFamily: 'monospace' }}>{color || '#7cbdd4'}</span>
+                  {color && (
+                    <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => { setColor(''); setSaved(false); }}>
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {error && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginTop: '16px' }}>{error}</p>}
+
+            <button
+              className="btn btn-primary btn-full"
+              style={{ marginTop: '28px' }}
+              onClick={save}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Branding'}
+            </button>
+
+            <p style={{ fontSize: '11px', color: 'var(--muted)', textAlign: 'center', marginTop: '12px', lineHeight: 1.5 }}>
+              Changes apply to new games only. To update an existing game, contact support or re-create it.
+            </p>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -659,9 +811,6 @@ export default function AdminScreen({ onLogout }: Props) {
   );
   const [hideLeaderboard, setHideLeaderboard] = useState(false);
   const [remoteMode, setRemoteMode] = useState(false);
-  const [brandLogoUrl, setBrandLogoUrl] = useState('');
-  const [brandPrimaryColor, setBrandPrimaryColor] = useState('');
-  const [brandName, setBrandName] = useState('');
   const [gameLanguage, setGameLanguage] = useState('en');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
@@ -887,7 +1036,7 @@ export default function AdminScreen({ onLogout }: Props) {
     const res = await fetch('/api/admin/game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode, brand_logo_url: brandLogoUrl || null, brand_primary_color: brandPrimaryColor || null, brand_name: brandName || null }),
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -1394,6 +1543,22 @@ export default function AdminScreen({ onLogout }: Props) {
                 >
                   <span style={{ fontSize: '16px' }}>📊</span>
                   <span>Analytics</span>
+                </button>
+
+                <button
+                  onClick={() => { setShowProfile(false); setView('branding'); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ fontSize: '16px' }}>🎨</span>
+                  <span>White-label Branding</span>
                 </button>
 
                 <button
@@ -2077,6 +2242,9 @@ export default function AdminScreen({ onLogout }: Props) {
       </div>
     );
   }
+
+  // ── BRANDING SETTINGS ──
+  if (view === 'branding') return <BrandingView authToken={authToken} onBack={() => setView('games')} profileMenu={<ProfileMenu />} />;
 
   // ── GAMES LIST ──
   if (view === 'games') return (
@@ -3439,67 +3607,6 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
               <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: remoteMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
                 <div style={{ position: 'absolute', top: '2px', left: remoteMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Branding ─────────────────────────────────────────────── */}
-        <div style={{ marginBottom: '24px', padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
-          <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '4px' }}>🎨 White-label Branding <span style={{ fontWeight: 400, fontSize: '11px', color: 'var(--muted)' }}>(optional)</span></div>
-          <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '14px' }}>Add your company logo, brand color and name to the player view.</div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Brand name */}
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Brand name</label>
-              <input
-                className="form-input"
-                placeholder="Acme Corp"
-                value={brandName}
-                onChange={e => setBrandName(e.target.value)}
-                style={{ fontSize: '13px' }}
-              />
-            </div>
-
-            {/* Logo URL */}
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Logo URL <span style={{ color: 'var(--muted)' }}>(PNG/SVG, transparent background recommended)</span></label>
-              <input
-                className="form-input"
-                placeholder="https://example.com/logo.png"
-                value={brandLogoUrl}
-                onChange={e => setBrandLogoUrl(e.target.value)}
-                style={{ fontSize: '13px' }}
-              />
-              {brandLogoUrl && (
-                <div style={{ marginTop: '8px', padding: '10px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <img src={brandLogoUrl} alt="Logo preview" style={{ height: '36px', maxWidth: '120px', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Preview</span>
-                </div>
-              )}
-            </div>
-
-            {/* Primary color */}
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>Primary color</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input
-                  type="color"
-                  value={brandPrimaryColor || '#6c63ff'}
-                  onChange={e => setBrandPrimaryColor(e.target.value)}
-                  style={{ width: '44px', height: '36px', padding: '2px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--card)', cursor: 'pointer' }}
-                />
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'monospace' }}>{brandPrimaryColor || '#6c63ff'}</span>
-                {brandPrimaryColor && (
-                  <button
-                    className="btn btn-ghost"
-                    style={{ padding: '4px 10px', fontSize: '11px' }}
-                    onClick={() => setBrandPrimaryColor('')}
-                  >
-                    Reset
-                  </button>
-                )}
               </div>
             </div>
           </div>

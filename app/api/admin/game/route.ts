@@ -99,9 +99,18 @@ export async function POST(req: Request) {
   }
 
   // Create game
-  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language, remote_mode, brand_logo_url, brand_primary_color, brand_name } = body;
+  const { name, missions, duration_minutes, mission_max_pts, hide_leaderboard, ai_photo_rating, ai_photo_instructions, language, remote_mode } = body;
   if (!name?.trim()) return NextResponse.json({ error: 'Enter a game name.' }, { status: 400 });
   if (!missions?.length) return NextResponse.json({ error: 'Select at least one mission.' }, { status: 400 });
+
+  // Fetch user's branding settings — apply automatically if apply_to_all_games is on
+  const { data: branding } = await adminClient()
+    .from('admin_branding')
+    .select('brand_logo_url, brand_primary_color, brand_name, apply_to_all_games')
+    .eq('user_id', admin.userId)
+    .maybeSingle();
+
+  const applyBranding = branding?.apply_to_all_games === true;
 
   let key = '';
   let attempts = 0;
@@ -128,9 +137,9 @@ export async function POST(req: Request) {
       user_id: admin.userId,
       powerups_used: [],
       remote_mode: remote_mode ?? false,
-      brand_logo_url: brand_logo_url ?? null,
-      brand_primary_color: brand_primary_color ?? null,
-      brand_name: brand_name ?? null,
+      brand_logo_url: applyBranding ? (branding?.brand_logo_url ?? null) : null,
+      brand_primary_color: applyBranding ? (branding?.brand_primary_color ?? null) : null,
+      brand_name: applyBranding ? (branding?.brand_name ?? null) : null,
     })
     .select()
     .single();
