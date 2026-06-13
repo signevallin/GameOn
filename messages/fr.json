@@ -185,7 +185,8 @@
       "revealAnswer": "Révéler la réponse 👁",
       "answerLabel": "Réponse",
       "correct": "Correct ✓",
-      "wrong": "Incorrect ✗"
+      "wrong": "Incorrect ✗",
+      "writePlaceholder": "Écris ta partie ici…"
     },
     "sharedSecret": {
       "loading": "Chargement…",

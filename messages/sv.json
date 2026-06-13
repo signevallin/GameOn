@@ -185,7 +185,8 @@
       "revealAnswer": "Visa svar 👁",
       "answerLabel": "Svar",
       "correct": "Rätt ✓",
-      "wrong": "Fel ✗"
+      "wrong": "Fel ✗",
+      "writePlaceholder": "Skriv din del här…"
     },
     "sharedSecret": {
       "loading": "Laddar…",

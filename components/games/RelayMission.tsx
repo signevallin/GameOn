@@ -352,14 +352,30 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               )}
             </>
           ) : (
-            <button
-              className="btn btn-primary"
-              style={{ width: '100%' }}
-              onClick={() => advance(false)}
-              disabled={loading}
-            >
-              {loading ? t('challenge.relay.saving') : t('challenge.relay.doneBtn')}
-            </button>
+            <>
+              <textarea
+                value={typed}
+                onChange={e => setTyped(e.target.value)}
+                placeholder={t('challenge.relay.writePlaceholder')}
+                rows={4}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'var(--card)', border: '1px solid var(--border)',
+                  borderRadius: '10px', padding: '12px 14px',
+                  color: 'var(--text)', fontSize: '15px', lineHeight: 1.6,
+                  fontFamily: "'Sora', sans-serif", resize: 'vertical',
+                  marginBottom: '12px',
+                }}
+              />
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%' }}
+                onClick={() => advance(false)}
+                disabled={loading}
+              >
+                {loading ? t('challenge.relay.saving') : t('challenge.relay.doneBtn')}
+              </button>
+            </>
           )}
         </div>
       )}

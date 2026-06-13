@@ -185,7 +185,8 @@
       "revealAnswer": "Vis svar 👁",
       "answerLabel": "Svar",
       "correct": "Korrekt ✓",
-      "wrong": "Forkert ✗"
+      "wrong": "Forkert ✗",
+      "writePlaceholder": "Skriv din del her…"
     },
     "sharedSecret": {
       "loading": "Indlæser…",
