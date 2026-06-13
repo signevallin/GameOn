@@ -1174,7 +1174,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: color, borderRadius: '14px 14px 0 0' }} />
                         <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
                         <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
-                          {label.toUpperCase()}
+                          {label}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
                           {t('missions.missionsCount', { done: grp.done, total: grp.missions.length })}
