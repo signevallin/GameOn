@@ -176,8 +176,8 @@ function PowerUpsCard({
   const POWERS = [
     { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
     { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', btn: 'ACTIVATE', allowAll: true },
-    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', btn: 'SEND', allowAll: true },
     { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
+    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', btn: 'SEND', allowAll: true },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
@@ -352,51 +352,7 @@ function PowerUpsCard({
         )}
       </div>
 
-      {/* ── MYSTERY BOX ───────────────────────────────────── */}
-      <div style={{
-        background: mysteryBoxActive && mysteryBoxActive.claimed_by === null
-          ? 'rgba(222,187,107,0.08)' : 'var(--card)',
-        border: `1px solid ${mysteryBoxActive && mysteryBoxActive.claimed_by === null
-          ? 'rgba(222,187,107,0.6)' : 'var(--border)'}`,
-        borderRadius: '12px', padding: '16px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-          <span style={{ fontSize: '22px' }}>🎁</span>
-          <div style={{ fontSize: '14px', fontWeight: 800, color: mysteryBoxActive && mysteryBoxActive.claimed_by === null ? 'var(--gold)' : 'var(--text)' }}>
-            AR Mystery Box
-          </div>
-          {mysteryBoxActive && mysteryBoxActive.claimed_by === null && mysteryBoxSecsLeft !== null && (
-            <span style={{
-              marginLeft: 'auto',
-              fontSize: '13px', fontWeight: 800,
-              color: mysteryBoxSecsLeft <= 30 ? 'var(--accent2)' : 'var(--gold)',
-              background: 'rgba(222,187,107,0.15)',
-              padding: '3px 10px', borderRadius: '20px',
-            }}>
-              ⏱ {fmtTimer(mysteryBoxSecsLeft)}
-            </span>
-          )}
-        </div>
-
-        {mysteryBoxActive && mysteryBoxActive.claimed_by === null ? (
-          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>
-            Box is live — teams are racing to open it!
-          </p>
-        ) : mysteryBoxActive?.claimed_by ? (
-          <p style={{ fontSize: '12px', color: 'var(--accent3)', margin: 0 }}>
-            ✓ Claimed by a team
-          </p>
-        ) : (
-          <button
-            className="btn btn-primary"
-            style={{ width: '100%', background: 'var(--gold)', borderColor: 'var(--gold)', color: '#000' }}
-            disabled={mysteryBoxLoading || activeGameStatus !== 'active'}
-            onClick={onLaunchMysteryBox}
-          >
-            {mysteryBoxLoading ? '...' : '🎁 Drop AR Mystery Box'}
-          </button>
-        )}
-      </div>
+      {/* AR Mystery Box hidden for now */}
     </div>
   );
 }
