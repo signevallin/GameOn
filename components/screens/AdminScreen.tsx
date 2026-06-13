@@ -1002,9 +1002,10 @@ export default function AdminScreen({ onLogout }: Props) {
 
   async function completeOnboarding(navigateToCreate = false) {
     setShowOnboarding(false);
+    setOnboardingStep(0);
     await fetch('/api/admin/onboarding/complete', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${authToken}` },
+      headers: { Authorization: `Bearer ${authTokenRef.current}` },
     }).catch(() => {});
     if (navigateToCreate) { loadTemplates(); setView('templates'); }
   }
@@ -2438,8 +2439,8 @@ export default function AdminScreen({ onLogout }: Props) {
       {showOnboarding && (
         <OnboardingModal
           step={onboardingStep}
-          onNext={() => setOnboardingStep(s => s + 1)}
-          onBack={() => setOnboardingStep(s => s - 1)}
+          onNext={() => setOnboardingStep(s => Math.min(ONBOARDING_STEPS.length - 1, s + 1))}
+          onBack={() => setOnboardingStep(s => Math.max(0, s - 1))}
           onSkip={() => completeOnboarding(false)}
           onFinish={() => completeOnboarding(true)}
         />
