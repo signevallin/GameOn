@@ -4854,7 +4854,9 @@ export default function AdminScreen({ onLogout }: Props) {
   return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
         <NavCenter game={activeGame} />
         <div className="nav-right">
           <ProfileMenu />
@@ -4862,16 +4864,6 @@ export default function AdminScreen({ onLogout }: Props) {
       </nav>
 
       <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
-        {!isMobile && (
-          <button
-            onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
-            style={{ background: 'none', border: 'none', padding: '4px 0', marginTop: '16px', fontSize: '13px', color: 'var(--muted)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.7 }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
-          >
-            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Games
-          </button>
-        )}
         {/* GAME KEY + QR + START */}
         <div style={{ padding: isMobile ? '16px 0 16px' : '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: isMobile ? '14px' : '24px', alignItems: 'flex-start' }}>
