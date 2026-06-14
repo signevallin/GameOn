@@ -4945,7 +4945,7 @@ export default function AdminScreen({ onLogout }: Props) {
               <button
                 className="btn btn-ghost"
                 onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
-                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4', display: 'flex', alignItems: 'center', gap: '6px' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
                 title="Open presenter view (for projector or TV)"
               >
                 <Tv size={14} />{isMobile ? '' : 'Presenter'}
