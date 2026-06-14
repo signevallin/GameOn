@@ -17,7 +17,7 @@ import {
   X, Trash2, Target, Monitor,
   Key, CreditCard, CircleHelp, Palette, Bomb,
   LogOut, WandSparkles, Play,
-  Gamepad2, Map, Rocket,
+  Gamepad2, Map as MapIcon, Rocket,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -494,7 +494,7 @@ const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string
     ],
   },
   {
-    icon: <Map size={24} color="var(--accent)" />,
+    icon: <MapIcon size={24} color="var(--accent)" />,
     title: 'Create your first game',
     subtitle: 'Tap + New Game to pick a template, choose missions, and set a time limit. It takes less than 2 minutes.',
     bullets: [
