@@ -19,6 +19,7 @@ import {
   LogOut, WandSparkles, Play,
   Gamepad2, Map as MapIcon, Rocket,
   Tv, FileText, Loader2, Download,
+  Square, RotateCcw,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -4957,15 +4958,15 @@ export default function AdminScreen({ onLogout }: Props) {
               </button>
             )}
             {activeGame.status === 'active' && (
-              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px' }}>
-                ⏹{isMobile ? ' END' : ' END GAME'}
+              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Square size={13} />{isMobile ? 'END' : 'END GAME'}
               </button>
             )}
             {(activeGame.status === 'finished' || activeGame.status === 'active') && (
               <button className="btn btn-ghost" onClick={() => startOrStop('restart')}
-                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
                 title="Reset game to Draft so you can start it again">
-                ↺{isMobile ? '' : ' RESTART'}
+                <RotateCcw size={13} />{isMobile ? '' : 'RESTART'}
               </button>
             )}
             {activeGame.status === 'finished' && (
