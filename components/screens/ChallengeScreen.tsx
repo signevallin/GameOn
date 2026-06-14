@@ -245,9 +245,9 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'trivia_quiz':
         return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} remoteRoundIdx={remoteRoundIdx} onRoundAdvance={advanceRemoteRound} onClearRound={clearRemoteRound} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'movie_emoji':
-        return <MovieEmoji rounds={mission.emojiRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <MovieEmoji rounds={mission.emojiRounds!} maxPts={effectiveMaxPts} remoteRoundIdx={remoteRoundIdx} onRoundAdvance={advanceRemoteRound} onClearRound={clearRemoteRound} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'text_quiz':
-        return <TextQuiz rounds={mission.textQuizRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TextQuiz rounds={mission.textQuizRounds!} maxPts={effectiveMaxPts} remoteRoundIdx={remoteRoundIdx} onRoundAdvance={advanceRemoteRound} onClearRound={clearRemoteRound} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'duel_trivia':
         return <DuelTrivia team={team} teams={teams} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'scavenger_hunt':

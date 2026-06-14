@@ -5,6 +5,9 @@ import { EmojiRound } from '@/lib/missions';
 type Props = {
   rounds: EmojiRound[];
   maxPts: number;
+  remoteRoundIdx?: number;
+  onRoundAdvance?: (idx: number) => void;
+  onClearRound?: () => void;
   onFinish: (correct: boolean, pts: number) => void;
 };
 
@@ -14,7 +17,7 @@ function normalize(s: string) {
     .replace(/[^a-z0-9]/g, '');
 }
 
-export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
+export default function MovieEmoji({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState('');
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
@@ -25,6 +28,15 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
     inputRef.current?.focus();
   }, [idx]);
 
+  useEffect(() => {
+    if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
+      setIdx(remoteRoundIdx);
+      setGuess('');
+      setResult(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteRoundIdx]);
+
   function resolve(isCorrect: boolean) {
     const newCorrect = correctCount + (isCorrect ? 1 : 0);
     setResult(isCorrect ? 'correct' : 'wrong');
@@ -32,12 +44,15 @@ export default function MovieEmoji({ rounds, maxPts, onFinish }: Props) {
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
+        onClearRound?.();
         const pts = Math.round((newCorrect / rounds.length) * maxPts);
         onFinish(newCorrect > 0, pts);
       } else {
-        setIdx(i => i + 1);
+        const nextIdx = idx + 1;
+        setIdx(nextIdx);
         setGuess('');
         setResult(null);
+        onRoundAdvance?.(nextIdx);
       }
     }, 1500);
   }
