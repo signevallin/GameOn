@@ -2857,8 +2857,8 @@ export default function AdminScreen({ onLogout }: Props) {
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           )[0];
           if (!newest || !Array.isArray(newest.missions)) return [];
-          const customById = new Map(adminCustomMissions.map(cm => [cm.id, cm.name] as const));
-          const standardById = new Map(MISSIONS.map(m => [m.id, m.name] as const));
+          const customById = new Map<string, string>(adminCustomMissions.map(cm => [cm.id, cm.name]));
+          const standardById = new Map<string, string>(MISSIONS.map(m => [m.id, m.name]));
           const names: string[] = [];
           for (const id of newest.missions) {
             const n = customById.get(id) ?? standardById.get(id);
