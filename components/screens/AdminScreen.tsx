@@ -4736,11 +4736,15 @@ export default function AdminScreen({ onLogout }: Props) {
               if (catKey === 'gkn' && !isSuperAdmin) return null;
               const cat = SUPER_CATEGORIES[catKey];
               const playedSet = new Set(playedMissionIds);
+              const superCatLabel = `${cat.icon} ${cat.label}`;
               const catMissions = MISSIONS
                 .filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey)
                 .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
-              if (catMissions.length === 0) return null;
-              const allOn = catMissions.every(m => selectedMissions.includes(m.id));
+              const customInCat = adminCustomMissions
+                .filter(m => m.category_id === null && m.category_name === superCatLabel)
+                .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
+              if (catMissions.length === 0 && customInCat.length === 0) return null;
+              const allOn = [...catMissions, ...customInCat].every(m => selectedMissions.includes(m.id));
               return (
                 <div key={catKey}>
                   {/* Category header */}
@@ -4750,7 +4754,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     </span>
                     <button
                       onClick={() => {
-                        const ids = catMissions.map(m => m.id);
+                        const ids = [...catMissions, ...customInCat].map(m => m.id);
                         setSelectedMissions(prev => allOn
                           ? prev.filter(x => !ids.includes(x))
                           : [...new Set([...prev, ...ids])]);
@@ -4796,6 +4800,41 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                       );
                     })}
+                    {customInCat.map(m => {
+                      const on = selectedMissions.includes(m.id);
+                      const pts = missionMaxPts[m.id] ?? m.max_pts;
+                      return (
+                        <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? cat.color : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45, overflow: 'hidden' }}>
+                          <div
+                            onClick={() => {
+                              setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
+                              if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                          >
+                            <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
+                            </div>
+                            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? cat.color : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                              <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                            </div>
+                          </div>
+                          {on && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px 10px', borderTop: '1px solid var(--border)' }}
+                              onClick={e => e.stopPropagation()}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', flexShrink: 0 }}>MAX PTS</span>
+                              <input
+                                type="number" min={0} max={9999} step={50} value={pts}
+                                onChange={e => setMissionMaxPts(prev => ({ ...prev, [m.id]: Math.max(0, Number(e.target.value)) }))}
+                                style={{ width: '90px', padding: '4px 8px', fontSize: '13px', fontWeight: 700, fontFamily: "'Sora', sans-serif", background: 'var(--surface)', border: `1px solid var(--border)`, borderRadius: '6px', color: 'var(--text)' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -4807,13 +4846,18 @@ export default function AdminScreen({ onLogout }: Props) {
                 ? adminCustomMissions.filter(m => !playedSet.has(m.id))
                 : adminCustomMissions;
               if (visibleCustom.length === 0) return null;
+              // Missions already shown inside a built-in super-category section above
+              const superCatLabels = new Set(
+                (Object.values(SUPER_CATEGORIES) as { icon: string; label: string }[])
+                  .map(sc => `${sc.icon} ${sc.label}`)
+              );
+              const visibleCustomNotInBuiltin = visibleCustom.filter(
+                m => !(m.category_id === null && m.category_name && superCatLabels.has(m.category_name))
+              );
+              if (visibleCustomNotInBuiltin.length === 0) return null;
               const buckets = new Map<string | null, typeof visibleCustom>();
-              for (const m of visibleCustom) {
-                // Missions assigned to built-in super-categories have category_id=null
-                // but a non-empty category_name — use "super:<name>" as the bucket key
-                const key = m.category_id ?? (
-                  m.category_name && m.category_name !== 'My Missions' ? `super:${m.category_name}` : null
-                );
+              for (const m of visibleCustomNotInBuiltin) {
+                const key = m.category_id ?? null;
                 if (!buckets.has(key)) buckets.set(key, []);
                 buckets.get(key)!.push(m);
               }
@@ -4821,26 +4865,16 @@ export default function AdminScreen({ onLogout }: Props) {
               for (const cat of adminCategories) {
                 if (buckets.has(cat.id)) groups.push({ cat, missions: buckets.get(cat.id)! });
               }
-              // Built-in super-category buckets (e.g. "💻 Tech & IT")
-              for (const [key, missions] of buckets) {
-                if (typeof key === 'string' && key.startsWith('super:')) {
-                  groups.push({ cat: null, superLabel: key.slice(6), missions });
-                }
-              }
               if (buckets.has(null)) groups.push({ cat: null, missions: buckets.get(null)! });
 
               return (
                 <>
-                  {groups.map(({ cat, superLabel, missions }) => {
-                    const label = cat
-                      ? `${cat.emoji} ${cat.name.toUpperCase()}`
-                      : superLabel
-                        ? superLabel.toUpperCase()
-                        : '📋 ÖVRIGT';
+                  {groups.map(({ cat, missions }) => {
+                    const label = cat ? `${cat.emoji} ${cat.name.toUpperCase()}` : '📋 ÖVRIGT';
                     const groupIds = missions.map(m => m.id);
                     const allOn = groupIds.every(id => selectedMissions.includes(id));
                     return (
-                      <div key={cat?.id ?? superLabel ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
+                      <div key={cat?.id ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
                             {label}
