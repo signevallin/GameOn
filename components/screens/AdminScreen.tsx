@@ -2018,26 +2018,18 @@ export default function AdminScreen({ onLogout }: Props) {
 
     return (
       <>
-        <nav className="nav" style={{ position: 'relative' }}>
-          <button
-            className="btn btn-ghost"
-            style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            onClick={() => setView('games')}
-          >
+        <nav className="nav">
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
             <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
           </button>
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontWeight: 700, fontSize: '15px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <BarChart2 size={15} color={IC} /> Analytics
           </div>
-          <div className="nav-right">
-            <button
-              className="btn btn-ghost"
-              style={{ padding: '6px 12px', fontSize: '12px' }}
-              onClick={loadAnalytics}
-              disabled={analyticsLoading}
-            >
-              {analyticsLoading ? '...' : '↻ Uppdatera'}
+          <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={loadAnalytics} disabled={analyticsLoading}>
+              {analyticsLoading ? '...' : '↻'}
             </button>
+            <ProfileMenu />
           </div>
         </nav>
 
@@ -2493,25 +2485,20 @@ export default function AdminScreen({ onLogout }: Props) {
     ];
 
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '20px 16px' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-            <button
-              onClick={() => setView('games')}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--accent)', fontSize: 13, padding: '6px 0',
-                fontFamily: "'Sora', sans-serif",
-              }}
-            >
-              <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Tillbaka
-            </button>
-            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text)' }}>
-              <BarChart2 size={16} color={IC} style={{marginRight:6}} />Din statistik
-            </h1>
+      <>
+        <nav className="nav">
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+          </button>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <BarChart2 size={15} color={IC} /> Min statistik
           </div>
-
+          <div className="nav-right">
+            <ProfileMenu />
+          </div>
+        </nav>
+        <div style={{ background: 'var(--bg)', padding: '20px 16px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
           {/* KPI row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
             {kpis.map(kpi => (
@@ -2586,7 +2573,8 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -3146,15 +3134,16 @@ export default function AdminScreen({ onLogout }: Props) {
     return (
       <>
         <nav className="nav">
-          <div className="nav-brand"><GameOnLogo size={22} /></div>
-          <NavCenter game={null} />
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}>
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+          </button>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>My Missions</div>
           <div className="nav-right">
             <ProfileMenu />
           </div>
         </nav>
         <div className="container fade-in">
-          <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+          <div style={{ padding: '32px 0 24px' }}>
             <h2 style={{ margin: 0 }}>My Missions</h2>
           </div>
 
@@ -4108,10 +4097,13 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         </div>
       )}
-      <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Manage Templates</div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
+          <ProfileMenu />
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '680px' }}>
@@ -4438,24 +4430,25 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
         </div>
       )}
-      <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
-        <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => setView('games')}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
-        </div>
-      </nav>
-      <div className="container fade-in" style={{ maxWidth: '680px' }}>
-        <div style={{ padding: '32px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div>
-            <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
-          </div>
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>New Game</div>
+        <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => { setGenerateIsBuiltin(false); setShowGenerateModal(true); }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", flexShrink: 0, marginTop: 4, display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <WandSparkles size={14} />Generate with AI
           </button>
+          <ProfileMenu />
+        </div>
+      </nav>
+      <div className="container fade-in" style={{ maxWidth: '680px' }}>
+        <div style={{ padding: '32px 0 24px' }}>
+          <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
         </div>
 
         {templatesLoading ? (
@@ -4549,11 +4542,13 @@ export default function AdminScreen({ onLogout }: Props) {
   // ── CREATE GAME ──
   if (view === 'create') return (
     <>
-      <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
-        <NavCenter game={null} />
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Create Game</div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> BACK</button>
+          <ProfileMenu />
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '720px' }}>
