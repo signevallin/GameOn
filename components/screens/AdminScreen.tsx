@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
 import { toMission } from '@/lib/custom-missions';
@@ -17,6 +17,7 @@ import {
   X, Trash2, Target, Monitor,
   Key, CreditCard, CircleHelp, Palette, Bomb,
   LogOut, WandSparkles, Play,
+  Gamepad2, Map, Rocket,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -481,9 +482,9 @@ function MissionProgressTable({ missions, sorted, accentColor }: {
   );
 }
 
-const ONBOARDING_STEPS = [
+const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string; bullets: string[] }[] = [
   {
-    icon: '🎮',
+    icon: <Gamepad2 size={24} color="var(--accent)" />,
     title: 'Welcome to GameOn',
     subtitle: 'Create and run live scavenger hunts & team games in minutes. Here\'s how it works:',
     bullets: [
@@ -493,7 +494,7 @@ const ONBOARDING_STEPS = [
     ],
   },
   {
-    icon: '🗺️',
+    icon: <Map size={24} color="var(--accent)" />,
     title: 'Create your first game',
     subtitle: 'Tap + New Game to pick a template, choose missions, and set a time limit. It takes less than 2 minutes.',
     bullets: [
@@ -503,7 +504,7 @@ const ONBOARDING_STEPS = [
     ],
   },
   {
-    icon: '🚀',
+    icon: <Rocket size={24} color="var(--accent)" />,
     title: "You're ready to play",
     subtitle: 'Share the 4-letter game code with your teams. Once everyone\'s joined, hit Start Game from the dashboard.',
     bullets: [
@@ -585,7 +586,7 @@ function OnboardingModal({
             background: 'var(--accent-dim)',
             border: '1px solid var(--accent-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '24px', marginBottom: '16px',
+            marginBottom: '16px',
           }}>
             {s.icon}
           </div>
@@ -637,7 +638,7 @@ function OnboardingModal({
               <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
               {isLast ? (
                 <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onFinish}>
-                  Create my first game 🎉
+                  Create my first game
                 </button>
               ) : (
                 <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onNext}>
