@@ -1,31 +1,36 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TriviaRound } from '@/lib/missions';
-import { useRemoteRoundSync } from '@/hooks/useRemoteRoundSync';
 
 type Props = {
   rounds: TriviaRound[];
   maxPts: number;
-  teamId?: string;
-  missionId?: string;
+  // Remote sync: remoteRoundIdx comes from team.relay_state via the main 3-second poll.
+  // onRoundAdvance writes the new index to the DB so teammates catch up.
+  remoteRoundIdx?: number;
+  onRoundAdvance?: (idx: number) => void;
+  onClearRound?: () => void;
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish }: Props) {
+export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [qIdx, setQIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [totalPts, setTotalPts] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
 
-  const { broadcastRound, clearRound } = useRemoteRoundSync({
-    teamId,
-    missionId,
-    onRemoteAdvance: (idx) => {
-      setQIdx(idx);
+  // Advance this player's view when a teammate advances.
+  // remoteRoundIdx is driven by team.relay_state from the main poll —
+  // same proven channel that drives nav-sync.
+  useEffect(() => {
+    if (remoteRoundIdx !== undefined && remoteRoundIdx > qIdx && !done) {
+      setQIdx(remoteRoundIdx);
       setSelected(null);
-    },
-  });
+    }
+  // qIdx deliberately omitted — we only want to react to incoming remote changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteRoundIdx]);
 
   const ptsPerQ = Math.round(maxPts / rounds.length);
   const q = rounds[qIdx];
@@ -41,7 +46,7 @@ export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish
 
     setTimeout(() => {
       if (qIdx + 1 >= rounds.length) {
-        clearRound();
+        onClearRound?.();
         setDone(true);
         onFinish(newCorrect === rounds.length, newTotal);
       } else {
@@ -50,7 +55,7 @@ export default function TriviaQuiz({ rounds, maxPts, teamId, missionId, onFinish
         const nextIdx = qIdx + 1;
         setQIdx(nextIdx);
         setSelected(null);
-        broadcastRound(nextIdx);
+        onRoundAdvance?.(nextIdx);
       }
     }, 900);
   }

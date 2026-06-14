@@ -50,6 +50,32 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   const { t: tMissions } = useTranslation('missions');
   const mission = (MISSIONS.find(m => m.id === missionId) ?? customMissions.find(m => m.id === missionId))!;
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
+
+  // ── Remote round-index sync ─────────────────────────────────────────────────
+  // Read the current round index for multi-round missions from the team's
+  // relay_state, which is refreshed by the main poll every 3 s.  This is more
+  // reliable than a separate polling hook because it piggybacks on proven
+  // infrastructure that already drives the nav-sync.
+  const relayState = (team as { relay_state?: Record<string, { qIdx?: number }> }).relay_state ?? {};
+  const remoteRoundIdx = memberId && game.remote_mode
+    ? (relayState[`__round_${missionId}`]?.qIdx ?? 0)
+    : 0;
+
+  function advanceRemoteRound(idx: number) {
+    if (!memberId || !game.remote_mode) return;
+    fetch('/api/team/round', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamId: team.id, missionId, qIdx: idx }),
+    }).catch(() => {});
+  }
+
+  function clearRemoteRound() {
+    if (!memberId || !game.remote_mode) return;
+    fetch(`/api/team/round?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(missionId)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
+  }
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef(0);
   const startedAtMsRef = useRef(Date.now());
@@ -113,7 +139,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'wouldyou':
         return <WouldYou question={mission.question!} maxPts={effectiveMaxPts} teamId={team.id} missionId={missionId} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'truefalse':
-        return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TrueFalse statements={mission.statements!} maxPts={effectiveMaxPts} remoteRoundIdx={remoteRoundIdx} onRoundAdvance={advanceRemoteRound} onClearRound={clearRemoteRound} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'photo':
         if (photoSubmitted) {
           return (
@@ -217,7 +243,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'closest_wins':
         return <ClosestWins maxPts={effectiveMaxPts} questions={mission.closestWinsQuestions} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'trivia_quiz':
-        return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TriviaQuiz rounds={mission.triviaRounds!} maxPts={effectiveMaxPts} remoteRoundIdx={remoteRoundIdx} onRoundAdvance={advanceRemoteRound} onClearRound={clearRemoteRound} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'movie_emoji':
         return <MovieEmoji rounds={mission.emojiRounds!} maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'text_quiz':

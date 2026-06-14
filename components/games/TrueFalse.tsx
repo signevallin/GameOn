@@ -1,29 +1,28 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Statement } from '@/lib/missions';
-import { useRemoteRoundSync } from '@/hooks/useRemoteRoundSync';
 
 type Props = {
   statements: Statement[];
   maxPts?: number;
-  teamId?: string;
-  missionId?: string;
+  remoteRoundIdx?: number;
+  onRoundAdvance?: (idx: number) => void;
+  onClearRound?: () => void;
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function TrueFalse({ statements, maxPts = 150, teamId, missionId, onFinish }: Props) {
+export default function TrueFalse({ statements, maxPts = 150, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [flash, setFlash] = useState<boolean | null>(null);
 
-  const { broadcastRound, clearRound } = useRemoteRoundSync({
-    teamId,
-    missionId,
-    onRemoteAdvance: (newIdx) => {
-      setIdx(newIdx);
+  useEffect(() => {
+    if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
+      setIdx(remoteRoundIdx);
       setFlash(null);
-    },
-  });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteRoundIdx]);
 
   function answer(val: boolean) {
     if (flash !== null) return;
@@ -34,13 +33,13 @@ export default function TrueFalse({ statements, maxPts = 150, teamId, missionId,
     setTimeout(() => {
       setFlash(null);
       if (idx + 1 >= statements.length) {
-        clearRound();
+        onClearRound?.();
         const pts = Math.round(maxPts * (newScore / statements.length));
         onFinish(newScore > 0, pts);
       } else {
         const nextIdx = idx + 1;
         setIdx(nextIdx);
-        broadcastRound(nextIdx);
+        onRoundAdvance?.(nextIdx);
       }
     }, 700);
   }
