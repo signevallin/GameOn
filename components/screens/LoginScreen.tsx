@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { MailCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
@@ -290,7 +291,7 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
                 <>
                   {resetSent ? (
                     <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                      <p style={{ fontSize: '28px', marginBottom: '12px' }}>📬</p>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}><MailCheck size={32} color="#7CBDD4" /></div>
                       <p style={{ fontWeight: 700, color: '#DCE4EE', marginBottom: '8px' }}>{t('login.checkEmailTitle')}</p>
                       <p style={{ fontSize: '13px', color: 'var(--muted, #8FA8C0)', lineHeight: 1.6 }}>{t('login.checkEmailDesc', { email })}</p>
                       <button type="button" onClick={() => { setAdminMode('login'); setResetSent(false); }} style={{ marginTop: '20px', background: 'none', border: 'none', color: 'var(--accent, #7CBDD4)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>{t('login.backToLogin')}</button>
