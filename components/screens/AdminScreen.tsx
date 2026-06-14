@@ -3165,7 +3165,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 8px' }}>No categories yet. Create one to organise your missions.</p>
                     )}
                     {(() => {
-                      const CAT_COLORS = ['#7cbdd4','#a78bfa','#f472b6','#34d399','#fb923c','#facc15','#60a5fa','#f87171','#a3e635','#e879f9'];
+                      const CAT_COLORS = ['#7cbdd4','#9b8ed4','#c47f9e','#5baa8a','#c47d56','#b89840','#6896c8','#b86b6b','#7fa84e','#a06bb5'];
                       const smallBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '11px', padding: '2px 7px', borderRadius: '4px' };
                       return adminCategories.map(cat => (
                         <div key={cat.id} style={{ borderBottom: '1px solid var(--border)' }}>
@@ -3543,7 +3543,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => openEditForm(cm)}>Edit</button>
                 <button
                   className="btn btn-ghost"
-                  style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--accent3)' }}
+                  style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--danger, #e05252)' }}
                   disabled={deletingMissionId === cm.id}
                   onClick={() => deleteMission(cm.id)}
                 >
