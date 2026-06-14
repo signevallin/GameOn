@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mission, calcPoints, MISSIONS } from '@/lib/missions';
-import { Team, Game } from '@/lib/supabase';
+import { Team, Game, supabase } from '@/lib/supabase';
 import MultipleChoice from '@/components/games/MultipleChoice';
 import TextInput from '@/components/games/TextInput';
 import MemoryGame from '@/components/games/MemoryGame';
@@ -52,17 +52,49 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   const effectiveMaxPts = game.mission_max_pts?.[missionId] ?? mission.maxPts;
 
   // ── Remote round-index sync ─────────────────────────────────────────────────
-  // Read the current round index for multi-round missions from the team's
-  // relay_state, which is refreshed by the main poll every 3 s.  This is more
-  // reliable than a separate polling hook because it piggybacks on proven
-  // infrastructure that already drives the nav-sync.
+  // Two-layer sync so Player B stays in step with Player A:
+  //   1. Supabase Broadcast — instant (~50ms) delivery when Player A answers
+  //   2. relay_state via main poll — 3 s fallback for late-joiners / missed broadcasts
+  // The effective remoteRoundIdx is the max of both sources so neither can go backward.
+
+  const [broadcastRoundIdx, setBroadcastRoundIdx] = useState(0);
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  const remoteEnabled = !!(memberId && game.remote_mode);
+  const remoteEnabledRef = useRef(remoteEnabled);
+  remoteEnabledRef.current = remoteEnabled;
+
+  useEffect(() => {
+    if (!remoteEnabled) return;
+    setBroadcastRoundIdx(0);
+    const ch = supabase
+      .channel(`round-bc-${team.id}-${missionId}`)
+      .on('broadcast', { event: 'round' }, ({ payload }: { payload: { idx: number } }) => {
+        const idx = typeof payload?.idx === 'number' ? payload.idx : 0;
+        setBroadcastRoundIdx(prev => Math.max(prev, idx));
+      })
+      .on('broadcast', { event: 'clear' }, () => {
+        setBroadcastRoundIdx(0);
+      })
+      .subscribe();
+    broadcastChannelRef.current = ch;
+    return () => {
+      supabase.removeChannel(ch);
+      broadcastChannelRef.current = null;
+      setBroadcastRoundIdx(0);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteEnabled, team.id, missionId]);
+
   const relayState = (team as { relay_state?: Record<string, { qIdx?: number }> }).relay_state ?? {};
-  const remoteRoundIdx = memberId && game.remote_mode
-    ? (relayState[`__round_${missionId}`]?.qIdx ?? 0)
-    : 0;
+  const pollRoundIdx = remoteEnabled ? (relayState[`__round_${missionId}`]?.qIdx ?? 0) : 0;
+  const remoteRoundIdx = Math.max(pollRoundIdx, broadcastRoundIdx);
 
   function advanceRemoteRound(idx: number) {
-    if (!memberId || !game.remote_mode) return;
+    if (!remoteEnabled) return;
+    // Broadcast instantly so teammates advance without waiting for the 3 s poll
+    broadcastChannelRef.current?.send({ type: 'broadcast', event: 'round', payload: { idx } });
+    // Also persist to DB so late-joiners and poll catch up
     fetch('/api/team/round', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,7 +103,8 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   }
 
   function clearRemoteRound() {
-    if (!memberId || !game.remote_mode) return;
+    if (!remoteEnabled) return;
+    broadcastChannelRef.current?.send({ type: 'broadcast', event: 'clear', payload: {} });
     fetch(`/api/team/round?teamId=${encodeURIComponent(team.id)}&missionId=${encodeURIComponent(missionId)}`, {
       method: 'DELETE',
     }).catch(() => {});
