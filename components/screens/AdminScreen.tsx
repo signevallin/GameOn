@@ -4809,24 +4809,38 @@ export default function AdminScreen({ onLogout }: Props) {
               if (visibleCustom.length === 0) return null;
               const buckets = new Map<string | null, typeof visibleCustom>();
               for (const m of visibleCustom) {
-                const key = m.category_id ?? null;
+                // Missions assigned to built-in super-categories have category_id=null
+                // but a non-empty category_name — use "super:<name>" as the bucket key
+                const key = m.category_id ?? (
+                  m.category_name && m.category_name !== 'My Missions' ? `super:${m.category_name}` : null
+                );
                 if (!buckets.has(key)) buckets.set(key, []);
                 buckets.get(key)!.push(m);
               }
-              const groups: { cat: AdminCategory | null; missions: typeof adminCustomMissions }[] = [];
+              const groups: { cat: AdminCategory | null; superLabel?: string; missions: typeof adminCustomMissions }[] = [];
               for (const cat of adminCategories) {
                 if (buckets.has(cat.id)) groups.push({ cat, missions: buckets.get(cat.id)! });
+              }
+              // Built-in super-category buckets (e.g. "💻 Tech & IT")
+              for (const [key, missions] of buckets) {
+                if (typeof key === 'string' && key.startsWith('super:')) {
+                  groups.push({ cat: null, superLabel: key.slice(6), missions });
+                }
               }
               if (buckets.has(null)) groups.push({ cat: null, missions: buckets.get(null)! });
 
               return (
                 <>
-                  {groups.map(({ cat, missions }) => {
-                    const label = cat ? `${cat.emoji} ${cat.name.toUpperCase()}` : '📋 ÖVRIGT';
+                  {groups.map(({ cat, superLabel, missions }) => {
+                    const label = cat
+                      ? `${cat.emoji} ${cat.name.toUpperCase()}`
+                      : superLabel
+                        ? superLabel.toUpperCase()
+                        : '📋 ÖVRIGT';
                     const groupIds = missions.map(m => m.id);
                     const allOn = groupIds.every(id => selectedMissions.includes(id));
                     return (
-                      <div key={cat?.id ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
+                      <div key={cat?.id ?? superLabel ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
                             {label}
