@@ -923,6 +923,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
   const [missionFormError, setMissionFormError] = useState('');
   const [missionCategoryId, setMissionCategoryId] = useState<string | null>(null);
+  const [missionSuperCategoryKey, setMissionSuperCategoryKey] = useState<SuperCategoryKey | null>(null);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiType, setAiType] = useState('');
@@ -2751,7 +2752,7 @@ export default function AdminScreen({ onLogout }: Props) {
       setEditingMissionId(null);
       setMissionForm(EMPTY_FORM);
       setMissionFormError('');
-      setMissionCategoryId(null);
+      setMissionCategoryId(null); setMissionSuperCategoryKey(null);
       setShowMissionForm(true);
     }
 
@@ -2789,6 +2790,14 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       setMissionFormError('');
       setMissionCategoryId(cm.category_id ?? null);
+      // Restore super-category when editing — check if category_name matches a built-in
+      if (!cm.category_id && cm.category_name) {
+        const scKey = (Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { icon: string; label: string }][])
+          .find(([, sc]) => `${sc.icon} ${sc.label}` === cm.category_name)?.[0] ?? null;
+        setMissionSuperCategoryKey(scKey);
+      } else {
+        setMissionSuperCategoryKey(null);
+      }
       setShowMissionForm(true);
     }
 
@@ -2954,7 +2963,7 @@ export default function AdminScreen({ onLogout }: Props) {
           activeUntil: '',
         });
         setMissionFormError('');
-        setMissionCategoryId(null);
+        setMissionCategoryId(null); setMissionSuperCategoryKey(null);
         setShowMissionForm(true);
         setAiPanelOpen(false);
         setAiPrompt('');
@@ -3057,7 +3066,10 @@ export default function AdminScreen({ onLogout }: Props) {
         max_pts: missionForm.maxPts,
         type: missionForm.type,
         data,
-        category_id: missionCategoryId,
+        category_id: missionSuperCategoryKey ? null : missionCategoryId,
+        category_name: missionSuperCategoryKey
+          ? `${SUPER_CATEGORIES[missionSuperCategoryKey].icon} ${SUPER_CATEGORIES[missionSuperCategoryKey].label}`
+          : undefined,
         active_from: missionForm.activeFrom
           ? new Date(`${missionForm.activeFrom}T00:00:00Z`).toISOString()
           : null,
@@ -3093,7 +3105,7 @@ export default function AdminScreen({ onLogout }: Props) {
       setMissionSaving(false);
       setShowMissionForm(false);
       setEditingMissionId(null);
-      setMissionCategoryId(null);
+      setMissionCategoryId(null); setMissionSuperCategoryKey(null);
       showToast('Mission saved ✓');
       loadAdminCustomMissions();
     }
@@ -3137,7 +3149,7 @@ export default function AdminScreen({ onLogout }: Props) {
     return (
       <>
         <nav className="nav">
-          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); }}>
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); setMissionSuperCategoryKey(null); }}>
             <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
           </button>
           <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>My Missions</div>
@@ -3734,21 +3746,37 @@ export default function AdminScreen({ onLogout }: Props) {
                 <label style={labelStyle}>DESCRIPTION</label>
                 <input type="text" value={missionForm.desc} onChange={e => setF({ desc: e.target.value })} placeholder="What teams see before starting" style={inputStyle} />
               </div>
-              {adminCategories.length > 0 && (
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={labelStyle}>CATEGORY</label>
-                  <select
-                    value={missionCategoryId ?? ''}
-                    onChange={e => setMissionCategoryId(e.target.value || null)}
-                    style={inputStyle}
-                  >
-                    <option value="">(No category)</option>
-                    {adminCategories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={labelStyle}>CATEGORY</label>
+                <select
+                  value={missionSuperCategoryKey ? `super:${missionSuperCategoryKey}` : (missionCategoryId ?? '')}
+                  onChange={e => {
+                    const v = e.target.value;
+                    if (v.startsWith('super:')) {
+                      setMissionCategoryId(null);
+                      setMissionSuperCategoryKey(v.slice(6) as SuperCategoryKey);
+                    } else {
+                      setMissionCategoryId(v || null);
+                      setMissionSuperCategoryKey(null);
+                    }
+                  }}
+                  style={inputStyle}
+                >
+                  <option value="">(No category)</option>
+                  {adminCategories.length > 0 && (
+                    <optgroup label="My categories">
+                      {adminCategories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <optgroup label="Built-in categories">
+                    {(Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string }][]).map(([key, sc]) => (
+                      <option key={key} value={`super:${key}`}>{sc.icon} {sc.label}</option>
                     ))}
-                  </select>
-                </div>
-              )}
+                  </optgroup>
+                </select>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <label style={labelStyle}>DIFFICULTY</label>
@@ -4018,7 +4046,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} disabled={missionSaving || !missionForm.name.trim() || !missionForm.type} onClick={saveMission}>
                   {missionSaving ? 'Saving…' : editingMissionId ? 'Save Changes' : 'Add Mission'}
                 </button>
-                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); setMissionCategoryId(null); }}>Cancel</button>
+                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); setMissionCategoryId(null); setMissionSuperCategoryKey(null); }}>Cancel</button>
               </div>
             </div>
           )}
