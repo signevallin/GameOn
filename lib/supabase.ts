@@ -25,6 +25,7 @@ export type Team = {
     inverterad_skarm_until?: string;
     double_agent_until?: string;
     smoke_screen_until?: string;
+    hacked_until?: string;
   };
   team_powerups_used: string[];
   mission_answers: Record<string, string>;

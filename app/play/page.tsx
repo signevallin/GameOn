@@ -83,6 +83,19 @@ export default function Home() {
             const savedCms = localStorage.getItem('gameon_custom_missions');
             if (savedCms) setCustomMissions(JSON.parse(savedCms));
           } catch { /* ignore corrupted storage */ }
+          // Silently re-fetch missions from server to pick up any category changes made after login
+          try {
+            const g = JSON.parse(savedGame);
+            if (g?.id) {
+              fetch(`/api/team/missions?gameId=${g.id}`).then(r => r.json()).then(({ customMissions: fresh }) => {
+                if (Array.isArray(fresh)) {
+                  const missions = (fresh as CustomMission[]).map(toMission);
+                  setCustomMissions(missions);
+                  try { localStorage.setItem('gameon_custom_missions', JSON.stringify(missions)); } catch { /* storage full */ }
+                }
+              }).catch(() => {});
+            }
+          } catch { /* ignore */ }
         }
       } catch { /* corrupted storage – start fresh */ }
       setHydrated(true);
