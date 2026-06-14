@@ -706,22 +706,39 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
     ? formatElapsed(new Date(team.finished_at).getTime() - new Date(game.started_at).getTime())
     : null;
 
-  // Build per-super-category stats from visible missions
+  // Map "🎵 Music & Film" → 'music_film' so custom missions dragged into a
+  // built-in category get merged into that category's card instead of getting
+  // their own separate card.
+  const superCatLabelToKey = Object.fromEntries(
+    (Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, typeof SUPER_CATEGORIES[SuperCategoryKey]][])
+      .map(([key, sc]) => [`${sc.icon} ${sc.label}`, key])
+  ) as Record<string, SuperCategoryKey>;
+
+  const customMissionSuperCat: Record<string, SuperCategoryKey> = {};
+  for (const m of visibleCustomMissions) {
+    const scKey = m.category ? superCatLabelToKey[m.category] : undefined;
+    if (scKey) customMissionSuperCat[m.id] = scKey;
+  }
+
+  // Build per-super-category stats — includes built-in missions AND custom
+  // missions that have been assigned to this built-in category.
   const categoryStats = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(key => {
-    const missions = visibleMissions.filter(m => MISSION_SUPER_CATEGORY[m.id] === key);
+    const builtIn = visibleMissions.filter(m => MISSION_SUPER_CATEGORY[m.id] === key);
+    const custom = visibleCustomMissions.filter(m => customMissionSuperCat[m.id] === key);
+    const missions = [...builtIn, ...custom];
     if (missions.length === 0) return null;
     const pts = missions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts);
     const minPts = Math.min(...pts);
     const maxPts = Math.max(...pts);
-    const doneMissions = missions.filter(m => team.completed?.includes(m.id));
-    return { key, missions, minPts, maxPts, done: doneMissions.length };
-  }).filter(Boolean) as { key: SuperCategoryKey; missions: typeof visibleMissions; minPts: number; maxPts: number; done: number }[];
+    return { key, missions, minPts, maxPts, done: missions.filter(m => team.completed?.includes(m.id)).length };
+  }).filter(Boolean) as { key: SuperCategoryKey; missions: (typeof visibleMissions[0])[]; minPts: number; maxPts: number; done: number }[];
 
-  // Group custom missions by category — one card per distinct category
+  // Group custom missions by category — exclude those merged into a built-in category
   const customCategoryGroups = (() => {
     const order: string[] = [];
     const map = new Map<string, typeof visibleCustomMissions>();
     for (const m of visibleCustomMissions) {
+      if (customMissionSuperCat[m.id]) continue; // merged into a built-in category card
       const name = m.category ?? 'Custom';
       if (!map.has(name)) { order.push(name); map.set(name, []); }
       map.get(name)!.push(m);
