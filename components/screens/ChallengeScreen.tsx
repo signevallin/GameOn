@@ -260,11 +260,9 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
         <div className="nav-brand">{mission.icon} {tMissions(`${mission.id}.name`, { defaultValue: mission.name })}</div>
         <div className="nav-right">
           <span className="nav-score">⭐ {team.score} {t('challenge.ptsLabel')}</span>
-          {mission.type !== 'scavenger_hunt' && (
-            <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onBack}>
-              {t('challenge.backToMissions')}
-            </button>
-          )}
+          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onBack}>
+            {t('challenge.backToMissions')}
+          </button>
         </div>
       </nav>
 
