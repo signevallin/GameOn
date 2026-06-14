@@ -3129,17 +3129,26 @@ export default function AdminScreen({ onLogout }: Props) {
           category_name: categoryName ?? (categoryId ? m.category_name : 'My Missions'),
         } : m)
       );
-      await fetch(`/api/admin/custom-missions/${missionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-        },
-        body: JSON.stringify({
-          category_id: categoryId,
-          ...(categoryName ? { category_name: categoryName } : {}),
-        }),
-      });
+      try {
+        const res = await fetch(`/api/admin/custom-missions/${missionId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            category_id: categoryId,
+            ...(categoryName ? { category_name: categoryName } : {}),
+          }),
+        });
+        if (!res.ok) {
+          showToast('Failed to move mission — please try again.');
+          loadAdminCustomMissions(); // revert optimistic update
+        }
+      } catch {
+        showToast('Failed to move mission — please try again.');
+        loadAdminCustomMissions(); // revert optimistic update
+      }
     }
 
     const setF = (patch: Partial<MissionFormData>) => setMissionForm(prev => ({ ...prev, ...patch }));
