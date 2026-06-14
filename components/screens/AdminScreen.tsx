@@ -18,6 +18,7 @@ import {
   Key, CreditCard, CircleHelp, Palette, Bomb,
   LogOut, WandSparkles, Play,
   Gamepad2, Map as MapIcon, Rocket,
+  Tv, FileText, Loader2, Download,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -4952,10 +4953,10 @@ export default function AdminScreen({ onLogout }: Props) {
               <button
                 className="btn btn-ghost"
                 onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
-                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4', display: 'flex', alignItems: 'center', gap: '6px' }}
                 title="Open presenter view (for projector or TV)"
               >
-                📺{isMobile ? '' : ' Presenter'}
+                <Tv size={14} />{isMobile ? '' : 'Presenter'}
               </button>
             )}
             {activeGame.status === 'draft' && (
@@ -4994,7 +4995,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     onClick={downloadReport}
                     style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)' }}
                   >
-                    {reportLoading ? '⏳' : '📄'}{isMobile ? (reportLoading ? '' : ' Report') : (reportLoading ? ' Generating…' : ' Download Report')}
+                    {reportLoading ? <Loader2 size={13} className="spin" style={{ marginRight: 4, verticalAlign: 'middle' }} /> : <FileText size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />}{isMobile ? (reportLoading ? '' : 'Report') : (reportLoading ? 'Generating…' : 'Download Report')}
                   </button>
                 )}
                 {reportError && (
@@ -5192,7 +5193,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     disabled={downloadingZip}
                     style={{ fontSize: '13px', padding: '8px 14px', border: '1px solid var(--border)' }}
                   >
-                    {downloadingZip ? '⏳' : '📦'} {downloadingZip ? 'Downloading…' : 'Download ZIP'}
+                    {downloadingZip ? <Loader2 size={13} className="spin" style={{ marginRight: 6, verticalAlign: 'middle' }} /> : <Download size={13} style={{ marginRight: 6, verticalAlign: 'middle' }} />}{downloadingZip ? 'Downloading…' : 'Download ZIP'}
                   </button>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
