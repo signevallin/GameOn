@@ -16,6 +16,7 @@ import {
   Pencil, Settings2, Search, Wind, Flame,
   X, Trash2, Target, Monitor,
   Key, CreditCard, CircleHelp, Palette, Bomb,
+  LogOut, WandSparkles, Play,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -703,7 +704,7 @@ function BrandingView({ authToken, onBack, profileMenu }: {
     <>
       <nav className="nav">
         <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
-        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>White-label Branding</div>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Branding</div>
         {profileMenu}
       </nav>
 
@@ -1904,7 +1905,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   <Ic><Palette size={16} /></Ic>
-                  <span>White-label Branding</span>
+                  <span>Branding</span>
                 </button>
 
                 <button
@@ -1975,7 +1976,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <ChevronRight size={16} color={IC} />
+                  <LogOut size={16} color={IC} />
                   <span>Log out</span>
                 </button>
               </div>
@@ -3572,13 +3573,13 @@ export default function AdminScreen({ onLogout }: Props) {
                 style={{ width: '100%', padding: '12px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
                 onClick={() => { setAiPanelOpen(v => !v); setAiError(''); }}
               >
-                ✨ {aiPanelOpen ? 'Close AI Generator' : 'Generate with AI'}
+                <WandSparkles size={14} style={{ marginRight: '6px' }} />{aiPanelOpen ? 'Close AI Generator' : 'Generate with AI'}
               </button>
 
               {/* AI panel */}
               {aiPanelOpen && (
                 <div className="card" style={{ marginBottom: '4px' }}>
-                  <h3 style={{ marginBottom: '16px', fontSize: '15px', color: '#7CBDD4' }}>✨ Generate with AI</h3>
+                  <h3 style={{ marginBottom: '16px', fontSize: '15px', color: '#7CBDD4', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={14} /> Generate with AI</h3>
 
                   <div style={{ marginBottom: '12px' }}>
                     <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>DESCRIBE YOUR MISSION</label>
@@ -3654,7 +3655,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     disabled={!aiPrompt.trim() || aiGenerating}
                     onClick={generateWithAI}
                   >
-                    {aiGenerating ? '✨ Generating…' : aiCount > 1 ? `✨ Generate ${aiCount} missions` : '✨ Generate'}
+                    <><WandSparkles size={14} style={{ marginRight: '6px' }} />{aiGenerating ? 'Generating…' : aiCount > 1 ? `Generate ${aiCount} missions` : 'Generate'}</>
                   </button>
 
                   {/* Bulk preview */}
@@ -4040,7 +4041,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={16} /> Generate with AI</div>
               <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
             </div>
             {!generatePreview ? (
@@ -4124,7 +4125,7 @@ export default function AdminScreen({ onLogout }: Props) {
               onClick={() => { setGenerateIsBuiltin(true); setShowGenerateModal(true); }}
               style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
             >
-              ✨ Generate with AI
+              <WandSparkles size={14} style={{ marginRight: '6px' }} />Generate with AI
             </button>
             <button className="btn btn-primary" onClick={() => setShowNewTemplateForm(true)} style={{ fontSize: '13px' }}>+ NEW TEMPLATE</button>
           </div>
@@ -4367,7 +4368,7 @@ export default function AdminScreen({ onLogout }: Props) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)' }}>✨ Generate with AI</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={16} /> Generate with AI</div>
               <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
             </div>
 
@@ -4451,9 +4452,9 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
           <button
             onClick={() => { setGenerateIsBuiltin(false); setShowGenerateModal(true); }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", flexShrink: 0, marginTop: 4 }}
+            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", flexShrink: 0, marginTop: 4, display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            ✨ Generate with AI
+            <WandSparkles size={14} />Generate with AI
           </button>
         </div>
 
@@ -4962,8 +4963,8 @@ export default function AdminScreen({ onLogout }: Props) {
               </button>
             )}
             {activeGame.status === 'draft' && (
-              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: isMobile ? '14px' : '15px', padding: isMobile ? '12px 22px' : '14px 28px' }}>
-                ▶ START GAME
+              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: isMobile ? '14px' : '15px', padding: isMobile ? '12px 22px' : '14px 28px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Play size={16} /> START GAME
               </button>
             )}
             {activeGame.status === 'active' && (
