@@ -92,6 +92,19 @@ export async function POST(req: Request) {
     const teamIds = (gameTeams ?? []).map((t: { id: string }) => t.id);
     if (teamIds.length) {
       await db.from('photo_submissions').delete().in('team_id', teamIds);
+
+      // Delete storage files for each team (direct photos + scavenger subfolder)
+      const storage = db.storage.from('photos');
+      for (const teamId of teamIds) {
+        const prefixes = [teamId, `scavenger/${teamId}`];
+        for (const prefix of prefixes) {
+          const { data: listed } = await storage.list(prefix);
+          if (listed?.length) {
+            const paths = listed.map((f: { name: string }) => `${prefix}/${f.name}`);
+            await storage.remove(paths);
+          }
+        }
+      }
     }
     await db.from('teams').delete().eq('game_id', gameId);
 
