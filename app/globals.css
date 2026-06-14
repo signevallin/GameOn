@@ -79,6 +79,18 @@ body::after {
 @keyframes pulse { to { opacity: 0.6; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
+@keyframes hackedGlitch {
+  0%,88%,100% { transform: none; opacity: 1; }
+  89% { transform: translate(-3px,0) skewX(4deg); opacity: 0.85; }
+  90% { transform: translate(3px,0) skewX(-2deg); }
+  91% { transform: none; opacity: 1; }
+  94% { transform: translate(0,1px); opacity: 0.6; }
+  95% { transform: none; opacity: 1; }
+}
+@keyframes hackedPulse { 0%,100% { opacity: 0.9; } 45%,55% { opacity: 0.15; } }
+@keyframes hackedScan { 0% { top: -100%; } 100% { top: 200%; } }
+.hacked-glitch { animation: hackedGlitch 2.5s infinite; }
+.hacked-pulse  { animation: hackedPulse 1.1s infinite; }
 @keyframes coinFlip {
   0%   { transform: rotateY(0deg) scale(1); }
   10%  { transform: rotateY(180deg) scale(1.05); }
