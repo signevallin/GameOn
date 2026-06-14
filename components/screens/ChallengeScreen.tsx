@@ -213,7 +213,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'simon_says':
         return <SimonSays maxPts={effectiveMaxPts} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'timeline':
-        return <TimelineSort maxPts={effectiveMaxPts} items={mission.timelineItems} onFinish={(correct, pts) => finish(correct, pts)} />;
+        return <TimelineSort maxPts={effectiveMaxPts} items={mission.timelineItems} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'closest_wins':
         return <ClosestWins maxPts={effectiveMaxPts} questions={mission.closestWinsQuestions} teamId={memberId ? team.id : undefined} missionId={memberId ? missionId : undefined} onFinish={(correct, pts) => finish(correct, pts)} />;
       case 'trivia_quiz':

@@ -9,6 +9,11 @@ import { supabase } from '@/lib/supabase';
  * 2. DB persistence via /api/team/round as a fallback for late-joiners or
  *    dropped broadcasts (Player B fetches the current index on mount)
  *
+ * highWaterRef tracks the highest index ever received so neither the
+ * broadcast handler nor the poll can move a player *backward* (e.g. if a
+ * player answers a question locally before the 3-second poll fires with an
+ * older stored index).
+ *
  * Pass `teamId` and `missionId` only in remote mode; leave undefined for local.
  */
 export function useRemoteRoundSync({
@@ -26,13 +31,22 @@ export function useRemoteRoundSync({
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
+  // Highest round index seen from any source (broadcast or poll).
+  // Prevents stale poll responses from resetting a player to a previous question.
+  const highWaterRef = useRef(0);
+
   // Broadcast channel for real-time sync
   useEffect(() => {
     if (!enabled) return;
+    highWaterRef.current = 0;
     const channel = supabase
       .channel(`round-sync-${teamId}-${missionId}`)
       .on('broadcast', { event: 'round' }, ({ payload }) => {
-        callbackRef.current(payload.idx as number);
+        const idx = payload.idx as number;
+        if (idx > highWaterRef.current) {
+          highWaterRef.current = idx;
+          callbackRef.current(idx);
+        }
       })
       .subscribe();
     channelRef.current = channel;
@@ -46,6 +60,7 @@ export function useRemoteRoundSync({
   // Also fires immediately on mount for late-joiners.
   useEffect(() => {
     if (!enabled) return;
+    highWaterRef.current = 0;
     function fetchRound() {
       fetch(`/api/team/round?teamId=${encodeURIComponent(teamId!)}&missionId=${encodeURIComponent(missionId!)}`, {
         cache: 'no-store',
@@ -53,7 +68,10 @@ export function useRemoteRoundSync({
         .then(r => r.json())
         .then((data: { qIdx?: number }) => {
           const idx = typeof data.qIdx === 'number' ? data.qIdx : 0;
-          if (idx > 0) callbackRef.current(idx);
+          if (idx > highWaterRef.current) {
+            highWaterRef.current = idx;
+            callbackRef.current(idx);
+          }
         })
         .catch(() => {});
     }
@@ -80,6 +98,7 @@ export function useRemoteRoundSync({
   // Clear DB state when the mission completes so replays always start fresh
   const clearRound = useCallback(() => {
     if (!enabled || !teamId || !missionId) return;
+    highWaterRef.current = 0;
     fetch(`/api/team/round?teamId=${encodeURIComponent(teamId)}&missionId=${encodeURIComponent(missionId)}`, {
       method: 'DELETE',
     }).catch(() => {});
