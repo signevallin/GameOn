@@ -42,19 +42,24 @@ export function useRemoteRoundSync({
     };
   }, [enabled, teamId, missionId]);
 
-  // On mount, fetch the current round from DB so late-joiners or players who
-  // missed a broadcast can catch up immediately.
+  // Poll DB every 3 s so players who miss a broadcast catch up quickly.
+  // Also fires immediately on mount for late-joiners.
   useEffect(() => {
     if (!enabled) return;
-    fetch(`/api/team/round?teamId=${encodeURIComponent(teamId!)}&missionId=${encodeURIComponent(missionId!)}`, {
-      cache: 'no-store',
-    })
-      .then(r => r.json())
-      .then(data => {
-        const idx = typeof data.qIdx === 'number' ? data.qIdx : 0;
-        if (idx > 0) callbackRef.current(idx);
+    function fetchRound() {
+      fetch(`/api/team/round?teamId=${encodeURIComponent(teamId!)}&missionId=${encodeURIComponent(missionId!)}`, {
+        cache: 'no-store',
       })
-      .catch(() => {});
+        .then(r => r.json())
+        .then((data: { qIdx?: number }) => {
+          const idx = typeof data.qIdx === 'number' ? data.qIdx : 0;
+          if (idx > 0) callbackRef.current(idx);
+        })
+        .catch(() => {});
+    }
+    fetchRound();
+    const id = setInterval(fetchRound, 3000);
+    return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, teamId, missionId]);
 
