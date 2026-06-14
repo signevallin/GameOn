@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { Timer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
@@ -1001,7 +1002,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {game.status === 'active' && secondsLeft !== null && (
             <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none', whiteSpace: 'nowrap' }}>
-              ⏱ {formatTime(secondsLeft)}
+              <Timer size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />{formatTime(secondsLeft)}
             </span>
           )}
         </div>
