@@ -11,28 +11,9 @@ import MysteryBoxAR from '@/components/MysteryBoxAR';
 type Notification = { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> };
 
 // ── Hacked overlay ───────────────────────────────────────────────────────────
-function HackedOverlay({ teamId, onDismiss }: { teamId: string; onDismiss: () => void }) {
-  const [secsLeft, setSecsLeft] = useState(30);
+function HackedOverlay({ hackedUntil }: { hackedUntil: Date }) {
+  const secsLeft = Math.max(0, Math.ceil((hackedUntil.getTime() - Date.now()) / 1000));
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSecsLeft(s => {
-        if (s <= 1) {
-          clearInterval(id);
-          fetch('/api/team/ack-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ teamId }),
-            cache: 'no-store',
-          }).finally(() => onDismiss());
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [teamId, onDismiss]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -712,6 +693,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const inverteradUntil = effects.inverterad_skarm_until ? new Date(effects.inverterad_skarm_until as string) : null;
   const doubleAgentUntil = effects.double_agent_until ? new Date(effects.double_agent_until as string) : null;
   const smokeScreenUntil = effects.smoke_screen_until ? new Date(effects.smoke_screen_until as string) : null;
+  const hackedUntil = effects.hacked_until ? new Date(effects.hacked_until as string) : null;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
   const isFrozen = freezeUntil ? freezeUntil.getTime() > now : false;
@@ -722,6 +704,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const doubleAgentSecsLeft = isDoubleAgent ? Math.ceil((doubleAgentUntil!.getTime() - now) / 1000) : 0;
   const isSmokeScreen = smokeScreenUntil ? smokeScreenUntil.getTime() > now : false;
   const smokeScreenSecsLeft = isSmokeScreen ? Math.ceil((smokeScreenUntil!.getTime() - now) / 1000) : 0;
+  const isHacked = hackedUntil ? hackedUntil.getTime() > now : false;
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
@@ -895,11 +878,11 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         />
       )}
 
-      {notification && notification.type === 'sabotage' && (
-        <HackedOverlay teamId={team.id} onDismiss={() => setNotification(null)} />
+      {isHacked && hackedUntil && (
+        <HackedOverlay hackedUntil={hackedUntil} />
       )}
 
-      {notification && notification.type !== 'mystery_box' && notification.type !== 'sabotage' && (
+      {notification && notification.type !== 'mystery_box' && (
         <NotificationOverlay
           notification={notification}
           teamId={team.id}

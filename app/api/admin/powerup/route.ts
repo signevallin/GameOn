@@ -15,7 +15,6 @@ function getSupabase() {
 }
 
 const MSG_KEYS: Record<string, string> = {
-  sabotage: 'sabotage_msg',
   double_points: 'double_points_msg',
   final_frenzy: 'final_frenzy_msg',
   smoke_screen: 'smoke_screen_msg',
@@ -78,6 +77,29 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true, expiresAt });
+  }
+
+  // ── SABOTAGE / HACKED (reusable, no powerups_used tracking) ─────────────────
+  if (type === 'sabotage') {
+    if (!targetTeamId) return NextResponse.json({ error: 'Missing targetTeamId.' }, { status: 400 });
+
+    const { data: team, error: teamErr } = await supabase
+      .from('teams').select('active_effects').eq('id', targetTeamId).single();
+    if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
+
+    const effects = (team.active_effects as Record<string, unknown>) ?? {};
+    const shieldUntil = effects.shield_until ? new Date(effects.shield_until as string) : null;
+    if (shieldUntil && shieldUntil > new Date()) {
+      return NextResponse.json({ error: 'That team has a shield active! Hack blocked.' }, { status: 400 });
+    }
+
+    const hackedUntil = new Date(Date.now() + 30 * 1000).toISOString();
+    await supabase.from('teams').update({
+      active_effects: { ...effects, hacked_until: hackedUntil },
+      updated_at: new Date().toISOString(),
+    }).eq('id', targetTeamId);
+
+    return NextResponse.json({ ok: true });
   }
 
   // ── SMOKE SCREEN (reusable, no powerups_used tracking) ──────────────────────
@@ -145,13 +167,6 @@ export async function POST(req: Request) {
         const effects = (t.active_effects as Record<string, unknown>) ?? {};
         update.active_effects = { ...effects, final_frenzy: true };
       }
-      if (type === 'sabotage') {
-        const effects = (t.active_effects as Record<string, string>) ?? {};
-        const shieldUntil = effects.shield_until ? new Date(effects.shield_until) : null;
-        if (!shieldUntil || shieldUntil <= new Date()) {
-          update.score = Math.max(0, (t.score ?? 0) - 100);
-        }
-      }
       return update;
     });
 
@@ -173,18 +188,10 @@ export async function POST(req: Request) {
 
   if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 
-  if (type === 'sabotage') {
-    const effects = (team.active_effects as Record<string, string>) ?? {};
-    const shieldUntil = effects.shield_until ? new Date(effects.shield_until) : null;
-    if (shieldUntil && shieldUntil > new Date()) {
-      return NextResponse.json({ error: 'That team has a shield active! Sabotage blocked.' }, { status: 400 });
-    }
-  }
-
   const notification = type === 'fake_hint'
     ? { type, message: message.trim() }
     : MSG_KEYS[type]
-      ? { type, msgKey: MSG_KEYS[type], params: type === 'sabotage' ? { penalty: 100 } : {} }
+      ? { type, msgKey: MSG_KEYS[type], params: {} }
       : { type, message: '' };
 
   const teamUpdate: Record<string, unknown> = {
@@ -192,7 +199,6 @@ export async function POST(req: Request) {
     updated_at: new Date().toISOString(),
   };
 
-  if (type === 'sabotage') teamUpdate.score = Math.max(0, (team.score ?? 0) - 100);
   if (type === 'double_points') teamUpdate.double_points = true;
 
   await supabase.from('teams').update(teamUpdate).eq('id', targetTeamId);
