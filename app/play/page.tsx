@@ -52,6 +52,8 @@ export default function Home() {
 
   // Ref to the Realtime broadcast channel (remote mode only)
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // Counter for periodic custom mission refresh (every ~60 s)
+  const pollCountRef = useRef(0);
 
   // ── Restore session on first mount ──
   useEffect(() => {
@@ -159,6 +161,19 @@ export default function Home() {
         if (data.teams) setTeams(data.teams);
         if (data.members) setMembers(data.members);
         else if (!gameRef.current?.remote_mode) setMembers([]);
+
+        // Every 12th poll (~60 s) silently re-fetch custom missions so category
+        // changes made by the admin during an active game are reflected.
+        pollCountRef.current += 1;
+        if (pollCountRef.current % 12 === 0 && g?.id) {
+          fetch(`/api/team/missions?gameId=${g.id}`).then(r => r.json()).then(({ customMissions: fresh }) => {
+            if (Array.isArray(fresh)) {
+              const missions = (fresh as CustomMission[]).map(toMission);
+              setCustomMissions(missions);
+              try { localStorage.setItem('gameon_custom_missions', JSON.stringify(missions)); } catch { /* storage full */ }
+            }
+          }).catch(() => {});
+        }
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
