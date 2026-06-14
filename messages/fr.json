@@ -1,8 +1,8 @@
 {
   "login": {
     "role": "Sélectionnez votre rôle pour vous connecter",
-    "tabTeam": "🧑‍💻 ÉQUIPE",
-    "tabAdmin": "🛡️ ADMIN",
+    "tabTeam": "ÉQUIPE",
+    "tabAdmin": "ADMIN",
     "teamNameLabel": "Nom de l'équipe",
     "teamNamePlaceholder": "Par exemple, l'équipe Frontend",
     "gameKeyLabel": "Clé du jeu (fournie par l'organisateur)",

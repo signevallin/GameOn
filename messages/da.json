@@ -1,8 +1,8 @@
 {
   "login": {
     "role": "Vælg din rolle for at logge ind",
-    "tabTeam": "🧑‍💻 HOLD",
-    "tabAdmin": "🛡️ ADMIN",
+    "tabTeam": "HOLD",
+    "tabAdmin": "ADMIN",
     "teamNameLabel": "Holdnavn",
     "teamNamePlaceholder": "F.eks. Team Frontend",
     "gameKeyLabel": "Spilnøgle (fra arrangøren)",

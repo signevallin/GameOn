@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { MailCheck } from 'lucide-react';
+import { MailCheck, Users, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
@@ -154,11 +154,11 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
         </div>
 
         <div className="login-tabs">
-          <button className={`tab-btn${mode === 'team' ? ' active' : ''}`} onClick={() => { setMode('team'); setError(''); }}>
-            {t('login.tabTeam')}
+          <button className={`tab-btn${mode === 'team' ? ' active' : ''}`} onClick={() => { setMode('team'); setError(''); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+            <Users size={15} /> {t('login.tabTeam')}
           </button>
-          <button className={`tab-btn${mode === 'admin' ? ' active' : ''}`} onClick={() => { setMode('admin'); setError(''); }}>
-            {t('login.tabAdmin')}
+          <button className={`tab-btn${mode === 'admin' ? ' active' : ''}`} onClick={() => { setMode('admin'); setError(''); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}>
+            <ShieldCheck size={15} /> {t('login.tabAdmin')}
           </button>
         </div>
 

@@ -1,8 +1,8 @@
 {
   "login": {
     "role": "Select your role to log in",
-    "tabTeam": "🧑‍💻 TEAM",
-    "tabAdmin": "🛡️ ADMIN",
+    "tabTeam": "TEAM",
+    "tabAdmin": "ADMIN",
     "teamNameLabel": "Team Name",
     "teamNamePlaceholder": "E.g. Team Frontend",
     "gameKeyLabel": "Game Key (from the organiser)",

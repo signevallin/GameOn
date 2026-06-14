@@ -1,8 +1,8 @@
 {
   "login": {
     "role": "Velg din rolle for å logge inn",
-    "tabTeam": "🧑‍💻 LAG",
-    "tabAdmin": "🛡️ ADMIN",
+    "tabTeam": "LAG",
+    "tabAdmin": "ADMIN",
     "teamNameLabel": "Lagnavn",
     "teamNamePlaceholder": "F.eks. Team Frontend",
     "gameKeyLabel": "Spillnøkkel (fra arrangøren)",
