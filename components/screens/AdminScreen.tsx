@@ -2570,15 +2570,18 @@ export default function AdminScreen({ onLogout }: Props) {
               <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
                 Games per week
               </div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 80 }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 96 }}>
                 {gamesPerWeek.map((w, i) => {
                   const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
-                  const heightPx = w.count === 0 ? 4 : Math.max(8, Math.round((w.count / maxCount) * 80));
+                  const heightPx = w.count === 0 ? 4 : Math.max(8, Math.round((w.count / maxCount) * 72));
                   return (
                     <div
                       key={w.key}
-                      style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+                      style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
                     >
+                      <div style={{ fontSize: 9, fontWeight: 600, color: w.count > 0 ? '#6ec6f5' : 'var(--muted)', minHeight: 12 }}>
+                        {w.count > 0 ? w.count : ''}
+                      </div>
                       <div
                         style={{
                           width: '100%',
