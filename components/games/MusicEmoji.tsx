@@ -1,17 +1,29 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EmojiRound } from '@/lib/missions';
 
 type Props = {
   rounds: EmojiRound[];
   maxPts: number;
+  remoteRoundIdx?: number;
+  onRoundAdvance?: (idx: number) => void;
+  onClearRound?: () => void;
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
+export default function MusicEmoji({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (remoteRoundIdx !== undefined && remoteRoundIdx > idx && !done) {
+      setIdx(remoteRoundIdx);
+      setSelected(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteRoundIdx]);
 
   function choose(opt: string) {
     if (selected !== null) return;
@@ -24,10 +36,14 @@ export default function MusicEmoji({ rounds, maxPts, onFinish }: Props) {
         const total = isCorrect ? correct + 1 : correct;
         const pts = Math.round((total / rounds.length) * maxPts);
         setSelected(null);
+        setDone(true);
+        onClearRound?.();
         onFinish(total > 0, pts);
       } else {
+        const nextIdx = idx + 1;
         setSelected(null);
-        setIdx(i => i + 1);
+        setIdx(nextIdx);
+        onRoundAdvance?.(nextIdx);
       }
     }, 1000);
   }
