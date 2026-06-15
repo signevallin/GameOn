@@ -3809,8 +3809,8 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
-                    <option value="relay">Stafett (Relay)</option>
-                    <option value="shared_secret">Hemligt ord (Shared Secret)</option>
+                    <option value="relay">Relay</option>
+                    <option value="shared_secret">Shared Secret</option>
                   </select>
                 </div>
               </div>
@@ -3972,8 +3972,8 @@ export default function AdminScreen({ onLogout }: Props) {
                     onChange={e => setF({ relayMode: e.target.value as 'typerace' | 'button' })}
                     style={inputStyle}
                   >
-                    <option value="typerace">Skrivstafett — deltagaren skriver texten exakt</option>
-                    <option value="button">Knapptafett — deltagaren klickar Klar</option>
+                    <option value="typerace">Typerace — participant types the exact text</option>
+                    <option value="button">Button — participant clicks Done</option>
                   </select>
                   <label style={{ ...labelStyle, marginTop: '12px' }}>SEGMENTS (one per team member)</label>
                   {missionForm.relaySegments.map((seg, i) => (
