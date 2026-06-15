@@ -4851,7 +4851,7 @@ export default function AdminScreen({ onLogout }: Props) {
                   onChange={e => setHidePlayedMissions(e.target.checked)}
                   style={{ margin: 0 }}
                 />
-                Hide already played{playedMissionIds.length > 0 ? ` (${playedMissionIds.length})` : ''}
+                Hide already played{playedMissionIds.length > 0 ? ` (${[...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)].filter(id => playedMissionIds.includes(id)).length})` : ''}
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontSize: '11px', color: 'var(--muted)' }}>
                 <button onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All on</button>
