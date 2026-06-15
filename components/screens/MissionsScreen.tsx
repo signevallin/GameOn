@@ -199,7 +199,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
           onClick={ack}
           disabled={loading}
         >
-          {loading ? '...' : cfg.btnLabel}
+          {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', verticalAlign: 'middle' }} /> : cfg.btnLabel}
         </button>
       </div>
     </div>
@@ -1293,7 +1293,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                       <div style={{ display: 'flex', gap: '12px' }}>
                         <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setConfirmDone(false)}>{t('missions.confirmDoneCancel')}</button>
                         <button className="btn btn-primary" style={{ flex: 1 }} disabled={finishing} onClick={async () => { setConfirmDone(false); await markDone(); }}>
-                          {finishing ? '...' : t('missions.confirmDoneConfirm')}
+                          {finishing ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', verticalAlign: 'middle' }} /> : t('missions.confirmDoneConfirm')}
                         </button>
                       </div>
                     </div>

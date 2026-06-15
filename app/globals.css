@@ -50,7 +50,7 @@ body::after {
   top: 0; left: 0; right: 0; bottom: 0;
   background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
   pointer-events: none;
-  z-index: 9999;
+  z-index: 1;
 }
 
 /* ── ANIMATIONS ── */
@@ -509,7 +509,10 @@ pre {
   -webkit-tap-highlight-color: transparent;
   outline: none;
   -webkit-appearance: none;
+  transition: background 0.15s, border-color 0.15s;
 }
+
+.option-btn:active:not(:disabled) { background: rgba(0,229,255,0.08); border-color: var(--accent-hover); }
 
 .option-btn:focus-visible {
   outline: 2px solid var(--accent);
@@ -620,7 +623,7 @@ pre {
   z-index: 1;
 }
 
-.result-icon { font-size: 72px; display: block; margin-bottom: 24px; animation: bounce 0.6s ease; }
+.result-icon { font-size: 72px; display: block; margin-bottom: 24px; animation: popIn 0.3s ease; }
 .result-points { font-size: 56px; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 8px; }
 .result-label { font-size: 14px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
 
@@ -825,7 +828,7 @@ pre {
   transition: transform 0.2s;
 }
 
-.lb-row:hover { transform: translateX(4px); }
+.lb-row:hover { background: rgba(0,229,255,0.04); border-color: var(--accent-hover); }
 .lb-rank { font-size: 18px; font-weight: 700; width: 36px; text-align: center; flex-shrink: 0; }
 .lb-name { font-weight: 600; font-size: 16px; flex: 1; }
 .lb-score { font-size: 18px; font-weight: 700; color: var(--accent); }

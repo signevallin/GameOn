@@ -43,6 +43,7 @@ export default function CrackCode({ clues, answer, onFinish }: Props) {
             <input
               key={i}
               type="number"
+              inputMode="numeric"
               min={0}
               max={9}
               value={d}

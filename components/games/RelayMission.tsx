@@ -250,11 +250,11 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
           const memberSegmentsDone = segments.filter((_, si) => si < active && si % memberCount === i).length;
           const memberSegmentsFuture = segments.filter((_, si) => si >= active && si % memberCount === i).length;
           const memberPartsDone = !isMemberActive && memberSegmentsDone > 0 && memberSegmentsFuture === 0;
-          const icon = relayDone
-            ? '✅'
-            : isMemberActive ? '▶️'
-            : memberPartsDone ? '✅'
-            : '⏳';
+          const icon = relayDone || memberPartsDone
+            ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            : isMemberActive
+            ? <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)"><path d="M5 3L19 12L5 21V3Z"/></svg>
+            : <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--muted)" strokeWidth="2"/><path d="M12 7v5l3 3" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"/></svg>;
           const isWaitingMember = !relayDone && !isMemberActive && !memberPartsDone;
           return (
             <div key={m.id} style={{
@@ -265,7 +265,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               background: isMemberActive ? 'rgba(99,102,241,0.08)' : 'var(--card)',
               opacity: isWaitingMember ? 0.5 : 1,
             }}>
-              <span style={{ fontSize: '18px' }}>{icon}</span>
+              <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
               <span style={{ fontWeight: isMemberActive ? 700 : 400, color: memberPartsDone && !relayDone ? 'var(--muted)' : undefined }}>
                 {m.name}{m.id === memberId ? ` ${t('challenge.relay.you')}` : ''}
               </span>
@@ -407,7 +407,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       {/* Waiting — it's someone else's turn and I still have turns coming */}
       {isWaiting && !myPartsDone && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--muted)" strokeWidth="2"/><path d="M12 7v5l3 3" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"/></svg></div>
           <p>{t('challenge.relay.waiting', { name: members[activeMemberIndex < 0 ? 0 : activeMemberIndex]?.name ?? '…' })}</p>
         </div>
       )}
@@ -415,7 +415,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       {/* My parts are done — waiting for relay to finish */}
       {myPartsDone && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
           <p>{t('challenge.relay.myTurnsDone')}</p>
         </div>
       )}
@@ -423,7 +423,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       {/* Relay complete */}
       {relayDone && (
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--accent3)' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
           <p>{t('challenge.relay.completed')}</p>
         </div>
       )}

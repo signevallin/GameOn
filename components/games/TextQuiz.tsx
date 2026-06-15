@@ -104,7 +104,13 @@ export default function TextQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvanc
           background: result === 'correct' ? 'rgba(140,191,155,0.12)' : 'rgba(208,117,125,0.10)',
           border: `1px solid ${result === 'correct' ? 'var(--accent3)' : 'var(--accent2)'}`,
         }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>{result === 'correct' ? '✅' : '❌'}</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            {result === 'correct' ? (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            ) : (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(208,117,125,0.2)"/><path d="M8 8l8 8M16 8l-8 8" stroke="var(--accent2)" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            )}
+          </div>
           <div style={{ fontWeight: 800, fontSize: '16px', color: result === 'correct' ? 'var(--accent3)' : 'var(--accent2)' }}>
             {result === 'correct' ? 'Correct!' : `Wrong — the answer was "${r.answer}"`}
           </div>

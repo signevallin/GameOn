@@ -92,6 +92,7 @@ export default function ClosestWins({ maxPts, questions: propQuestions, teamId, 
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
             type="number"
+            inputMode="numeric"
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
