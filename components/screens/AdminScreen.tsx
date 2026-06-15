@@ -4852,15 +4852,19 @@ export default function AdminScreen({ onLogout }: Props) {
                 />
                 Hide already played{playedMissionIds.length > 0 ? ` (${playedMissionIds.length})` : ''}
               </label>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])}>All on</button>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => {
-                const allKeys = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]);
-                const allCollapsed = allKeys.every(k => collapsedCats.has(k));
-                setCollapsedCats(allCollapsed ? new Set() : new Set(allKeys));
-              }}>
-                {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).every(k => collapsedCats.has(k)) ? 'Expand all' : 'Collapse all'}
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontSize: '11px', color: 'var(--muted)' }}>
+                <button onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All on</button>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <button onClick={() => setSelectedMissions([])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All off</button>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <button onClick={() => {
+                  const allKeys = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]);
+                  const allCollapsed = allKeys.every(k => collapsedCats.has(k));
+                  setCollapsedCats(allCollapsed ? new Set() : new Set(allKeys));
+                }} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>
+                  {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).every(k => collapsedCats.has(k)) ? 'Expand all' : 'Collapse all'}
+                </button>
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
