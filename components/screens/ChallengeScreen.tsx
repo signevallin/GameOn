@@ -198,6 +198,9 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
           <CelebrityQuiz
             rounds={mission.celebRounds!}
             maxPts={effectiveMaxPts}
+            remoteRoundIdx={remoteRoundIdx}
+            onRoundAdvance={advanceRemoteRound}
+            onClearRound={clearRemoteRound}
             onFinish={(correct, pts) => finish(correct, pts)}
           />
         );
