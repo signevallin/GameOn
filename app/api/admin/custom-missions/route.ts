@@ -21,6 +21,7 @@ export async function GET(req: Request) {
     .from('custom_missions')
     .select('*')
     .eq('user_id', admin.userId)
+    .is('deleted_at', null)
     .order('sort_order')
     .order('created_at');
 

@@ -101,7 +101,10 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   if (existing.user_id !== admin.userId && !admin.isSuperAdmin) return unauthorizedResponse();
 
-  const { error } = await getSupabase().from('custom_missions').delete().eq('id', id);
+  const { error } = await getSupabase()
+    .from('custom_missions')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

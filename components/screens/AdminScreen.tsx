@@ -16,7 +16,7 @@ import {
   Pencil, Settings2, Search, Wind, Flame,
   X, Trash2, Target, Monitor,
   Key, CreditCard, CircleHelp, Palette, Bomb,
-  LogOut, WandSparkles, Play,
+  LogOut, WandSparkles, Play, Coins, MessageCircle, Swords,
   Gamepad2, Map as MapIcon, Rocket,
   Tv, FileText, Loader2, Download,
   Square, RotateCcw,
@@ -387,7 +387,7 @@ type MissionFormData = {
   // photo
   photoPrompt: string;
   // relay
-  relaySegments: string[];
+  relaySegments: { prompt: string; answer: string }[];
   relayMode: 'typerace' | 'button';
   // shared_secret
   sharedSecretAnswer: string;
@@ -401,7 +401,7 @@ const EMPTY_FORM: MissionFormData = {
   name: '', icon: '⭐', desc: '', difficulty: 'medium', maxPts: 500, type: '',
   triviaRounds: [], statements: [], closestQuestions: [],
   clues: [], paAnswer: '', timelineItems: [], photoPrompt: '',
-  relaySegments: ['', '', '', ''],
+  relaySegments: [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
   relayMode: 'typerace',
   sharedSecretAnswer: '',
   sharedSecretHint: '',
@@ -741,6 +741,7 @@ function BrandingView({ authToken, onBack, profileMenu }: {
               <div>
                 <label className="form-label">Brand name</label>
                 <input
+                  type="text"
                   className="form-input"
                   placeholder="Acme Corp"
                   value={name}
@@ -753,6 +754,7 @@ function BrandingView({ authToken, onBack, profileMenu }: {
                 <label className="form-label">Logo URL</label>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px' }}>PNG or SVG with transparent background recommended</div>
                 <input
+                  type="text"
                   className="form-input"
                   placeholder="https://example.com/logo.png"
                   value={logoUrl}
@@ -918,6 +920,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
   const [playedMissionIds, setPlayedMissionIds] = useState<string[]>([]);
   const [hidePlayedMissions, setHidePlayedMissions] = useState<boolean>(false);
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
@@ -1300,7 +1303,7 @@ export default function AdminScreen({ onLogout }: Props) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('[report] network error:', err);
-      setReportError('Nätverksfel. Kontrollera anslutningen och försök igen.');
+      setReportError('Network error. Check your connection and try again.');
     } finally {
       setReportLoading(false);
     }
@@ -1998,10 +2001,10 @@ export default function AdminScreen({ onLogout }: Props) {
       if (!iso) return '–';
       const diff = Date.now() - new Date(iso).getTime();
       const mins = Math.floor(diff / 60000);
-      if (mins < 60) return `${mins}m sedan`;
+      if (mins < 60) return `${mins}m ago`;
       const hours = Math.floor(mins / 60);
-      if (hours < 24) return `${hours}h sedan`;
-      return `${Math.floor(hours / 24)}d sedan`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${Math.floor(hours / 24)}d ago`;
     };
 
     const statusDotColor = (lastActive: string | null): string => {
@@ -2058,21 +2061,21 @@ export default function AdminScreen({ onLogout }: Props) {
                   transition: 'color 0.15s',
                 }}
               >
-                {t === 'customers' ? 'Kunder' : 'Uppdrag'}
+                {t === 'customers' ? 'Customers' : 'Missions'}
               </button>
             ))}
           </div>
 
           {/* Loading */}
           {analyticsLoading && (
-            <div className="empty-state">Laddar analytics...</div>
+            <div className="empty-state">Loading analytics...</div>
           )}
 
           {/* Error */}
           {!analyticsLoading && analyticsError && (
             <div className="empty-state" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-              <span>Kunde inte ladda analytics.</span>
-              <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={loadAnalytics}>↻ Försök igen</button>
+              <span>Could not load analytics.</span>
+              <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={loadAnalytics}>↻ Try again</button>
             </div>
           )}
 
@@ -2100,29 +2103,29 @@ export default function AdminScreen({ onLogout }: Props) {
                 {/* KPI row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aktiva kunder</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active customers</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: '#6ec6f5', lineHeight: 1 }}>{kpis.activeCustomers}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} senaste 30d</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} last 30d</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Spel totalt</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total games</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.totalGames}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} den här månaden</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} this month</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Slutförandegrad</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Completion rate</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(kpis.completionRate * 100)}%</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} av {kpis.totalGames} klara</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} of {kpis.totalGames} finished</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Snitt lag/spel</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg teams/game</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.avgTeamsPerGame}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} lag totalt</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} teams total</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro-kunder</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro customers</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{proCustomers}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% av alla</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% of all</div>
                   </div>
                 </div>
 
@@ -2131,17 +2134,20 @@ export default function AdminScreen({ onLogout }: Props) {
 
                   {/* Activity chart */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Aktivitet per vecka</div>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Activity per week</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '96px' }}>
                       {gamesPerWeek.map((w, i) => {
-                        const barH = Math.max(4, Math.round((w.count / maxBarCount) * 80));
+                        const barH = Math.max(4, Math.round((w.count / maxBarCount) * 72));
                         const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
                         return (
                           <div
                             key={w.weekLabel}
-                            title={`${w.weekLabel}: ${w.count} spel`}
+                            title={`${w.weekLabel}: ${w.count} games`}
                             style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}
                           >
+                            {w.count > 0 && (
+                              <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: '2px', lineHeight: 1 }}>{w.count}</div>
+                            )}
                             <div style={{ width: '100%', height: `${barH}px`, background: '#6ec6f5', opacity, borderRadius: '3px 3px 0 0', transition: 'height 0.2s' }} />
                           </div>
                         );
@@ -2156,7 +2162,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
                   {/* Customer status list */}
                   <div style={{ ...kpiCardStyle, padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Kundstatus</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Customer status</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'auto', maxHeight: '180px' }}>
                       {cx.map(c => (
                         <div
@@ -2171,10 +2177,10 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{c.gameCount} spel</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{c.gameCount} games</div>
                         </div>
                       ))}
-                      {cx.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Inga kunder</div>}
+                      {cx.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No customers</div>}
                     </div>
                     {/* Expanded customer games */}
                     {expandedCustomer && (() => {
@@ -2185,8 +2191,8 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '8px', fontWeight: 600 }}>{customer.email}</div>
                           {customer.games.slice(0, 5).map(g => (
                             <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '12px' }}>
-                              <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{g.name ?? '(namnlöst)'}</span>
-                              <span style={{ color: 'var(--muted)', flexShrink: 0, marginLeft: '8px' }}>{g.teamCount} lag</span>
+                              <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{g.name ?? '(unnamed)'}</span>
+                              <span style={{ color: 'var(--muted)', flexShrink: 0, marginLeft: '8px' }}>{g.teamCount} teams</span>
                             </div>
                           ))}
                         </div>
@@ -2200,30 +2206,30 @@ export default function AdminScreen({ onLogout }: Props) {
 
                   {/* Recent games feed */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Senaste spelen</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Recent games</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {recentGames.map(g => {
                         const teamBadgeColor = g.teamCount >= 8 ? 'var(--accent3)' : g.teamCount >= 4 ? '#6ec6f5' : 'var(--muted)';
                         return (
                           <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name ?? '(namnlöst)'}</div>
+                              <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name ?? '(unnamed)'}</div>
                               <div style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.customerEmail}</div>
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(g.startedAt)}</div>
                             <div style={{ fontSize: '11px', fontWeight: 700, color: teamBadgeColor, background: 'rgba(255,255,255,0.06)', borderRadius: '20px', padding: '2px 8px', flexShrink: 0 }}>
-                              {g.teamCount} lag
+                              {g.teamCount} teams
                             </div>
                           </div>
                         );
                       })}
-                      {recentGames.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Inga spel</div>}
+                      {recentGames.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No games</div>}
                     </div>
                   </div>
 
                   {/* Plan distribution */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Planfördelning</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Plan distribution</div>
                     {totalCustomers > 0 ? (
                       <>
                         <div>
@@ -2246,11 +2252,11 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
                           <div style={{ fontSize: '22px', fontWeight: 800, color: '#f59e0b' }}>{proRatePct}%</div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>pro-rate · {totalCustomers} kunder</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>pro rate · {totalCustomers} customers</div>
                         </div>
                       </>
                     ) : (
-                      <div style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Inga kunder</div>
+                      <div style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No customers</div>
                     )}
                   </div>
                 </div>
@@ -2315,31 +2321,31 @@ export default function AdminScreen({ onLogout }: Props) {
                 {/* KPI row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Uppdrag i bruk</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Missions in use</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{missionsInUse}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>av {MISSIONS.length} tillgängliga</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>of {MISSIONS.length} available</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Snitt klarade/spel</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg completed/game</div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(avgCompletion * 100)}%</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>av valda uppdrag</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>of selected missions</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Populärast</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Most popular</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {mostPopular ? `${missionIconById[mostPopular.id] ?? ''} ${mostPopular.name}` : '–'}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                      {mostPopular ? `med i ${mostPopular.gameCount} av ${analytics.kpis.totalGames} spel` : ''}
+                      {mostPopular ? `in ${mostPopular.gameCount} of ${analytics.kpis.totalGames} games` : ''}
                     </div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Svårast</div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hardest</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {hardest ? `${missionIconById[hardest.id] ?? ''} ${hardest.name}` : '–'}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                      {hardest ? `${Math.round(hardest.completionRate * 100)}% klarar det` : 'Behöver ≥5 spel'}
+                      {hardest ? `${Math.round(hardest.completionRate * 100)}% complete it` : 'Needs ≥5 games'}
                     </div>
                   </div>
                 </div>
@@ -2349,7 +2355,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
                   {/* Top missions ranked list */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Topp 10 uppdrag</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Top 10 missions</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       {top10.map((m, i) => (
                         <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 6px', borderRadius: '8px' }}>
@@ -2362,7 +2368,7 @@ export default function AdminScreen({ onLogout }: Props) {
                               <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>
-                              Med i {m.gameCount} spel · {m.totalTeams} lagförsök
+                              In {m.gameCount} games · {m.totalTeams} team attempts
                             </div>
                             <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
                               <div style={{ height: '100%', width: `${m.completionRate * 100}%`, background: barColor(m.completionRate), borderRadius: '2px', transition: 'width 0.3s' }} />
@@ -2373,7 +2379,7 @@ export default function AdminScreen({ onLogout }: Props) {
                           </div>
                         </div>
                       ))}
-                      {top10.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>Ingen data</div>}
+                      {top10.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No data</div>}
                     </div>
                   </div>
 
@@ -2382,7 +2388,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
                     {/* Per kategori */}
                     <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '14px', color: 'var(--text)' }}>Per kategori</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '14px', color: 'var(--text)' }}>By category</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {categoryRows.map(cat => (
                           <div key={cat.key}>
@@ -2396,25 +2402,29 @@ export default function AdminScreen({ onLogout }: Props) {
                             </div>
                           </div>
                         ))}
-                        {categoryRows.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>Ingen data</div>}
+                        {categoryRows.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No data</div>}
                       </div>
                     </div>
 
-                    {/* Sällan använda */}
+                    {/* Rarely used */}
                     <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Sällan använda</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Rarely used</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {rarelyUsed.map(m => (
-                          <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '14px', flexShrink: 0 }}>{missionIconById[m.id] ?? '🎯'}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
-                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.gameCount} spel · {m.totalTeams} lagförsök</div>
+                        {rarelyUsed.map(m => {
+                          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(m.name);
+                          const displayName = isUuid ? '(Custom mission)' : m.name;
+                          return (
+                            <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '14px', flexShrink: 0 }}>{missionIconById[m.id] ?? '🎯'}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.gameCount} games · {m.totalTeams} team attempts</div>
+                              </div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0 }}>{Math.round(m.completionRate * 100)}%</div>
                             </div>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0 }}>{Math.round(m.completionRate * 100)}%</div>
-                          </div>
-                        ))}
-                        {rarelyUsed.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>Alla uppdrag används flitigt!</div>}
+                          );
+                        })}
+                        {rarelyUsed.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>All missions used frequently!</div>}
                       </div>
                     </div>
 
@@ -2444,12 +2454,12 @@ export default function AdminScreen({ onLogout }: Props) {
     const timeAgoLocal = (dateStr: string): string => {
       const diff = Date.now() - new Date(dateStr).getTime();
       const days = Math.floor(diff / 86400000);
-      if (days === 0) return 'idag';
-      if (days === 1) return '1 dag sedan';
-      if (days < 7) return `${days} dagar sedan`;
+      if (days === 0) return 'today';
+      if (days === 1) return '1 day ago';
+      if (days < 7) return `${days} days ago`;
       const weeks = Math.floor(days / 7);
-      if (weeks === 1) return '1 vecka sedan';
-      return `${weeks} veckor sedan`;
+      if (weeks === 1) return '1 week ago';
+      return `${weeks} weeks ago`;
     };
 
     const totalGames = analyticsGames.length;
@@ -2482,10 +2492,10 @@ export default function AdminScreen({ onLogout }: Props) {
       .slice(0, 5);
 
     const kpis = [
-      { label: 'Spel totalt', value: String(totalGames), color: 'var(--accent)' },
-      { label: 'Slutförandegrad', value: `${completionRate}%`, color: 'var(--accent3)' },
-      { label: 'Snitt lag/spel', value: String(avgTeams), color: 'var(--text)' },
-      { label: 'Lag totalt', value: String(totalTeams), color: 'var(--gold)' },
+      { label: 'Total games', value: String(totalGames), color: 'var(--accent)' },
+      { label: 'Completion rate', value: `${completionRate}%`, color: 'var(--accent3)' },
+      { label: 'Avg teams/game', value: String(avgTeams), color: 'var(--text)' },
+      { label: 'Total teams', value: String(totalTeams), color: 'var(--gold)' },
     ];
 
     return (
@@ -2495,7 +2505,7 @@ export default function AdminScreen({ onLogout }: Props) {
             <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
           </button>
           <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <BarChart2 size={15} color={IC} /> Min statistik
+            <BarChart2 size={15} color={IC} /> My stats
           </div>
           <div className="nav-right">
             <ProfileMenu />
@@ -2524,7 +2534,7 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* Activity bar chart */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
               <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-                Spel per vecka
+                Games per week
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 80 }}>
                 {gamesPerWeek.map((w, i) => {
@@ -2553,10 +2563,10 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* Recent games */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
               <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-                Senaste spel
+                Recent games
               </div>
               {recentGames.length === 0 ? (
-                <div style={{ fontSize: 13, color: 'var(--muted)' }}>Inga spel ännu</div>
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>No games yet</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {recentGames.map(g => (
@@ -2565,10 +2575,10 @@ export default function AdminScreen({ onLogout }: Props) {
                         fontSize: 13, fontWeight: 600, color: 'var(--text)',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>
-                        {g.name || '(namnlöst)'}
+                        {g.name || '(unnamed)'}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
-                        {g.teams_count ?? 0} lag · {g.started_at ? timeAgoLocal(g.started_at) : 'Utkast'}
+                        {g.teams_count ?? 0} teams · {g.started_at ? timeAgoLocal(g.started_at) : 'Draft'}
                       </div>
                     </div>
                   ))}
@@ -2777,7 +2787,11 @@ export default function AdminScreen({ onLogout }: Props) {
           ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
           : [],
         photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
-        relaySegments: cm.type === 'relay' ? ((d.segments as string[]) ?? []) : ['', '', '', ''],
+        relaySegments: cm.type === 'relay'
+          ? ((d.segments as (string | { prompt: string; answer?: string })[]) ?? []).map(s =>
+              typeof s === 'string' ? { prompt: s, answer: '' } : { prompt: s.prompt, answer: s.answer ?? '' }
+            )
+          : [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
         relayMode: cm.type === 'relay' ? ((d.relayMode as 'typerace' | 'button') ?? 'typerace') : 'typerace',
         sharedSecretAnswer: cm.type === 'shared_secret' ? ((d.answer as string) ?? '') : '',
         sharedSecretHint: cm.type === 'shared_secret' ? ((d.hint as string) ?? '') : '',
@@ -2955,7 +2969,7 @@ export default function AdminScreen({ onLogout }: Props) {
           paAnswer: mission.paAnswer ?? '',
           timelineItems: mission.timelineItems ?? [],
           photoPrompt: mission.photoPrompt ?? '',
-          relaySegments: mission.segments?.map((s: { prompt: string }) => s.prompt) ?? ['', '', '', ''],
+          relaySegments: mission.segments?.map((s: { prompt: string; answer?: string }) => ({ prompt: s.prompt, answer: s.answer ?? '' })) ?? [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
           relayMode: (mission.relayMode as 'typerace' | 'button') ?? 'typerace',
           sharedSecretAnswer: mission.answer ?? '',
           sharedSecretHint: mission.hint ?? '',
@@ -3564,14 +3578,19 @@ export default function AdminScreen({ onLogout }: Props) {
                     <span>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</span>
                   </div>
                 </div>
-                <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => openEditForm(cm)}>Edit</button>
+                <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px', border: '1px solid rgba(124,189,212,0.25)' }} onClick={() => openEditForm(cm)}>
+                  <Pencil size={13} /> Edit
+                </button>
                 <button
                   className="btn btn-ghost"
-                  style={{ padding: '6px 12px', fontSize: '11px', color: 'var(--danger, #e05252)' }}
+                  style={{ padding: '6px 8px', color: 'var(--danger, #e05252)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(224,82,82,0.25)' }}
                   disabled={deletingMissionId === cm.id}
                   onClick={() => deleteMission(cm.id)}
+                  title="Delete mission"
                 >
-                  {deletingMissionId === cm.id ? '...' : 'Delete'}
+                  {deletingMissionId === cm.id
+                    ? <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                    : <Trash2 size={15} />}
                 </button>
               </div>
             );})}
@@ -3809,8 +3828,8 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
-                    <option value="relay">Relay</option>
-                    <option value="shared_secret">Shared Secret</option>
+                    <option value="relay">📶 Relay (Remote)</option>
+                    <option value="shared_secret">📶 Shared Secret (Remote)</option>
                   </select>
                 </div>
               </div>
@@ -3973,31 +3992,44 @@ export default function AdminScreen({ onLogout }: Props) {
                     style={inputStyle}
                   >
                     <option value="typerace">Typerace — participant types the exact text</option>
-                    <option value="button">Button — participant clicks Done</option>
+                    <option value="button">Relay Quiz — participant types the answer to a question</option>
                   </select>
                   <label style={{ ...labelStyle, marginTop: '12px' }}>SEGMENTS (one per team member)</label>
                   {missionForm.relaySegments.map((seg, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
-                      <input
-                        type="text"
-                        value={seg}
-                        onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = e.target.value; setF({ relaySegments: arr }); }}
-                        placeholder={`Segment ${i + 1}`}
-                        style={{ ...inputStyle, flex: 1 }}
-                      />
-                      {missionForm.relaySegments.length > 2 && (
-                        <button
-                          onClick={() => setF({ relaySegments: missionForm.relaySegments.filter((_, j) => j !== i) })}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
-                        >×</button>
+                    <div key={i} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: missionForm.relayMode === 'button' ? '4px' : '0' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                        <input
+                          type="text"
+                          value={seg.prompt}
+                          onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = { ...arr[i], prompt: e.target.value }; setF({ relaySegments: arr }); }}
+                          placeholder={missionForm.relayMode === 'button' ? `Question ${i + 1}` : `Segment ${i + 1}`}
+                          style={{ ...inputStyle, flex: 1 }}
+                        />
+                        {missionForm.relaySegments.length > 2 && (
+                          <button
+                            onClick={() => setF({ relaySegments: missionForm.relaySegments.filter((_, j) => j !== i) })}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
+                          >×</button>
+                        )}
+                      </div>
+                      {missionForm.relayMode === 'button' && (
+                        <div style={{ display: 'flex', gap: '8px', paddingLeft: '28px' }}>
+                          <input
+                            type="text"
+                            value={seg.answer}
+                            onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = { ...arr[i], answer: e.target.value }; setF({ relaySegments: arr }); }}
+                            placeholder={`Answer ${i + 1}`}
+                            style={{ ...inputStyle, flex: 1, fontSize: '12px', opacity: 0.85 }}
+                          />
+                        </div>
                       )}
                     </div>
                   ))}
                   <button
                     className="btn btn-ghost"
                     style={{ fontSize: '11px', padding: '4px 10px' }}
-                    onClick={() => setF({ relaySegments: [...missionForm.relaySegments, ''] })}
+                    onClick={() => setF({ relaySegments: [...missionForm.relaySegments, { prompt: '', answer: '' }] })}
                   >+ Add segment</button>
                 </div>
               )}
@@ -4616,7 +4648,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${hideLeaderboard ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Hide leaderboard in last 5 min</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Hide leaderboard in last 5 min</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Teams won&apos;t see the leaderboard in the last 5 minutes, and won&apos;t see final placements when the game ends.
                 </div>
@@ -4632,7 +4664,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${aiPhotoRating ? 'var(--accent)' : 'var(--border)'}`, borderRadius: aiPhotoRating ? '10px 10px 0 0' : '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={14} style={{ flexShrink: 0 }} />AI photo rating</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={14} color={IC} style={{ flexShrink: 0 }} />AI photo rating</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Photos rated automatically by AI — you can override anytime
                 </div>
@@ -4662,7 +4694,7 @@ export default function AdminScreen({ onLogout }: Props) {
           <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
             <div style={{ padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
               <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Game language
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Game language
               </div>
               <select
                 value={gameLanguage}
@@ -4697,7 +4729,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${remoteMode ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>Remote / Distributed mode</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>Remote / Distributed mode</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Each team member joins on their own device.
                 </div>
@@ -4729,6 +4761,13 @@ export default function AdminScreen({ onLogout }: Props) {
               </label>
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])}>All on</button>
               <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
+              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => {
+                const allKeys = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]);
+                const allCollapsed = allKeys.every(k => collapsedCats.has(k));
+                setCollapsedCats(allCollapsed ? new Set() : new Set(allKeys));
+              }}>
+                {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).every(k => collapsedCats.has(k)) ? 'Expand all' : 'Collapse all'}
+              </button>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -4745,26 +4784,44 @@ export default function AdminScreen({ onLogout }: Props) {
                 .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
               if (catMissions.length === 0 && customInCat.length === 0) return null;
               const allOn = [...catMissions, ...customInCat].every(m => selectedMissions.includes(m.id));
+              const selectedCount = [...catMissions, ...customInCat].filter(m => selectedMissions.includes(m.id)).length;
+              const totalCount = catMissions.length + customInCat.length;
+              const isCollapsed = collapsedCats.has(catKey);
+              const toggleCollapse = () => setCollapsedCats(prev => {
+                const next = new Set(prev);
+                next.has(catKey) ? next.delete(catKey) : next.add(catKey);
+                return next;
+              });
               return (
                 <div key={catKey}>
                   {/* Category header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: cat.color }}>
+                  <div
+                    onClick={toggleCollapse}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isCollapsed ? 0 : '8px', cursor: 'pointer', padding: '6px 0' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: cat.color }}>
+                      <ChevronRight size={13} style={{ transition: 'transform 0.15s', transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', color: cat.color }} />
                       {cat.icon} {cat.label.toUpperCase()}
+                      <span style={{ fontWeight: 400, letterSpacing: 0, color: 'var(--muted)', fontSize: '11px' }}>
+                        {selectedCount > 0 ? `${selectedCount}/${totalCount}` : totalCount}
+                      </span>
                     </span>
-                    <button
-                      onClick={() => {
-                        const ids = [...catMissions, ...customInCat].map(m => m.id);
-                        setSelectedMissions(prev => allOn
-                          ? prev.filter(x => !ids.includes(x))
-                          : [...new Set([...prev, ...ids])]);
-                      }}
-                      style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
-                    >
-                      {allOn ? 'Deselect all' : 'Select all'}
-                    </button>
+                    {!isCollapsed && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          const ids = [...catMissions, ...customInCat].map(m => m.id);
+                          setSelectedMissions(prev => allOn
+                            ? prev.filter(x => !ids.includes(x))
+                            : [...new Set([...prev, ...ids])]);
+                        }}
+                        style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                      >
+                        {allOn ? 'Deselect all' : 'Select all'}
+                      </button>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {!isCollapsed && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {catMissions.map(m => {
                       const on = selectedMissions.includes(m.id);
                       const pts = missionMaxPts[m.id] ?? m.maxPts;
@@ -4835,7 +4892,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                       );
                     })}
-                  </div>
+                  </div>}
                 </div>
               );
             })}
@@ -5580,9 +5637,9 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
           );
 
-          const statTitle = (icon: string, label: string) => (
+          const statTitle = (icon: React.ReactNode, label: string) => (
             <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', letterSpacing: '1px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>{icon}</span>{label}
+              {icon}{label}
             </div>
           );
 
@@ -5629,7 +5686,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 1. Mission completion bar chart */}
               {statCard(<>
-                {statTitle('🏆', 'MOST COMPLETED MISSIONS (TOP 10)')}
+                {statTitle(<Trophy size={13} color={IC} />, 'MOST COMPLETED MISSIONS (TOP 10)')}
                 {completionStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No completions yet.</div>
                   : <BarChart data={completionStats} maxValue={teams.length} color="var(--accent)" unit={`/${teams.length}`} />}
@@ -5637,7 +5694,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 2. Points per mission bar chart */}
               {statCard(<>
-                {statTitle('💰', 'MOST POINTS AWARDED (TOP 10)')}
+                {statTitle(<Coins size={13} color={IC} />, 'MOST POINTS AWARDED (TOP 10)')}
                 {pointStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No points yet.</div>
                   : <BarChart data={pointStats} maxValue={pointStats[0]?.value ?? 1} color="var(--gold)" unit=" pts" />}
@@ -5645,7 +5702,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 3. Would You answers */}
               {statCard(<>
-                {statTitle('💬', 'WHO ON THE TEAM')}
+                {statTitle(<MessageCircle size={13} color={IC} />, 'WHO ON THE TEAM')}
                 {wouldYouAnswers.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No answers submitted yet.</div>
                   : wouldYouAnswers.map(({ m, answers }) => (
@@ -5663,7 +5720,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 4. Duel stolen — top 3 */}
               {statCard(<>
-                {statTitle('⚔️', 'DUEL — MOST POINTS STOLEN (TOP 3)')}
+                {statTitle(<Swords size={13} color={IC} />, 'DUEL — MOST POINTS STOLEN (TOP 3)')}
                 {duelStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No duels completed yet.</div>
                   : duelStats.map(({ name, value }, i) => (
@@ -5676,7 +5733,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 5. Power-up targets — top 3 */}
               {statCard(<>
-                {statTitle('🎯', 'MOST TARGETED BY OTHER TEAMS (TOP 3)')}
+                {statTitle(<Target size={13} color={IC} />, 'MOST TARGETED BY OTHER TEAMS (TOP 3)')}
                 {puTargetStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No team power-ups used yet.</div>
                   : puTargetStats.map(({ name, value }, i) => (

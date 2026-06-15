@@ -43,7 +43,9 @@ export function toMission(cm: CustomMission & { custom_mission_categories?: { na
       return {
         ...base,
         relayMode: (d.relayMode as 'typerace' | 'button') ?? 'button',
-        segments: ((d.segments as string[]) ?? []).map((p: string) => ({ prompt: p })),
+        segments: ((d.segments as (string | { prompt: string; answer?: string })[]) ?? []).map(s =>
+          typeof s === 'string' ? { prompt: s } : { prompt: s.prompt, answer: s.answer }
+        ),
       };
     case 'shared_secret':
       return {
@@ -68,7 +70,7 @@ export function validateMissionData(
     paAnswer: string;
     timelineItems: { label: string; year: string }[];
     photoPrompt: string;
-    relaySegments?: string[];
+    relaySegments?: { prompt: string; answer: string }[];
     relayMode?: string;
     sharedSecretAnswer?: string;
     sharedSecretHint?: string;
@@ -114,7 +116,8 @@ export function validateMissionData(
     case 'relay': {
       const segs = data.relaySegments ?? [];
       if (segs.length < 2) return 'Add at least 2 segments.';
-      if (segs.some(s => !s.trim())) return 'All segments need text.';
+      if (segs.some(s => !s.prompt.trim())) return 'All segments need a question.';
+      if (data.relayMode === 'button' && segs.some(s => !s.answer.trim())) return 'All segments need an answer in Relay Quiz mode.';
       return null;
     }
     case 'shared_secret':
@@ -138,7 +141,7 @@ export function buildMissionData(
     paAnswer: string;
     timelineItems: { label: string; year: string }[];
     photoPrompt: string;
-    relaySegments?: string[];
+    relaySegments?: { prompt: string; answer: string }[];
     relayMode?: string;
     sharedSecretAnswer?: string;
     sharedSecretHint?: string;
@@ -168,7 +171,12 @@ export function buildMissionData(
       return { prompt: data.photoPrompt };
     case 'relay':
       return {
-        segments: (data.relaySegments ?? []).filter(s => s.trim()),
+        segments: (data.relaySegments ?? [])
+          .filter(s => s.prompt.trim())
+          .map(s => data.relayMode === 'button'
+            ? { prompt: s.prompt, answer: s.answer }
+            : { prompt: s.prompt }
+          ),
         relayMode: data.relayMode ?? 'typerace',
       };
     case 'shared_secret':

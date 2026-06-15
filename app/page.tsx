@@ -170,7 +170,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 
 /* ══ STATS */
 #stats{max-width:1100px;margin:0 auto;padding:88px 40px;}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .stat-item{text-align:center;}
 .stat-number{font-size:clamp(36px,4vw,52px);font-weight:800;letter-spacing:-.04em;background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-label{font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;}
@@ -373,7 +373,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
         <a href="/play" class="btn-primary-lg">Start for free &rarr;</a>
         <a href="#how" class="btn-ghost">See how it works</a>
       </div>
-      <p class="hero-note">No credit card required &middot; Setup in 60 seconds</p>
+      <p class="hero-note">No credit card required &middot; Live in under 10 minutes</p>
     </div>
     <div class="reveal" style="transition-delay:.9s">
       <div class="hero-mockups">
@@ -459,8 +459,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
   <div class="stats-grid">
     <div class="stat-item reveal"><div class="stat-number"><span class="counter" data-to="10000" data-suffix="+">0+</span></div><div class="stat-label">Events played</div></div>
     <div class="stat-item reveal" style="transition-delay:.08s"><div class="stat-number"><span class="counter" data-to="200000" data-suffix="+">0+</span></div><div class="stat-label">Teams competed</div></div>
-    <div class="stat-item reveal" style="transition-delay:.16s"><div class="stat-number"><span class="counter" data-to="60" data-suffix="s">0s</span></div><div class="stat-label">Average setup time</div></div>
-    <div class="stat-item reveal" style="transition-delay:.24s"><div class="stat-number"><span class="counter" data-prefix="4." data-to="9" data-suffix="/5&#9733;">4.0/5&#9733;</span></div><div class="stat-label">Average rating</div></div>
+    <div class="stat-item reveal" style="transition-delay:.16s"><div class="stat-number"><span class="counter" data-prefix="4." data-to="9" data-suffix="/5&#9733;">4.0/5&#9733;</span></div><div class="stat-label">Average rating</div></div>
   </div>
 </section>
 
@@ -475,8 +474,8 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     </div>
     <div class="features-grid">
       <div class="feature-card reveal tilt-card" style="transition-delay:.05s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg></div><div class="feature-title">Live Leaderboard</div><div class="feature-desc">Standings update in real time for every team. The drama on that big screen is genuinely electric.</div></div>
-      <div class="feature-card reveal tilt-card" style="transition-delay:.1s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="feature-title">Photo Missions</div><div class="feature-desc">Teams submit photos you rate on the spot. Points awarded instantly &mdash; laughs guaranteed.</div></div>
-      <div class="feature-card reveal tilt-card" style="transition-delay:.15s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="feature-title">Power-Ups</div><div class="feature-desc">Freeze rivals. Double your score. Shield your lead. Strategy meets pure chaos.</div></div>
+      <div class="feature-card reveal tilt-card" style="transition-delay:.1s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="feature-title">Photo Missions</div><div class="feature-desc">Teams submit photos you rate on the spot &mdash; or let AI score them automatically. Points awarded instantly, laughs guaranteed.</div></div>
+      <div class="feature-card reveal tilt-card" style="transition-delay:.15s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="feature-title">Power-Ups</div><div class="feature-desc">Freeze rivals. Double your score. Shield your lead. Hunt for AR mystery boxes hidden in the venue. No competitor has this &mdash; and your teams will never stop talking about it.</div></div>
       <div class="feature-card reveal tilt-card" style="transition-delay:.2s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="feature-title">Custom Missions</div><div class="feature-desc">Build missions for any brand, team, or theme in minutes. No limits on creativity.</div></div>
       <div class="feature-card reveal tilt-card" style="transition-delay:.25s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="feature-title">PDF Reports</div><div class="feature-desc">Auto-generated PDF with full standings, per-team scores, and the best photo from each team.</div></div>
       <div class="feature-card reveal tilt-card" style="transition-delay:.3s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="feature-title">No App Needed</div><div class="feature-desc">Teams join from any phone browser with a 6-digit code. Zero downloads. Zero friction.</div></div>
@@ -513,6 +512,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <span class="pill">Bachelor Parties</span><span class="pill">Birthday Parties</span><span class="pill">School Events</span>
     <span class="pill">Conferences</span><span class="pill">Sports Clubs</span><span class="pill">Office Games</span>
     <span class="pill">Holiday Parties</span><span class="pill">Onboarding Days</span><span class="pill">Hackathons</span>
+    <span class="pill">Summer Kickoffs</span><span class="pill">Christmas Parties</span>
   </div>
 </section>
 
@@ -558,7 +558,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">Can I create my own missions?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Yes! The custom mission builder (available on Pro and Studio) lets you create trivia, photo, true/false, timeline, and closest-answer missions tailored to your event theme.</p></div></div>
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">How long does a typical game run?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Most events run 30&ndash;90 minutes. You set the duration when creating the game, and you can end it early at any time from your admin dashboard.</p></div></div>
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">What happens after the game ends?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">An auto-generated PDF report is ready immediately &mdash; full standings, per-team scores, mission breakdowns, fun stats, and the highest-rated photo from each team.</p></div></div>
-    <div class="faq-item" style="border-bottom:none;"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">Is GameOn available in Swedish?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Yes. The entire player interface is in Swedish, making it seamless for Swedish-speaking participants. The admin panel is bilingual.</p></div></div>
+    <div class="faq-item" style="border-bottom:none;"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">What languages does GameOn support?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">GameOn is available in Swedish, English, Danish, Norwegian, German, and French. Players see the interface in their chosen language automatically &mdash; no manual switching needed.</p></div></div>
   </div>
 </section>
 
@@ -574,7 +574,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
         <a href="/play" class="btn-primary-lg">Start for free &rarr;</a>
         <button class="btn-ghost" onclick="window.location.href='mailto:hello@playgameon.app'">Book a demo</button>
       </div>
-      <p class="footer-cta-note">No credit card required &middot; Setup in 60 seconds &middot; Cancel anytime</p>
+      <p class="footer-cta-note">No credit card required &middot; Live in under 10 minutes &middot; Cancel anytime</p>
     </div>
   </div>
 </section>
