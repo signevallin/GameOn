@@ -4616,7 +4616,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${hideLeaderboard ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>🙈 Hide leaderboard in last 5 min</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Hide leaderboard in last 5 min</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Teams won&apos;t see the leaderboard in the last 5 minutes, and won&apos;t see final placements when the game ends.
                 </div>
@@ -4632,7 +4632,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${aiPhotoRating ? 'var(--accent)' : 'var(--border)'}`, borderRadius: aiPhotoRating ? '10px 10px 0 0' : '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>✨ AI photo rating</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></svg>AI photo rating</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Photos rated automatically by AI — you can override anytime
                 </div>
@@ -4661,8 +4661,8 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
           <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
             <div style={{ padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '8px' }}>
-                🌐 Game language
+              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Game language
               </div>
               <select
                 value={gameLanguage}
@@ -4697,7 +4697,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${remoteMode ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>🌍 Remote / Distributed mode</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>Remote / Distributed mode</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Each team member joins on their own device.
                 </div>
