@@ -23,6 +23,37 @@ import {
 } from 'lucide-react';
 
 const IC = '#75abc8';
+
+const EMOJI_300 = [
+  // Games & play
+  '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬','🎤','🎧','🎼','🎵',
+  '🎶','🎸','🥁','🎹','🎺','🎻','🪗','🪘','🎷','🪕',
+  // Sports
+  '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎿','🏒','🥍','🏓','🏸','🥊','🥋','🏹','🎣','🤿','🪃',
+  // Animals
+  '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🐸','🐨','🦄','🐮','🐷','🐭','🐹','🐰','🐶','🐱','🐔',
+  '🐧','🦆','🦅','🦉','🦇','🐢','🐍','🦎','🐙','🦈','🐬','🐳','🦏','🦛','🦒','🐘','🦓','🦘','🐊','🦀',
+  '🦞','🦐','🐡','🐠','🐟','🦁','🐯','🦜','🦩','🦚','🕊️','🦤','🦢','🦭','🐓','🦃',
+  // Nature & weather
+  '🌿','🌲','🌋','🌊','🌈','⚡','🔥','🌍','🌙','⭐','🌟','💫','🌺','🌸','🌼','🌻','🌵','🍀','🌴','🍃',
+  '🍂','🍁','🌾','🌱','☘️','🎋','🎍','🪸','🪨','🌬️','❄️','⛄','🌤️','⛅','🌩️','🌪️','🌀',
+  // Space & science
+  '🚀','🛸','🔭','🧪','🧬','🧲','⚗️','💡','🌌','👽','🤖','🔬','💊','🧫','🛰️','☄️','🌠','🪐',
+  // Food & drinks
+  '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃','🍇','🍉','🍊','🍋','🍌','🍍','🍎','🍓','🫐','🥝',
+  '🍦','🍰','🧁','🍫','🍬','🍭','🥗','🍜','🍲','🍛','🌯','🥙','🧆','🍱','🥡','🍤','🥐','🧇','🍟','🥩',
+  '🍗','🍖','🌭','🥪','🥨','🧀','🥚','🍳','🥞','🫕','🍯','🧋','🍵','🧉','🍾','🍷','🍸','🍹','🥂','🫗',
+  // People & activities
+  '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗','💃','🕺','🧘','🏊','🚴','🤺','🏄','🧜',
+  // Travel & places
+  '✈️','🚗','🚂','🚢','🏰','🗼','🗽','⛩️','🕌','🛕','🏛️','🏯','🏕️','🏖️','🏔️','🌋','🗺️','🧭','🚁','🛺',
+  // Objects & tools
+  '💎','💰','🔮','🪄','📸','📚','🔑','🔒','🔐','⚙️','🔧','🔨','🛡️','🎁','🎊','🎉','🎀','🎗️','🏮','🪔',
+  '🕯️','🔭','💡','🧲','🎯','🪙','💳','📱','💻','🖥️','⌨️','🖱️','🖨️','📷','🎥','📺','📻','🎙️','📡','🔋',
+  // Symbols & misc
+  '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💕','💞','💓','💗','💖','💝','🌈','☀️','🔥','⚡','🎯','👻',
+  '💀','👾','😈','👹','🤡','🥸','🤠','🦸','🧙','🃏','🪅','🎠','🎡','🎢','🎪','🎭','🎨','🖼️','🏺','🪆',
+];
 const Ic = ({ children }: { children: React.ReactNode }) => (
   <span style={{ display: 'inline-flex', alignItems: 'center', color: IC }}>{children}</span>
 );
@@ -947,6 +978,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [categoryFormColor, setCategoryFormColor] = useState('');
   const [categoryEmojiPickerOpen, setCategoryEmojiPickerOpen] = useState(false);
   const [missionEmojiPickerOpen, setMissionEmojiPickerOpen] = useState(false);
+  const [newTemplateEmojiPickerOpen, setNewTemplateEmojiPickerOpen] = useState(false);
+  const [editTemplateEmojiPickerOpen, setEditTemplateEmojiPickerOpen] = useState(false);
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
@@ -4247,12 +4280,30 @@ export default function AdminScreen({ onLogout }: Props) {
           <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
             <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px', color: 'var(--text)' }}>New built-in template</div>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <input
-                value={newTemplateIcon}
-                onChange={e => setNewTemplateIcon(e.target.value)}
-                onFocus={e => e.target.select()}
-                style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
-              />
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <button type="button" onClick={() => setNewTemplateEmojiPickerOpen(v => !v)}
+                  style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif", cursor: 'pointer' }}>
+                  {newTemplateIcon}
+                </button>
+                {newTemplateEmojiPickerOpen && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '300px' }}>
+                    <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                      onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setNewTemplateIcon(v); setNewTemplateEmojiPickerOpen(false); } }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                      {EMOJI_300.map(e => (
+                        <button key={e} type="button" onClick={() => { setNewTemplateIcon(e); setNewTemplateEmojiPickerOpen(false); }}
+                          style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                          onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                          onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <input
                 value={newTemplateName}
                 onChange={e => setNewTemplateName(e.target.value)}
@@ -4376,12 +4427,30 @@ export default function AdminScreen({ onLogout }: Props) {
               {editingTemplateId === t.id && (
                 <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '16px 20px' }}>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <input
-                      value={editTemplateIcon}
-                      onChange={e => setEditTemplateIcon(e.target.value)}
-                      onFocus={e => e.target.select()}
-                      style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
-                    />
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <button type="button" onClick={() => setEditTemplateEmojiPickerOpen(v => !v)}
+                        style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif", cursor: 'pointer' }}>
+                        {editTemplateIcon}
+                      </button>
+                      {editTemplateEmojiPickerOpen && (
+                        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '300px' }}>
+                          <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                            onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditTemplateIcon(v); setEditTemplateEmojiPickerOpen(false); } }}
+                          />
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                            {EMOJI_300.map(e => (
+                              <button key={e} type="button" onClick={() => { setEditTemplateIcon(e); setEditTemplateEmojiPickerOpen(false); }}
+                                style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
+                                {e}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <input
                       value={editTemplateName}
                       onChange={e => setEditTemplateName(e.target.value)}
