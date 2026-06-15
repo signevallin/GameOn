@@ -36,6 +36,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
   const [typed, setTyped] = useState('');
   const [started, setStarted] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [answerResult, setAnswerResult] = useState<'correct' | 'wrong' | null>(null);
   const [countdown, setCountdown] = useState(60);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,6 +112,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
         setTyped('');
         setStarted(false);
         setShowAnswer(false);
+        setAnswerResult(null);
         clearCountdown();
       })
       .subscribe();
@@ -184,6 +186,7 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       setTyped('');
       setStarted(false);
       setShowAnswer(false);
+      setAnswerResult(null);
       setLoading(false);
 
       // Broadcast to all other members
@@ -213,6 +216,20 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
       setLoading(false);
     }
   }, [loading, started, team.id, mission.id, segments.length, effectiveMaxPts, game.duration_minutes, onFinish]);
+
+  function normalizeAnswer(s: string) {
+    return s.toLowerCase().trim().replace(/^the\s+/, '').replace(/[^a-z0-9åäö]/g, '');
+  }
+
+  function submitTypedAnswer() {
+    if (!myCurrentSegment?.answer || typed.trim() === '' || answerResult !== null) return;
+    const isCorrect = normalizeAnswer(typed) === normalizeAnswer(myCurrentSegment.answer);
+    setAnswerResult(isCorrect ? 'correct' : 'wrong');
+    setTimeout(() => {
+      setAnswerResult(null);
+      advance(!isCorrect);
+    }, 1500);
+  }
 
   function handleTyped(val: string) {
     setTyped(val);
@@ -330,48 +347,53 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
               </p>
             </>
           ) : myCurrentSegment?.answer ? (
-            /* Trivia mode: reveal answer first, then mark correct or skip */
+            /* Trivia mode: type answer and auto-check */
             <>
-              {!showAnswer ? (
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%' }}
-                  onClick={() => setShowAnswer(true)}
-                >
-                  {t('challenge.relay.revealAnswer')}
-                </button>
+              {answerResult !== null ? (
+                <div style={{
+                  padding: '16px 20px', borderRadius: '12px', textAlign: 'center',
+                  background: answerResult === 'correct' ? 'rgba(140,191,155,0.12)' : 'rgba(208,117,125,0.10)',
+                  border: `1px solid ${answerResult === 'correct' ? 'var(--accent3)' : 'var(--accent2)'}`,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                    {answerResult === 'correct'
+                      ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      : <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(208,117,125,0.2)"/><path d="M8 8l8 8M16 8l-8 8" stroke="var(--accent2)" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                    }
+                  </div>
+                  <div style={{ fontWeight: 700, color: answerResult === 'correct' ? 'var(--accent3)' : 'var(--accent2)' }}>
+                    {answerResult === 'correct' ? 'Correct!' : `Wrong — it was "${myCurrentSegment.answer}"`}
+                  </div>
+                </div>
               ) : (
                 <>
-                  <div style={{
-                    marginBottom: '16px', padding: '16px 20px',
-                    background: 'rgba(34,197,94,0.08)', border: '1px solid var(--accent3)',
-                    borderRadius: '12px', textAlign: 'center',
-                  }}>
-                    <div style={{ fontSize: '11px', color: 'var(--accent3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
-                      {t('challenge.relay.answerLabel')}
-                    </div>
-                    <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--fg)' }}>
-                      {myCurrentSegment.answer}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      className="btn"
-                      style={{ flex: 1, borderColor: 'var(--accent2)', color: 'var(--accent2)' }}
-                      onClick={() => advance(true)}
-                      disabled={loading}
-                    >
-                      {t('challenge.relay.wrong')}
-                    </button>
-                    <button
-                      className="btn btn-primary"
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      value={typed}
+                      onChange={e => setTyped(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && submitTypedAnswer()}
+                      placeholder="Type your answer..."
+                      autoComplete="off"
                       style={{ flex: 1 }}
-                      onClick={() => advance(false)}
-                      disabled={loading}
-                    >
-                      {loading ? t('challenge.relay.saving') : t('challenge.relay.correct')}
+                    />
+                    <button className="btn btn-primary" onClick={submitTypedAnswer} style={{ flexShrink: 0 }} disabled={loading}>
+                      →
                     </button>
                   </div>
+                  <button
+                    onClick={() => { setAnswerResult('wrong'); setTimeout(() => { setAnswerResult(null); advance(true); }, 1500); }}
+                    disabled={loading}
+                    style={{
+                      width: '100%', padding: '10px',
+                      border: '1px solid var(--border)', borderRadius: '10px',
+                      background: 'transparent', color: 'var(--muted)',
+                      fontSize: '12px', fontFamily: "'Sora', sans-serif",
+                      fontWeight: 700, letterSpacing: '1px', cursor: 'pointer',
+                    }}
+                  >
+                    PASS →
+                  </button>
                 </>
               )}
             </>
