@@ -3583,7 +3583,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 </button>
                 <button
                   className="btn btn-ghost"
-                  style={{ padding: '6px 8px', color: 'var(--danger, #e05252)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(224,82,82,0.25)' }}
+                  style={{ padding: '6px 8px', color: IC, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(124,189,212,0.25)' }}
                   disabled={deletingMissionId === cm.id}
                   onClick={() => deleteMission(cm.id)}
                   title="Delete mission"
