@@ -2641,7 +2641,7 @@ export default function AdminScreen({ onLogout }: Props) {
         )}
         {games.length === 0 ? (
           <div className="empty-state" style={{ paddingTop: '80px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="3" stroke="var(--muted)" strokeWidth="1.5"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
             <p>No games yet. Create your first game!</p>
           </div>
         ) : (
@@ -4711,7 +4711,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
         {createError && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>{createError}</p>}
         <button className="btn btn-primary btn-full" style={{ marginBottom: '32px' }} onClick={createGame} disabled={creating}>
-          {creating ? 'CREATING...' : '🎮 CREATE GAME →'}
+          {creating ? 'CREATING...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 6 }}><rect x="2" y="6" width="20" height="12" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>CREATE GAME →</>}
         </button>
 
         <div style={{ marginBottom: '24px' }}>
@@ -4925,7 +4925,7 @@ export default function AdminScreen({ onLogout }: Props) {
         </div>
 
         <button className="btn btn-primary btn-full" onClick={createGame} disabled={creating}>
-          {creating ? 'CREATING...' : '🎮 CREATE GAME →'}
+          {creating ? 'CREATING...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 6 }}><rect x="2" y="6" width="20" height="12" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>CREATE GAME →</>}
         </button>
       </div>
     </>
