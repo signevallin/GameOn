@@ -33,6 +33,8 @@ export default function Home() {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
   const pendingPlanRef = useRef<string | null>(null);
+  // Round sync: tracks the latest round broadcast received from a teammate via nav channel
+  const [broadcastedRound, setBroadcastedRound] = useState<{ missionId: string; qIdx: number } | null>(null);
 
   // Refs so the polling interval always reads the latest values without
   // needing to be in the dependency array (which would restart the interval).
@@ -233,6 +235,14 @@ export default function Home() {
           setScreen('missions');
         }
       })
+      .on('broadcast', { event: 'round' }, ({ payload }: { payload: { missionId: string; qIdx: number } }) => {
+        if (payload?.missionId && typeof payload.qIdx === 'number') {
+          setBroadcastedRound({ missionId: payload.missionId, qIdx: payload.qIdx });
+        }
+      })
+      .on('broadcast', { event: 'round_clear' }, () => {
+        setBroadcastedRound(null);
+      })
       .subscribe();
 
     realtimeChannelRef.current = channel;
@@ -240,6 +250,7 @@ export default function Home() {
     return () => {
       supabase.removeChannel(channel);
       realtimeChannelRef.current = null;
+      setBroadcastedRound(null);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, team?.id, !!game?.remote_mode]);
@@ -394,6 +405,16 @@ export default function Home() {
     } catch { /* best-effort — same pattern as heartbeat */ }
   }
 
+  function sendRoundAdvance(missionId: string, qIdx: number) {
+    if (!game?.remote_mode || !memberId) return;
+    realtimeChannelRef.current?.send({ type: 'broadcast', event: 'round', payload: { missionId, qIdx } });
+  }
+
+  function sendRoundClear() {
+    if (!game?.remote_mode) return;
+    realtimeChannelRef.current?.send({ type: 'broadcast', event: 'round_clear', payload: {} });
+  }
+
   function handleChallengeDone(updatedTeam: Team, pts: number, correct: boolean, elapsed: number) {
     setTeam(updatedTeam);
     setResult({ missionId: activeMission!, pts, correct, elapsed });
@@ -466,6 +487,9 @@ export default function Home() {
         teams={teams}
         customMissions={customMissions}
         memberId={memberId ?? ''}
+        navBroadcastRoundIdx={broadcastedRound?.missionId === activeMission ? broadcastedRound.qIdx : 0}
+        onNavRoundAdvance={(qIdx) => sendRoundAdvance(activeMission!, qIdx)}
+        onNavRoundClear={sendRoundClear}
         onDone={handleChallengeDone}
         onBack={() => { setScreen('missions'); navigateSync(null); }}
       />
