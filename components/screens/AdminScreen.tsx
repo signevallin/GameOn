@@ -4620,6 +4620,21 @@ export default function AdminScreen({ onLogout }: Props) {
           <div style={{ color: 'var(--muted)', fontSize: '14px', padding: '40px 0', textAlign: 'center' }}>Loading templates...</div>
         ) : (
           <>
+            {/* Blank game — first */}
+            <button
+              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s', marginBottom: '28px' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <span style={{ flexShrink: 0, display: 'inline-flex' }}><Pencil size={28} color={IC} /></span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>Blank game</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Choose missions manually</div>
+              </div>
+              <ChevronRight size={18} color={IC} />
+            </button>
+
             {/* Built-in templates */}
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>Built-in templates</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
@@ -4684,20 +4699,6 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
             )}
 
-            {/* Blank game */}
-            <button
-              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-            >
-              <span style={{ flexShrink: 0, display: 'inline-flex' }}><Pencil size={28} color={IC} /></span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>Blank game</div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Choose missions manually</div>
-              </div>
-              <ChevronRight size={18} color={IC} />
-            </button>
           </>
         )}
       </div>
