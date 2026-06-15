@@ -71,7 +71,7 @@ function NavCenter({ game }: { game: Game | null }) {
       )}
       {game && game.status === 'active' && secondsLeft !== null && (
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: timerColor, letterSpacing: '2px', lineHeight: 1, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
-          ⏱ {fmtTimer(secondsLeft)}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 4 }}><circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="2"/><path d="M12 9v4l2.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M9 2h6M12 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>{fmtTimer(secondsLeft)}
         </span>
       )}
     </div>
