@@ -3256,10 +3256,10 @@ export default function AdminScreen({ onLogout }: Props) {
                                       <input type="text" placeholder="Type or paste emoji…" maxLength={4}
                                         style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
                                         onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditCategoryEmoji(v); setEditCategoryEmojiPickerOpen(false); } }} />
-                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '200px', overflowY: 'auto' }}>
-                                        {['🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬','🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻','🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥','🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡','🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃','💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗','💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐','👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸'].map(e => (
+                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                                        {EMOJI_300.map(e => (
                                           <button key={e} type="button" onClick={() => { setEditCategoryEmoji(e); setEditCategoryEmojiPickerOpen(false); }}
-                                            style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                            style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
                                             onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
                                             onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
                                         ))}
@@ -3360,30 +3360,13 @@ export default function AdminScreen({ onLogout }: Props) {
                                 }}
                               />
                               {/* Grid */}
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '240px', overflowY: 'auto' }}>
-                                {[
-                                  // Games & sports
-                                  '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬',
-                                  // Music & performance
-                                  '🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻',
-                                  // Nature & animals
-                                  '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥',
-                                  // Space & science
-                                  '🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡',
-                                  // Food & drink
-                                  '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃',
-                                  // People & activities
-                                  '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗',
-                                  // Objects & symbols
-                                  '💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐',
-                                  // Misc fun
-                                  '👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸',
-                                ].map(e => (
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                                {EMOJI_300.map(e => (
                                   <button
                                     key={e}
                                     type="button"
                                     onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
-                                    style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                    style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
                                     onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
                                     onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
                                   >
@@ -3822,22 +3805,13 @@ export default function AdminScreen({ onLogout }: Props) {
                             if (v) { setF({ icon: v }); setMissionEmojiPickerOpen(false); }
                           }}
                         />
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '240px', overflowY: 'auto' }}>
-                          {[
-                            '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬',
-                            '🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻',
-                            '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥',
-                            '🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡',
-                            '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃',
-                            '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗',
-                            '💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐',
-                            '👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸',
-                          ].map(e => (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                          {EMOJI_300.map(e => (
                             <button
                               key={e}
                               type="button"
                               onClick={() => { setF({ icon: e }); setMissionEmojiPickerOpen(false); }}
-                              style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                              style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
                               onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
                               onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
                             >
