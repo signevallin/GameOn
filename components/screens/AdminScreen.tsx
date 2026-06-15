@@ -178,7 +178,7 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
+    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team', btn: 'HACK', allowAll: true },
     { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', btn: 'ACTIVATE', allowAll: true },
     { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
     { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', btn: 'SEND', allowAll: true },

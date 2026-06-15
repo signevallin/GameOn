@@ -101,7 +101,7 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
+    { type: 'sabotage', icon: '💻', label: 'Hack a team', btn: 'HACK', allowAll: true },
     { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
     { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: false },
   ];
