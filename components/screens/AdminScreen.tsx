@@ -946,6 +946,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
   const [categoryFormColor, setCategoryFormColor] = useState('');
   const [categoryEmojiPickerOpen, setCategoryEmojiPickerOpen] = useState(false);
+  const [missionEmojiPickerOpen, setMissionEmojiPickerOpen] = useState(false);
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
@@ -3767,7 +3768,53 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
                 <div>
                   <label style={labelStyle}>ICON</label>
-                  <input type="text" value={missionForm.icon} onChange={e => setF({ icon: e.target.value })} placeholder="⭐" style={inputStyle} />
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setMissionEmojiPickerOpen(v => !v)}
+                      style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', padding: '6px 4px', cursor: 'pointer', background: missionEmojiPickerOpen ? 'var(--surface)' : undefined }}
+                      title="Choose emoji"
+                    >
+                      {missionForm.icon || '⭐'}
+                    </button>
+                    {missionEmojiPickerOpen && (
+                      <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                        <input
+                          type="text"
+                          placeholder="Type or paste any emoji…"
+                          maxLength={4}
+                          style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                          onChange={e => {
+                            const v = [...e.target.value].filter(c => c.trim()).join('');
+                            if (v) { setF({ icon: v }); setMissionEmojiPickerOpen(false); }
+                          }}
+                        />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '2px', maxHeight: '240px', overflowY: 'auto' }}>
+                          {[
+                            '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬',
+                            '🎵','🎶','🎸','🎤','🥁','🎹','🎺','🎻',
+                            '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🌿','🌲','🌋','🌊','🌈','⚡','🔥',
+                            '🚀','🌍','🌙','⭐','🌟','💫','🔭','🧪','🧬','🧲','⚗️','💡',
+                            '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃',
+                            '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗',
+                            '💎','💰','🔮','🪄','🗺️','🧭','📸','📋','📚','🔑','🏠','🏰','🚗','✈️','🎁','🎊','🎉','🔐',
+                            '👻','💀','🤖','👾','🃏','🪅','🎠','🌺','🍀','🌸',
+                          ].map(e => (
+                            <button
+                              key={e}
+                              type="button"
+                              onClick={() => { setF({ icon: e }); setMissionEmojiPickerOpen(false); }}
+                              style={{ fontSize: '18px', padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                              onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                              onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div style={{ marginBottom: '12px' }}>
