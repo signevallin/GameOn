@@ -123,8 +123,8 @@
     "subtitle": "Une autre équipe t'a gelé !"
   },
   "missions": {
-    "tabMissions": "🎯 Missions",
-    "tabLeaderboard": "🏆 Classement",
+    "tabMissions": "Missions",
+    "tabLeaderboard": "Classement",
     "chooseTitle": "Choisissez votre mission",
     "chooseSubtitle": "Sélectionnez une catégorie pour voir les missions.",
     "missionsCount": "{{done}}/{{total}} missions",

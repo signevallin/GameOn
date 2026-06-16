@@ -123,8 +123,8 @@
     "subtitle": "Ein anderes Team hat dich eingefroren!"
   },
   "missions": {
-    "tabMissions": "🎯 Missionen",
-    "tabLeaderboard": "🏆 Rangliste",
+    "tabMissions": "Missionen",
+    "tabLeaderboard": "Rangliste",
     "chooseTitle": "Wähle deine Mission",
     "chooseSubtitle": "Wählen Sie eine Kategorie aus, um die Missionen anzuzeigen.",
     "missionsCount": "{{done}}/{{total}} Missionen",

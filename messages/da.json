@@ -123,8 +123,8 @@
     "subtitle": "Et andet hold frøs dig!"
   },
   "missions": {
-    "tabMissions": "🎯 Missioner",
-    "tabLeaderboard": "🏆 Rangliste",
+    "tabMissions": "Missioner",
+    "tabLeaderboard": "Rangliste",
     "chooseTitle": "Vælg din mission",
     "chooseSubtitle": "Vælg en kategori for at se missioner.",
     "missionsCount": "{{done}}/{{total}} missioner",

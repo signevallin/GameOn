@@ -341,7 +341,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
     if (entries.length === 0) return null;
     const [mId, pts] = entries.sort(([, a], [, b]) => b - a)[0];
     const m = MISSIONS.find(x => x.id === mId);
-    return { name: m ? `${m.icon} ${m.name}` : mId, pts };
+    return { name: m ? m.name : mId, pts };
   }
 
   const elapsedText = team.finished_at && game.started_at
@@ -1207,7 +1207,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
                         <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
                           {cat.label}
                         </div>
@@ -1251,7 +1250,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: color, borderRadius: '14px 14px 0 0' }} />
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
                         <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
                           {label}
                         </div>
@@ -1262,7 +1260,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           {grp.minPts === grp.maxPts ? t('missions.upToPts', { pts: grp.minPts }) : t('missions.ptsRange', { min: grp.minPts, max: grp.maxPts })}
                         </div>
                         {allGrpDone && (
-                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                          <div style={{ position: 'absolute', top: '12px', right: '12px' }}><CheckCircle2 size={16} color="var(--accent3)" /></div>
                         )}
                       </div>
                     );
@@ -1338,7 +1336,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                     <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
                     {!isCustomCategory ? (
                       <>
-                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory!].icon}</span>
                         <span style={{
                           fontWeight: 800,
                           fontSize: '15px',
