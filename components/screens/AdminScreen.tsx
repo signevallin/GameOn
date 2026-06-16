@@ -2055,9 +2055,11 @@ export default function AdminScreen({ onLogout }: Props) {
       background: 'rgba(255,255,255,0.04)',
       border: '1px solid rgba(255,255,255,0.08)',
       borderRadius: '12px',
-      padding: '16px 20px',
+      padding: isMobile ? '12px' : '16px 20px',
       minWidth: 0,
     };
+    const kpiNumSize = isMobile ? '22px' : '28px';
+    const kpiLabelSize = isMobile ? '10px' : '11px';
 
     return (
       <>
@@ -2137,36 +2139,36 @@ export default function AdminScreen({ onLogout }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                 {/* KPI row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: '12px' }}>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active customers</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#6ec6f5', lineHeight: 1 }}>{kpis.activeCustomers}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} last 30d</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active customers</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: '#6ec6f5', lineHeight: 1 }}>{kpis.activeCustomers}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} last 30d</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total games</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.totalGames}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} this month</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total games</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.totalGames}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} this month</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Completion rate</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(kpis.completionRate * 100)}%</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} of {kpis.totalGames} finished</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Completion rate</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(kpis.completionRate * 100)}%</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} of {kpis.totalGames} finished</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg teams/game</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.avgTeamsPerGame}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} teams total</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg teams/game</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.avgTeamsPerGame}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} teams total</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro customers</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{proCustomers}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% of all</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro customers</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{proCustomers}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% of all</div>
                   </div>
                 </div>
 
                 {/* Row 1: Activity chart + Customer status list */}
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: '16px' }}>
 
                   {/* Activity chart */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
@@ -2238,7 +2240,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
 
                 {/* Row 2: Recent games feed + Plan distribution */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '16px' }}>
 
                   {/* Recent games feed */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
