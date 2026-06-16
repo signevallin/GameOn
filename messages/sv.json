@@ -123,8 +123,8 @@
     "subtitle": "Ett annat lag frös dig!"
   },
   "missions": {
-    "tabMissions": "🎯 Uppdrag",
-    "tabLeaderboard": "🏆 Topplista",
+    "tabMissions": "Uppdrag",
+    "tabLeaderboard": "Topplista",
     "chooseTitle": "Välj ditt uppdrag",
     "chooseSubtitle": "Välj en kategori för att se uppdrag.",
     "missionsCount": "{{done}}/{{total}} uppdrag",

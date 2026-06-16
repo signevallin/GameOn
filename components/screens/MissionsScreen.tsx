@@ -207,7 +207,6 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 }
 
 // ── Leaderboard inline view ───────────────────────────────────────────────────
-const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 function LeaderboardView({ teams, myTeamId, totalMissions }: {
@@ -272,11 +271,11 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                 <div style={{
                   width: '28px', flexShrink: 0, textAlign: 'center',
-                  fontSize: i < 3 ? '18px' : '13px',
+                  fontSize: '13px',
                   fontWeight: 800,
                   color: RANK_COLORS[i] ?? 'var(--muted)',
                 }}>
-                  {i < 3 ? RANK_ICONS[i] : i + 1}
+                  {i + 1}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -341,7 +340,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
     if (entries.length === 0) return null;
     const [mId, pts] = entries.sort(([, a], [, b]) => b - a)[0];
     const m = MISSIONS.find(x => x.id === mId);
-    return { name: m ? `${m.icon} ${m.name}` : mId, pts };
+    return { name: m ? m.name : mId, pts };
   }
 
   const elapsedText = team.finished_at && game.started_at
@@ -356,7 +355,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
         <Confetti />
         <div style={{ padding: '32px 20px 48px', maxWidth: '560px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '12px' }}>🏁</div>
+            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Flag size={64} color="var(--muted)" /></div>
             <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>{t('end.gameOverTitle')}</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.6 }}>
               {t('end.resultsAnnounced')}
@@ -409,8 +408,8 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Winner announcement */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '64px', marginBottom: '12px' }}>
-            {isWinner ? '🏆' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏁'}
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+            {isWinner ? <Trophy size={64} color="var(--gold)" /> : <Flag size={64} color="var(--muted)" />}
           </div>
           <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
             {isWinner ? t('end.youWon') : myRank === 2 ? t('end.place_2') : myRank === 3 ? t('end.place_3') : t('end.place_other', { rank: myRank })}
@@ -453,11 +452,11 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
                 >
                   <div style={{
                     width: '28px', flexShrink: 0, textAlign: 'center',
-                    fontSize: i < 3 ? '20px' : '13px',
+                    fontSize: '14px',
                     fontWeight: 800,
                     color: RANK_COLORS[i] ?? 'var(--muted)',
                   }}>
-                    {i < 3 ? RANK_ICONS[i] : i + 1}
+                    {i + 1}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -1207,7 +1206,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
                         <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
                           {cat.label}
                         </div>
@@ -1251,7 +1249,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: color, borderRadius: '14px 14px 0 0' }} />
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
                         <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
                           {label}
                         </div>
@@ -1262,7 +1259,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           {grp.minPts === grp.maxPts ? t('missions.upToPts', { pts: grp.minPts }) : t('missions.ptsRange', { min: grp.minPts, max: grp.maxPts })}
                         </div>
                         {allGrpDone && (
-                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                          <div style={{ position: 'absolute', top: '12px', right: '12px' }}><CheckCircle2 size={16} color="var(--accent3)" /></div>
                         )}
                       </div>
                     );
@@ -1289,7 +1286,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 {confirmDone && (
                   <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
                     <div style={{ background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '16px', padding: '40px 32px', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
-                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏁</div>
+                      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Flag size={48} color="var(--muted)" /></div>
                       <h2 style={{ marginBottom: '12px' }}>{t('missions.confirmDoneTitle')}</h2>
                       <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px', lineHeight: 1.6 }}>
                         {t('missions.confirmDoneBody')}
@@ -1338,7 +1335,6 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                     <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
                     {!isCustomCategory ? (
                       <>
-                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{SUPER_CATEGORIES[selectedCategory!].icon}</span>
                         <span style={{
                           fontWeight: 800,
                           fontSize: '15px',

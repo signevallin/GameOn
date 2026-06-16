@@ -123,8 +123,8 @@
     "subtitle": "Another team froze you!"
   },
   "missions": {
-    "tabMissions": "🎯 Missions",
-    "tabLeaderboard": "🏆 Leaderboard",
+    "tabMissions": "Missions",
+    "tabLeaderboard": "Leaderboard",
     "chooseTitle": "Choose your mission",
     "chooseSubtitle": "Select a category to see missions.",
     "missionsCount": "{{done}}/{{total}} missions",
