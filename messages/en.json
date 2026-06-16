@@ -97,7 +97,7 @@
     "place_2": "2nd place",
     "place_3": "3rd place",
     "place_other": "{{rank}}th place",
-    "winnerLine": "🏆 {{name}} won with {{score}} pts",
+    "winnerLine": "{{name}} won with {{score}} pts",
     "ptsLabel": "pts",
     "finishedIn": "Finished in {{time}}",
     "finalStandings": "FINAL STANDINGS",
@@ -110,7 +110,7 @@
     "statRankValue": "#{{rank}} of {{total}}",
     "statBestMission": "Best mission",
     "scoreValue": "{{score}} pts",
-    "leaveButton": "↩ Leave & start new game"
+    "leaveButton": "Leave & start new game"
   },
   "waiting": {
     "title": "Waiting for the game to start...",

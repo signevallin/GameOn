@@ -97,7 +97,7 @@
     "place_2": "2. plads",
     "place_3": "3. plads",
     "place_other": "{{rank}}. plads",
-    "winnerLine": "🏆 {{name}} vandt med {{score}} point",
+    "winnerLine": "{{name}} vandt med {{score}} point",
     "ptsLabel": "point",
     "finishedIn": "Færdig om {{time}}",
     "finalStandings": "SLUTTILSTILLING",
@@ -110,7 +110,7 @@
     "statRankValue": "#{{rank}} af {{total}}",
     "statBestMission": "Bedste mission",
     "scoreValue": "{{score}} point",
-    "leaveButton": "↩ Forlad og start et nyt spil"
+    "leaveButton": "Forlad og start et nyt spil"
   },
   "waiting": {
     "title": "Venter på at spillet skal starte...",

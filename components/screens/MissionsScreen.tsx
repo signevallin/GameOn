@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Timer } from 'lucide-react';
+import { Timer, LogOut, CheckCircle2, Trophy, Flag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
@@ -207,7 +207,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 }
 
 // ── Leaderboard inline view ───────────────────────────────────────────────────
-const RANK_ICONS = ['🥇', '🥈', '🥉'];
+const RANK_ICONS = ['1', '2', '3'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 function LeaderboardView({ teams, myTeamId, totalMissions }: {
@@ -288,7 +288,7 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
                     {lbTeam.name}{isMe ? t('leaderboard.youSuffix') : ''}
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                    {t('leaderboard.missionsCount', { done: missionsDone, total: totalMissions })}{lbTeam.finished_at ? ' · 🏁' : ''}
+                    {t('leaderboard.missionsCount', { done: missionsDone, total: totalMissions })}{lbTeam.finished_at ? <> · <Flag size={10} style={{ display: 'inline', verticalAlign: 'middle', marginBottom: '1px' }} /></> : ''}
                   </div>
                 </div>
 
@@ -391,9 +391,9 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
           <button
             onClick={() => confirmLogout(onLogout, t('missions.logoutConfirm'))}
-            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px' }}
+            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            {t('end.leaveButton')}
+            <LogOut size={15} /> {t('end.leaveButton')}
           </button>
         </div>
       </>
@@ -409,8 +409,12 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Winner announcement */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '64px', marginBottom: '12px' }}>
-            {isWinner ? '🏆' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏁'}
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+            {isWinner
+              ? <Trophy size={56} color="var(--gold)" strokeWidth={1.5} />
+              : myRank <= 3
+                ? <span style={{ fontSize: '48px', fontWeight: 900, color: RANK_COLORS[myRank - 1] ?? 'var(--muted)' }}>{myRank}</span>
+                : <Flag size={48} color="var(--muted)" strokeWidth={1.5} />}
           </div>
           <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
             {isWinner ? t('end.youWon') : myRank === 2 ? t('end.place_2') : myRank === 3 ? t('end.place_3') : t('end.place_other', { rank: myRank })}
@@ -522,9 +526,13 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
             fontWeight: 600,
             cursor: 'pointer',
             letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
-          {t('end.leaveButton')}
+          <LogOut size={15} /> {t('end.leaveButton')}
         </button>
       </div>
     </>
@@ -1214,7 +1222,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           {minPts === maxPts ? t('missions.upToPts', { pts: minPts }) : t('missions.ptsRange', { min: minPts, max: maxPts })}
                         </div>
                         {allCatDone && (
-                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                          <div style={{ position: 'absolute', top: '12px', right: '12px' }}><CheckCircle2 size={16} color="var(--accent3)" /></div>
                         )}
                       </div>
                     );
@@ -1408,7 +1416,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                               <div style={{ fontWeight: 700, fontSize: '14px' }}>{m.name}</div>
                               <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {pts} pts</div>
                             </div>
-                            {done && <span style={{ fontSize: '18px' }}>✅</span>}
+                            {done && <CheckCircle2 size={18} color="var(--accent3)" />}
                           </div>
                         </div>
                       );

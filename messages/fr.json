@@ -97,7 +97,7 @@
     "place_2": "2e place",
     "place_3": "3ème place",
     "place_other": "{{rank}}ème place",
-    "winnerLine": "🏆 {{name}} a gagné avec {{score}} points",
+    "winnerLine": "{{name}} a gagné avec {{score}} points",
     "ptsLabel": "points",
     "finishedIn": "Terminé en {{time}}",
     "finalStandings": "CLASSEMENT FINAL",
