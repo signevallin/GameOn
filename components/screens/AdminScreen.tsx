@@ -5186,13 +5186,15 @@ export default function AdminScreen({ onLogout }: Props) {
               <div className="mobile-game-key" style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
                 {activeGame.game_key}
               </div>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
-                {activeGame.missions.length} missions · {activeGame.duration_minutes} min ·{' '}
-                <span className={`status-pill ${activeGame.status === 'active' ? 'active' : activeGame.status === 'finished' ? 'finished' : 'draft'}`} style={{ verticalAlign: 'middle' }}>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
+                {activeGame.missions.length} missions · {activeGame.duration_minutes} min
+              </p>
+              <div style={{ marginTop: '4px' }}>
+                <span className={`status-pill ${activeGame.status === 'active' ? 'active' : activeGame.status === 'finished' ? 'finished' : 'draft'}`}>
                   <span className="status-pill-dot" />
                   {activeGame.status === 'active' ? 'Running' : activeGame.status === 'finished' ? 'Finished' : 'Draft'}
                 </span>
-              </p>
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', alignItems: 'center' }}>
@@ -5462,7 +5464,7 @@ export default function AdminScreen({ onLogout }: Props) {
             {aiRatingEnabled && (
               <div style={{ background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <span>✨</span>
+                  <WandSparkles size={13} color={IC} />
                   <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>AI rating is on</span>
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Photos are rated automatically when submitted</div>

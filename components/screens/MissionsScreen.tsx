@@ -1167,7 +1167,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 <span style={{ fontSize: '28px' }}>💨</span>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--accent2)', letterSpacing: '.5px' }}>{t('missions.smokeScreenTitle')} — {smokeScreenSecsLeft}s</div>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>{t('missions.smokeScreenDesc')}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', lineHeight: 1.4 }}>{t('missions.smokeScreenDesc')}</div>
                 </div>
               </div>
             )}
