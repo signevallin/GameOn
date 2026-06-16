@@ -207,6 +207,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 }
 
 // ── Leaderboard inline view ───────────────────────────────────────────────────
+const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 function LeaderboardView({ teams, myTeamId, totalMissions }: {
@@ -271,11 +272,11 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                 <div style={{
                   width: '28px', flexShrink: 0, textAlign: 'center',
-                  fontSize: '13px',
+                  fontSize: i < 3 ? '18px' : '13px',
                   fontWeight: 800,
                   color: RANK_COLORS[i] ?? 'var(--muted)',
                 }}>
-                  {i + 1}
+                  {i < 3 ? RANK_ICONS[i] : i + 1}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -355,7 +356,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
         <Confetti />
         <div style={{ padding: '32px 20px 48px', maxWidth: '560px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Flag size={64} color="var(--muted)" /></div>
+            <div style={{ fontSize: '64px', marginBottom: '12px' }}>🏁</div>
             <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>{t('end.gameOverTitle')}</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.6 }}>
               {t('end.resultsAnnounced')}
@@ -408,8 +409,8 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Winner announcement */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
-            {isWinner ? <Trophy size={64} color="var(--gold)" /> : <Flag size={64} color="var(--muted)" />}
+          <div style={{ fontSize: '64px', marginBottom: '12px' }}>
+            {isWinner ? '🏆' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏁'}
           </div>
           <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
             {isWinner ? t('end.youWon') : myRank === 2 ? t('end.place_2') : myRank === 3 ? t('end.place_3') : t('end.place_other', { rank: myRank })}
@@ -452,11 +453,11 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
                 >
                   <div style={{
                     width: '28px', flexShrink: 0, textAlign: 'center',
-                    fontSize: '14px',
+                    fontSize: i < 3 ? '20px' : '13px',
                     fontWeight: 800,
                     color: RANK_COLORS[i] ?? 'var(--muted)',
                   }}>
-                    {i + 1}
+                    {i < 3 ? RANK_ICONS[i] : i + 1}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -1286,7 +1287,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 {confirmDone && (
                   <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
                     <div style={{ background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '16px', padding: '40px 32px', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
-                      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Flag size={48} color="var(--muted)" /></div>
+                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏁</div>
                       <h2 style={{ marginBottom: '12px' }}>{t('missions.confirmDoneTitle')}</h2>
                       <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px', lineHeight: 1.6 }}>
                         {t('missions.confirmDoneBody')}
