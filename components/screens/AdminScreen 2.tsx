@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Play } from 'lucide-react';
 import { MISSIONS } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
@@ -503,7 +504,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--border)', marginTop: '4px', letterSpacing: '0.5px' }}>
                       {g.started_at
-                        ? `▶ ${new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        ? <><Play size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', marginBottom: '1px' }} />{new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</>
                         : `Created ${new Date(g.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       }
                     </div>

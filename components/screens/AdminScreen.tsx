@@ -2708,7 +2708,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div className="meta">{g.missions.length} missions · {g.duration_minutes} min</div>
                     <div className="date">
                       {g.started_at
-                        ? `▶ ${new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        ? <><Play size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', marginBottom: '1px' }} />{new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</>
                         : `Created ${new Date(g.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       }
                     </div>
