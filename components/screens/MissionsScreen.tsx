@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Timer, LogOut, CheckCircle2, Trophy, Flag } from 'lucide-react';
+import { Timer, LogOut, CheckCircle2, Trophy, Flag, Zap, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
@@ -969,7 +969,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.28)' : 'rgba(255,255,255,0.06)'; }}
               onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)'; }}
             >
-              <span style={{ fontSize: '14px', lineHeight: 1 }}>⚡</span>
+              <Zap size={13} />
               <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
@@ -977,8 +977,8 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
         {/* Col 3: score */}
         <div style={{ position: 'relative', display: 'inline-flex', justifyContent: 'center' }}>
-          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
-            ⭐ {displayScore}
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Star size={12} fill="var(--gold)" color="var(--gold)" /> {displayScore}
           </span>
           {scoreDelta !== null && (
             <span className="score-delta">+{scoreDelta}</span>
@@ -1056,7 +1056,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
         {/* WAITING */}
         {isDraft && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '24px' }}>⏳</div>
+            <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}><Timer size={56} color="var(--muted)" strokeWidth={1.5} /></div>
             <h2 style={{ marginBottom: '12px' }}>{t('waiting.title')}</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px' }}>{t('waiting.subtitle')}</p>
             <div style={{ display: 'inline-block', marginTop: '32px', padding: '12px 24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontFamily: "'Sora', sans-serif", fontSize: '13px', color: 'var(--muted)' }}>

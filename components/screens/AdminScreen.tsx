@@ -659,25 +659,25 @@ function OnboardingModal({
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {isLast ? (
-              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
-            ) : step === 0 ? (
-              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onSkip}>Skip tour</button>
+              <button className="btn btn-primary" style={{ fontSize: '13px', width: '100%' }} onClick={onFinish}>
+                Create my first game
+              </button>
             ) : (
-              <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+              <button className="btn btn-primary" style={{ fontSize: '13px', width: '100%' }} onClick={onNext}>
+                {step === 0 ? 'Get started →' : 'Next →'}
+              </button>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {isLast ? (
-                <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onFinish}>
-                  Create my first game
-                </button>
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+              ) : step === 0 ? (
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onSkip}>Skip tour</button>
               ) : (
-                <button className="btn btn-primary" style={{ fontSize: '13px' }} onClick={onNext}>
-                  {step === 0 ? 'Get started →' : 'Next →'}
-                </button>
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
               )}
+              <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
             </div>
           </div>
         </div>
@@ -952,6 +952,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [playedMissionIds, setPlayedMissionIds] = useState<string[]>([]);
   const [hidePlayedMissions, setHidePlayedMissions] = useState<boolean>(false);
   const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
+  const [collapsedCustomCats, setCollapsedCustomCats] = useState<Set<string>>(new Set());
   const [showMissionForm, setShowMissionForm] = useState(false);
   const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
   const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
@@ -4860,8 +4861,10 @@ export default function AdminScreen({ onLogout }: Props) {
                 <span style={{ opacity: 0.3 }}>·</span>
                 <button onClick={() => {
                   const allKeys = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]);
-                  const allCollapsed = allKeys.every(k => collapsedCats.has(k));
+                  const customKeys = adminCategories.map(c => c.id).concat(adminCustomMissions.some(m => !m.category_id) ? ['__uncategorized'] : []);
+                  const allCollapsed = allKeys.every(k => collapsedCats.has(k)) && customKeys.every(k => collapsedCustomCats.has(k));
                   setCollapsedCats(allCollapsed ? new Set() : new Set(allKeys));
+                  setCollapsedCustomCats(allCollapsed ? new Set() : new Set(customKeys));
                 }} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>
                   {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).every(k => collapsedCats.has(k)) ? 'Expand all' : 'Collapse all'}
                 </button>
@@ -5028,14 +5031,25 @@ export default function AdminScreen({ onLogout }: Props) {
                     const label = cat ? `${cat.emoji} ${cat.name.toUpperCase()}` : '📋 ÖVRIGT';
                     const groupIds = missions.map(m => m.id);
                     const allOn = groupIds.every(id => selectedMissions.includes(id));
+                    const customCatKey = cat?.id ?? '__uncategorized';
+                    const isCustomCollapsed = collapsedCustomCats.has(customCatKey);
+                    const selectedInCat = groupIds.filter(id => selectedMissions.includes(id)).length;
                     return (
-                      <div key={cat?.id ?? '__uncategorized'} style={{ marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
-                            {label}
-                          </span>
+                      <div key={customCatKey} style={{ marginBottom: '16px' }}>
+                        <div
+                          onClick={() => setCollapsedCustomCats(prev => { const next = new Set(prev); next.has(customCatKey) ? next.delete(customCatKey) : next.add(customCatKey); return next; })}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isCustomCollapsed ? 0 : '8px', cursor: 'pointer', padding: '6px 0' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <ChevronRight size={14} color="#9b59b6" style={{ transition: 'transform 0.15s', transform: isCustomCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', flexShrink: 0 }} />
+                            <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
+                              {label}
+                            </span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{selectedInCat}/{groupIds.length}</span>
+                          </div>
                           <button
-                            onClick={() => {
+                            onClick={e => {
+                              e.stopPropagation();
                               setSelectedMissions(prev => allOn
                                 ? prev.filter(x => !groupIds.includes(x))
                                 : [...new Set([...prev, ...groupIds])]);
@@ -5045,7 +5059,7 @@ export default function AdminScreen({ onLogout }: Props) {
                             {allOn ? 'Deselect all' : 'Select all'}
                           </button>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {!isCustomCollapsed && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           {missions.map(m => {
                             const on = selectedMissions.includes(m.id);
                             return (
@@ -5069,7 +5083,7 @@ export default function AdminScreen({ onLogout }: Props) {
                               </div>
                             );
                           })}
-                        </div>
+                        </div>}
                       </div>
                     );
                   })}
