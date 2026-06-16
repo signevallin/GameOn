@@ -19,7 +19,7 @@ import {
   LogOut, WandSparkles, Play, Coins, MessageCircle, Swords,
   Gamepad2, Map as MapIcon, Rocket,
   Tv, FileText, Loader2, Download,
-  Square, RotateCcw,
+  Square, RotateCcw, Link2, Check,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -859,6 +859,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [qrExpanded, setQrExpanded] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
   const [rated, setRated] = useState<Set<string>>(new Set());
+  const [presenterLinkCopied, setPresenterLinkCopied] = useState(false);
   const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
   const [puTargets, setPuTargets] = useState<Record<string, string>>({
@@ -5199,14 +5200,29 @@ export default function AdminScreen({ onLogout }: Props) {
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', alignItems: 'center' }}>
             {(activeGame.status === 'active' || activeGame.status === 'finished') && (
-              <button
-                className="btn btn-ghost"
-                onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
-                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
-                title="Open presenter view (for projector or TV)"
-              >
-                <Tv size={14} />{isMobile ? '' : 'Presenter'}
-              </button>
+              <>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
+                  style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  title="Open presenter view (for projector or TV)"
+                >
+                  <Tv size={14} />{isMobile ? '' : 'Presenter'}
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    const url = `${window.location.origin}/present/${activeGame.game_key}`;
+                    navigator.clipboard.writeText(url);
+                    setPresenterLinkCopied(true);
+                    setTimeout(() => setPresenterLinkCopied(false), 2000);
+                  }}
+                  style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px', color: presenterLinkCopied ? 'var(--accent3)' : undefined }}
+                  title="Copy presenter link to share"
+                >
+                  {presenterLinkCopied ? <><Check size={14} /> Copied!</> : <><Link2 size={14} />{isMobile ? '' : ' Copy link'}</>}
+                </button>
+              </>
             )}
             {activeGame.status === 'draft' && (
               <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: isMobile ? '14px' : '15px', padding: isMobile ? '12px 22px' : '14px 28px', display: 'flex', alignItems: 'center', gap: '8px' }}>
