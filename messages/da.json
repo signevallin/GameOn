@@ -137,7 +137,7 @@
     "breadcrumbMissions": "Missioner",
     "allDoneLabel": "✅ Alt er færdigt!",
     "allDoneElapsed": "✅ Færdig! · {{time}}",
-    "wereDoneButton": "🏁 Vi er færdige!",
+    "wereDoneButton": "Vi er færdige!",
     "confirmDoneTitle": "Er du sikker?",
     "confirmDoneBody": "Dette markerer dit hold som færdigt. Du vil ikke kunne gennemføre flere missioner efter dette.",
     "confirmDoneCancel": "Ophæve",

@@ -137,7 +137,7 @@
     "breadcrumbMissions": "Missions",
     "allDoneLabel": "✅ All done!",
     "allDoneElapsed": "✅ All done! · {{time}}",
-    "wereDoneButton": "🏁 We're done!",
+    "wereDoneButton": "We're done!",
     "confirmDoneTitle": "Are you sure?",
     "confirmDoneBody": "This marks your team as finished. You won't be able to complete more missions after this.",
     "confirmDoneCancel": "Cancel",

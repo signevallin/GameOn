@@ -137,7 +137,7 @@
     "breadcrumbMissions": "Missions",
     "allDoneLabel": "✅ C'est terminé !",
     "allDoneElapsed": "✅ Terminé ! · {{time}}",
-    "wereDoneButton": "🏁 C'est terminé !",
+    "wereDoneButton": "C'est terminé !",
     "confirmDoneTitle": "Es-tu sûr?",
     "confirmDoneBody": "Votre équipe est maintenant déclarée hors service. Vous ne pourrez plus accomplir de missions.",
     "confirmDoneCancel": "Annuler",

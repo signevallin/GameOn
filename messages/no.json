@@ -137,7 +137,7 @@
     "breadcrumbMissions": "Oppdrag",
     "allDoneLabel": "✅ Alt er ferdig!",
     "allDoneElapsed": "✅ Ferdig! · {{time}}",
-    "wereDoneButton": "🏁 Vi er ferdige!",
+    "wereDoneButton": "Vi er ferdige!",
     "confirmDoneTitle": "Er du sikker?",
     "confirmDoneBody": "Dette markerer laget ditt som ferdig. Du vil ikke kunne fullføre flere oppdrag etter dette.",
     "confirmDoneCancel": "Kansellere",

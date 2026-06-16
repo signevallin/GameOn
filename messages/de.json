@@ -137,7 +137,7 @@
     "breadcrumbMissions": "Missionen",
     "allDoneLabel": "✅ Fertig!",
     "allDoneElapsed": "✅ Fertig! · {{time}}",
-    "wereDoneButton": "🏁 Wir sind fertig!",
+    "wereDoneButton": "Wir sind fertig!",
     "confirmDoneTitle": "Bist du sicher?",
     "confirmDoneBody": "Damit ist die Mission eures Teams beendet. Ihr könnt danach keine weiteren Missionen mehr abschließen.",
     "confirmDoneCancel": "Stornieren",

@@ -137,7 +137,7 @@
     "doubleAgentDesc": "Dubbla poäng – men misslyckas ni går de till sista laget!",
     "allDoneLabel": "✅ Allt klart!",
     "allDoneElapsed": "✅ Klart! · {{time}}",
-    "wereDoneButton": "🏁 Vi är klara!",
+    "wereDoneButton": "Vi är klara!",
     "confirmDoneTitle": "Är du säker?",
     "confirmDoneBody": "Detta markerar ditt lag som färdigt. Du kommer inte att kunna slutföra fler uppdrag efter detta.",
     "confirmDoneCancel": "Avboka",
