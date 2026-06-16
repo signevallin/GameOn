@@ -2357,39 +2357,39 @@ export default function AdminScreen({ onLogout }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                 {/* KPI row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Missions in use</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{missionsInUse}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>of {MISSIONS.length} available</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Missions in use</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{missionsInUse}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>of {MISSIONS.length} available</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg completed/game</div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(avgCompletion * 100)}%</div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>of selected missions</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg completed/game</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(avgCompletion * 100)}%</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>of selected missions</div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Most popular</div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Most popular</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {mostPopular ? `${missionIconById[mostPopular.id] ?? ''} ${mostPopular.name}` : '–'}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>
                       {mostPopular ? `in ${mostPopular.gameCount} of ${analytics.kpis.totalGames} games` : ''}
                     </div>
                   </div>
                   <div style={kpiCardStyle}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hardest</div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hardest</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {hardest ? `${missionIconById[hardest.id] ?? ''} ${hardest.name}` : '–'}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>
                       {hardest ? `${Math.round(hardest.completionRate * 100)}% complete it` : 'Needs ≥5 games'}
                     </div>
                   </div>
                 </div>
 
                 {/* Row 1: Top missions (3fr) + Right column (2fr) */}
-                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: '16px' }}>
 
                   {/* Top missions ranked list */}
                   <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
