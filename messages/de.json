@@ -97,7 +97,7 @@
     "place_2": "2. Platz",
     "place_3": "3. Platz",
     "place_other": "{{rank}}th Platz",
-    "winnerLine": "{{name}} gewann mit {{score}} Punkten",
+    "winnerLine": "🏆 {{name}} gewann mit {{score}} Punkten",
     "ptsLabel": "Punkte",
     "finishedIn": "Fertiggestellt in {{time}}",
     "finalStandings": "ENDSTAND",

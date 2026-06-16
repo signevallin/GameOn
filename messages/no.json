@@ -97,7 +97,7 @@
     "place_2": "2. plass",
     "place_3": "3. plass",
     "place_other": "{{rank}}. plass",
-    "winnerLine": "{{name}} vant med {{score}} poeng",
+    "winnerLine": "🏆 {{name}} vant med {{score}} poeng",
     "ptsLabel": "poeng",
     "finishedIn": "Ferdig om {{time}}",
     "finalStandings": "SLUTTSTILLING",

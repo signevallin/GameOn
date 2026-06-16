@@ -97,7 +97,7 @@
     "place_2": "2:a plats",
     "place_3": "3:e plats",
     "place_other": "plats",
-    "winnerLine": "{{name}} vann med {{score}} poäng",
+    "winnerLine": "🏆 {{name}} vann med {{score}} poäng",
     "ptsLabel": "poäng",
     "finishedIn": "Klar om {{time}}",
     "finalStandings": "SLUTPUNKT",

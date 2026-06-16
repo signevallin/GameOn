@@ -207,7 +207,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
 }
 
 // ── Leaderboard inline view ───────────────────────────────────────────────────
-const RANK_ICONS = ['1', '2', '3'];
+const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
 function LeaderboardView({ teams, myTeamId, totalMissions }: {
@@ -409,12 +409,8 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Winner announcement */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
-            {isWinner
-              ? <Trophy size={56} color="var(--gold)" strokeWidth={1.5} />
-              : myRank <= 3
-                ? <span style={{ fontSize: '48px', fontWeight: 900, color: RANK_COLORS[myRank - 1] ?? 'var(--muted)' }}>{myRank}</span>
-                : <Flag size={48} color="var(--muted)" strokeWidth={1.5} />}
+          <div style={{ fontSize: '64px', marginBottom: '12px' }}>
+            {isWinner ? '🏆' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏁'}
           </div>
           <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
             {isWinner ? t('end.youWon') : myRank === 2 ? t('end.place_2') : myRank === 3 ? t('end.place_3') : t('end.place_other', { rank: myRank })}
