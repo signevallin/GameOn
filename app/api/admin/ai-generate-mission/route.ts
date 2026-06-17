@@ -37,6 +37,14 @@ photo — teams photograph something:
 {"type":"photo","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":600,"photoPrompt":"..."}
 photoPrompt is one clear instruction for what to photograph.
 
+relay — teams answer questions one-by-one in sequence (remote play):
+{"type":"relay","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"relayMode":"button","segments":[{"prompt":"What is the capital of Sweden?","answer":"Stockholm"}]}
+Generate 4-6 segments. relayMode must be "button" (teams answer each question, correct answer required to advance) or "typerace" (teams type any text to advance, no answer checking). For "typerace", omit the answer field or leave it empty.
+
+shared_secret — teams share clues to find a common answer (remote play):
+{"type":"shared_secret","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["Your clue is: apple","Your clue is: red","Your clue is: fruit"],"answer":"Apple","hint":"optional hint for stuck teams"}
+Generate 3-5 clues — one per team member, each different. The answer is what all clues point to. hint is optional.
+
 music_quiz — identify songs from 30-second audio clips:
 {"type":"music_quiz","name":"...","icon":"🎵","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
 Generate 4-6 songs. Choose only real, widely-released commercial songs available on iTunes/Apple Music. artist must be the exact official artist name. year is the release year as an integer. The server will fetch preview URLs from iTunes automatically.
@@ -154,7 +162,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'language_required' }, { status: 400 });
   }
 
-  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo', 'music_quiz'];
+  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo', 'relay', 'shared_secret', 'music_quiz'];
   if (type !== undefined && type !== null && typeof type === 'string' && !VALID_TYPES.includes(type)) {
     return NextResponse.json({ error: 'invalid_type' }, { status: 400 });
   }
