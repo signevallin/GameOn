@@ -27,6 +27,7 @@ function ListenPhase({ rounds, onDone }: { rounds: MusicRound[]; onDone: (result
 
   function matches(input: string, correct: string) {
     const n = norm(input);
+    if (!n) return false;
     const c = norm(correct);
     return n === c || c.startsWith(n) || stripExtras(correct) === n;
   }
