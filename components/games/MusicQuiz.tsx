@@ -1,6 +1,5 @@
 'use client';
 import { useRef, useState } from 'react';
-import { Music2 } from 'lucide-react';
 import { MusicRound } from '@/lib/missions';
 
 type Props = {
@@ -180,7 +179,9 @@ function ListenPhase({ rounds, onDone }: { rounds: MusicRound[]; onDone: (result
                 letterSpacing: '0.02em',
               }}
             >
-              <Music2 size={15} />
+              <svg width="16" height="16" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.6-155.5-127.4C46 790.9 0 663.4 0 541.8c0-207.4 131.4-317.4 260.8-317.4 70.2 0 128.9 46.4 173.1 46.4 42.8 0 110.2-49 190.5-49 30.2 0 130.3 4.5 189.5 59.2zm-194-141.9c28.8-34.2 49.6-82.2 49.6-130.2 0-6.5-.6-13.1-1.9-19.2-47.3 1.9-103 32-136.3 71.9-26.5 29.8-52.9 77.8-52.9 127.4 0 7.1 1.3 14.2 1.9 16.5 3.2.6 8.4 1.3 13.6 1.3 42.8 0 96.9-29.2 125.9-67.8z" />
+              </svg>
               Listen on Apple Music
             </a>
           )}
