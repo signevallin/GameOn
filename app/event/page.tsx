@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Star } from 'lucide-react';
 import TriviaQuiz from '@/components/games/TriviaQuiz';
 import { TriviaRound } from '@/lib/missions';
 
@@ -66,6 +67,9 @@ export default function EventPage() {
   const [submitting, setSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [guestId, setGuestId] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  const elapsedRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let id = localStorage.getItem('gameon_guest_id');
@@ -75,6 +79,26 @@ export default function EventPage() {
     }
     setGuestId(id);
   }, []);
+
+  function startTimer() {
+    elapsedRef.current = 0;
+    setElapsed(0);
+    timerRef.current = setInterval(() => {
+      elapsedRef.current += 1;
+      setElapsed(e => e + 1);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
+  const timerDisplay = elapsed < 60
+    ? `${elapsed}s`
+    : `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`;
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,26 +125,50 @@ export default function EventPage() {
 
   if (phase === 'playing') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D1520', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ width: '100%', maxWidth: '480px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <span style={{ color: '#7CBDD4', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '3px', fontWeight: 700 }}>DEMO · GAMEON</span>
-            <button onClick={() => setPhase('landing')} style={{ background: 'none', border: 'none', color: '#4A6580', fontSize: '13px', cursor: 'pointer' }}>
-              Exit
+      <>
+        <nav className="nav">
+          <div className="nav-brand">GAMEON</div>
+          <div className="nav-right">
+            <span className="nav-score" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <Star size={12} fill="var(--gold)" color="var(--gold)" /> Demo
+            </span>
+            <button
+              className="btn btn-ghost"
+              style={{ padding: '8px 16px', fontSize: '12px' }}
+              onClick={() => { stopTimer(); setPhase('landing'); }}
+            >
+              Exit demo
             </button>
           </div>
-          <div style={cardStyle}>
+        </nav>
+
+        <div className="challenge-wrap fade-in">
+          <div className="challenge-header">
+            <div>
+              <h2>General Knowledge</h2>
+              <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '14px' }}>
+                Answer 5 questions — earn points for each correct answer.
+              </p>
+            </div>
+            <div className="timer-box">
+              <div className="timer-label">Time</div>
+              <div className={`timer-value${elapsed > 60 ? ' urgent' : ''}`}>{timerDisplay}</div>
+            </div>
+          </div>
+
+          <div className="challenge-card">
             <TriviaQuiz
               rounds={DEMO_ROUNDS}
               maxPts={500}
               onFinish={(_correct, pts) => {
+                stopTimer();
                 setFinalPts(pts ?? 0);
                 setPhase('done');
               }}
             />
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -209,7 +257,7 @@ export default function EventPage() {
           />
 
           <button
-            onClick={() => setPhase('landing')}
+            onClick={() => { setEmailSent(false); setEmail(''); setPhase('landing'); }}
             style={{ background: 'none', border: 'none', color: '#4A6580', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
           >
             Play the demo again
@@ -264,7 +312,7 @@ export default function EventPage() {
 
         {/* CTA */}
         <button
-          onClick={() => setPhase('playing')}
+          onClick={() => { startTimer(); setPhase('playing'); }}
           style={{
             width: '100%',
             padding: '20px',
