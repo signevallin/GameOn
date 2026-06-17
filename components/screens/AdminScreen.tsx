@@ -8,6 +8,7 @@ import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import type { GameTemplate } from '@/lib/templates';
+import { isTemplateActive } from '@/lib/template-utils';
 import JSZip from 'jszip';
 import MysteryBoxAR from '@/components/MysteryBoxAR';
 import {
@@ -4666,7 +4667,7 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* Built-in templates */}
             <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>Built-in templates</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-              {templates.filter(t => t.isBuiltin).map(t => (
+              {templates.filter(t => t.isBuiltin && isTemplateActive(t.activeFrom, t.activeTo)).map(t => (
                 <button
                   key={t.id}
                   onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
