@@ -54,6 +54,8 @@ export function toMission(cm: CustomMission & { custom_mission_categories?: { na
         answer: d.answer as string,
         hint: (d.hint as string) || undefined,
       };
+    case 'music_quiz':
+      return { ...base, musicRounds: (d.rounds as Mission['musicRounds']) ?? [] };
     default:
       return base as Mission;
   }
@@ -74,6 +76,7 @@ export function validateMissionData(
     relayMode?: string;
     sharedSecretAnswer?: string;
     sharedSecretHint?: string;
+    musicRounds?: { audioUrl: string; artist: string; title: string; year: number }[];
   }
 ): string | null {
   switch (type) {
@@ -125,6 +128,15 @@ export function validateMissionData(
       if (data.clues.length < 2) return 'Add at least 2 clues.';
       if (data.clues.some(c => !c.trim())) return 'All clues need text.';
       return null;
+    case 'music_quiz': {
+      const rounds = data.musicRounds ?? [];
+      if (rounds.length < 2) return 'Add at least 2 songs.';
+      if (rounds.some(r => !r.audioUrl)) return 'All songs need a preview URL.';
+      if (rounds.some(r => !r.artist.trim())) return 'All songs need an artist.';
+      if (rounds.some(r => !r.title.trim())) return 'All songs need a title.';
+      if (rounds.some(r => !r.year || r.year < 1900)) return 'All songs need a valid year.';
+      return null;
+    }
     default:
       return 'Unknown type.';
   }
@@ -145,6 +157,7 @@ export function buildMissionData(
     relayMode?: string;
     sharedSecretAnswer?: string;
     sharedSecretHint?: string;
+    musicRounds?: { audioUrl: string; artist: string; title: string; year: number }[];
   }
 ): Record<string, unknown> {
   switch (type) {
@@ -185,6 +198,8 @@ export function buildMissionData(
         answer: (data.sharedSecretAnswer ?? '').trim(),
         hint: (data.sharedSecretHint ?? '').trim() || undefined,
       };
+    case 'music_quiz':
+      return { rounds: data.musicRounds ?? [] };
     default:
       return {};
   }

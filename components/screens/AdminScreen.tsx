@@ -428,6 +428,7 @@ type MissionFormData = {
   // shared_secret
   sharedSecretAnswer: string;
   sharedSecretHint: string;
+  musicRounds: { audioUrl: string; artist: string; title: string; year: number }[];
   // seasonal window — ISO date strings ('' = unset)
   activeFrom: string;
   activeUntil: string;
@@ -442,6 +443,7 @@ const EMPTY_FORM: MissionFormData = {
   relayMode: 'typerace',
   sharedSecretAnswer: '',
   sharedSecretHint: '',
+  musicRounds: [],
   activeFrom: '', activeUntil: '',
   seasonal: false,
 };
@@ -1000,6 +1002,9 @@ export default function AdminScreen({ onLogout }: Props) {
   const [editCategorySaving, setEditCategorySaving] = useState(false);
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
+  const [itunesQuery, setItunesQuery] = useState('');
+  const [itunesResults, setItunesResults] = useState<{ trackId: number; artistName: string; trackName: string; previewUrl: string; releaseDate: string }[]>([]);
+  const [itunesLoading, setItunesLoading] = useState(false);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
@@ -2850,6 +2855,7 @@ export default function AdminScreen({ onLogout }: Props) {
           ? new Date((cm as { active_until: string }).active_until).toISOString().slice(0, 10)
           : '',
         seasonal: cm.seasonal ?? false,
+        musicRounds: cm.type === 'music_quiz' ? ((d.rounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? []) : [],
       });
       setMissionFormError('');
       setMissionCategoryId(cm.category_id ?? null);
@@ -3022,6 +3028,7 @@ export default function AdminScreen({ onLogout }: Props) {
           relayMode: (mission.relayMode as 'typerace' | 'button') ?? 'typerace',
           sharedSecretAnswer: mission.answer ?? '',
           sharedSecretHint: mission.hint ?? '',
+          musicRounds: [],
           activeFrom: '',
           activeUntil: '',
           seasonal: false,
@@ -3099,6 +3106,7 @@ export default function AdminScreen({ onLogout }: Props) {
         relayMode: missionForm.relayMode,
         sharedSecretAnswer: missionForm.sharedSecretAnswer,
         sharedSecretHint: missionForm.sharedSecretHint,
+        musicRounds: missionForm.musicRounds,
       });
       if (validationError) { setMissionFormError(validationError); return; }
 
@@ -3121,6 +3129,7 @@ export default function AdminScreen({ onLogout }: Props) {
         relayMode: missionForm.relayMode,
         sharedSecretAnswer: missionForm.sharedSecretAnswer,
         sharedSecretHint: missionForm.sharedSecretHint,
+        musicRounds: missionForm.musicRounds,
       });
       const payload = {
         name: missionForm.name.trim(),
@@ -3904,6 +3913,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
+                    <option value="music_quiz">🎵 Music Quiz</option>
                     <option value="relay">📶 Relay (Remote)</option>
                     <option value="shared_secret">📶 Shared Secret (Remote)</option>
                   </select>
@@ -4066,6 +4076,95 @@ export default function AdminScreen({ onLogout }: Props) {
                     </div>
                   ))}
                   <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ triviaRounds: [...missionForm.triviaRounds, { question: '', options: ['', '', '', ''], answer: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {missionForm.type === 'music_quiz' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>SONGS ({missionForm.musicRounds.length} added)</label>
+
+                  {/* Added songs */}
+                  {missionForm.musicRounds.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                      {missionForm.musicRounds.map((r, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--surface)', borderRadius: '8px', padding: '8px 12px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{r.artist} · {r.year}</div>
+                          </div>
+                          <audio controls src={r.audioUrl} style={{ height: '28px', width: '140px', flexShrink: 0 }} />
+                          <button onClick={() => setF({ musicRounds: missionForm.musicRounds.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* iTunes search */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input
+                      type="text"
+                      value={itunesQuery}
+                      onChange={e => setItunesQuery(e.target.value)}
+                      onKeyDown={async e => {
+                        if (e.key === 'Enter' && itunesQuery.trim()) {
+                          setItunesLoading(true);
+                          setItunesResults([]);
+                          try {
+                            const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`);
+                            const json = await res.json();
+                            setItunesResults(json.results ?? []);
+                          } finally { setItunesLoading(false); }
+                        }
+                      }}
+                      placeholder="Search artist or song…"
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <button
+                      className="btn btn-ghost"
+                      style={{ fontSize: '12px', padding: '6px 14px', flexShrink: 0 }}
+                      disabled={itunesLoading || !itunesQuery.trim()}
+                      onClick={async () => {
+                        setItunesLoading(true);
+                        setItunesResults([]);
+                        try {
+                          const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`);
+                          const json = await res.json();
+                          setItunesResults(json.results ?? []);
+                        } finally { setItunesLoading(false); }
+                      }}
+                    >
+                      {itunesLoading ? '...' : 'Search'}
+                    </button>
+                  </div>
+
+                  {itunesResults.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '280px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px' }}>
+                      {itunesResults.map(track => {
+                        const year = new Date(track.releaseDate).getFullYear();
+                        const alreadyAdded = missionForm.musicRounds.some(r => r.audioUrl === track.previewUrl);
+                        return (
+                          <div key={track.trackId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', background: alreadyAdded ? 'rgba(117,171,200,0.08)' : 'transparent' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.trackName}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{track.artistName} · {year}</div>
+                            </div>
+                            {track.previewUrl && <audio controls src={track.previewUrl} style={{ height: '28px', width: '120px', flexShrink: 0 }} />}
+                            <button
+                              className="btn btn-ghost"
+                              style={{ fontSize: '11px', padding: '4px 10px', flexShrink: 0, color: alreadyAdded ? 'var(--accent3)' : undefined }}
+                              disabled={alreadyAdded || !track.previewUrl}
+                              onClick={() => {
+                                if (alreadyAdded || !track.previewUrl) return;
+                                setF({ musicRounds: [...missionForm.musicRounds, { audioUrl: track.previewUrl, artist: track.artistName, title: track.trackName, year }] });
+                              }}
+                            >
+                              {alreadyAdded ? '✓ Added' : !track.previewUrl ? 'No preview' : '+ Add'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
