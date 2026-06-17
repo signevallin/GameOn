@@ -37,6 +37,10 @@ photo — teams photograph something:
 {"type":"photo","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":600,"photoPrompt":"..."}
 photoPrompt is one clear instruction for what to photograph.
 
+music_quiz — identify songs from 30-second audio clips:
+{"type":"music_quiz","name":"...","icon":"🎵","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
+Generate 4-6 songs. Choose only real, widely-released commercial songs available on iTunes/Apple Music. artist must be the exact official artist name. year is the release year as an integer. The server will fetch preview URLs from iTunes automatically.
+
 Field rules:
 - name: max 40 chars, engaging title
 - icon: single emoji relevant to the topic
@@ -73,6 +77,30 @@ async function callClaude(userMessage: string, systemPrompt: string, maxTokens: 
   const block = message.content[0];
   if (block.type !== 'text') throw new Error('Unexpected response type');
   return block.text;
+}
+
+async function resolveItunesPreviews(
+  songs: { artist: string; title: string; year: number }[]
+): Promise<{ audioUrl: string; artist: string; title: string; year: number }[]> {
+  const results: { audioUrl: string; artist: string; title: string; year: number }[] = [];
+  for (const song of songs) {
+    try {
+      const q = encodeURIComponent(`${song.artist} ${song.title}`);
+      const res = await fetch(
+        `https://itunes.apple.com/search?term=${q}&media=music&entity=song&limit=5`,
+        { headers: { 'User-Agent': 'GameOn/1.0' } }
+      );
+      if (!res.ok) continue;
+      const json = await res.json() as { results?: { artistName: string; trackName: string; previewUrl?: string }[] };
+      const match = json.results?.find(r => r.previewUrl);
+      if (match?.previewUrl) {
+        results.push({ audioUrl: match.previewUrl, artist: match.artistName, title: match.trackName, year: song.year });
+      }
+    } catch {
+      // skip this song if iTunes lookup fails
+    }
+  }
+  return results;
 }
 
 function parseJSON(text: string): Record<string, unknown> | null {
@@ -126,7 +154,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'language_required' }, { status: 400 });
   }
 
-  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo'];
+  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo', 'music_quiz'];
   if (type !== undefined && type !== null && typeof type === 'string' && !VALID_TYPES.includes(type)) {
     return NextResponse.json({ error: 'invalid_type' }, { status: 400 });
   }
@@ -169,6 +197,16 @@ Topic/description: ${prompt}${exclusionLine}`;
       return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
     }
 
+    // Resolve iTunes preview URLs for music_quiz
+    if (parsed.type === 'music_quiz' && Array.isArray(parsed.songs)) {
+      const musicRounds = await resolveItunesPreviews(
+        (parsed.songs as { artist: string; title: string; year: number }[])
+      );
+      const { songs: _songs, ...rest } = parsed;
+      void _songs;
+      return NextResponse.json({ ...rest, musicRounds });
+    }
+
     return NextResponse.json(parsed);
   }
 
@@ -205,5 +243,20 @@ Topic/description: ${prompt}${exclusionLine}`;
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
   }
 
-  return NextResponse.json({ missions: parsed.missions });
+  // Resolve iTunes preview URLs for any music_quiz missions in bulk results
+  const resolvedMissions = await Promise.all(
+    (parsed.missions as Record<string, unknown>[]).map(async m => {
+      if (m.type === 'music_quiz' && Array.isArray(m.songs)) {
+        const musicRounds = await resolveItunesPreviews(
+          (m.songs as { artist: string; title: string; year: number }[])
+        );
+        const { songs: _songs, ...rest } = m;
+        void _songs;
+        return { ...rest, musicRounds };
+      }
+      return m;
+    })
+  );
+
+  return NextResponse.json({ missions: resolvedMissions });
 }

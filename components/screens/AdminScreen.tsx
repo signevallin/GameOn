@@ -3002,6 +3002,7 @@ export default function AdminScreen({ onLogout }: Props) {
           relayMode?: string;
           answer?: string;
           hint?: string;
+          musicRounds?: { audioUrl: string; artist: string; title: string; year: number }[];
         };
 
         if (!mission || typeof mission.type !== 'string' || typeof mission.name !== 'string') {
@@ -3028,7 +3029,7 @@ export default function AdminScreen({ onLogout }: Props) {
           relayMode: (mission.relayMode as 'typerace' | 'button') ?? 'typerace',
           sharedSecretAnswer: mission.answer ?? '',
           sharedSecretHint: mission.hint ?? '',
-          musicRounds: [],
+          musicRounds: mission.musicRounds ?? [],
           activeFrom: '',
           activeUntil: '',
           seasonal: false,
@@ -3065,6 +3066,7 @@ export default function AdminScreen({ onLogout }: Props) {
             paAnswer: String(m.paAnswer ?? ''),
             timelineItems: (m.timelineItems as { label: string; year: string }[]) ?? [],
             photoPrompt: String(m.photoPrompt ?? ''),
+            musicRounds: (m.musicRounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? [],
           });
           await POST('/api/admin/custom-missions', {
             name: String(m.name ?? '').trim(),
@@ -3687,6 +3689,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         <option value="pa_sparet">På Spåret</option>
                         <option value="timeline">Timeline</option>
                         <option value="photo">Photo</option>
+                        <option value="music_quiz">🎵 Music Quiz</option>
                       </select>
                     </div>
                     <div>
