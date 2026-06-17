@@ -1397,21 +1397,20 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   <div className="missions-grid" style={{ paddingBottom: '40px' }}>
                     {(customCategoryGroups.find(g => g.name === selectedCustomCategoryName)?.missions ?? []).map(m => {
                       const done = team.completed?.includes(m.id);
-                      const pts = game.mission_max_pts?.[m.id] ?? m.maxPts;
+                      const blocked = isFrozen;
                       return (
                         <div
                           key={m.id}
-                          className="card"
-                          style={{ cursor: done ? 'default' : 'pointer', opacity: done ? 0.5 : 1, borderColor: done ? 'var(--border)' : '#9b59b6' }}
-                          onClick={() => !done && onSelectMission(m.id)}
+                          className={`mission-card${done ? ' done' : ''}`}
+                          style={{ opacity: blocked && !done ? 0.45 : 1 }}
+                          onClick={() => !done && !blocked && onSelectMission(m.id)}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '24px' }}>{m.icon}</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 700, fontSize: '14px' }}>{m.name}</div>
-                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {pts} pts</div>
-                            </div>
-                            {done && <CheckCircle2 size={18} color="var(--accent3)" />}
+                          <span className="mission-icon">{m.icon}</span>
+                          <div className="mission-name">{m.name}</div>
+                          <div className="mission-desc">{m.desc}</div>
+                          <div className="mission-meta">
+                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{t(`difficulty.${m.difficulty}`)}</span>
+                            <span className="mission-pts">{t('missions.upToPts', { pts: game.mission_max_pts?.[m.id] ?? m.maxPts })}</span>
                           </div>
                         </div>
                       );
