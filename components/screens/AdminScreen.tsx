@@ -20,6 +20,7 @@ import {
   Gamepad2, Map as MapIcon, Rocket,
   Tv, FileText, Loader2, Download,
   Square, RotateCcw, Link2, Check,
+  Calendar, BookMarked,
 } from 'lucide-react';
 
 const IC = '#75abc8';
@@ -3648,7 +3649,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '12px', marginBottom: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 80px', gap: '12px', marginBottom: '16px' }}>
                     <div>
                       <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>TYPE (OPTIONAL)</label>
                       <select
@@ -4192,7 +4193,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
                       {generatePreview.activeFrom && generatePreview.activeTo && (
-                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2 }}>🗓 {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} color="var(--accent)" /> {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
                       )}
                     </div>
                   </div>
@@ -4383,8 +4384,8 @@ export default function AdminScreen({ onLogout }: Props) {
                   <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.missionIds.length} missions</div>
                   {t.activeFrom && t.activeTo && (
-                    <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: 2 }}>
-                      🗓 {t.activeFrom} – {t.activeTo}
+                    <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Calendar size={11} color="var(--accent)" /> {t.activeFrom} – {t.activeTo}
                     </div>
                   )}
                 </div>
@@ -4559,7 +4560,7 @@ export default function AdminScreen({ onLogout }: Props) {
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
                       {generatePreview.activeFrom && generatePreview.activeTo && (
-                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2 }}>🗓 {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} color="var(--accent)" /> {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
                       )}
                     </div>
                   </div>
@@ -4661,7 +4662,7 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
 
             {/* My templates */}
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>My templates</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}><BookMarked size={12} color="var(--muted)" /> My templates</div>
             {templates.filter(t => !t.isBuiltin).length === 0 ? (
               <div style={{ background: 'var(--card)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '24px', textAlign: 'center', color: 'var(--muted)', fontSize: '13px', marginBottom: '24px' }}>
                 No saved templates yet — save a game as a template from the games list
