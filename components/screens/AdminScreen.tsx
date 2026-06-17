@@ -3280,7 +3280,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
           {/* Add / Edit form */}
           {!showMissionForm && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
               {/* AI generate button */}
               <button
                 className="btn btn-ghost"
@@ -3444,6 +3444,8 @@ export default function AdminScreen({ onLogout }: Props) {
               <button className="btn btn-ghost" style={{ width: '100%', padding: '12px' }} onClick={openNewForm}>+ Add Mission Manually</button>
             </div>
           )}
+
+
 
           {showMissionForm && (
             <div className="card" style={{ marginBottom: '32px' }}>
