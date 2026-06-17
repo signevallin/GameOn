@@ -89,8 +89,8 @@ async function callClaude(userMessage: string, systemPrompt: string, maxTokens: 
 
 async function resolveItunesPreviews(
   songs: { artist: string; title: string; year: number }[]
-): Promise<{ audioUrl: string; artist: string; title: string; year: number }[]> {
-  const results: { audioUrl: string; artist: string; title: string; year: number }[] = [];
+): Promise<{ audioUrl: string; artist: string; title: string; year: number; trackViewUrl?: string }[]> {
+  const results: { audioUrl: string; artist: string; title: string; year: number; trackViewUrl?: string }[] = [];
   for (const song of songs) {
     try {
       const q = encodeURIComponent(`${song.artist} ${song.title}`);
@@ -99,10 +99,16 @@ async function resolveItunesPreviews(
         { headers: { 'User-Agent': 'GameOn/1.0' } }
       );
       if (!res.ok) continue;
-      const json = await res.json() as { results?: { artistName: string; trackName: string; previewUrl?: string }[] };
+      const json = await res.json() as { results?: { artistName: string; trackName: string; previewUrl?: string; trackViewUrl?: string }[] };
       const match = json.results?.find(r => r.previewUrl);
       if (match?.previewUrl) {
-        results.push({ audioUrl: match.previewUrl, artist: match.artistName, title: match.trackName, year: song.year });
+        results.push({
+          audioUrl: match.previewUrl,
+          artist: match.artistName,
+          title: match.trackName,
+          year: song.year,
+          ...(match.trackViewUrl ? { trackViewUrl: match.trackViewUrl.replace('&uo=4', '') } : {}),
+        });
       }
     } catch {
       // skip this song if iTunes lookup fails

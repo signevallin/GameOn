@@ -55,7 +55,7 @@ export function toMission(cm: CustomMission & { custom_mission_categories?: { na
         hint: (d.hint as string) || undefined,
       };
     case 'music_quiz':
-      return { ...base, musicRounds: (d.rounds as Mission['musicRounds']) ?? [] };
+      return { ...base, musicRounds: ((d.rounds as Mission['musicRounds']) ?? []) };
     default:
       return base as Mission;
   }

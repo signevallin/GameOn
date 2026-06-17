@@ -16,6 +16,11 @@ export async function GET(req: Request) {
   const res = await fetch(itunesUrl, { headers: { 'User-Agent': 'GameOn/1.0' } });
   if (!res.ok) return NextResponse.json({ error: 'iTunes API error.' }, { status: 502 });
 
-  const json = await res.json();
-  return NextResponse.json({ results: json.results ?? [] });
+  const json = await res.json() as { results?: Record<string, unknown>[] };
+  // Strip the affiliate tracking param from trackViewUrl before returning
+  const results = (json.results ?? []).map(r => ({
+    ...r,
+    ...(r.trackViewUrl ? { trackViewUrl: String(r.trackViewUrl).replace('&uo=4', '') } : {}),
+  }));
+  return NextResponse.json({ results });
 }

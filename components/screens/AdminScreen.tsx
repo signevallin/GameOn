@@ -1004,7 +1004,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionSaving, setMissionSaving] = useState(false);
   const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
   const [itunesQuery, setItunesQuery] = useState('');
-  const [itunesResults, setItunesResults] = useState<{ trackId: number; artistName: string; trackName: string; previewUrl: string; releaseDate: string }[]>([]);
+  const [itunesResults, setItunesResults] = useState<{ trackId: number; artistName: string; trackName: string; previewUrl: string; releaseDate: string; trackViewUrl?: string }[]>([]);
   const [itunesLoading, setItunesLoading] = useState(false);
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -4188,7 +4188,7 @@ export default function AdminScreen({ onLogout }: Props) {
                               disabled={alreadyAdded || !track.previewUrl}
                               onClick={() => {
                                 if (alreadyAdded || !track.previewUrl) return;
-                                setF({ musicRounds: [...missionForm.musicRounds, { audioUrl: track.previewUrl, artist: track.artistName, title: track.trackName, year }] });
+                                setF({ musicRounds: [...missionForm.musicRounds, { audioUrl: track.previewUrl, artist: track.artistName, title: track.trackName, year, ...(track.trackViewUrl ? { trackViewUrl: track.trackViewUrl } : {}) }] });
                               }}
                             >
                               {alreadyAdded ? '✓ Added' : !track.previewUrl ? 'No preview' : '+ Add'}

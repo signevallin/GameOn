@@ -37,7 +37,7 @@ export type CrimeQuestion = { question: string; options: string[]; answer: strin
 export type CelebRound = { clue: string; options: string[]; answer: string };
 export type EmojiRound = { emojis: string; options: string[]; answer: string; aliases?: string[] };
 export type CodeClue = { digits: [number, number, number]; hint: string };
-export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
+export type MusicRound = { audioUrl: string; artist: string; title: string; year: number; trackViewUrl?: string };
 export type ImageRound = { imageUrl: string; options: string[]; answer: string };
 export type MemorySpeedRound = { items: string[]; missing: string; options: string[]; memorizeSeconds?: number };
 export type TriviaRound = { question: string; options: string[]; answer: string };
@@ -583,11 +583,11 @@ export const MISSIONS: Mission[] = [
     maxPts: 1000,
     type: 'music_quiz',
     musicRounds: [
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/e2/f1/e7e2f1a3-cef7-1a78-74ea-f9c51a2a0d65/mzaf_16372370292217634037.plus.aac.p.m4a', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 1999 },
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/9c/89/949c8995-41f8-d3c1-90eb-81c10b54133b/mzaf_8252792899119007978.plus.aac.p.m4a', artist: 'Hans Zimmer', title: 'Time', year: 2010 },
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a', artist: 'Rihanna', title: 'Umbrella (feat. JAŸ-Z)', year: 2007 },
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f8/56/59/f8565993-788e-7547-fbc5-ae6b5c5ca223/mzaf_1326133503670566588.plus.aac.p.m4a', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016 },
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/18/7b/ef187b7d-f487-e935-4ca1-af5748313710/mzaf_8455263230305249048.plus.aac.p.m4a', artist: 'Adele', title: 'Someone Like You', year: 2011 },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/e2/f1/e7e2f1a3-cef7-1a78-74ea-f9c51a2a0d65/mzaf_16372370292217634037.plus.aac.p.m4a', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 1999, trackViewUrl: 'https://music.apple.com/us/album/graduation-friends-forever/281708508?i=281708631' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/9c/89/949c8995-41f8-d3c1-90eb-81c10b54133b/mzaf_8252792899119007978.plus.aac.p.m4a', artist: 'Hans Zimmer', title: 'Time', year: 2010, trackViewUrl: 'https://music.apple.com/us/album/time/380349905?i=380350246' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a', artist: 'Rihanna', title: 'Umbrella (feat. JAŸ-Z)', year: 2007, trackViewUrl: 'https://music.apple.com/us/album/umbrella-feat-ja%C3%BF-z/1441154435?i=1441154437' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f8/56/59/f8565993-788e-7547-fbc5-ae6b5c5ca223/mzaf_1326133503670566588.plus.aac.p.m4a', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016, trackViewUrl: 'https://music.apple.com/us/album/6-inch-feat-the-weeknd/1460432013?i=1460432022' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/18/7b/ef187b7d-f487-e935-4ca1-af5748313710/mzaf_8455263230305249048.plus.aac.p.m4a', artist: 'Adele', title: 'Someone Like You', year: 2011, trackViewUrl: 'https://music.apple.com/us/album/someone-like-you/1544491232?i=1544491998' },
     ],
   },
   // ── LOGO QUIZ ──
