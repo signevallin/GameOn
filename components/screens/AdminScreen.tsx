@@ -4935,20 +4935,18 @@ export default function AdminScreen({ onLogout }: Props) {
                         {selectedCount > 0 ? `${selectedCount}/${totalCount}` : totalCount}
                       </span>
                     </span>
-                    {!isCollapsed && (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          const ids = [...catMissions, ...customInCat].map(m => m.id);
-                          setSelectedMissions(prev => allOn
-                            ? prev.filter(x => !ids.includes(x))
-                            : [...new Set([...prev, ...ids])]);
-                        }}
-                        style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
-                      >
-                        {allOn ? 'Deselect all' : 'Select all'}
-                      </button>
-                    )}
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        const ids = [...catMissions, ...customInCat].map(m => m.id);
+                        setSelectedMissions(prev => allOn
+                          ? prev.filter(x => !ids.includes(x))
+                          : [...new Set([...prev, ...ids])]);
+                      }}
+                      style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      {allOn ? 'Deselect all' : 'Select all'}
+                    </button>
                   </div>
                   {!isCollapsed && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {catMissions.map(m => {
