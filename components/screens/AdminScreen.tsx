@@ -3752,7 +3752,7 @@ export default function AdminScreen({ onLogout }: Props) {
                           setItunesLoading(true);
                           setItunesResults([]);
                           try {
-                            const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`);
+                            const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
                             const json = await res.json();
                             setItunesResults(json.results ?? []);
                           } finally { setItunesLoading(false); }
@@ -3769,7 +3769,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         setItunesLoading(true);
                         setItunesResults([]);
                         try {
-                          const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`);
+                          const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
                           const json = await res.json();
                           setItunesResults(json.results ?? []);
                         } finally { setItunesLoading(false); }
