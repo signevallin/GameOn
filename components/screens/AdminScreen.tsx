@@ -3055,61 +3055,68 @@ export default function AdminScreen({ onLogout }: Props) {
       if (selected.length === 0) return;
       setAiBulkSaving(true);
       setAiBulkSaveError('');
+      const errors: string[] = [];
       try {
         const { buildMissionData } = await import('@/lib/custom-missions');
         for (const m of selected) {
           const type = String(m.type ?? '');
-          // Skip music_quiz missions with no resolved songs — iTunes lookup failed
-          if (type === 'music_quiz') {
-            const rounds = (m.musicRounds as unknown[]) ?? [];
-            if (rounds.length < 2) {
-              setAiBulkSaveError('Could not find iTunes previews for some music quiz songs. Try generating again.');
-              return;
+          try {
+            // Skip music_quiz missions with no resolved songs — iTunes lookup failed
+            if (type === 'music_quiz') {
+              const rounds = (m.musicRounds as unknown[]) ?? [];
+              if (rounds.length < 2) {
+                errors.push(`"${String(m.name ?? 'Music Quiz')}": no iTunes previews found — try again`);
+                continue;
+              }
             }
-          }
-          // Build the nested `data` object the API expects
-          const data = buildMissionData(type, {
-            triviaRounds: (m.triviaRounds as { question: string; options: string[]; answer: string }[]) ?? [],
-            statements: (m.statements as { text: string; answer: boolean }[]) ?? [],
-            closestQuestions: (m.closestQuestions as { q: string; answer: string; unit: string; hint: string }[]) ?? [],
-            clues: (m.clues as string[]) ?? [],
-            paAnswer: String(m.paAnswer ?? ''),
-            timelineItems: (m.timelineItems as { label: string; year: string }[]) ?? [],
-            photoPrompt: String(m.photoPrompt ?? ''),
-            relaySegments: Array.isArray(m.segments)
-              ? (m.segments as { prompt: string; answer?: string }[]).map(s => ({ prompt: s.prompt, answer: s.answer ?? '' }))
-              : [],
-            relayMode: String(m.relayMode ?? 'button'),
-            sharedSecretAnswer: String(m.answer ?? ''),
-            sharedSecretHint: String(m.hint ?? ''),
-            musicRounds: (m.musicRounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? [],
-          });
-          const res = await POST('/api/admin/custom-missions', {
-            name: String(m.name ?? '').trim(),
-            icon: String(m.icon ?? '⭐'),
-            desc: String(m.desc ?? ''),
-            difficulty: String(m.difficulty ?? 'medium'),
-            max_pts: Number(m.maxPts ?? 400),
-            type,
-            data,
-            category_id: null,
-            active_from: null,
-            active_until: null,
-            sort_order: adminCustomMissions.length,
-          });
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({})) as { error?: string };
-            setAiBulkSaveError(err.error ?? 'Could not save mission. Try again.');
-            return;
+            const data = buildMissionData(type, {
+              triviaRounds: (m.triviaRounds as { question: string; options: string[]; answer: string }[]) ?? [],
+              statements: (m.statements as { text: string; answer: boolean }[]) ?? [],
+              closestQuestions: (m.closestQuestions as { q: string; answer: string; unit: string; hint: string }[]) ?? [],
+              clues: (m.clues as string[]) ?? [],
+              paAnswer: String(m.paAnswer ?? ''),
+              timelineItems: (m.timelineItems as { label: string; year: string }[]) ?? [],
+              photoPrompt: String(m.photoPrompt ?? ''),
+              relaySegments: Array.isArray(m.segments)
+                ? (m.segments as { prompt: string; answer?: string }[]).map(s => ({ prompt: s.prompt, answer: s.answer ?? '' }))
+                : [],
+              relayMode: String(m.relayMode ?? 'button'),
+              sharedSecretAnswer: String(m.answer ?? ''),
+              sharedSecretHint: String(m.hint ?? ''),
+              musicRounds: (m.musicRounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? [],
+            });
+            const res = await POST('/api/admin/custom-missions', {
+              name: String(m.name ?? '').trim(),
+              icon: String(m.icon ?? '⭐'),
+              desc: String(m.desc ?? ''),
+              difficulty: String(m.difficulty ?? 'medium'),
+              max_pts: Number(m.maxPts ?? 400),
+              type,
+              data,
+              category_id: null,
+              active_from: null,
+              active_until: null,
+              sort_order: adminCustomMissions.length,
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({})) as { error?: string };
+              errors.push(`"${String(m.name ?? type)}": ${err.error ?? 'save failed'}`);
+            }
+          } catch (e) {
+            errors.push(`"${String(m.name ?? type)}": ${e instanceof Error ? e.message : 'unknown error'}`);
           }
         }
-        // Refresh missions list
+        // Refresh missions list even if some failed
         await loadAdminCustomMissions();
-        setAiBulkPreview(null);
-        setAiPanelOpen(false);
-        setAiPrompt('');
-        setAiType('');
-        setAiCount(1);
+        if (errors.length === 0) {
+          setAiBulkPreview(null);
+          setAiPanelOpen(false);
+          setAiPrompt('');
+          setAiType('');
+          setAiCount(1);
+        } else {
+          setAiBulkSaveError(errors.join('\n'));
+        }
       } catch (err) {
         setAiBulkSaveError(err instanceof Error ? err.message : 'Could not save missions. Try again.');
       } finally {
