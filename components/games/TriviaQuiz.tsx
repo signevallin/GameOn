@@ -48,7 +48,7 @@ export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdva
       if (qIdx + 1 >= rounds.length) {
         onClearRound?.();
         setDone(true);
-        onFinish(newCorrect === rounds.length, newTotal);
+        onFinish(newTotal > 0, newTotal);
       } else {
         setTotalPts(newTotal);
         setCorrectCount(newCorrect);
