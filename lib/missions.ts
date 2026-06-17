@@ -585,7 +585,7 @@ export const MISSIONS: Mission[] = [
     musicRounds: [
       { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/e2/f1/e7e2f1a3-cef7-1a78-74ea-f9c51a2a0d65/mzaf_16372370292217634037.plus.aac.p.m4a', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 1999 },
       { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/9c/89/949c8995-41f8-d3c1-90eb-81c10b54133b/mzaf_8252792899119007978.plus.aac.p.m4a', artist: 'Hans Zimmer', title: 'Time', year: 2010 },
-      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/9f/07/1d/9f071dc7-791c-c869-dfa2-06b25936a287/mzaf_11077490630806345321.plus.aac.p.m4a', artist: 'Adele', title: 'Rolling in the Deep', year: 2010 },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a', artist: 'Rihanna', title: 'Umbrella (feat. JAŸ-Z)', year: 2007 },
       { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f8/56/59/f8565993-788e-7547-fbc5-ae6b5c5ca223/mzaf_1326133503670566588.plus.aac.p.m4a', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016 },
       { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/18/7b/ef187b7d-f487-e935-4ca1-af5748313710/mzaf_8455263230305249048.plus.aac.p.m4a', artist: 'Adele', title: 'Someone Like You', year: 2011 },
     ],
