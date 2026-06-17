@@ -301,7 +301,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   return (
     <>
       <nav className="nav">
-        <div className="nav-brand">{mission.icon} {tMissions(`${mission.id}.name`, { defaultValue: mission.name })}</div>
+        <div className="nav-brand">{mission.icon}</div>
         <div className="nav-right">
           <span className="nav-score" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Star size={12} fill="var(--gold)" color="var(--gold)" /> {team.score} {t('challenge.ptsLabel')}</span>
           <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onBack}>
