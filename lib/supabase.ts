@@ -86,6 +86,7 @@ export type CustomMission = {
   created_at: string;
   active_from?: string | null;
   active_until?: string | null;
+  seasonal?: boolean;
 };
 
 export type TeamMember = {

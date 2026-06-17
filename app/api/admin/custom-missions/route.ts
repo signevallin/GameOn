@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   if (!admin) return unauthorizedResponse();
 
   const body = await req.json();
-  const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
+  const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until, seasonal } = body;
 
   const activeFrom = parseActiveWindow(active_from);
   if (!activeFrom.ok) return NextResponse.json({ error: 'Invalid active_from.' }, { status: 400 });
@@ -76,6 +76,7 @@ export async function POST(req: Request) {
       sort_order: sort_order ?? 0,
       active_from: activeFrom.value,
       active_until: activeUntil.value,
+      seasonal: seasonal === true,
     })
     .select()
     .single();

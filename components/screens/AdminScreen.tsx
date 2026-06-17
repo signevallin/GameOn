@@ -427,6 +427,7 @@ type MissionFormData = {
   // seasonal window — ISO date strings ('' = unset)
   activeFrom: string;
   activeUntil: string;
+  seasonal: boolean;
 };
 
 const EMPTY_FORM: MissionFormData = {
@@ -438,6 +439,7 @@ const EMPTY_FORM: MissionFormData = {
   sharedSecretAnswer: '',
   sharedSecretHint: '',
   activeFrom: '', activeUntil: '',
+  seasonal: false,
 };
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
@@ -2843,6 +2845,7 @@ export default function AdminScreen({ onLogout }: Props) {
         activeUntil: (cm as { active_until?: string | null }).active_until
           ? new Date((cm as { active_until: string }).active_until).toISOString().slice(0, 10)
           : '',
+        seasonal: cm.seasonal ?? false,
       });
       setMissionFormError('');
       setMissionCategoryId(cm.category_id ?? null);
@@ -3017,6 +3020,7 @@ export default function AdminScreen({ onLogout }: Props) {
           sharedSecretHint: mission.hint ?? '',
           activeFrom: '',
           activeUntil: '',
+          seasonal: false,
         });
         setMissionFormError('');
         setMissionCategoryId(null); setMissionSuperCategoryKey(null);
@@ -3132,6 +3136,7 @@ export default function AdminScreen({ onLogout }: Props) {
         active_until: missionForm.activeUntil
           ? new Date(`${missionForm.activeUntil}T23:59:59Z`).toISOString()
           : null,
+        seasonal: missionForm.seasonal,
       };
 
       if (editingMissionId) {
@@ -3600,6 +3605,11 @@ export default function AdminScreen({ onLogout }: Props) {
                         {superCatLabel}
                       </span>
                     )}
+                    {cm.seasonal && (
+                      <span style={{ background: 'rgba(155,89,182,0.12)', color: '#9b59b6', border: '1px solid rgba(155,89,182,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
+                        Seasonal
+                      </span>
+                    )}
                     <span>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</span>
                   </div>
                 </div>
@@ -3925,6 +3935,16 @@ export default function AdminScreen({ onLogout }: Props) {
                   Active until must be on or after active from.
                 </div>
               )}
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '12px', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={missionForm.seasonal}
+                  onChange={e => setF({ seasonal: e.target.checked })}
+                  style={{ width: 15, height: 15, accentColor: '#9b59b6', cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Seasonal — only available via template, hidden from game creation</span>
+              </label>
 
               {/* ── Type-specific fields ── */}
 
@@ -4856,10 +4876,10 @@ export default function AdminScreen({ onLogout }: Props) {
                   onChange={e => setHidePlayedMissions(e.target.checked)}
                   style={{ margin: 0 }}
                 />
-                Hide already played{playedMissionIds.length > 0 ? ` (${[...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)].filter(id => playedMissionIds.includes(id)).length})` : ''}
+                Hide already played{playedMissionIds.length > 0 ? ` (${[...MISSIONS.map(m => m.id), ...adminCustomMissions.filter(m => !m.seasonal).map(m => m.id)].filter(id => playedMissionIds.includes(id)).length})` : ''}
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontSize: '11px', color: 'var(--muted)' }}>
-                <button onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.map(m => m.id)])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All on</button>
+                <button onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.filter(m => !m.seasonal).map(m => m.id)])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All on</button>
                 <span style={{ opacity: 0.3 }}>·</span>
                 <button onClick={() => setSelectedMissions([])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All off</button>
                 <span style={{ opacity: 0.3 }}>·</span>
@@ -5004,9 +5024,10 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* ── Custom missions — grouped by category ── */}
             {adminCustomMissions.length > 0 && (() => {
               const playedSet = new Set(playedMissionIds);
+              const nonSeasonal = adminCustomMissions.filter(m => !m.seasonal);
               const visibleCustom = hidePlayedMissions
-                ? adminCustomMissions.filter(m => !playedSet.has(m.id))
-                : adminCustomMissions;
+                ? nonSeasonal.filter(m => !playedSet.has(m.id))
+                : nonSeasonal;
               if (visibleCustom.length === 0) return null;
               // Missions already shown inside a built-in super-category section above
               const superCatLabels = new Set(

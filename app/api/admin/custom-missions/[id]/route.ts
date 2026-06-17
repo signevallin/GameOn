@@ -26,7 +26,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
   if (existing.user_id !== admin.userId && !admin.isSuperAdmin) return unauthorizedResponse();
 
-  const { category_id, category_name: explicitCategoryName, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until } = body;
+  const { category_id, category_name: explicitCategoryName, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until, seasonal } = body;
 
   if (name !== undefined && !name?.trim()) return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
 
@@ -77,6 +77,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
   if (activeFromParsed) updateFields.active_from = activeFromParsed.value;
   if (activeUntilParsed) updateFields.active_until = activeUntilParsed.value;
+  if (seasonal !== undefined) updateFields.seasonal = seasonal === true;
 
   const { data: mission, error } = await getSupabase()
     .from('custom_missions')
