@@ -978,6 +978,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [aiError, setAiError] = useState('');
   const [aiBulkPreview, setAiBulkPreview] = useState<Array<{ selected: boolean; mission: Record<string, unknown> }> | null>(null);
   const [aiBulkSaving, setAiBulkSaving] = useState(false);
+  const [aiBulkSaveError, setAiBulkSaveError] = useState('');
   const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
   const [missionFilterCategory, setMissionFilterCategory] = useState<string | null>(null);
   const [missionFilterType, setMissionFilterType] = useState<string | null>(null);
@@ -3053,10 +3054,19 @@ export default function AdminScreen({ onLogout }: Props) {
       const selected = aiBulkPreview.filter(p => p.selected).map(p => p.mission);
       if (selected.length === 0) return;
       setAiBulkSaving(true);
+      setAiBulkSaveError('');
       try {
         const { buildMissionData } = await import('@/lib/custom-missions');
         for (const m of selected) {
           const type = String(m.type ?? '');
+          // Skip music_quiz missions with no resolved songs — iTunes lookup failed
+          if (type === 'music_quiz') {
+            const rounds = (m.musicRounds as unknown[]) ?? [];
+            if (rounds.length < 2) {
+              setAiBulkSaveError('Could not find iTunes previews for some music quiz songs. Try generating again.');
+              return;
+            }
+          }
           // Build the nested `data` object the API expects
           const data = buildMissionData(type, {
             triviaRounds: (m.triviaRounds as { question: string; options: string[]; answer: string }[]) ?? [],
@@ -3074,7 +3084,7 @@ export default function AdminScreen({ onLogout }: Props) {
             sharedSecretHint: String(m.hint ?? ''),
             musicRounds: (m.musicRounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? [],
           });
-          await POST('/api/admin/custom-missions', {
+          const res = await POST('/api/admin/custom-missions', {
             name: String(m.name ?? '').trim(),
             icon: String(m.icon ?? '⭐'),
             desc: String(m.desc ?? ''),
@@ -3087,6 +3097,11 @@ export default function AdminScreen({ onLogout }: Props) {
             active_until: null,
             sort_order: adminCustomMissions.length,
           });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({})) as { error?: string };
+            setAiBulkSaveError(err.error ?? 'Could not save mission. Try again.');
+            return;
+          }
         }
         // Refresh missions list
         await loadAdminCustomMissions();
@@ -3095,6 +3110,8 @@ export default function AdminScreen({ onLogout }: Props) {
         setAiPrompt('');
         setAiType('');
         setAiCount(1);
+      } catch (err) {
+        setAiBulkSaveError(err instanceof Error ? err.message : 'Could not save missions. Try again.');
       } finally {
         setAiBulkSaving(false);
       }
@@ -3788,6 +3805,11 @@ export default function AdminScreen({ onLogout }: Props) {
                           </div>
                         ))}
                       </div>
+                      {aiBulkSaveError && (
+                        <div style={{ fontSize: '12px', color: 'var(--error, #e74c3c)', marginBottom: '8px', padding: '8px 10px', background: 'rgba(231,76,60,0.08)', borderRadius: '6px' }}>
+                          {aiBulkSaveError}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           className="btn btn-primary"
@@ -3800,7 +3822,7 @@ export default function AdminScreen({ onLogout }: Props) {
                         <button
                           className="btn btn-ghost"
                           style={{ padding: '11px 16px' }}
-                          onClick={() => { setAiBulkPreview(null); }}
+                          onClick={() => { setAiBulkPreview(null); setAiBulkSaveError(''); }}
                         >
                           Discard
                         </button>

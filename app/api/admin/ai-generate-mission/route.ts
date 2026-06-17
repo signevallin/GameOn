@@ -206,12 +206,16 @@ Topic/description: ${prompt}${exclusionLine}`;
     }
 
     // Resolve iTunes preview URLs for music_quiz
-    if (parsed.type === 'music_quiz' && Array.isArray(parsed.songs)) {
+    // Handle both "songs" (schema field) and "musicRounds" (in case AI uses that name)
+    const rawSongs = Array.isArray(parsed.songs) ? parsed.songs
+      : Array.isArray(parsed.musicRounds) ? parsed.musicRounds
+      : null;
+    if (parsed.type === 'music_quiz' && rawSongs) {
       const musicRounds = await resolveItunesPreviews(
-        (parsed.songs as { artist: string; title: string; year: number }[])
+        (rawSongs as { artist: string; title: string; year: number }[])
       );
-      const { songs: _songs, ...rest } = parsed;
-      void _songs;
+      const { songs: _s, musicRounds: _mr, ...rest } = parsed;
+      void _s; void _mr;
       return NextResponse.json({ ...rest, musicRounds });
     }
 
@@ -254,12 +258,15 @@ Topic/description: ${prompt}${exclusionLine}`;
   // Resolve iTunes preview URLs for any music_quiz missions in bulk results
   const resolvedMissions = await Promise.all(
     (parsed.missions as Record<string, unknown>[]).map(async m => {
-      if (m.type === 'music_quiz' && Array.isArray(m.songs)) {
+      const rawSongs = Array.isArray(m.songs) ? m.songs
+        : Array.isArray(m.musicRounds) ? m.musicRounds
+        : null;
+      if (m.type === 'music_quiz' && rawSongs) {
         const musicRounds = await resolveItunesPreviews(
-          (m.songs as { artist: string; title: string; year: number }[])
+          (rawSongs as { artist: string; title: string; year: number }[])
         );
-        const { songs: _songs, ...rest } = m;
-        void _songs;
+        const { songs: _s, musicRounds: _mr, ...rest } = m;
+        void _s; void _mr;
         return { ...rest, musicRounds };
       }
       return m;
