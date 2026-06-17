@@ -210,10 +210,10 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team', btn: 'HACK', allowAll: true },
-    { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', btn: 'ACTIVATE', allowAll: true },
-    { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen – blur a team for 60s (reusable)', btn: 'SEND', allowAll: false },
-    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', btn: 'SEND', allowAll: true },
+    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team', desc: '', btn: 'HACK', allowAll: true },
+    { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', desc: '', btn: 'ACTIVATE', allowAll: true },
+    { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen', desc: 'Blur a team for 30s (reusable)', btn: 'SEND', allowAll: false },
+    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', desc: '', btn: 'SEND', allowAll: true },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
@@ -256,7 +256,7 @@ function PowerUpsCard({
       </div>
 
       {/* ── Per-team power-ups ── */}
-      {POWERS.map(({ type, icon, label, btn, allowAll }) => {
+      {POWERS.map(({ type, icon, label, desc, btn, allowAll }) => {
         const selectedTeamId = puTargets[type] ?? '';
         const isAllSelected = selectedTeamId === 'all';
         const usedKey = isAllSelected ? `${type}_all` : selectedTeamId ? `${type}_${selectedTeamId}` : '';
@@ -270,7 +270,10 @@ function PowerUpsCard({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ flexShrink: 0, display: 'inline-flex' }}>{icon}</span>
-                <span style={{ fontSize: '14px', fontWeight: 700 }}>{label}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>{label}</div>
+                  {desc && <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{desc}</div>}
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <select

@@ -116,7 +116,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'That team has a shield active! Smoke Screen blocked.' }, { status: 400 });
     }
 
-    const smokeUntil = new Date(Date.now() + 60 * 1000).toISOString();
+    const smokeUntil = new Date(Date.now() + 30 * 1000).toISOString();
     await supabase.from('teams').update({
       active_effects: { ...effects, smoke_screen_until: smokeUntil },
       pending_notification: { type: 'smoke_screen', msgKey: 'smoke_screen_msg', params: {} },
