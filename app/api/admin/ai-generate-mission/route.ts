@@ -50,8 +50,8 @@ music_quiz — identify songs from 30-second audio clips:
 Generate 4-6 songs. Choose only real, widely-released commercial songs available on iTunes/Apple Music. artist must be the exact official artist name. year is the release year as an integer. The server will fetch preview URLs from iTunes automatically.
 
 Field rules:
-- name: max 40 chars, engaging title
-- icon: single emoji relevant to the topic
+- name: max 40 chars, engaging title — plain text only, NO emoji in the name
+- icon: single emoji relevant to the topic (the icon field is where the emoji goes, never in name)
 - desc: one sentence describing what players do (not the answer)
 - difficulty: easy = common knowledge, medium = requires thought, hard = specialists only
 - maxPts: 300-400 for easy, 400-600 for medium/hard
@@ -115,6 +115,15 @@ async function resolveItunesPreviews(
     }
   }
   return results;
+}
+
+function stripLeadingEmoji(name: unknown): string {
+  if (typeof name !== 'string') return '';
+  return name.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, '').trim();
+}
+
+function sanitizeMission(m: Record<string, unknown>): Record<string, unknown> {
+  return { ...m, name: stripLeadingEmoji(m.name) };
 }
 
 function parseJSON(text: string): Record<string, unknown> | null {
@@ -222,10 +231,10 @@ Topic/description: ${prompt}${exclusionLine}`;
       );
       const { songs: _s, musicRounds: _mr, ...rest } = parsed;
       void _s; void _mr;
-      return NextResponse.json({ ...rest, musicRounds });
+      return NextResponse.json(sanitizeMission({ ...rest, musicRounds }));
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json(sanitizeMission(parsed));
   }
 
   // Bulk mode — ask Claude to return { missions: [...] }
@@ -273,9 +282,9 @@ Topic/description: ${prompt}${exclusionLine}`;
         );
         const { songs: _s, musicRounds: _mr, ...rest } = m;
         void _s; void _mr;
-        return { ...rest, musicRounds };
+        return sanitizeMission({ ...rest, musicRounds });
       }
-      return m;
+      return sanitizeMission(m);
     })
   );
 
