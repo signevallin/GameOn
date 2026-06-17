@@ -188,7 +188,7 @@ export default function EventPage() {
               <TrueFalse statements={TRUE_FALSE_STATEMENTS} maxPts={mission.maxPts} onFinish={handleMissionFinish} />
             )}
             {mission.id === 'trivia' && (
-              <TriviaQuiz rounds={TRIVIA_ROUNDS} maxPts={mission.maxPts} onFinish={handleMissionFinish} />
+              <TriviaQuiz rounds={TRIVIA_ROUNDS} maxPts={mission.maxPts} hidePts onFinish={handleMissionFinish} />
             )}
             {mission.id === 'closest_wins' && (
               <ClosestWins maxPts={mission.maxPts} onFinish={handleMissionFinish} />

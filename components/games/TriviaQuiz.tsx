@@ -11,9 +11,10 @@ type Props = {
   onRoundAdvance?: (idx: number) => void;
   onClearRound?: () => void;
   onFinish: (correct: boolean, pts?: number) => void;
+  hidePts?: boolean;
 };
 
-export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
+export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish, hidePts }: Props) {
   const [qIdx, setQIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [totalPts, setTotalPts] = useState(0);
@@ -68,7 +69,7 @@ export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdva
         <span style={{ fontSize: '13px', color: 'var(--muted)', letterSpacing: '2px' }}>
           QUESTION {qIdx + 1}/{rounds.length}
         </span>
-        <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>
+        {!hidePts && <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{totalPts} pts</span>}
       </div>
 
       <div className="challenge-question">{q.question}</div>
