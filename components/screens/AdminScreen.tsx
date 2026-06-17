@@ -985,6 +985,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [draggingMissionId, setDraggingMissionId] = useState<string | null>(null);
   const [dropTargetCatId, setDropTargetCatId] = useState<string | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(new Set());
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
   const [categoryFormColor, setCategoryFormColor] = useState('');
@@ -3277,198 +3278,25 @@ export default function AdminScreen({ onLogout }: Props) {
             <h2 style={{ margin: 0 }}>My Missions</h2>
           </div>
 
-          {/* Categories manager */}
-          <div className="card" style={{ marginBottom: '20px' }}>
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <label style={labelStyle}>CATEGORIES</label>
-                      <button
-                        className="btn btn-ghost"
-                        style={{ fontSize: '11px', padding: '4px 10px' }}
-                        onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); setCategoryEmojiPickerOpen(false); }}
-                      >
-                        {categoryFormOpen ? 'Cancel' : '+ New category'}
-                      </button>
-                    </div>
-
-                    {adminCategories.length === 0 && !categoryFormOpen && (
-                      <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 8px' }}>No categories yet. Create one to organise your missions.</p>
-                    )}
-                    {(() => {
-                      const CAT_COLORS = ['#7cbdd4','#9b8ed4','#c47f9e','#5baa8a','#c47d56','#b89840','#6896c8','#b86b6b','#7fa84e','#a06bb5'];
-                      const smallBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '11px', padding: '2px 7px', borderRadius: '4px' };
-                      return adminCategories.map(cat => (
-                        <div key={cat.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                          {editingCategoryId === cat.id ? (
-                            /* ── Edit row ── */
-                            <div style={{ padding: '10px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                {/* Emoji picker */}
-                                <div style={{ position: 'relative', flexShrink: 0 }}>
-                                  <button type="button" onClick={() => setEditCategoryEmojiPickerOpen(v => !v)}
-                                    style={{ ...inputStyle, width: '44px', textAlign: 'center', fontSize: '20px', padding: '5px 4px', cursor: 'pointer' }}>
-                                    {editCategoryEmoji}
-                                  </button>
-                                  {editCategoryEmojiPickerOpen && (
-                                    <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 60, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
-                                      <input type="text" placeholder="Type or paste emoji…" maxLength={4}
-                                        style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
-                                        onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditCategoryEmoji(v); setEditCategoryEmojiPickerOpen(false); } }} />
-                                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
-                                        {EMOJI_300.map(e => (
-                                          <button key={e} type="button" onClick={() => { setEditCategoryEmoji(e); setEditCategoryEmojiPickerOpen(false); }}
-                                            style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
-                                            onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
-                                            onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                                {/* Name */}
-                                <input type="text" value={editCategoryName} onChange={e => setEditCategoryName(e.target.value)}
-                                  style={{ ...inputStyle, flex: 1 }}
-                                  onKeyDown={e => { if (e.key === 'Enter') saveEditCategory(cat.id); if (e.key === 'Escape') setEditingCategoryId(null); }}
-                                  onClick={() => setEditCategoryEmojiPickerOpen(false)} autoFocus />
-                              </div>
-                              {/* Color palette */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--muted)', marginRight: '2px' }}>Color:</span>
-                                <button type="button" onClick={() => setEditCategoryColor('')}
-                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === '' ? '2px solid var(--accent)' : '2px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--muted)' }}
-                                  title="No color"><X size={16} color={IC} /></button>
-                                {CAT_COLORS.map(c => (
-                                  <button key={c} type="button" onClick={() => setEditCategoryColor(c)}
-                                    style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === c ? '2px solid var(--text)' : '2px solid transparent', background: c, cursor: 'pointer' }} />
-                                ))}
-                                <input type="color" value={editCategoryColor || '#7cbdd4'} onChange={e => setEditCategoryColor(e.target.value)}
-                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'none' }} title="Custom color" />
-                              </div>
-                              {/* Actions */}
-                              <div style={{ display: 'flex', gap: '6px' }}>
-                                <button className="btn btn-primary" style={{ padding: '5px 14px', fontSize: '12px' }}
-                                  disabled={!editCategoryName.trim() || editCategorySaving} onClick={() => saveEditCategory(cat.id)}>
-                                  {editCategorySaving ? '…' : 'Save'}
-                                </button>
-                                <button style={{ ...smallBtn, color: 'var(--muted)' }} onClick={() => { setEditingCategoryId(null); setEditCategoryEmojiPickerOpen(false); }}>Cancel</button>
-                              </div>
-                            </div>
-                          ) : (
-                            /* ── Display row ── */
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
-                              {cat.color ? (
-                                <span style={{ width: '8px', height: '28px', borderRadius: '3px', background: cat.color, flexShrink: 0 }} />
-                              ) : null}
-                              <span style={{ fontSize: '18px', width: '28px', textAlign: 'center' }}>{cat.emoji}</span>
-                              <span style={{ flex: 1, fontSize: '14px' }}>{cat.name}</span>
-                              {pendingDeleteCategoryId === cat.id ? (
-                                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                  <button onClick={async () => {
-                                    const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, { method: 'DELETE', headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
-                                    if (res.ok) {
-                                      setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
-                                      setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
-                                    } else { setCategoryError('Failed to delete category.'); }
-                                    setPendingDeleteCategoryId(null);
-                                  }} style={{ ...smallBtn, color: 'var(--danger, #e74c3c)', border: '1px solid var(--danger, #e74c3c)' }}>Delete</button>
-                                  <button onClick={() => setPendingDeleteCategoryId(null)} style={{ ...smallBtn, color: 'var(--muted)' }}>Cancel</button>
-                                </div>
-                              ) : (
-                                <div style={{ display: 'flex', gap: '4px' }}>
-                                  <button onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); setEditCategoryEmoji(cat.emoji); setEditCategoryColor(cat.color ?? ''); setEditCategoryEmojiPickerOpen(false); setPendingDeleteCategoryId(null); }}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '0 5px' }} title="Edit">✎</button>
-                                  <button onClick={() => { setPendingDeleteCategoryId(cat.id); setEditingCategoryId(null); }}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }} title="Delete">×</button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ));
-                    })()}
-
-                    {categoryFormOpen && (
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
-                        {/* Emoji picker button */}
-                        <div style={{ position: 'relative', flexShrink: 0 }}>
-                          <button
-                            type="button"
-                            onClick={() => setCategoryEmojiPickerOpen(v => !v)}
-                            style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '20px', padding: '6px 4px', cursor: 'pointer', background: categoryEmojiPickerOpen ? 'var(--surface)' : undefined }}
-                            title="Choose emoji"
-                          >
-                            {categoryFormEmoji}
-                          </button>
-                          {categoryEmojiPickerOpen && (
-                            <div style={{
-                              position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                              background: 'var(--card)', border: '1px solid var(--border)',
-                              borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                              width: '280px',
-                            }}>
-                              {/* Free-text input */}
-                              <input
-                                type="text"
-                                placeholder="Type or paste any emoji…"
-                                maxLength={4}
-                                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
-                                onChange={e => {
-                                  const v = [...e.target.value].filter(c => c.trim()).join('');
-                                  if (v) { setCategoryFormEmoji(v); setCategoryEmojiPickerOpen(false); }
-                                }}
-                              />
-                              {/* Grid */}
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
-                                {EMOJI_300.map(e => (
-                                  <button
-                                    key={e}
-                                    type="button"
-                                    onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
-                                    style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
-                                    onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
-                                    onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
-                                  >
-                                    {e}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <input
-                          type="text"
-                          value={categoryFormName}
-                          onChange={e => setCategoryFormName(e.target.value)}
-                          placeholder="Category name…"
-                          style={{ ...inputStyle, flex: 1 }}
-                          onKeyDown={async e => { if (e.key === 'Enter' && categoryFormName.trim()) await saveCategory(); }}
-                          onClick={() => setCategoryEmojiPickerOpen(false)}
-                        />
-                        <button
-                          className="btn btn-primary"
-                          style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
-                          disabled={!categoryFormName.trim() || categorySaving}
-                          onClick={saveCategory}
-                        >
-                          {categorySaving ? '…' : 'Save'}
-                        </button>
-                      </div>
-                    )}
-                    {categoryError && <p style={{ fontSize: '12px', color: 'var(--danger, #e74c3c)', marginTop: '6px' }}>{categoryError}</p>}
-                  </div>
-          </div>
-
-          {/* Mission filters / drag-and-drop targets */}
-          {adminCustomMissions.length > 0 && (() => {
-            const usedTypes = [...new Set(adminCustomMissions.map(m => m.type))].sort();
-            const usedCats = adminCategories; // show all categories, not just those with missions
-            const chipStyle = (active: boolean): React.CSSProperties => ({
-              padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', border: '1px solid',
-              borderColor: active ? 'var(--accent)' : 'var(--border)',
-              background: active ? 'rgba(124,189,212,0.15)' : 'transparent',
-              color: active ? 'var(--accent)' : 'var(--muted)',
-              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
-            });
+          {/* Categories + Missions unified collapsible view */}
+          {(() => {
+            const CAT_COLORS = ['#7cbdd4','#9b8ed4','#c47f9e','#5baa8a','#c47d56','#b89840','#6896c8','#b86b6b','#7fa84e','#a06bb5'];
+            const smallBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '11px', padding: '2px 7px', borderRadius: '4px' };
+            const superCatLabels = [...new Set(
+              adminCustomMissions
+                .filter(m => !m.category_id && m.category_name && m.category_name !== 'My Missions')
+                .map(m => m.category_name as string)
+            )];
+            const uncategorized = adminCustomMissions.filter(
+              m => !m.category_id && (!m.category_name || m.category_name === 'My Missions')
+            );
+            function toggleExpand(key: string) {
+              setExpandedCategoryIds(prev => {
+                const next = new Set(prev);
+                if (next.has(key)) next.delete(key); else next.add(key);
+                return next;
+              });
+            }
             const dropZoneStyle = (hovered: boolean): React.CSSProperties => ({
               padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
               border: `2px dashed ${hovered ? 'var(--accent)' : 'rgba(124,189,212,0.35)'}`,
@@ -3487,194 +3315,303 @@ export default function AdminScreen({ onLogout }: Props) {
               cursor: 'copy', transition: 'all .12s',
               transform: hovered ? 'scale(1.06)' : 'scale(1)',
             });
-
-            if (draggingMissionId) {
-              // DnD mode: show admin categories + super categories as drop zones
-              const draggedMission = adminCustomMissions.find(m => m.id === draggingMissionId);
-              const hasCat = !!draggedMission?.category_id || (draggedMission?.category_name && draggedMission.category_name !== 'My Missions');
-              const superCats = Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string; color: string }][];
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
-                  {adminCategories.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>MY CATS</span>
-                      {adminCategories.map(cat => (
-                        <div
-                          key={cat.id}
-                          style={dropZoneStyle(dropTargetCatId === cat.id)}
-                          onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
-                          onDragLeave={() => setDropTargetCatId(null)}
-                          onDrop={e => {
-                            e.preventDefault();
-                            moveMissionToCategory(draggingMissionId, cat.id);
-                            setDraggingMissionId(null);
-                            setDropTargetCatId(null);
-                          }}
-                        >
-                          {cat.emoji} {cat.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>BUILT-IN</span>
-                    {superCats.map(([key, sc]) => {
-                      const zoneId = `super:${key}`;
-                      return (
-                        <div
-                          key={key}
-                          style={{ ...dropZoneStyle(dropTargetCatId === zoneId), borderColor: dropTargetCatId === zoneId ? sc.color : `${sc.color}55` }}
-                          onDragOver={e => { e.preventDefault(); setDropTargetCatId(zoneId); }}
-                          onDragLeave={() => setDropTargetCatId(null)}
-                          onDrop={e => {
-                            e.preventDefault();
-                            moveMissionToCategory(draggingMissionId, null, `${sc.icon} ${sc.label}`);
-                            setDraggingMissionId(null);
-                            setDropTargetCatId(null);
-                          }}
-                        >
-                          {sc.icon} {sc.label}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {hasCat && (
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}></span>
-                      <div
-                        style={noneZoneStyle(dropTargetCatId === 'none')}
-                        onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
-                        onDragLeave={() => setDropTargetCatId(null)}
-                        onDrop={e => {
-                          e.preventDefault();
-                          moveMissionToCategory(draggingMissionId, null);
-                          setDraggingMissionId(null);
-                          setDropTargetCatId(null);
-                        }}
-                      >
-                        ✕ Remove from category
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            // Super categories in use (missions assigned via drag to built-in cats)
-            const superCatLabels = new Set(
-              adminCustomMissions
-                .filter(m => !m.category_id && m.category_name && m.category_name !== 'My Missions')
-                .map(m => m.category_name)
-            );
-            const hasAnyFilter = usedCats.length > 0 || superCatLabels.size > 0 || usedTypes.length > 1;
-            return hasAnyFilter ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-                <button style={chipStyle(!missionFilterCategory && !missionFilterType)} onClick={() => { setMissionFilterCategory(null); setMissionFilterType(null); }}>All</button>
-                {usedCats.map(cat => {
-                  const active = missionFilterCategory === cat.id;
-                  return (
-                    <button key={cat.id}
-                      style={cat.color ? { ...chipStyle(active), borderColor: active ? cat.color : `${cat.color}66`, color: active ? cat.color : `${cat.color}99`, background: active ? `${cat.color}22` : 'transparent' } : chipStyle(active)}
-                      onClick={() => setMissionFilterCategory(v => v === cat.id ? null : cat.id)}>
-                      {cat.emoji} {cat.name}
-                    </button>
-                  );
-                })}
-                {[...superCatLabels].map(label => (
-                  <button key={label} style={chipStyle(missionFilterCategory === `name:${label}`)} onClick={() => setMissionFilterCategory(v => v === `name:${label}` ? null : `name:${label}`)}>
-                    {label}
-                  </button>
-                ))}
-                {usedTypes.length > 1 && <span style={{ width: 1, background: 'var(--border)', alignSelf: 'stretch', margin: '0 2px' }} />}
-                {usedTypes.length > 1 && usedTypes.map(type => (
-                  <button key={type} style={chipStyle(missionFilterType === type)} onClick={() => setMissionFilterType(v => v === type ? null : type)}>
-                    {type.replace(/_/g, ' ')}
-                  </button>
-                ))}
-              </div>
-            ) : null;
-          })()}
-
-          {/* Mission list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-            {adminCustomMissions.length === 0 && !showMissionForm && (
-              <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px', fontSize: '14px' }}>
-                No missions yet. Add your first one below.
-              </div>
-            )}
-            {adminCustomMissions.filter(cm => {
-              if (missionFilterCategory) {
-                if (missionFilterCategory.startsWith('name:')) {
-                  // Super-category filter: match by category_name
-                  if (cm.category_name !== missionFilterCategory.slice(5)) return false;
-                } else {
-                  // Admin-category filter: match by UUID
-                  if (cm.category_id !== missionFilterCategory) return false;
-                }
-              }
-              if (missionFilterType && cm.type !== missionFilterType) return false;
-              return true;
-            }).map(cm => {
-              const cat = cm.category_id ? adminCategories.find(c => c.id === cm.category_id) : null;
-              const superCatLabel = !cm.category_id && cm.category_name && cm.category_name !== 'My Missions' ? cm.category_name : null;
-              return (
+            const missionRow = (cm: typeof adminCustomMissions[0]) => (
               <div
                 key={cm.id}
                 draggable
                 onDragStart={() => setDraggingMissionId(cm.id)}
                 onDragEnd={() => { setDraggingMissionId(null); setDropTargetCatId(null); }}
                 style={{
-                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 18px',
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  cursor: 'grab',
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 14px',
+                  borderTop: '1px solid var(--border)',
+                  background: draggingMissionId === cm.id ? 'var(--surface)' : 'var(--card)',
                   opacity: draggingMissionId === cm.id ? 0.4 : 1,
-                  transition: 'opacity .1s',
+                  cursor: 'grab', transition: 'opacity .1s',
                 }}
               >
-                <span style={{ fontSize: '22px' }}>{cm.icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '14px' }}>{cm.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                    {cat && (
-                      <span style={{
-                        background: cat.color ? `${cat.color}22` : 'rgba(155,89,182,0.12)',
-                        color: cat.color ?? '#b07fd4',
-                        border: `1px solid ${cat.color ? `${cat.color}55` : 'rgba(155,89,182,0.25)'}`,
-                        borderRadius: '4px', padding: '1px 6px', fontWeight: 600,
-                      }}>
-                        {cat.emoji} {cat.name}
-                      </span>
-                    )}
-                    {superCatLabel && !cat && (
-                      <span style={{ background: 'rgba(100,149,237,0.12)', color: '#6495ed', border: '1px solid rgba(100,149,237,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
-                        {superCatLabel}
-                      </span>
-                    )}
-                    {cm.seasonal && (
-                      <span style={{ background: 'rgba(155,89,182,0.12)', color: '#9b59b6', border: '1px solid rgba(155,89,182,0.25)', borderRadius: '4px', padding: '1px 6px', fontWeight: 600 }}>
-                        Seasonal
-                      </span>
-                    )}
-                    <span>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</span>
-                  </div>
+                <span style={{ fontSize: '14px', color: 'var(--muted)', flexShrink: 0 }}>☰</span>
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>{cm.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cm.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</div>
                 </div>
-                <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px', border: '1px solid rgba(124,189,212,0.25)' }} onClick={() => openEditForm(cm)}>
-                  <Pencil size={13} /> Edit
+                <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(124,189,212,0.25)', flexShrink: 0 }} onClick={() => openEditForm(cm)}>
+                  <Pencil size={12} /> Edit
                 </button>
                 <button
                   className="btn btn-ghost"
-                  style={{ padding: '6px 8px', color: IC, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(124,189,212,0.25)' }}
+                  style={{ padding: '4px 7px', color: IC, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(124,189,212,0.25)', flexShrink: 0 }}
                   disabled={deletingMissionId === cm.id}
                   onClick={() => deleteMission(cm.id)}
                   title="Delete mission"
                 >
                   {deletingMissionId === cm.id
-                    ? <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }} />
-                    : <Trash2 size={15} />}
+                    ? <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                    : <Trash2 size={13} />}
                 </button>
               </div>
-            );})}
-          </div>
+            );
+            return (
+              <div style={{ marginBottom: '20px' }}>
+                {/* DnD drop zones (shown while dragging) */}
+                {draggingMissionId && (() => {
+                  const draggedMission = adminCustomMissions.find(m => m.id === draggingMissionId);
+                  const hasCat = !!draggedMission?.category_id || (draggedMission?.category_name && draggedMission.category_name !== 'My Missions');
+                  const superCats = Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string; color: string }][];
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '10px 12px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                      {adminCategories.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>MY CATS</span>
+                          {adminCategories.map(cat => (
+                            <div key={cat.id} style={dropZoneStyle(dropTargetCatId === cat.id)}
+                              onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
+                              onDragLeave={() => setDropTargetCatId(null)}
+                              onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, cat.id); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                              {cat.emoji} {cat.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>BUILT-IN</span>
+                        {superCats.map(([key, sc]) => {
+                          const zoneId = `super:${key}`;
+                          return (
+                            <div key={key} style={{ ...dropZoneStyle(dropTargetCatId === zoneId), borderColor: dropTargetCatId === zoneId ? sc.color : `${sc.color}55` }}
+                              onDragOver={e => { e.preventDefault(); setDropTargetCatId(zoneId); }}
+                              onDragLeave={() => setDropTargetCatId(null)}
+                              onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, null, `${sc.icon} ${sc.label}`); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                              {sc.icon} {sc.label}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {hasCat && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ minWidth: '64px' }} />
+                          <div style={noneZoneStyle(dropTargetCatId === 'none')}
+                            onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
+                            onDragLeave={() => setDropTargetCatId(null)}
+                            onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, null); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                            ✕ Remove from category
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Admin category groups */}
+                {adminCategories.map(cat => {
+                  const catMissions = adminCustomMissions.filter(m => m.category_id === cat.id);
+                  const isExpanded = expandedCategoryIds.has(cat.id);
+                  const isEditing = editingCategoryId === cat.id;
+                  const confirmingDelete = pendingDeleteCategoryId === cat.id;
+                  return (
+                    <div key={cat.id} style={{ marginBottom: '6px' }}>
+                      {isEditing ? (
+                        <div className="card" style={{ padding: '14px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <div style={{ position: 'relative', flexShrink: 0 }}>
+                                <button type="button" onClick={() => setEditCategoryEmojiPickerOpen(v => !v)}
+                                  style={{ ...inputStyle, width: '44px', textAlign: 'center', fontSize: '20px', padding: '5px 4px', cursor: 'pointer' }}>
+                                  {editCategoryEmoji}
+                                </button>
+                                {editCategoryEmojiPickerOpen && (
+                                  <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 60, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                                    <input type="text" placeholder="Type or paste emoji…" maxLength={4}
+                                      style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                      onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditCategoryEmoji(v); setEditCategoryEmojiPickerOpen(false); } }} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                                      {EMOJI_300.map(e => (
+                                        <button key={e} type="button" onClick={() => { setEditCategoryEmoji(e); setEditCategoryEmojiPickerOpen(false); }}
+                                          style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                          onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                          onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <input type="text" value={editCategoryName} onChange={e => setEditCategoryName(e.target.value)}
+                                style={{ ...inputStyle, flex: 1 }}
+                                onKeyDown={e => { if (e.key === 'Enter') saveEditCategory(cat.id); if (e.key === 'Escape') setEditingCategoryId(null); }}
+                                onClick={() => setEditCategoryEmojiPickerOpen(false)} autoFocus />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', marginRight: '2px' }}>Color:</span>
+                              <button type="button" onClick={() => setEditCategoryColor('')}
+                                style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === '' ? '2px solid var(--accent)' : '2px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                title="No color"><X size={16} color={IC} /></button>
+                              {CAT_COLORS.map(c => (
+                                <button key={c} type="button" onClick={() => setEditCategoryColor(c)}
+                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === c ? '2px solid var(--text)' : '2px solid transparent', background: c, cursor: 'pointer' }} />
+                              ))}
+                              <input type="color" value={editCategoryColor || '#7cbdd4'} onChange={e => setEditCategoryColor(e.target.value)}
+                                style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'none' }} title="Custom color" />
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button className="btn btn-primary" style={{ padding: '5px 14px', fontSize: '12px' }}
+                                disabled={!editCategoryName.trim() || editCategorySaving} onClick={() => saveEditCategory(cat.id)}>
+                                {editCategorySaving ? '…' : 'Save'}
+                              </button>
+                              <button style={{ ...smallBtn, color: 'var(--muted)' }} onClick={() => { setEditingCategoryId(null); setEditCategoryEmojiPickerOpen(false); }}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                            onClick={() => toggleExpand(cat.id)}
+                          >
+                            {cat.color && <span style={{ width: '4px', height: '20px', background: cat.color, borderRadius: '2px', flexShrink: 0 }} />}
+                            <span style={{ fontSize: '18px' }}>{cat.emoji}</span>
+                            <span style={{ flex: 1, fontWeight: 600, fontSize: '14px' }}>{cat.name}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{catMissions.length}</span>
+                            {confirmingDelete ? (
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                                <button onClick={async () => {
+                                  const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, { method: 'DELETE', headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+                                  if (res.ok) {
+                                    setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
+                                    setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
+                                  } else { setCategoryError('Failed to delete category.'); }
+                                  setPendingDeleteCategoryId(null);
+                                }} style={{ ...smallBtn, color: 'var(--danger, #e74c3c)', border: '1px solid var(--danger, #e74c3c)' }}>Delete</button>
+                                <button onClick={() => setPendingDeleteCategoryId(null)} style={{ ...smallBtn, color: 'var(--muted)' }}>Cancel</button>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '4px' }} onClick={e => e.stopPropagation()}>
+                                <button onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); setEditCategoryEmoji(cat.emoji); setEditCategoryColor(cat.color ?? ''); setEditCategoryEmojiPickerOpen(false); setPendingDeleteCategoryId(null); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '0 5px' }} title="Edit">✎</button>
+                                <button onClick={() => { setPendingDeleteCategoryId(cat.id); setEditingCategoryId(null); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }} title="Delete">×</button>
+                              </div>
+                            )}
+                            <span style={{ color: 'var(--muted)', fontSize: '10px', marginLeft: '2px' }}>{isExpanded ? '▲' : '▼'}</span>
+                          </div>
+                          {isExpanded && (
+                            <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                              {catMissions.length === 0 ? (
+                                <div style={{ padding: '14px 16px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center' }}>No missions in this category yet.</div>
+                              ) : catMissions.map(cm => missionRow(cm))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Super-category groups (missions assigned to built-in categories) */}
+                {superCatLabels.map(label => {
+                  const superMissions = adminCustomMissions.filter(m => !m.category_id && m.category_name === label);
+                  const groupKey = `supercat:${label}`;
+                  const isExpanded = expandedCategoryIds.has(groupKey);
+                  return (
+                    <div key={groupKey} style={{ marginBottom: '6px' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                        onClick={() => toggleExpand(groupKey)}
+                      >
+                        <span style={{ flex: 1, fontWeight: 600, fontSize: '14px', color: '#6495ed' }}>{label}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{superMissions.length}</span>
+                        <span style={{ color: 'var(--muted)', fontSize: '10px' }}>{isExpanded ? '▲' : '▼'}</span>
+                      </div>
+                      {isExpanded && (
+                        <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                          {superMissions.map(cm => missionRow(cm))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Uncategorized group */}
+                {uncategorized.length > 0 && (() => {
+                  const groupKey = '__uncategorized';
+                  const isExpanded = expandedCategoryIds.has(groupKey);
+                  return (
+                    <div style={{ marginBottom: '6px' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                        onClick={() => toggleExpand(groupKey)}
+                      >
+                        <span style={{ flex: 1, fontWeight: 600, fontSize: '14px', color: 'var(--muted)' }}>Uncategorized</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{uncategorized.length}</span>
+                        <span style={{ color: 'var(--muted)', fontSize: '10px' }}>{isExpanded ? '▲' : '▼'}</span>
+                      </div>
+                      {isExpanded && (
+                        <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                          {uncategorized.map(cm => missionRow(cm))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {adminCustomMissions.length === 0 && !showMissionForm && (
+                  <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px', fontSize: '14px' }}>
+                    No missions yet. Add your first one below.
+                  </div>
+                )}
+
+                {categoryError && <p style={{ fontSize: '12px', color: 'var(--danger, #e74c3c)', marginTop: '6px' }}>{categoryError}</p>}
+
+                {/* New category form */}
+                {categoryFormOpen && (
+                  <div className="card" style={{ marginTop: '10px', padding: '14px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <button type="button" onClick={() => setCategoryEmojiPickerOpen(v => !v)}
+                          style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '20px', padding: '6px 4px', cursor: 'pointer', background: categoryEmojiPickerOpen ? 'var(--surface)' : undefined }}
+                          title="Choose emoji">
+                          {categoryFormEmoji}
+                        </button>
+                        {categoryEmojiPickerOpen && (
+                          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                            <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                              style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                              onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setCategoryFormEmoji(v); setCategoryEmojiPickerOpen(false); } }} />
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                              {EMOJI_300.map(e => (
+                                <button key={e} type="button" onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
+                                  style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                  onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                  onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <input type="text" value={categoryFormName} onChange={e => setCategoryFormName(e.target.value)}
+                        placeholder="Category name…" style={{ ...inputStyle, flex: 1 }}
+                        onKeyDown={async e => { if (e.key === 'Enter' && categoryFormName.trim()) await saveCategory(); }}
+                        onClick={() => setCategoryEmojiPickerOpen(false)} />
+                      <button className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                        disabled={!categoryFormName.trim() || categorySaving} onClick={saveCategory}>
+                        {categorySaving ? '…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* + New category link */}
+                <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                  <button
+                    style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                    onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); setCategoryEmojiPickerOpen(false); }}
+                  >
+                    {categoryFormOpen ? 'Cancel' : '+ New category'}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
 
           {/* Add / Edit form */}
           {!showMissionForm && (
