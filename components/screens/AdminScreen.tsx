@@ -3321,9 +3321,9 @@ export default function AdminScreen({ onLogout }: Props) {
                         <option value="pa_sparet">På Spåret</option>
                         <option value="timeline">Timeline</option>
                         <option value="photo">Photo</option>
-                        <option value="relay">📶 Relay (Remote)</option>
-                        <option value="shared_secret">🔐 Shared Secret (Remote)</option>
-                        <option value="music_quiz">🎵 Music Quiz</option>
+                        <option value="relay">Relay (Remote)</option>
+                        <option value="shared_secret">Shared Secret (Remote)</option>
+                        <option value="music_quiz">Music Quiz</option>
                       </select>
                     </div>
                     <div>
@@ -3555,9 +3555,9 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
-                    <option value="music_quiz">🎵 Music Quiz</option>
-                    <option value="relay">📶 Relay (Remote)</option>
-                    <option value="shared_secret">📶 Shared Secret (Remote)</option>
+                    <option value="music_quiz">Music Quiz</option>
+                    <option value="relay">Relay (Remote)</option>
+                    <option value="shared_secret">Shared Secret (Remote)</option>
                   </select>
                 </div>
               </div>
