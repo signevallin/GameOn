@@ -985,7 +985,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [draggingMissionId, setDraggingMissionId] = useState<string | null>(null);
   const [dropTargetCatId, setDropTargetCatId] = useState<string | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
-  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(new Set());
+  const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<Set<string>>(new Set());
   const [categoryFormName, setCategoryFormName] = useState('');
   const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
   const [categoryFormColor, setCategoryFormColor] = useState('');
@@ -3291,7 +3291,7 @@ export default function AdminScreen({ onLogout }: Props) {
               m => !m.category_id && (!m.category_name || m.category_name === 'My Missions')
             );
             function toggleExpand(key: string) {
-              setExpandedCategoryIds(prev => {
+              setCollapsedCategoryIds(prev => {
                 const next = new Set(prev);
                 if (next.has(key)) next.delete(key); else next.add(key);
                 return next;
@@ -3405,7 +3405,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 {/* Admin category groups */}
                 {adminCategories.map(cat => {
                   const catMissions = adminCustomMissions.filter(m => m.category_id === cat.id);
-                  const isExpanded = expandedCategoryIds.has(cat.id);
+                  const isExpanded = !collapsedCategoryIds.has(cat.id);
                   const isEditing = editingCategoryId === cat.id;
                   const confirmingDelete = pendingDeleteCategoryId === cat.id;
                   return (
@@ -3510,7 +3510,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 {superCatLabels.map(label => {
                   const superMissions = adminCustomMissions.filter(m => !m.category_id && m.category_name === label);
                   const groupKey = `supercat:${label}`;
-                  const isExpanded = expandedCategoryIds.has(groupKey);
+                  const isExpanded = !collapsedCategoryIds.has(groupKey);
                   return (
                     <div key={groupKey} style={{ marginBottom: '6px' }}>
                       <div
@@ -3533,7 +3533,7 @@ export default function AdminScreen({ onLogout }: Props) {
                 {/* Uncategorized group */}
                 {uncategorized.length > 0 && (() => {
                   const groupKey = '__uncategorized';
-                  const isExpanded = expandedCategoryIds.has(groupKey);
+                  const isExpanded = !collapsedCategoryIds.has(groupKey);
                   return (
                     <div style={{ marginBottom: '6px' }}>
                       <div
