@@ -1,6 +1,7 @@
 'use client';
 import { useRef } from 'react';
 import { Mission } from '@/lib/missions';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 type Props = { mission: Mission; onFinish: (correct: boolean) => void };
 
@@ -9,7 +10,7 @@ export default function TextInput({ mission, onFinish }: Props) {
 
   function submit() {
     const val = ref.current?.value.trim() ?? '';
-    const correct = val.toLowerCase() === mission.answer?.toLowerCase();
+    const correct = fuzzyMatch(val, mission.answer ?? '');
     onFinish(correct);
   }
 

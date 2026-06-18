@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { normalizeAnswer } from '@/lib/fuzzy-match';
 
 export type TextQuizRound = { question: string; answer: string; aliases?: string[] };
 
@@ -11,10 +12,6 @@ type Props = {
   onClearRound?: () => void;
   onFinish: (correct: boolean, pts: number) => void;
 };
-
-function normalize(s: string) {
-  return s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9åäö]/g, '');
-}
 
 export default function TextQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
@@ -62,9 +59,9 @@ export default function TextQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvanc
 
   function submit() {
     if (result !== null || guess.trim() === '') return;
-    const n = normalize(guess);
+    const n = normalizeAnswer(guess);
     const r = rounds[idx];
-    const isCorrect = n === normalize(r.answer) || (r.aliases ?? []).some(a => n === normalize(a));
+    const isCorrect = n === normalizeAnswer(r.answer) || (r.aliases ?? []).some(a => n === normalizeAnswer(a));
     resolve(isCorrect);
   }
 

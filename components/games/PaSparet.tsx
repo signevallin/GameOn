@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 type Props = {
   clues: string[];
@@ -28,7 +29,7 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
 
   function submit() {
     if (!guess.trim()) return;
-    const correct = guess.trim().toLowerCase() === answer.toLowerCase();
+    const correct = fuzzyMatch(guess.trim(), answer);
 
     if (correct) {
       setDone(true);
