@@ -53,6 +53,20 @@ export async function POST(req: Request) {
   return NextResponse.json({ teams });
 }
 
+export async function DELETE(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
+  const { teamId } = await req.json();
+  if (!teamId) return NextResponse.json({ error: 'Missing teamId.' }, { status: 400 });
+
+  const supabase = getSupabase();
+  const { error } = await supabase.from('teams').delete().eq('id', teamId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function GET(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();

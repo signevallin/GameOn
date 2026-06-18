@@ -1069,6 +1069,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+  const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(null);
+  const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
 
   // Timestamp of the last admin command (start/finish/restart).
   // Polls that started BEFORE a command are discarded to prevent race conditions.
@@ -1365,6 +1367,18 @@ export default function AdminScreen({ onLogout }: Props) {
     setDeletingId(null);
     setConfirmDeleteId(null);
     await loadGames();
+  }
+
+  async function deleteTeam(teamId: string) {
+    setDeletingTeamId(teamId);
+    const res = await fetch('/api/admin/teams', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({ teamId }),
+    });
+    setDeletingTeamId(null);
+    setConfirmDeleteTeamId(null);
+    if (res.ok) setTeams(prev => prev.filter(t => t.id !== teamId));
   }
 
   async function downloadPhotosZip() {
@@ -5417,12 +5431,14 @@ export default function AdminScreen({ onLogout }: Props) {
                 const teamMembers = activeGame.remote_mode ? (t.members ?? []) : [];
                 const hasMembers = activeGame.remote_mode && teamMembers.length > 0;
                 const showPanel = isExpanded && hasMembers;
+                const isConfirmingDelete = confirmDeleteTeamId === t.id;
+                const isDeletingTeam = deletingTeamId === t.id;
                 return (
                   <div key={t.id} style={{ marginBottom: '4px' }}>
                     <div
                       className="lb-row"
-                      style={{ cursor: activeGame.remote_mode ? 'pointer' : 'default', borderRadius: showPanel ? '10px 10px 0 0' : '10px' }}
-                      onClick={() => activeGame.remote_mode && setExpandedTeamId(isExpanded ? null : t.id)}
+                      style={{ cursor: activeGame.remote_mode && !isConfirmingDelete ? 'pointer' : 'default', borderRadius: showPanel ? '10px 10px 0 0' : '10px' }}
+                      onClick={() => !isConfirmingDelete && activeGame.remote_mode && setExpandedTeamId(isExpanded ? null : t.id)}
                     >
                       <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
                       <div className="lb-name">{t.name}</div>
@@ -5434,8 +5450,34 @@ export default function AdminScreen({ onLogout }: Props) {
                           <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
                         )}
                       </div>
-                      {activeGame.remote_mode && (
-                        <div style={{ marginLeft: '10px', color: 'var(--muted)', fontSize: '12px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</div>
+                      {isConfirmingDelete ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '10px' }} onClick={e => e.stopPropagation()}>
+                          <span style={{ fontSize: '11px', color: 'var(--accent2)', fontWeight: 700 }}>Remove?</span>
+                          <button
+                            onClick={() => deleteTeam(t.id)}
+                            disabled={isDeletingTeam}
+                            style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            {isDeletingTeam ? '...' : 'YES'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteTeamId(null)}
+                            style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            NO
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={e => { e.stopPropagation(); setConfirmDeleteTeamId(t.id); }}
+                          title="Remove team"
+                          style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px', padding: '4px', borderRadius: '4px', flexShrink: 0, lineHeight: 1 }}
+                        >
+                          🗑
+                        </button>
+                      )}
+                      {activeGame.remote_mode && !isConfirmingDelete && (
+                        <div style={{ marginLeft: '4px', color: 'var(--muted)', fontSize: '12px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</div>
                       )}
                     </div>
                     {showPanel && (
