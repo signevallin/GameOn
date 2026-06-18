@@ -115,7 +115,7 @@ export async function POST(req: Request) {
   const rows = missions.map((m, i) => ({
     user_id: admin.userId,
     game_id: newGame.id,
-    category_name: 'AI Generated',
+    category_name: (typeof m.category === 'string' && m.category.trim()) ? m.category.trim() : 'AI Generated',
     category_id: null,
     name: typeof m.name === 'string' ? m.name : `Mission ${i + 1}`,
     icon: typeof m.icon === 'string' ? m.icon : '⭐',
