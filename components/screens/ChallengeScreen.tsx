@@ -34,6 +34,7 @@ import MovieEmoji from '@/components/games/MovieEmoji';
 import TextQuiz from '@/components/games/TextQuiz';
 import RelayMission from '@/components/games/RelayMission';
 import SharedSecret from '@/components/games/SharedSecret';
+import HackedOverlay from '@/components/HackedOverlay';
 
 type Props = {
   missionId: string;
@@ -92,6 +93,15 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
   const elapsedRef = useRef(0);
   const startedAtMsRef = useRef(Date.now());
   const [photoSubmitted, setPhotoSubmitted] = useState(false);
+
+  const effects = (team.active_effects as Record<string, unknown>) ?? {};
+  const hackedUntil = effects.hacked_until ? new Date(effects.hacked_until as string) : null;
+  const smokeScreenUntil = effects.smoke_screen_until ? new Date(effects.smoke_screen_until as string) : null;
+  const inverteradUntil = effects.inverterad_skarm_until ? new Date(effects.inverterad_skarm_until as string) : null;
+  const now = Date.now();
+  const isHacked = hackedUntil ? hackedUntil.getTime() > now : false;
+  const isSmokeScreen = smokeScreenUntil ? smokeScreenUntil.getTime() > now : false;
+  const isInverted = inverteradUntil ? inverteradUntil.getTime() > now : false;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -300,6 +310,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
 
   return (
     <>
+      {isHacked && hackedUntil && <HackedOverlay hackedUntil={hackedUntil} />}
       <nav className="nav">
         <div className="nav-brand" />
         <div className="nav-right">
@@ -310,7 +321,7 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
         </div>
       </nav>
 
-      <div className="challenge-wrap fade-in">
+      <div className={`challenge-wrap fade-in${isInverted ? ' sabotage-inverse' : ''}${isSmokeScreen ? ' sabotage-smoke' : ''}`}>
         <div className="challenge-header">
           <div>
             <h2>{tMissions(`${mission.id}.name`, { defaultValue: mission.name })}</h2>
