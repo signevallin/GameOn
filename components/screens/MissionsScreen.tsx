@@ -14,6 +14,14 @@ type Notification = { type: string; message?: string; msgKey?: string; params?: 
 // ── Confetti ──────────────────────────────────────────────────────────────────
 const CONFETTI_COLORS = ['#00e5ff', '#8cf5b5', '#debb6b', '#d0757d', '#b084cc', '#ff9f43'];
 
+// ── Category colors ───────────────────────────────────────────────────────────
+const CATEGORY_PALETTE = ['#6ec6f5', '#8cf5b5', '#debb6b', '#d0757d', '#b084cc', '#ff9f43', '#5eead4', '#f472b6'];
+function categoryColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return CATEGORY_PALETTE[hash % CATEGORY_PALETTE.length];
+}
+
 function Confetti() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -1178,7 +1186,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                     const emojiMatch = grp.name.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
                     const icon = emojiMatch ? emojiMatch[0].trim() : '📋';
                     const label = emojiMatch ? grp.name.slice(emojiMatch[0].length) : grp.name;
-                    const color = categoryColorMap[grp.name] ?? '#9b59b6';
+                    const color = categoryColorMap[grp.name] ?? categoryColor(grp.name);
                     return (
                       <div
                         key={grp.name}
