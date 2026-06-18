@@ -29,10 +29,14 @@ export default function TextQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvanc
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
-      setIdx(remoteRoundIdx);
-      setGuess('');
-      setResult(null);
+      setResult('correct');
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setGuess('');
+        setResult(null);
+      }, 900);
     }
+  // idx deliberately omitted — we only want to react to incoming remote changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
 

@@ -29,9 +29,13 @@ export default function CelebrityQuiz({ rounds, maxPts, remoteRoundIdx, onRoundA
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx && !done) {
-      setIdx(remoteRoundIdx);
-      setSelected(null);
+      setSelected(shuffledRounds[idx].answer);
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setSelected(null);
+      }, 1000);
     }
+  // idx/shuffledRounds deliberately omitted — we only want to react to incoming remote changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
 

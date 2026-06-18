@@ -18,9 +18,14 @@ export default function TrueFalse({ statements, maxPts = 150, remoteRoundIdx, on
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
-      setIdx(remoteRoundIdx);
-      setFlash(null);
+      // Flash the correct answer briefly so remote players see the reveal, then advance.
+      setFlash(statements[idx].answer);
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setFlash(null);
+      }, 700);
     }
+  // idx/statements deliberately omitted — we only want to react to incoming remote changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
 

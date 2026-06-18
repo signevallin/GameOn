@@ -26,10 +26,15 @@ export default function TriviaQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdva
   // same proven channel that drives nav-sync.
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > qIdx && !done) {
-      setQIdx(remoteRoundIdx);
-      setSelected(null);
+      // Show the correct answer briefly so remote players see the reveal, then advance.
+      // qIdx/rounds are intentionally stale here — they point to the question just answered.
+      setSelected(rounds[qIdx].answer);
+      setTimeout(() => {
+        setQIdx(remoteRoundIdx);
+        setSelected(null);
+      }, 900);
     }
-  // qIdx deliberately omitted — we only want to react to incoming remote changes
+  // qIdx/rounds deliberately omitted — we only want to react to incoming remote changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
 

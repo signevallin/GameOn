@@ -19,9 +19,13 @@ export default function MusicEmoji({ rounds, maxPts, remoteRoundIdx, onRoundAdva
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx && !done) {
-      setIdx(remoteRoundIdx);
-      setSelected(null);
+      setSelected(rounds[idx].answer);
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setSelected(null);
+      }, 900);
     }
+  // idx/rounds deliberately omitted — we only want to react to incoming remote changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
 

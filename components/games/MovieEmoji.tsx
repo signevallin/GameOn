@@ -30,9 +30,13 @@ export default function MovieEmoji({ rounds, maxPts, remoteRoundIdx, onRoundAdva
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
-      setIdx(remoteRoundIdx);
-      setGuess('');
-      setResult(null);
+      setResult('correct');
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setGuess('');
+        setResult(null);
+      }, 900);
+      return;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remoteRoundIdx]);
