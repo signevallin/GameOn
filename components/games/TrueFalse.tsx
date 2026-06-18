@@ -11,6 +11,19 @@ type Props = {
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
+const CheckIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 export default function TrueFalse({ statements, maxPts = 150, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -18,7 +31,6 @@ export default function TrueFalse({ statements, maxPts = 150, remoteRoundIdx, on
 
   useEffect(() => {
     if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
-      // Flash the correct answer briefly so remote players see the reveal, then advance.
       setFlash(statements[idx].answer);
       setTimeout(() => {
         setIdx(remoteRoundIdx);
@@ -59,25 +71,56 @@ export default function TrueFalse({ statements, maxPts = 150, remoteRoundIdx, on
         QUESTION {idx + 1} / {statements.length}
       </div>
       <div className="challenge-question" style={{ fontSize: '18px', textAlign: 'center', marginBottom: '32px', lineHeight: '1.5' }}>
-        "{s.text}"
+        &ldquo;{s.text}&rdquo;
       </div>
+
       {flash !== null && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '48px', pointerEvents: 'none',
+          pointerEvents: 'none',
           background: flash ? 'rgba(140,191,155,0.20)' : 'rgba(208,117,125,0.20)',
           zIndex: 10,
         }}>
-          {flash ? '✅' : '❌'}
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: flash ? 'rgba(140,191,155,0.30)' : 'rgba(208,117,125,0.30)',
+            color: flash ? 'var(--accent3)' : 'var(--accent2)',
+          }}>
+            {flash ? <CheckIcon /> : <XIcon />}
+          </div>
         </div>
       )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <button className="option-btn" onClick={() => answer(true)} style={{ textAlign: 'center', fontSize: '22px', padding: '24px' }}>
-          ✅<br /><span style={{ fontSize: '14px' }}>TRUE</span>
+        <button
+          onClick={() => answer(true)}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: '10px', padding: '28px 16px', borderRadius: '14px', border: '2px solid var(--border)',
+            background: 'var(--surface)', cursor: 'pointer', color: 'var(--accent3)',
+            transition: 'border-color 0.15s, background 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent3)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(140,191,155,0.08)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'; }}
+        >
+          <CheckIcon />
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1.5px', fontFamily: "'Sora', sans-serif" }}>TRUE</span>
         </button>
-        <button className="option-btn" onClick={() => answer(false)} style={{ textAlign: 'center', fontSize: '22px', padding: '24px' }}>
-          ❌<br /><span style={{ fontSize: '14px' }}>FALSE</span>
+        <button
+          onClick={() => answer(false)}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: '10px', padding: '28px 16px', borderRadius: '14px', border: '2px solid var(--border)',
+            background: 'var(--surface)', cursor: 'pointer', color: 'var(--accent2)',
+            transition: 'border-color 0.15s, background 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent2)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(208,117,125,0.08)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'; }}
+        >
+          <XIcon />
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1.5px', fontFamily: "'Sora', sans-serif" }}>FALSE</span>
         </button>
       </div>
       <p style={{ marginTop: '16px', fontSize: '12px', color: 'var(--muted)' }}>Score: {score}/{idx + 1}</p>
