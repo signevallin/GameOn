@@ -1,0 +1,10 @@
+{"type":"server-started","port":54042,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:54042","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/welcome.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/welcome.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/format-options.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/format-options.html"}
+{"source":"user-event","type":"click","text":"STEG 1 AV 3\n        Välkommen till GameOn! 🎮\n        Vi guidar dig genom att skapa ditt första spel på under 2 minuter.\n        \n          \n          \n          \n        \n        Nästa →\n      \n    \n    \n      A — Modal-wizard\n      En steg-för-steg modal som dyker upp direkt efter registrering. Guidar admin genom att skapa ett spel. Kan stängas och återöppnas via Help.","choice":"modal-wizard","id":null,"timestamp":1781348604429}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/modal-wizard-mockup.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/modal-wizard-mockup.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/41438-1781348461/content/modal-wizard-mockup.html"}
+{"type":"server-stopped","reason":"idle timeout"}

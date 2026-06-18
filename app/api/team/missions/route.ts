@@ -32,6 +32,7 @@ export async function GET(req: Request) {
     .select('*, custom_mission_categories(name, emoji, color)')
     .eq('user_id', game.user_id)
     .is('deleted_at', null)
+    .or(`game_id.is.null,game_id.eq.${gameId}`)
     .or(`active_from.is.null,active_from.lte.${nowIso}`)
     .or(`active_until.is.null,active_until.gte.${nowIso}`)
     .order('sort_order')

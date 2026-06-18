@@ -1072,6 +1072,13 @@ export default function AdminScreen({ onLogout }: Props) {
   const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(null);
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
 
+  // AI game generation
+  const [aiGameMode, setAiGameMode] = useState(false);
+  const [aiGamePrompt, setAiGamePrompt] = useState('');
+  const [aiGameStep, setAiGameStep] = useState<'idle' | 'generating' | 'saving'>('idle');
+  const [aiGameProgress, setAiGameProgress] = useState(0);
+  const [aiGameError, setAiGameError] = useState('');
+
   // Timestamp of the last admin command (start/finish/restart).
   // Polls that started BEFORE a command are discarded to prevent race conditions.
   const lastCommandAtRef = useRef(0);
@@ -1310,6 +1317,67 @@ export default function AdminScreen({ onLogout }: Props) {
     setView('dashboard');
     setCreating(false);
     loadGames();
+  }
+
+  async function generateAiGame() {
+    if (!aiGamePrompt.trim()) { setAiGameError('Enter a theme or topic.'); return; }
+    setAiGameStep('generating');
+    setAiGameProgress(0);
+    setAiGameError('');
+
+    const allMissions: Record<string, unknown>[] = [];
+    const BATCHES = 4;
+
+    for (let batch = 0; batch < BATCHES; batch++) {
+      const excludedNames = allMissions.map(m => m.name as string);
+      try {
+        const res = await fetch('/api/admin/ai-generate-mission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+          body: JSON.stringify({ prompt: aiGamePrompt, language: gameLanguage, count: 5, excludedNames }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? 'Generation failed');
+        if (!Array.isArray(data.missions)) throw new Error('Unexpected response format');
+        allMissions.push(...data.missions);
+        setAiGameProgress((batch + 1) * 5);
+      } catch (err) {
+        setAiGameError(err instanceof Error ? err.message : 'Generation failed');
+        setAiGameStep('idle');
+        return;
+      }
+    }
+
+    setAiGameStep('saving');
+    try {
+      const res = await fetch('/api/admin/ai-generate-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({
+          language: gameLanguage,
+          gameConfig: {
+            name: gameName || aiGamePrompt.slice(0, 40),
+            duration_minutes: duration,
+            hide_leaderboard: hideLeaderboard,
+            ai_photo_rating: aiPhotoRating,
+            ai_photo_instructions: aiPhotoInstructions || null,
+            remote_mode: remoteMode,
+          },
+          missions: allMissions,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create game');
+      setActiveGame(data.game);
+      setView('dashboard');
+      setAiGameStep('idle');
+      setAiGamePrompt('');
+      setAiGameMode(false);
+      loadGames();
+    } catch (err) {
+      setAiGameError(err instanceof Error ? err.message : 'Failed to create game');
+      setAiGameStep('idle');
+    }
   }
 
   async function startOrStop(action: 'start' | 'finish' | 'restart') {
@@ -4848,6 +4916,82 @@ export default function AdminScreen({ onLogout }: Props) {
         <div style={{ padding: '32px 0 24px' }}>
           <h2>Create a New Game</h2>
           <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '14px' }}>Configure the game and share the key with your teams.</p>
+        </div>
+
+        {/* ── AI GAME GENERATION ── */}
+        <div className="card" style={{ marginBottom: '24px', border: aiGameMode ? '2px solid var(--accent)' : undefined }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            onClick={() => { if (aiGameStep === 'idle') setAiGameMode(v => !v); }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <WandSparkles size={15} color="var(--accent)" />
+                Generate a full game with AI
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
+                Describe a theme — AI creates ~20 varied missions for you
+              </div>
+            </div>
+            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiGameMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px', transition: 'background 0.15s' }}>
+              <div style={{ position: 'absolute', top: '2px', left: aiGameMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+            </div>
+          </div>
+
+          {aiGameMode && (
+            <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+              {aiGameStep === 'idle' && (
+                <>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Theme or topic</label>
+                    <input
+                      type="text"
+                      placeholder="E.g. Swedish history, 90s pop music, space exploration…"
+                      value={aiGamePrompt}
+                      onChange={e => setAiGamePrompt(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && generateAiGame()}
+                      autoFocus
+                    />
+                  </div>
+                  {aiGameError && <p style={{ color: 'var(--accent2)', fontSize: '12px', marginBottom: '10px' }}>{aiGameError}</p>}
+                  <button className="btn btn-primary btn-full" onClick={generateAiGame}>
+                    <WandSparkles size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                    GENERATE 20 MISSIONS →
+                  </button>
+                </>
+              )}
+
+              {(aiGameStep === 'generating' || aiGameStep === 'saving') && (
+                <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                  <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: '12px' }}>
+                    {aiGameStep === 'saving' ? 'Creating game…' : `Generating missions ${aiGameProgress > 0 ? aiGameProgress : 0}/20`}
+                  </div>
+                  <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden', marginBottom: '12px' }}>
+                    <div style={{
+                      height: '100%',
+                      borderRadius: '3px',
+                      background: 'var(--accent)',
+                      width: `${aiGameStep === 'saving' ? 100 : (aiGameProgress / 20) * 100}%`,
+                      transition: 'width 0.4s ease',
+                    }} />
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                    {aiGameStep === 'saving'
+                      ? 'Saving 20 missions and creating your game…'
+                      : `Batch ${Math.ceil((aiGameProgress + 1) / 5)} of 4 — mixing question types for variety`}
+                  </div>
+                  {aiGameError && (
+                    <>
+                      <p style={{ color: 'var(--accent2)', fontSize: '12px', marginTop: '12px' }}>{aiGameError}</p>
+                      <button className="btn btn-ghost" style={{ marginTop: '8px' }} onClick={() => { setAiGameStep('idle'); setAiGameError(''); }}>
+                        Try again
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="card" style={{ marginBottom: '24px' }}>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GameOn Onboarding Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: #0a0e19;
+    color: #e0e7f3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 40px;
+  }
+
+  .page-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #6e82a5;
+    text-transform: uppercase;
+  }
+
+  /* --- Modal backdrop --- */
+  .backdrop {
+    background: rgba(10,14,25,0.85);
+    border-radius: 16px;
+    padding: 2px;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .modal {
+    background: #192033;
+    border: 1px solid #283550;
+    border-radius: 14px;
+    padding: 32px 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* top accent bar */
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #75abc8, #00e5ff);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: transparent;
+    border: none;
+    color: #6e82a5;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* progress dots */
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .dot {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    background: #283550;
+  }
+  .dot.active { background: #75abc8; }
+  .dot.done { background: #75abc8; opacity: 0.45; }
+
+  /* step icon */
+  .step-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: rgba(117,171,200,0.1);
+    border: 1px solid rgba(117,171,200,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e0e7f3;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .sub {
+    font-size: 13px;
+    color: #6e82a5;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  /* feature bullets */
+  .bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .bullet {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #e0e7f3;
+  }
+  .bullet-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(117,171,200,0.12);
+    border: 1px solid rgba(117,171,200,0.3);
+    color: #75abc8;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .btn-primary {
+    background: #75abc8;
+    color: #0a0e19;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Sora', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: #6e82a5;
+    border: 1px solid #283550;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-family: 'Sora', sans-serif;
+    cursor: pointer;
+  }
+  .step-counter {
+    font-size: 11px;
+    color: #6e82a5;
+  }
+
+  /* Help button floating */
+  .help-btn {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: #192033;
+    border: 1px solid #283550;
+    color: #75abc8;
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+
+  /* divider */
+  .divider {
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    font-size: 11px;
+    color: #6e82a5;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-label">Step 1 of 3 — Welcome modal</div>
+
+<div class="backdrop">
+  <div class="modal">
+    <button class="close-btn">✕</button>
+    <div class="progress">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="step-icon">🎮</div>
+    <h2>Welcome to GameOn</h2>
+    <p class="sub">Create and run live scavenger hunts &amp; team games in minutes. Here's how it works:</p>
+    <div class="bullets">
+      <div class="bullet">
+        <div class="bullet-dot">1</div>
+        <span>Pick missions from our library or create your own</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot">2</div>
+        <span>Share the game code — teams join on their phones</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot">3</div>
+        <span>Watch scores update live and control the game from here</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost">Skip tour</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="step-counter">1 / 3</span>
+        <button class="btn-primary">Get started →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider">↓ &nbsp; STEP 2 PREVIEW &nbsp; ↓</div>
+
+<div class="backdrop">
+  <div class="modal">
+    <button class="close-btn">✕</button>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="step-icon">🗺️</div>
+    <h2>Create your first game</h2>
+    <p class="sub">Tap <strong style="color:#75abc8">+ New Game</strong> to pick a template, choose missions, and set a time limit. It takes less than 2 minutes.</p>
+    <div class="bullets">
+      <div class="bullet">
+        <div class="bullet-dot" style="background:rgba(140,191,155,0.12);border-color:rgba(140,191,155,0.3);color:#8cbf9b">✓</div>
+        <span>Start from a template or build from scratch</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot" style="background:rgba(140,191,155,0.12);border-color:rgba(140,191,155,0.3);color:#8cbf9b">✓</div>
+        <span>Mix standard missions with your own custom ones</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot" style="background:rgba(140,191,155,0.12);border-color:rgba(140,191,155,0.3);color:#8cbf9b">✓</div>
+        <span>Add custom branding for your organisation</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost">← Back</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="step-counter">2 / 3</span>
+        <button class="btn-primary">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider">↓ &nbsp; STEP 3 PREVIEW &nbsp; ↓</div>
+
+<div class="backdrop">
+  <div class="modal">
+    <button class="close-btn">✕</button>
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+    </div>
+    <div class="step-icon">🚀</div>
+    <h2>You're ready to play</h2>
+    <p class="sub">Share the 4-letter game code with your teams. Once everyone's joined, hit <strong style="color:#75abc8">Start Game</strong> from the dashboard.</p>
+    <div class="bullets">
+      <div class="bullet">
+        <div class="bullet-dot">💬</div>
+        <span>Teams join at <strong style="color:#e0e7f3">playgameon.app</strong> — no app download needed</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot">📊</div>
+        <span>Live leaderboard updates as missions are completed</span>
+      </div>
+      <div class="bullet">
+        <div class="bullet-dot">📸</div>
+        <span>Rate photo submissions manually or let AI do it automatically</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost">← Back</button>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="step-counter">3 / 3</span>
+        <button class="btn-primary">Create my first game 🎉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help button (always visible) -->
+<button class="help-btn">❓ Help &amp; tour</button>
+
+</body>
+</html>

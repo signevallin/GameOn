@@ -22,6 +22,7 @@ export async function GET(req: Request) {
     .select('*')
     .eq('user_id', admin.userId)
     .is('deleted_at', null)
+    .is('game_id', null)
     .order('sort_order')
     .order('created_at');
 
