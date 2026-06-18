@@ -21,13 +21,59 @@ function makeLabel(r: MusicRound) {
   return `${r.title} – ${r.artist}`;
 }
 
+const DISTRACTOR_POOL = [
+  'Blinding Lights – The Weeknd', 'Shape of You – Ed Sheeran', 'Uptown Funk – Mark Ronson ft. Bruno Mars',
+  'Rolling in the Deep – Adele', 'Someone Like You – Adele', 'Happy – Pharrell Williams',
+  'Thinking Out Loud – Ed Sheeran', 'Stay With Me – Sam Smith', 'Shallow – Lady Gaga & Bradley Cooper',
+  'Old Town Road – Lil Nas X', 'Dance Monkey – Tones and I', 'Bad Guy – Billie Eilish',
+  'Levitating – Dua Lipa', 'Watermelon Sugar – Harry Styles', 'Drivers License – Olivia Rodrigo',
+  'As It Was – Harry Styles', 'Anti-Hero – Taylor Swift', 'Flowers – Miley Cyrus',
+  'Calm Down – Rema & Selena Gomez', 'Unholy – Sam Smith & Kim Petras',
+  'Bohemian Rhapsody – Queen', 'Hotel California – Eagles', 'Sweet Child O\' Mine – Guns N\' Roses',
+  'Smells Like Teen Spirit – Nirvana', 'Mr. Brightside – The Killers',
+  'Seven Nation Army – The White Stripes', 'Wonderwall – Oasis', 'Lose Yourself – Eminem',
+  'In the End – Linkin Park', 'Numb – Linkin Park', 'Boulevard of Broken Dreams – Green Day',
+  'With or Without You – U2', 'Don\'t Stop Believin\' – Journey', 'Eye of the Tiger – Survivor',
+  'Africa – Toto', 'Take On Me – a-ha', 'Sweet Dreams – Eurythmics',
+  'Girls Just Want to Have Fun – Cyndi Lauper', 'Wake Me Up Before You Go-Go – Wham!',
+  'Like a Prayer – Madonna', 'Billie Jean – Michael Jackson', 'Thriller – Michael Jackson',
+  'Purple Rain – Prince', 'Born to Run – Bruce Springsteen',
+  'Killing Me Softly – Fugees', 'Killing Me Softly – Roberta Flack',
+  'Baby One More Time – Britney Spears', 'Toxic – Britney Spears',
+  'Crazy in Love – Beyoncé', 'Halo – Beyoncé', 'Single Ladies – Beyoncé',
+  'Just Dance – Lady Gaga', 'Poker Face – Lady Gaga', 'Bad Romance – Lady Gaga',
+  'Telephone – Lady Gaga ft. Beyoncé', 'Titanium – David Guetta ft. Sia',
+  'We Found Love – Rihanna ft. Calvin Harris', 'Umbrella – Rihanna',
+  'California Gurls – Katy Perry', 'Roar – Katy Perry', 'Firework – Katy Perry',
+  'Call Me Maybe – Carly Rae Jepsen', 'Somebody That I Used to Know – Gotye',
+  'Suit & Tie – Justin Timberlake', 'Can\'t Stop the Feeling! – Justin Timberlake',
+  'Sorry – Justin Bieber', 'Love Yourself – Justin Bieber',
+  'God\'s Plan – Drake', 'One Dance – Drake',
+  'Rockstar – Post Malone', 'Sunflower – Post Malone & Swae Lee',
+  'Sicko Mode – Travis Scott', 'HUMBLE. – Kendrick Lamar',
+  'Despacito – Luis Fonsi ft. Daddy Yankee', 'Con Calma – Daddy Yankee & Snow',
+  'Lean On – Major Lazer & DJ Snake ft. MØ', 'Cheap Thrills – Sia',
+  'Chandelier – Sia', 'Elastic Heart – Sia',
+  'Riptide – Vance Joy', 'Viva la Vida – Coldplay', 'The Scientist – Coldplay',
+  'Fix You – Coldplay', 'Yellow – Coldplay',
+  'Let Her Go – Passenger', 'Counting Stars – OneRepublic',
+  'Radioactive – Imagine Dragons', 'Believer – Imagine Dragons',
+  'Thunder – Imagine Dragons', 'Demons – Imagine Dragons',
+  'Stressed Out – twenty one pilots', 'Ride – twenty one pilots',
+  'Take Me to Church – Hozier', 'Work Song – Hozier',
+  'Perfect – Ed Sheeran', 'Castle on the Hill – Ed Sheeran',
+  'Photograph – Ed Sheeran', 'Don\'t – Ed Sheeran',
+];
+
 function buildOptions(allRounds: MusicRound[], targetIdx: number): string[] {
   const correctLabel = makeLabel(allRounds[targetIdx]);
-  // Prefer songs not yet heard (future rounds) — players can't recognise them
-  // Fall back to past rounds only when the future pool is too small
-  const future = shuffle(allRounds.filter((_, i) => i > targetIdx).map(makeLabel));
-  const past   = shuffle(allRounds.filter((_, i) => i < targetIdx).map(makeLabel));
-  const distractors = [...future, ...past].slice(0, 3);
+  const quizLabels = new Set(allRounds.map(makeLabel));
+  // Use songs outside the current quiz as distractors so players can't eliminate
+  // options just by recognising songs they already heard in this round
+  const pool = shuffle(DISTRACTOR_POOL.filter(s => !quizLabels.has(s)));
+  // Fall back to other quiz songs only if the pool somehow runs dry
+  const fallback = shuffle(allRounds.filter((_, i) => i !== targetIdx).map(makeLabel));
+  const distractors = [...pool, ...fallback].slice(0, 3);
   return shuffle([correctLabel, ...distractors]);
 }
 
