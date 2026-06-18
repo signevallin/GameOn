@@ -993,6 +993,7 @@ export default function AdminScreen({ onLogout }: Props) {
   const [missionEmojiPickerOpen, setMissionEmojiPickerOpen] = useState(false);
   const [newTemplateEmojiPickerOpen, setNewTemplateEmojiPickerOpen] = useState(false);
   const [editTemplateEmojiPickerOpen, setEditTemplateEmojiPickerOpen] = useState(false);
+  const [saveTemplateEmojiPickerOpen, setSaveTemplateEmojiPickerOpen] = useState(false);
   const [categorySaving, setCategorySaving] = useState(false);
   const [categoryError, setCategoryError] = useState('');
   const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
@@ -2853,11 +2854,44 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                         {saveTemplateId === g.id && (
                           <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
-                            <input
-                              value={saveTemplateIcon}
-                              onChange={e => setSaveTemplateIcon(e.target.value)}
-                              style={{ width: '36px', padding: '5px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '16px', textAlign: 'center', fontFamily: "'Sora', sans-serif" }}
-                            />
+                            <div style={{ position: 'relative' }}>
+                              <button
+                                type="button"
+                                onClick={() => setSaveTemplateEmojiPickerOpen(v => !v)}
+                                style={{ width: '36px', height: '32px', padding: '0', borderRadius: '6px', border: '1px solid var(--border)', background: saveTemplateEmojiPickerOpen ? 'var(--surface)' : 'var(--card)', color: 'var(--text)', fontSize: '18px', textAlign: 'center', cursor: 'pointer', lineHeight: 1 }}
+                              >
+                                {saveTemplateIcon}
+                              </button>
+                              {saveTemplateEmojiPickerOpen && (
+                                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                                  <input
+                                    type="text"
+                                    placeholder="Type or paste any emoji…"
+                                    maxLength={4}
+                                    autoFocus
+                                    style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                    onChange={e => {
+                                      const v = [...e.target.value].filter(c => c.trim()).join('');
+                                      if (v) { setSaveTemplateIcon(v); setSaveTemplateEmojiPickerOpen(false); }
+                                    }}
+                                  />
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '200px', overflowY: 'auto' }}>
+                                    {EMOJI_300.map(e => (
+                                      <button
+                                        key={e}
+                                        type="button"
+                                        onClick={() => { setSaveTemplateIcon(e); setSaveTemplateEmojiPickerOpen(false); }}
+                                        style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                        onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                        onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                                      >
+                                        {e}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                             <input
                               value={saveTemplateName}
                               onChange={e => setSaveTemplateName(e.target.value)}
@@ -2872,7 +2906,7 @@ export default function AdminScreen({ onLogout }: Props) {
                               {saveTemplateLoading ? '...' : 'SAVE'}
                             </button>
                             <button
-                              onClick={() => setSaveTemplateId(null)}
+                              onClick={() => { setSaveTemplateId(null); setSaveTemplateEmojiPickerOpen(false); }}
                               style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
                             >
                               ✕
