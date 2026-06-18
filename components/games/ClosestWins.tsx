@@ -89,7 +89,7 @@ export default function ClosestWins({ maxPts, questions: propQuestions, teamId, 
       </p>
 
       {!result ? (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input
             type="number"
             inputMode="numeric"
@@ -97,9 +97,8 @@ export default function ClosestWins({ maxPts, questions: propQuestions, teamId, 
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder={`Your answer${q.unit ? ` (${q.unit})` : ''}`}
-            style={{ flex: 1 }}
           />
-          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+          <button className="btn btn-primary" onClick={submit}>
             ANSWER →
           </button>
         </div>
