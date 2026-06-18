@@ -1334,7 +1334,7 @@ export default function AdminScreen({ onLogout }: Props) {
         const res = await fetch('/api/admin/ai-generate-mission', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
-          body: JSON.stringify({ prompt: aiGamePrompt, language: gameLanguage, count: 5, excludedNames }),
+          body: JSON.stringify({ prompt: aiGamePrompt, language: gameLanguage, count: 5, excludedNames, gameMode: true }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? 'Generation failed');

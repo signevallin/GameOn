@@ -79,6 +79,55 @@ ${MISSION_SCHEMAS}
 - Each mission must be on a DIFFERENT aspect or angle of the topic
 - Vary the mission types as much as possible (don't use the same type for all missions)`;
 
+const GAME_MISSION_SCHEMAS = `Schemas (use EXACTLY these field names):
+
+trivia_quiz — multiple choice questions:
+{"type":"trivia_quiz","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"triviaRounds":[{"question":"What is the capital of France?","options":["London","Berlin","Paris","Rome"],"answer":"Paris"}]}
+Generate 3-5 questions. options is always exactly 4 full-text strings (never A/B/C/D letters). answer MUST be copied verbatim from one of the options — exact same string, character for character.
+
+truefalse — true or false statements:
+{"type":"truefalse","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":400,"statements":[{"text":"...","answer":true}]}
+Generate 3-5 statements. answer is a boolean.
+
+closest_wins — guess a number, closest wins:
+{"type":"closest_wins","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":400,"closestQuestions":[{"q":"...","answer":"42","unit":"years","hint":"..."}]}
+Generate 1-3 questions. answer is a string representation of a number. unit is the unit of measurement (e.g. "km", "years", "kg"). hint is an optional helpful hint.
+
+pa_sparet — progressive clues leading to a hidden answer:
+{"type":"pa_sparet","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["vague clue","more specific","most specific"],"paAnswer":"..."}
+Generate 3-5 clues, each progressively more revealing. paAnswer is the final answer.
+
+timeline — sort events in chronological order:
+{"type":"timeline","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"timelineItems":[{"label":"...","year":"1984"}]}
+Generate 4-6 events. year is a 4-digit string. Items will be scrambled for players to sort.
+
+photo — teams photograph something:
+{"type":"photo","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":600,"photoPrompt":"..."}
+photoPrompt is one clear instruction for what to photograph.
+
+easy_music_quiz — easy: listen and PICK from 4 multiple-choice options:
+{"type":"easy_music_quiz","name":"...","icon":"🎵","desc":"...","difficulty":"easy","maxPts":500,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
+Generate 4-6 songs. Same iTunes resolution as music_quiz. The options are auto-generated from the song pool at runtime.
+
+Field rules:
+- name: max 40 chars, engaging title — plain text only, NO emoji in the name
+- icon: single emoji relevant to the topic (the icon field is where the emoji goes, never in name)
+- desc: one sentence describing what players do (not the answer)
+- difficulty: easy = common knowledge, medium = requires thought, hard = specialists only
+- maxPts: 300-400 for easy, 400-600 for medium/hard
+- Write ALL content in the language specified in the user message`;
+
+const GAME_BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+Return ONLY a valid JSON object with a "missions" key containing an array — no markdown, no explanation, no code fences.
+
+Choose the most interesting and VARIED types across missions unless the user specifies one type.
+IMPORTANT: Only use these types: trivia_quiz, truefalse, closest_wins, pa_sparet, timeline, photo, easy_music_quiz. Do NOT use relay or shared_secret.
+
+${GAME_MISSION_SCHEMAS}
+- Return ONLY: {"missions": [mission1, mission2, ...]}
+- Each mission must be on a DIFFERENT aspect or angle of the topic
+- Vary the mission types as much as possible (don't use the same type for all missions)`;
+
 async function callClaude(userMessage: string, systemPrompt: string, maxTokens: number): Promise<string> {
   const message = await getClient().messages.create({
     model: 'claude-haiku-4-5',
@@ -153,13 +202,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown; count?: unknown };
+  let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown; count?: unknown; gameMode?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
-  const { prompt, type, language, excludedNames, count } = body;
+  const { prompt, type, language, excludedNames, count, gameMode } = body;
+  const isGameMode = gameMode === true;
 
   let safeExcluded: string[] = [];
   if (excludedNames !== undefined && excludedNames !== null) {
@@ -242,6 +292,7 @@ Topic/description: ${prompt}${exclusionLine}`;
   }
 
   // Bulk mode — ask Claude to return { missions: [...] }
+  const bulkSystemPrompt = isGameMode ? GAME_BULK_SYSTEM_PROMPT : BULK_SYSTEM_PROMPT;
   const userMessage = `Generate exactly ${safeCount} distinct missions.
 ${typeInstruction}
 Language: ${language}
@@ -249,7 +300,7 @@ Topic/description: ${prompt}${exclusionLine}`;
 
   let raw: string;
   try {
-    raw = await callClaude(userMessage, BULK_SYSTEM_PROMPT, 2048 * safeCount);
+    raw = await callClaude(userMessage, bulkSystemPrompt, 2048 * safeCount);
   } catch (err) {
     console.error('Claude API error (bulk):', err);
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
@@ -260,7 +311,7 @@ Topic/description: ${prompt}${exclusionLine}`;
     try {
       raw = await callClaude(
         userMessage + '\n\nIMPORTANT: Return ONLY {"missions": [...]}. No other text.',
-        BULK_SYSTEM_PROMPT,
+        bulkSystemPrompt,
         2048 * safeCount,
       );
     } catch (err) {
@@ -272,6 +323,16 @@ Topic/description: ${prompt}${exclusionLine}`;
 
   if (!parsed || !Array.isArray(parsed.missions) || parsed.missions.length === 0) {
     return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+  }
+
+  // In game mode, filter out relay/shared_secret as a safety net
+  if (isGameMode) {
+    parsed.missions = (parsed.missions as Record<string, unknown>[]).filter(
+      m => m.type !== 'relay' && m.type !== 'shared_secret'
+    );
+    if ((parsed.missions as unknown[]).length === 0) {
+      return NextResponse.json({ error: 'generation_failed' }, { status: 500 });
+    }
   }
 
   // Resolve iTunes preview URLs for any music_quiz missions in bulk results
