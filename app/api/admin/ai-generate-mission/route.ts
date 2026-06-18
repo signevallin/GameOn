@@ -45,9 +45,13 @@ shared_secret — teams share clues to find a common answer (remote play):
 {"type":"shared_secret","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["Your clue is: apple","Your clue is: red","Your clue is: fruit"],"answer":"Apple","hint":"optional hint for stuck teams"}
 Generate 3-5 clues — one per team member, each different. The answer is what all clues point to. hint is optional.
 
-music_quiz — identify songs from 30-second audio clips:
-{"type":"music_quiz","name":"...","icon":"🎵","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
+music_quiz — hard: listen and TYPE artist + song from memory, then sort by year:
+{"type":"music_quiz","name":"...","icon":"🎧","desc":"...","difficulty":"hard","maxPts":800,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
 Generate 4-6 songs. Choose only real, widely-released commercial songs available on iTunes/Apple Music. artist must be the exact official artist name. year is the release year as an integer. The server will fetch preview URLs from iTunes automatically.
+
+easy_music_quiz — easy: listen and PICK from 4 multiple-choice options:
+{"type":"easy_music_quiz","name":"...","icon":"🎵","desc":"...","difficulty":"easy","maxPts":500,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
+Generate 4-6 songs. Same iTunes resolution as music_quiz. The options are auto-generated from the song pool at runtime.
 
 Field rules:
 - name: max 40 chars, engaging title — plain text only, NO emoji in the name
@@ -177,7 +181,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'language_required' }, { status: 400 });
   }
 
-  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo', 'relay', 'shared_secret', 'music_quiz'];
+  const VALID_TYPES = ['trivia_quiz', 'truefalse', 'closest_wins', 'pa_sparet', 'timeline', 'photo', 'relay', 'shared_secret', 'music_quiz', 'easy_music_quiz'];
   if (type !== undefined && type !== null && typeof type === 'string' && !VALID_TYPES.includes(type)) {
     return NextResponse.json({ error: 'invalid_type' }, { status: 400 });
   }
@@ -225,7 +229,7 @@ Topic/description: ${prompt}${exclusionLine}`;
     const rawSongs = Array.isArray(parsed.songs) ? parsed.songs
       : Array.isArray(parsed.musicRounds) ? parsed.musicRounds
       : null;
-    if (parsed.type === 'music_quiz' && rawSongs) {
+    if ((parsed.type === 'music_quiz' || parsed.type === 'easy_music_quiz') && rawSongs) {
       const musicRounds = await resolveItunesPreviews(
         (rawSongs as { artist: string; title: string; year: number }[])
       );
@@ -276,7 +280,7 @@ Topic/description: ${prompt}${exclusionLine}`;
       const rawSongs = Array.isArray(m.songs) ? m.songs
         : Array.isArray(m.musicRounds) ? m.musicRounds
         : null;
-      if (m.type === 'music_quiz' && rawSongs) {
+      if ((m.type === 'music_quiz' || m.type === 'easy_music_quiz') && rawSongs) {
         const musicRounds = await resolveItunesPreviews(
           (rawSongs as { artist: string; title: string; year: number }[])
         );

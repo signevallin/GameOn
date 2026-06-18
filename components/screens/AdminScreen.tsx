@@ -2857,7 +2857,7 @@ export default function AdminScreen({ onLogout }: Props) {
           ? new Date((cm as { active_until: string }).active_until).toISOString().slice(0, 10)
           : '',
         seasonal: cm.seasonal ?? false,
-        musicRounds: cm.type === 'music_quiz' ? ((d.rounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? []) : [],
+        musicRounds: (cm.type === 'music_quiz' || cm.type === 'easy_music_quiz') ? ((d.rounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? []) : [],
       });
       setMissionFormError('');
       setMissionCategoryId(cm.category_id ?? null);
@@ -3062,11 +3062,12 @@ export default function AdminScreen({ onLogout }: Props) {
         for (const m of selected) {
           const type = String(m.type ?? '');
           try {
-            // Skip music_quiz missions with no resolved songs — iTunes lookup failed
-            if (type === 'music_quiz') {
+            // Skip music_quiz / easy_music_quiz missions with no resolved songs — iTunes lookup failed
+            if (type === 'music_quiz' || type === 'easy_music_quiz') {
               const rounds = (m.musicRounds as unknown[]) ?? [];
-              if (rounds.length < 2) {
-                errors.push(`"${String(m.name ?? 'Music Quiz')}": no iTunes previews found — try again`);
+              const minSongs = type === 'easy_music_quiz' ? 4 : 2;
+              if (rounds.length < minSongs) {
+                errors.push(`"${String(m.name ?? 'Music Quiz')}": not enough iTunes previews found — try again`);
                 continue;
               }
             }
@@ -3323,7 +3324,8 @@ export default function AdminScreen({ onLogout }: Props) {
                         <option value="photo">Photo</option>
                         <option value="relay">Relay (Remote)</option>
                         <option value="shared_secret">Shared Secret (Remote)</option>
-                        <option value="music_quiz">Music Quiz</option>
+                        <option value="music_quiz">Hard Music Quiz</option>
+                        <option value="easy_music_quiz">Easy Music Quiz</option>
                       </select>
                     </div>
                     <div>
@@ -3557,7 +3559,8 @@ export default function AdminScreen({ onLogout }: Props) {
                     <option value="pa_sparet">På Spåret</option>
                     <option value="timeline">Timeline</option>
                     <option value="photo">Photo</option>
-                    <option value="music_quiz">Music Quiz</option>
+                    <option value="music_quiz">Hard Music Quiz</option>
+                    <option value="easy_music_quiz">Easy Music Quiz</option>
                     <option value="relay">Relay (Remote)</option>
                     <option value="shared_secret">Shared Secret (Remote)</option>
                   </select>
@@ -3723,9 +3726,12 @@ export default function AdminScreen({ onLogout }: Props) {
                 </div>
               )}
 
-              {missionForm.type === 'music_quiz' && (
+              {(missionForm.type === 'music_quiz' || missionForm.type === 'easy_music_quiz') && (
                 <div style={{ marginBottom: '12px' }}>
-                  <label style={labelStyle}>SONGS ({missionForm.musicRounds.length} added)</label>
+                  <label style={labelStyle}>
+                    SONGS ({missionForm.musicRounds.length} added)
+                    {missionForm.type === 'easy_music_quiz' && <span style={{ color: 'var(--muted)', fontWeight: 400, marginLeft: '6px' }}>— add at least 4 (used as answer options)</span>}
+                  </label>
 
                   {/* Added songs */}
                   {missionForm.musicRounds.length > 0 && (

@@ -19,6 +19,7 @@ import CelebrityQuiz from '@/components/games/CelebrityQuiz';
 import MusicEmoji from '@/components/games/MusicEmoji';
 import CrackCode from '@/components/games/CrackCode';
 import MusicQuiz from '@/components/games/MusicQuiz';
+import EasyMusicQuiz from '@/components/games/EasyMusicQuiz';
 import ImageQuiz from '@/components/games/ImageQuiz';
 import MemorySpeed from '@/components/games/MemorySpeed';
 import ColorMemory from '@/components/games/ColorMemory';
@@ -237,6 +238,14 @@ export default function ChallengeScreen({ missionId, team, game, teams = [], cus
       case 'music_quiz':
         return (
           <MusicQuiz
+            rounds={mission.musicRounds!}
+            maxPts={effectiveMaxPts}
+            onFinish={(correct, pts) => finish(correct, pts)}
+          />
+        );
+      case 'easy_music_quiz':
+        return (
+          <EasyMusicQuiz
             rounds={mission.musicRounds!}
             maxPts={effectiveMaxPts}
             onFinish={(correct, pts) => finish(correct, pts)}

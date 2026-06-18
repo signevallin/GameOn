@@ -55,6 +55,7 @@ export function toMission(cm: CustomMission & { custom_mission_categories?: { na
         hint: (d.hint as string) || undefined,
       };
     case 'music_quiz':
+    case 'easy_music_quiz':
       return { ...base, musicRounds: ((d.rounds as Mission['musicRounds']) ?? []) };
     default:
       return base as Mission;
@@ -137,6 +138,15 @@ export function validateMissionData(
       if (rounds.some(r => !r.year || r.year < 1900)) return 'All songs need a valid year.';
       return null;
     }
+    case 'easy_music_quiz': {
+      const rounds = data.musicRounds ?? [];
+      if (rounds.length < 4) return 'Add at least 4 songs (needed for answer options).';
+      if (rounds.some(r => !r.audioUrl)) return 'All songs need a preview URL.';
+      if (rounds.some(r => !r.artist.trim())) return 'All songs need an artist.';
+      if (rounds.some(r => !r.title.trim())) return 'All songs need a title.';
+      if (rounds.some(r => !r.year || r.year < 1900)) return 'All songs need a valid year.';
+      return null;
+    }
     default:
       return 'Unknown type.';
   }
@@ -199,6 +209,7 @@ export function buildMissionData(
         hint: (data.sharedSecretHint ?? '').trim() || undefined,
       };
     case 'music_quiz':
+    case 'easy_music_quiz':
       return { rounds: data.musicRounds ?? [] };
     default:
       return {};
