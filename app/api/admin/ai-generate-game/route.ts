@@ -111,11 +111,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: gameErr?.message ?? 'Failed to create game.' }, { status: 500 });
   }
 
+  // Enforce 3-6 category limit: if AI returned too many, merge excess into existing ones
+  const rawCategories = missions.map(m =>
+    (typeof m.category === 'string' && m.category.trim()) ? m.category.trim() : '🤖 AI Generated'
+  );
+  const uniqueCats = [...new Set(rawCategories)];
+  let categoryMap: Record<string, string> = {};
+  if (uniqueCats.length <= 6) {
+    uniqueCats.forEach(c => { categoryMap[c] = c; });
+  } else {
+    // Keep first 6, remap the rest round-robin into those 6
+    const kept = uniqueCats.slice(0, 6);
+    kept.forEach(c => { categoryMap[c] = c; });
+    uniqueCats.slice(6).forEach((c, i) => { categoryMap[c] = kept[i % 6]; });
+  }
+
   // Bulk-insert missions scoped to this game
   const rows = missions.map((m, i) => ({
     user_id: admin.userId,
     game_id: newGame.id,
-    category_name: (typeof m.category === 'string' && m.category.trim()) ? m.category.trim() : 'AI Generated',
+    category_name: categoryMap[rawCategories[i]] ?? '🤖 AI Generated',
     category_id: null,
     name: typeof m.name === 'string' ? m.name : `Mission ${i + 1}`,
     icon: typeof m.icon === 'string' ? m.icon : '⭐',

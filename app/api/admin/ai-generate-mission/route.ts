@@ -115,7 +115,7 @@ Field rules:
 - desc: one sentence describing what players do (not the answer)
 - difficulty: easy = common knowledge, medium = requires thought, hard = specialists only
 - maxPts: 300-400 for easy, 400-600 for medium/hard
-- category: a short thematic group name (2-4 words) in the same language as the content — assign all missions to 2-4 meaningful categories that group them by theme or sub-topic
+- category: an emoji followed by a short thematic group name (2-4 words) in the same language as the content, e.g. "🎵 Musik & Film" or "⚽ Sport" — assign all missions across EXACTLY 3-6 categories total (not one category per mission — many missions must share the same category)
 - Write ALL content in the language specified in the user message`;
 
 const GAME_BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
@@ -128,7 +128,7 @@ ${GAME_MISSION_SCHEMAS}
 - Return ONLY: {"missions": [mission1, mission2, ...]}
 - Each mission must be on a DIFFERENT aspect or angle of the topic
 - Vary the mission types as much as possible (don't use the same type for all missions)
-- Assign a "category" field to EVERY mission — group missions into 2-4 thematic categories`;
+- Assign a "category" field to EVERY mission — use EXACTLY 3-6 categories for the whole game, each with an emoji prefix (e.g. "🌍 Geografi", "🎬 Film & TV"). Multiple missions MUST share the same category`;
 
 async function callClaude(userMessage: string, systemPrompt: string, maxTokens: number): Promise<string> {
   const message = await getClient().messages.create({
