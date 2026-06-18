@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { Mission } from '@/lib/missions';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 type RelaySegmentResult = {
   completedAt?: string;
@@ -217,13 +218,9 @@ export default function RelayMission({ mission, team, game, memberId, effectiveM
     }
   }, [loading, started, team.id, mission.id, segments.length, effectiveMaxPts, game.duration_minutes, onFinish]);
 
-  function normalizeAnswer(s: string) {
-    return s.toLowerCase().trim().replace(/^the\s+/, '').replace(/[^a-z0-9åäö]/g, '');
-  }
-
   function submitTypedAnswer() {
     if (!myCurrentSegment?.answer || typed.trim() === '' || answerResult !== null) return;
-    const isCorrect = normalizeAnswer(typed) === normalizeAnswer(myCurrentSegment.answer);
+    const isCorrect = fuzzyMatch(typed, myCurrentSegment.answer);
     setAnswerResult(isCorrect ? 'correct' : 'wrong');
     setTimeout(() => {
       setAnswerResult(null);

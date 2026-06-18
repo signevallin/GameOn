@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { Mission } from '@/lib/missions';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 const HINT_COST = 50;
 const HINT_UNLOCK_AFTER = 2;
@@ -88,7 +89,7 @@ export default function SharedSecret({ mission, team, game, memberId, effectiveM
 
   function handleSubmit() {
     if (!guess.trim() || done) return;
-    const correct = guess.trim().toLowerCase() === answer.toLowerCase();
+    const correct = fuzzyMatch(guess.trim(), answer);
     const newAttempts = attempts + 1;
 
     setLastResult(correct ? 'correct' : 'wrong');
