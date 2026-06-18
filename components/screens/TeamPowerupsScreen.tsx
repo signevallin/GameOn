@@ -210,7 +210,7 @@ export default function TeamPowerupsScreen({ team, teams, onBack, onTeamUpdate }
           return (
             <div key={pu.id}>
               <div
-                onClick={() => !isUsed && setSelected(isSelected ? null : pu)}
+                onClick={() => { if (isUsed) return; if (isSelected) { setSelected(null); } else { setSelected(pu); setTargetId(''); } }}
                 style={{
                   background: isSelected ? `color-mix(in srgb, ${pu.color} 10%, var(--card))` : 'var(--card)',
                   border: `2px solid ${isSelected ? pu.color : isUsed ? 'var(--border)' : 'var(--border)'}`,

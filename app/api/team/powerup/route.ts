@@ -68,6 +68,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  if (type === 'double_agent') {
+    const doubleAgentUntil = new Date(Date.now() + 90 * 1000).toISOString();
+    const senderEffects = sender.active_effects ?? {};
+    await supabase.from('teams').update({
+      active_effects: { ...senderEffects, double_agent_until: doubleAgentUntil },
+      ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
+      pending_notification: { type: 'powerup_self', msgKey: 'double_agent_msg', params: {} },
+    }).eq('id', senderTeamId);
+    return NextResponse.json({ ok: true, resultMessage: '🕵️ Double Agent active for 90 seconds! Double points — but failure feeds the last-place team.' });
+  }
+
   // Offensive power-ups — need a target
   if (!targetTeamId) return NextResponse.json({ error: 'Target team required.' }, { status: 400 });
   if (targetTeamId === senderTeamId) return NextResponse.json({ error: 'Cannot target your own team.' }, { status: 400 });
@@ -147,18 +158,6 @@ export async function POST(req: Request) {
       await supabase.from('teams').update({ ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra) }).eq('id', senderTeamId);
       return NextResponse.json({ ok: true, won: false, newSenderScore, resultMessage: `🎲 You lost the gamble… -${wager} pts went to ${target.name}.` });
     }
-  }
-
-  if (type === 'double_agent') {
-    // Self-targeting — no target team needed (targetTeamId is ignored)
-    const doubleAgentUntil = new Date(Date.now() + 90 * 1000).toISOString();
-    const senderEffects = sender.active_effects ?? {};
-    await supabase.from('teams').update({
-      active_effects: { ...senderEffects, double_agent_until: doubleAgentUntil },
-      ...markPowerupUsed(type, usedPowerups, extraPowerups, hasExtra),
-      pending_notification: { type: 'powerup_self', msgKey: 'double_agent_msg', params: {} },
-    }).eq('id', senderTeamId);
-    return NextResponse.json({ ok: true, resultMessage: '🕵️ Double Agent active for 90 seconds! Double points — but failure feeds the last-place team.' });
   }
 
   if (type === 'robin_hood') {
