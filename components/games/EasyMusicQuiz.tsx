@@ -23,10 +23,12 @@ function makeLabel(r: MusicRound) {
 
 function buildOptions(allRounds: MusicRound[], targetIdx: number): string[] {
   const correctLabel = makeLabel(allRounds[targetIdx]);
-  const distractors = allRounds
-    .filter((_, i) => i !== targetIdx)
-    .map(makeLabel);
-  return shuffle([correctLabel, ...shuffle(distractors).slice(0, 3)]);
+  // Prefer songs not yet heard (future rounds) — players can't recognise them
+  // Fall back to past rounds only when the future pool is too small
+  const future = shuffle(allRounds.filter((_, i) => i > targetIdx).map(makeLabel));
+  const past   = shuffle(allRounds.filter((_, i) => i < targetIdx).map(makeLabel));
+  const distractors = [...future, ...past].slice(0, 3);
+  return shuffle([correctLabel, ...distractors]);
 }
 
 export default function EasyMusicQuiz({ rounds, maxPts, onFinish }: Props) {
