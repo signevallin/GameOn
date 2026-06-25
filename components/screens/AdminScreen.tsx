@@ -5577,9 +5577,9 @@ export default function AdminScreen({ onLogout }: Props) {
 
         {/* TABS */}
         <div className="admin-tabs">
-          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')}><Ic><Trophy size={14} /></Ic> Scores</button>
-          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}><Ic><BarChart2 size={14} /></Ic> Progress</button>
-          <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative' }}>
+          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Ic><Trophy size={14} /></Ic> Scores</button>
+          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Ic><BarChart2 size={14} /></Ic> Progress</button>
+          <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             <Ic><Camera size={14} /></Ic> Photos
             {totalPendingPhotos > 0 && (
               <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent2)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
@@ -5587,9 +5587,9 @@ export default function AdminScreen({ onLogout }: Props) {
               </span>
             )}
           </button>
-          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}><Ic><TrendingUp size={14} /></Ic> Stats</button>
+          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Ic><TrendingUp size={14} /></Ic> Stats</button>
           {activeGame.status === 'active' && (
-            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}><Ic><Zap size={14} /></Ic> Power-ups{plan === 'free' ? <Ic><Lock size={12} /></Ic> : ''}</button>
+            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><Ic><Zap size={14} /></Ic> Power-ups{plan === 'free' ? <Ic><Lock size={12} /></Ic> : ''}</button>
           )}
         </div>
 
