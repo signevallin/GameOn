@@ -655,6 +655,7 @@ pre {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .admin-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
