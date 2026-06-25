@@ -1,0 +1,7 @@
+{"type":"server-started","port":53617,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:53617","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/content/chat-widget.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/content/chat-widget.html"}
+{"source":"user-event","type":"click","text":"playgameon.app\n      The game platform that...\n      \n      \n\n      \n      \n        \n          \n        \n      \n    \n    \n      A — Minimal bubble\n      Rund knapp nere till höger. Diskret, tar ingen plats. Standard för chat-widgets.","choice":"a","id":null,"timestamp":1780683568902}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/content/waiting.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/75230-1780683366/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

@@ -1,14 +1,26 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { MISSIONS } from '@/lib/missions';
+import { Timer, LogOut, CheckCircle2, Trophy, Flag, Zap, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { MISSIONS, Mission } from '@/lib/missions';
 import { Team, Game } from '@/lib/supabase';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
 import TeamPowerupsScreen from '@/components/screens/TeamPowerupsScreen';
+import MysteryBoxAR from '@/components/MysteryBoxAR';
+import HackedOverlay from '@/components/HackedOverlay';
 
-type Notification = { type: string; message: string };
+type Notification = { type: string; message?: string; msgKey?: string; params?: Record<string, unknown> };
 
 // ── Confetti ──────────────────────────────────────────────────────────────────
 const CONFETTI_COLORS = ['#00e5ff', '#8cf5b5', '#debb6b', '#d0757d', '#b084cc', '#ff9f43'];
+
+// ── Category colors ───────────────────────────────────────────────────────────
+const CATEGORY_PALETTE = ['#6ec6f5', '#8cf5b5', '#debb6b', '#d0757d', '#b084cc', '#ff9f43', '#5eead4', '#f472b6'];
+function categoryColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return CATEGORY_PALETTE[hash % CATEGORY_PALETTE.length];
+}
 
 function Confetti() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,7 +82,9 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
   teamId: string;
   onDismiss: () => void;
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [dismissing, setDismissing] = useState(false);
 
   async function ack() {
     setLoading(true);
@@ -81,20 +95,30 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
         body: JSON.stringify({ teamId }),
         cache: 'no-store',
       });
-      if (res.ok) onDismiss();
+      if (res.ok) {
+        setDismissing(true);
+        setTimeout(onDismiss, 220);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   const CONFIG: Record<string, { emoji: string; title: string; btnLabel: string; color: string }> = {
-    sabotage:        { emoji: '💻', title: 'YOU HAVE BEEN HACKED!',  btnLabel: 'OK',        color: 'var(--accent2)' },
-    double_points:   { emoji: '🎯', title: 'POWER-UP!',              btnLabel: "LET'S GO!", color: 'var(--accent3)' },
-    final_frenzy:    { emoji: '🔥', title: 'FINAL FRENZY!',          btnLabel: "LET'S GO!", color: 'var(--gold)' },
-    fake_hint:       { emoji: '🔍', title: 'SECRET TIP',             btnLabel: 'OK',        color: 'var(--accent)' },
-    photo_rated:     { emoji: '📸', title: 'PHOTO RATED!',           btnLabel: 'NICE!',     color: 'var(--accent3)' },
-    powerup_self:    { emoji: '⚡', title: 'POWER-UP ACTIVATED!',    btnLabel: "LET'S GO!", color: 'var(--accent3)' },
-    powerup_received:{ emoji: '😈', title: 'INCOMING ATTACK!',       btnLabel: 'DAMN IT!',  color: 'var(--accent2)' },
+    sabotage:           { emoji: '💻', title: t('notifications.sabotage'),          btnLabel: t('notifications.btn_ok'),     color: 'var(--accent2)' },
+    double_points:      { emoji: '🎯', title: t('notifications.double_points'),     btnLabel: t('notifications.btn_letsGo'), color: 'var(--accent3)' },
+    final_frenzy:       { emoji: '🔥', title: t('notifications.final_frenzy'),      btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'    },
+    fake_hint:          { emoji: '🔍', title: t('notifications.fake_hint'),          btnLabel: t('notifications.btn_ok'),     color: 'var(--accent)'  },
+    photo_rated:        { emoji: '📸', title: t('notifications.photo_rated'),        btnLabel: t('notifications.btn_nice'),   color: 'var(--accent3)' },
+    powerup_self:       { emoji: '⚡', title: t('notifications.powerup_self'),       btnLabel: t('notifications.btn_letsGo'), color: 'var(--accent3)' },
+    powerup_received:   { emoji: '😈', title: t('notifications.powerup_received'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    inverterad_skarm:   { emoji: '🪞', title: t('notifications.inverterad_skarm'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    smoke_screen:       { emoji: '💨', title: t('notifications.smoke_screen'),       btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    hot_potato:         { emoji: '💣', title: t('notifications.hot_potato'),         btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'   },
+    hot_potato_penalty: { emoji: '💥', title: t('notifications.hot_potato_penalty'), btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    mystery_box_won:     { emoji: '🎁', title: t('notifications.mystery_box_won'),     btnLabel: t('notifications.btn_letsGo'), color: 'var(--gold)'    },
+    mystery_box_taken:   { emoji: '💨', title: t('notifications.mystery_box_taken'),   btnLabel: t('notifications.btn_damnIt'), color: 'var(--accent2)' },
+    mystery_box_expired: { emoji: '⏰', title: t('notifications.mystery_box_expired'), btnLabel: t('notifications.btn_ok'),     color: 'var(--muted)'   },
   };
 
   const cfg = CONFIG[notification.type] ?? CONFIG.fake_hint;
@@ -105,6 +129,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
       background: 'rgba(0,0,0,0.75)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px',
+      ...(dismissing ? { animation: 'fadeOut 0.22s ease forwards' } : {}),
     }}>
       <div style={{
         background: 'var(--card)',
@@ -114,11 +139,14 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
         maxWidth: '380px',
         width: '100%',
         textAlign: 'center',
+        animation: 'popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards',
       }}>
         <div style={{ fontSize: '56px', marginBottom: '16px' }}>{cfg.emoji}</div>
         <h2 style={{ color: cfg.color, marginBottom: '16px', letterSpacing: '2px' }}>{cfg.title}</h2>
         <p style={{ fontSize: '15px', color: 'var(--text)', marginBottom: '32px', lineHeight: 1.6 }}>
-          {notification.message}
+          {notification.msgKey
+            ? t(`notifications.${notification.msgKey}`, notification.params ?? {})
+            : notification.message}
         </p>
         <button
           className="btn btn-primary"
@@ -126,7 +154,7 @@ function NotificationOverlay({ notification, teamId, onDismiss }: {
           onClick={ack}
           disabled={loading}
         >
-          {loading ? '...' : cfg.btnLabel}
+          {loading ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', verticalAlign: 'middle' }} /> : cfg.btnLabel}
         </button>
       </div>
     </div>
@@ -142,6 +170,7 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
   myTeamId: string;
   totalMissions: number;
 }) {
+  const { t } = useTranslation();
   const sorted = [...teams].sort((a, b) => b.score - a.score);
   const myRank = sorted.findIndex(t => t.id === myTeamId);
   const myTeam = sorted[myRank];
@@ -163,10 +192,10 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
           marginBottom: '16px',
         }}>
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>Your team</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>{t('leaderboard.yourTeam')}</div>
             <div style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text)', marginTop: '3px' }}>{myTeam.name}</div>
             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
-              {myRank === 0 ? '🔥 Leading!' : gap > 0 ? `${gap} pts behind #1` : 'Tied for lead'}
+              {myRank === 0 ? t('leaderboard.leading') : gap > 0 ? t('leaderboard.ptsBehind', { gap }) : t('leaderboard.tied')}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -178,19 +207,20 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 
       {/* Rankings */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {sorted.map((t, i) => {
-          const isMe = t.id === myTeamId;
-          const missionsDone = t.completed?.length ?? 0;
-          const barPct = maxScore > 0 ? Math.max(4, Math.round((t.score / maxScore) * 100)) : 4;
+        {sorted.map((lbTeam, i) => {
+          const isMe = lbTeam.id === myTeamId;
+          const missionsDone = lbTeam.completed?.length ?? 0;
+          const barPct = maxScore > 0 ? Math.max(4, Math.round((lbTeam.score / maxScore) * 100)) : 4;
           const barColor = i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--muted)';
 
+          const isFirst = i === 0;
           return (
             <div
-              key={t.id}
+              key={lbTeam.id}
               style={{
-                padding: '12px 14px',
-                background: 'var(--card)',
-                border: `1px solid ${isMe ? 'var(--accent)' : 'var(--border)'}`,
+                padding: isFirst ? '16px 18px' : '12px 14px',
+                background: isFirst ? 'rgba(222,187,107,0.06)' : 'var(--card)',
+                border: isFirst ? '2px solid var(--gold)' : `1px solid ${isMe ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: '12px',
               }}
             >
@@ -206,19 +236,19 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontWeight: 700, fontSize: '14px',
+                    fontWeight: 700, fontSize: isFirst ? '16px' : '14px',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    color: isMe ? 'var(--accent)' : 'var(--text)',
+                    color: isMe ? 'var(--accent)' : isFirst ? 'var(--gold)' : 'var(--text)',
                   }}>
-                    {t.name}{isMe ? ' · you' : ''}
+                    {lbTeam.name}{isMe ? t('leaderboard.youSuffix') : ''}
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                    {missionsDone}/{totalMissions} missions{t.finished_at ? ' · 🏁' : ''}
+                    {t('leaderboard.missionsCount', { done: missionsDone, total: totalMissions })}{lbTeam.finished_at ? <> · <Flag size={10} style={{ display: 'inline', verticalAlign: 'middle', marginBottom: '1px' }} /></> : ''}
                   </div>
                 </div>
 
-                <div style={{ fontWeight: 800, fontSize: '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
-                  {t.score}
+                <div style={{ fontWeight: 800, fontSize: isFirst ? '20px' : '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
+                  {lbTeam.score}
                 </div>
               </div>
 
@@ -241,7 +271,12 @@ function LeaderboardView({ teams, myTeamId, totalMissions }: {
 }
 
 // ── End screen ────────────────────────────────────────────────────────────────
+function confirmLogout(onLogout: () => void, confirmText: string) {
+  if (window.confirm(confirmText)) onLogout();
+}
+
 function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[]; game: Game; onLogout: () => void }) {
+  const { t } = useTranslation();
   const sorted = [...teams].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     const fa = a.finished_at ? new Date(a.finished_at).getTime() : Infinity;
@@ -261,7 +296,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
     if (entries.length === 0) return null;
     const [mId, pts] = entries.sort(([, a], [, b]) => b - a)[0];
     const m = MISSIONS.find(x => x.id === mId);
-    return { name: m ? `${m.icon} ${m.name}` : mId, pts };
+    return { name: m ? m.name : mId, pts };
   }
 
   const elapsedText = team.finished_at && game.started_at
@@ -277,28 +312,28 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
         <div style={{ padding: '32px 20px 48px', maxWidth: '560px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <div style={{ fontSize: '64px', marginBottom: '12px' }}>🏁</div>
-            <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>Game over!</h2>
+            <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>{t('end.gameOverTitle')}</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.6 }}>
-              Well played! The results will be announced shortly.
+              {t('end.resultsAnnounced')}
             </p>
             <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <span style={{ fontSize: '40px', fontWeight: 800, color: 'var(--gold)' }}>{team.score}</span>
-              <span style={{ color: 'var(--muted)', fontSize: '16px' }}>pts</span>
+              <span style={{ color: 'var(--muted)', fontSize: '16px' }}>{t('end.ptsLabel')}</span>
             </div>
             {elapsedText && (
               <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }}>
-                Finished in <strong style={{ color: 'var(--accent3)' }}>{elapsedText}</strong>
+                {t('end.finishedIn', { time: elapsedText })}
               </div>
             )}
           </div>
 
           <div style={{ padding: '20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '14px', marginBottom: '32px' }}>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>YOUR GAME</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>{t('end.yourGame')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {[
-                { label: 'Score', value: `${team.score} pts`, color: 'var(--gold)' },
-                { label: 'Missions done', value: `${team.completed?.length ?? 0}`, color: 'var(--accent3)' },
-                { label: 'Best mission', value: best ? `${best.pts} pts` : '—', color: 'var(--text)' },
+                { label: t('end.statScore'), value: t('end.scoreValue', { score: team.score }), color: 'var(--gold)' },
+                { label: t('end.statMissionsDone'), value: `${team.completed?.length ?? 0}`, color: 'var(--accent3)' },
+                { label: t('end.statBestMission'), value: best ? `${best.pts} pts` : '—', color: 'var(--text)' },
                 { label: 'Teams played', value: `${teams.length}`, color: 'var(--accent)' },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{ background: 'var(--surface)', borderRadius: '10px', padding: '12px 14px' }}>
@@ -310,10 +345,10 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
           </div>
 
           <button
-            onClick={onLogout}
-            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px' }}
+            onClick={() => confirmLogout(onLogout, t('missions.logoutConfirm'))}
+            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            ↩ Leave & start new game
+            <LogOut size={15} /> {t('end.leaveButton')}
           </button>
         </div>
       </>
@@ -333,20 +368,20 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
             {isWinner ? '🏆' : myRank === 2 ? '🥈' : myRank === 3 ? '🥉' : '🏁'}
           </div>
           <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>
-            {isWinner ? 'You won!' : `${myRank}${myRank === 2 ? 'nd' : myRank === 3 ? 'rd' : 'th'} place`}
+            {isWinner ? t('end.youWon') : myRank === 2 ? t('end.place_2') : myRank === 3 ? t('end.place_3') : t('end.place_other', { rank: myRank })}
           </h2>
           {winner && !isWinner && (
             <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-              🏆 <strong style={{ color: 'var(--gold)' }}>{winner.name}</strong> won with {winner.score} pts
+              <strong style={{ color: 'var(--gold)' }}>{t('end.winnerLine', { name: winner.name, score: winner.score })}</strong>
             </p>
           )}
           <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <span style={{ fontSize: '40px', fontWeight: 800, color: 'var(--gold)' }}>{team.score}</span>
-            <span style={{ color: 'var(--muted)', fontSize: '16px' }}>pts</span>
+            <span style={{ color: 'var(--muted)', fontSize: '16px' }}>{t('end.ptsLabel')}</span>
           </div>
           {elapsedText && (
             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }}>
-              Finished in <strong style={{ color: 'var(--accent3)' }}>{elapsedText}</strong>
+              {t('end.finishedIn', { time: elapsedText })}
             </div>
           )}
         </div>
@@ -354,15 +389,15 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
         {/* Final rankings */}
         <div style={{ marginBottom: '28px' }}>
           <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '12px' }}>
-            FINAL STANDINGS
+            {t('end.finalStandings')}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {sorted.map((t, i) => {
-              const isMe = t.id === team.id;
-              const best = bestMission(t);
+            {sorted.map((rankTeam, i) => {
+              const isMe = rankTeam.id === team.id;
+              const best = bestMission(rankTeam);
               return (
                 <div
-                  key={t.id}
+                  key={rankTeam.id}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '12px 16px',
@@ -386,17 +421,17 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
                       color: isMe ? 'var(--accent)' : i === 0 ? 'var(--gold)' : 'var(--text)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
-                      {t.name}{isMe ? ' (you)' : ''}
+                      {rankTeam.name}{isMe ? t('end.youSuffixParen') : ''}
                     </div>
                     {best && (
                       <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                        Best: {best.name} · {best.pts} pts
+                        {t('end.bestLine', { name: best.name, pts: best.pts })}
                       </div>
                     )}
                   </div>
 
                   <div style={{ fontWeight: 800, fontSize: '17px', color: i === 0 ? 'var(--gold)' : 'var(--text)', flexShrink: 0 }}>
-                    {t.score}
+                    {rankTeam.score}
                   </div>
                 </div>
               );
@@ -412,13 +447,13 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
           borderRadius: '14px',
           marginBottom: '32px',
         }}>
-          <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>YOUR GAME</div>
+          <div style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1.5px', fontWeight: 700, marginBottom: '14px' }}>{t('end.yourGame')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {[
-              { label: 'Score', value: `${team.score} pts`, color: 'var(--gold)' },
-              { label: 'Missions done', value: `${team.completed?.length ?? 0}`, color: 'var(--accent3)' },
-              { label: 'Rank', value: `#${myRank} of ${teams.length}`, color: 'var(--accent)' },
-              { label: 'Best mission', value: (() => { const b = bestMission(team); return b ? `${b.pts} pts` : '—'; })(), color: 'var(--text)' },
+              { label: t('end.statScore'), value: t('end.scoreValue', { score: team.score }), color: 'var(--gold)' },
+              { label: t('end.statMissionsDone'), value: `${team.completed?.length ?? 0}`, color: 'var(--accent3)' },
+              { label: t('end.statRank'), value: t('end.statRankValue', { rank: myRank, total: teams.length }), color: 'var(--accent)' },
+              { label: t('end.statBestMission'), value: (() => { const b = bestMission(team); return b ? `${b.pts} pts` : '—'; })(), color: 'var(--text)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'var(--surface)', borderRadius: '10px', padding: '12px 14px' }}>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>{label}</div>
@@ -430,7 +465,7 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
 
         {/* Logout / new game */}
         <button
-          onClick={onLogout}
+          onClick={() => confirmLogout(onLogout, t('missions.logoutConfirm'))}
           style={{
             width: '100%',
             padding: '14px',
@@ -442,12 +477,52 @@ function EndScreen({ team, teams, game, onLogout }: { team: Team; teams: Team[];
             fontWeight: 600,
             cursor: 'pointer',
             letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
-          ↩ Leave & start new game
+          <LogOut size={15} /> {t('end.leaveButton')}
         </button>
       </div>
     </>
+  );
+}
+
+// ── Online member bar (remote mode) ──────────────────────────────────────────
+function MemberBar({ members, currentMemberId }: {
+  members: Array<{ id: string; name: string; online: boolean }>;
+  currentMemberId?: string;
+}) {
+  if (members.length === 0) return null;
+  return (
+    <div style={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '8px',
+      padding: '8px 16px',
+      background: 'var(--surface)',
+      borderBottom: '1px solid var(--border)',
+    }}>
+      {members.map(m => (
+        <div key={m.id} style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          background: m.id === currentMemberId ? 'rgba(124,189,212,0.12)' : 'var(--card)',
+          border: `1px solid ${m.id === currentMemberId ? 'rgba(124,189,212,0.4)' : 'var(--border)'}`,
+          fontSize: '12px',
+          fontWeight: m.id === currentMemberId ? 700 : 500,
+          color: 'var(--text)',
+        }}>
+          <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
+          {m.name}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -460,10 +535,13 @@ type Props = {
   onLogout: () => void;
   onTeamUpdate: (team: Team) => void;
   onGameUpdate: (game: Game) => void;
+  customMissions?: Mission[];
+  categoryColorMap?: Record<string, string>;
+  memberId?: string;
+  members?: Array<{ id: string; name: string; online: boolean }>;
 };
 
 const DIFF_CLS: Record<string, string>   = { easy: 'tag-easy', medium: 'tag-medium', hard: 'tag-hard' };
-const DIFF_LABEL: Record<string, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
 function useCountdown(game: Game) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
@@ -484,6 +562,12 @@ function formatTime(s: number) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+function fmtMins(secs: number) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 function formatElapsed(ms: number) {
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);
@@ -495,7 +579,9 @@ function formatElapsed(ms: number) {
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
-export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate }: Props) {
+export default function MissionsScreen({ team, game, teams, onSelectMission, onLogout, onTeamUpdate, onGameUpdate, customMissions = [], categoryColorMap = {}, memberId, members = [] }: Props) {
+  const { t } = useTranslation();
+  const { t: tMissions } = useTranslation('missions');
   const secondsLeft = useCountdown(game);
   const isFinished = game.status === 'finished' || (secondsLeft !== null && secondsLeft <= 0);
   const isDraft = game.status === 'draft';
@@ -504,6 +590,39 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
   const [selectedCategory, setSelectedCategory] = useState<SuperCategoryKey | null>(null);
   const [showPowerups, setShowPowerups] = useState(false);
   const [activeTab, setActiveTab] = useState<'missions' | 'leaderboard'>('missions');
+  const [showMembers, setShowMembers] = useState(false);
+
+  // Score count-up animation
+  const [displayScore, setDisplayScore] = useState(team.score ?? 0);
+  const [scoreDelta, setScoreDelta] = useState<number | null>(null);
+  const prevScoreRef = useRef(team.score ?? 0);
+
+  useEffect(() => {
+    const newScore = team.score ?? 0;
+    const oldScore = prevScoreRef.current;
+    if (newScore === oldScore) return;
+    prevScoreRef.current = newScore;
+
+    if (newScore > oldScore) {
+      setScoreDelta(newScore - oldScore);
+      setTimeout(() => setScoreDelta(null), 1500);
+    }
+
+    // Animate displayScore from oldScore to newScore over ~600ms
+    const duration = 600;
+    const startTime = performance.now();
+    const startVal = oldScore;
+    const endVal = newScore;
+
+    function step(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(startVal + (endVal - startVal) * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }, [team.score]);
 
   // Hide leaderboard in last 5 min if game.hide_leaderboard is on.
   // Uses a latch: starts false and can only flip to true once secondsLeft
@@ -529,22 +648,54 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
 
   // Freeze effect
   const effects = team.active_effects ?? {};
-  const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until) : null;
+  const freezeUntil = effects.freeze_until ? new Date(effects.freeze_until as string) : null;
+  const inverteradUntil = effects.inverterad_skarm_until ? new Date(effects.inverterad_skarm_until as string) : null;
+  const doubleAgentUntil = effects.double_agent_until ? new Date(effects.double_agent_until as string) : null;
+  const smokeScreenUntil = effects.smoke_screen_until ? new Date(effects.smoke_screen_until as string) : null;
+  const hackedUntil = effects.hacked_until ? new Date(effects.hacked_until as string) : null;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
   const isFrozen = freezeUntil ? freezeUntil.getTime() > now : false;
   const freezeSecsLeft = isFrozen ? Math.ceil((freezeUntil!.getTime() - now) / 1000) : 0;
+  const isInverted = inverteradUntil ? inverteradUntil.getTime() > now : false;
+  const inverteradSecsLeft = isInverted ? Math.ceil((inverteradUntil!.getTime() - now) / 1000) : 0;
+  const isDoubleAgent = doubleAgentUntil ? doubleAgentUntil.getTime() > now : false;
+  const doubleAgentSecsLeft = isDoubleAgent ? Math.ceil((doubleAgentUntil!.getTime() - now) / 1000) : 0;
+  const isSmokeScreen = smokeScreenUntil ? smokeScreenUntil.getTime() > now : false;
+  const smokeScreenSecsLeft = isSmokeScreen ? Math.ceil((smokeScreenUntil!.getTime() - now) / 1000) : 0;
+  const isHacked = hackedUntil ? hackedUntil.getTime() > now : false;
   const [notification, setNotification] = useState<Notification | null>(
     team.pending_notification ?? null
   );
+  const [showMysteryBoxAR, setShowMysteryBoxAR] = useState(false);
+  const mysteryBoxExpiresAtRef = useRef<number>(0);
+  const [mysteryBoxSecsLeft, setMysteryBoxSecsLeft] = useState(0);
 
   useEffect(() => {
     if (team.pending_notification) setNotification(team.pending_notification);
   }, [team.pending_notification]);
 
+  // Drive countdown for mystery_box banner
+  useEffect(() => {
+    if (!notification || notification.type !== 'mystery_box') return;
+    const expiresAt = notification.params?.expiresAt as string | undefined;
+    mysteryBoxExpiresAtRef.current = expiresAt
+      ? new Date(expiresAt).getTime()
+      : Date.now() + 2 * 60 * 1000;
+
+    const tick = () => {
+      const secs = Math.max(0, Math.ceil((mysteryBoxExpiresAtRef.current - Date.now()) / 1000));
+      setMysteryBoxSecsLeft(secs);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [notification]);
+
   const visibleMissions = MISSIONS.filter(m => game.missions.includes(m.id));
+  const visibleCustomMissions = customMissions.filter(m => game.missions.includes(m.id));
   const allDone = visibleMissions.every(m => team.completed?.includes(m.id));
-  const totalPowerups = 4; // shield, freeze, double_trouble, all_in
+  const totalPowerups = 6; // shield, freeze, double_trouble, all_in, point_steal, robin_hood
   const usedPowerups = (team.team_powerups_used ?? []).length;
   const availablePowerups = totalPowerups - usedPowerups;
   const alreadyFinished = Boolean(team.finished_at);
@@ -571,20 +722,126 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
     ? formatElapsed(new Date(team.finished_at).getTime() - new Date(game.started_at).getTime())
     : null;
 
-  // Build per-super-category stats from visible missions
+  // Map "🎵 Music & Film" → 'music_film' so custom missions dragged into a
+  // built-in category get merged into that category's card instead of getting
+  // their own separate card.
+  const superCatLabelToKey = Object.fromEntries(
+    (Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, typeof SUPER_CATEGORIES[SuperCategoryKey]][])
+      .map(([key, sc]) => [`${sc.icon} ${sc.label}`, key])
+  ) as Record<string, SuperCategoryKey>;
+
+  const customMissionSuperCat: Record<string, SuperCategoryKey> = {};
+  for (const m of visibleCustomMissions) {
+    const scKey = m.category ? superCatLabelToKey[m.category] : undefined;
+    if (scKey) customMissionSuperCat[m.id] = scKey;
+  }
+
+  // Build per-super-category stats — includes built-in missions AND custom
+  // missions that have been assigned to this built-in category.
   const categoryStats = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(key => {
-    const missions = visibleMissions.filter(m => MISSION_SUPER_CATEGORY[m.id] === key);
+    const builtIn = visibleMissions.filter(m => MISSION_SUPER_CATEGORY[m.id] === key);
+    const custom = visibleCustomMissions.filter(m => customMissionSuperCat[m.id] === key);
+    const missions = [...builtIn, ...custom];
     if (missions.length === 0) return null;
     const pts = missions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts);
     const minPts = Math.min(...pts);
     const maxPts = Math.max(...pts);
-    const doneMissions = missions.filter(m => team.completed?.includes(m.id));
-    return { key, missions, minPts, maxPts, done: doneMissions.length };
-  }).filter(Boolean) as { key: SuperCategoryKey; missions: typeof visibleMissions; minPts: number; maxPts: number; done: number }[];
+    return { key, missions, minPts, maxPts, done: missions.filter(m => team.completed?.includes(m.id)).length };
+  }).filter(Boolean) as { key: SuperCategoryKey; missions: (typeof visibleMissions[0])[]; minPts: number; maxPts: number; done: number }[];
+
+  // Group custom missions by category — exclude those merged into a built-in category
+  const customCategoryGroups = (() => {
+    const order: string[] = [];
+    const map = new Map<string, typeof visibleCustomMissions>();
+    for (const m of visibleCustomMissions) {
+      if (customMissionSuperCat[m.id]) continue; // merged into a built-in category card
+      const name = m.category ?? 'Custom';
+      if (!map.has(name)) { order.push(name); map.set(name, []); }
+      map.get(name)!.push(m);
+    }
+    return order.map(name => {
+      const missions = map.get(name)!;
+      const pts = missions.map(m => game.mission_max_pts?.[m.id] ?? m.maxPts);
+      return {
+        name,
+        missions,
+        minPts: Math.min(...pts),
+        maxPts: Math.max(...pts),
+        done: missions.filter(m => team.completed?.includes(m.id)).length,
+      };
+    });
+  })();
+
+  // Helpers for the selected custom category (selectedCategory = '__custom__:<name>')
+  const isCustomCategory = typeof selectedCategory === 'string' && selectedCategory.startsWith('__custom__:');
+  const selectedCustomCategoryName = isCustomCategory ? (selectedCategory as string).slice('__custom__:'.length) : null;
 
   return (
     <>
-      {notification && (
+      {notification && notification.type === 'mystery_box' && !showMysteryBoxAR && (
+        /* Mystery box countdown banner */
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: '20px', padding: '32px',
+        }}>
+          <style>{`@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
+          <div style={{ fontSize: '72px', animation: 'float 2s ease-in-out infinite' }}>📦</div>
+          <h2 style={{ color: 'var(--gold)', letterSpacing: '2px', textAlign: 'center' }}>
+            MYSTERY BOX!
+          </h2>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', textAlign: 'center', maxWidth: '260px' }}>
+            A mystery box appeared! Race to open it before other teams!
+          </p>
+          <div style={{
+            fontSize: '36px', fontWeight: 800,
+            color: mysteryBoxSecsLeft <= 30 ? 'var(--accent2)' : 'var(--gold)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            ⏱ {fmtMins(mysteryBoxSecsLeft)}
+          </div>
+          {mysteryBoxSecsLeft > 0 ? (
+            <button
+              className="btn btn-primary"
+              style={{ fontSize: '16px', padding: '14px 32px', background: 'var(--gold)', borderColor: 'var(--gold)', color: '#000' }}
+              onClick={() => setShowMysteryBoxAR(true)}
+            >
+              📷 Open AR Camera
+            </button>
+          ) : (
+            <p style={{ color: 'var(--accent2)', fontSize: '14px' }}>Box expired ⏰</p>
+          )}
+          <button
+            style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+            onClick={() => setNotification(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {notification && notification.type === 'mystery_box' && showMysteryBoxAR && (
+        <MysteryBoxAR
+          mode="claim"
+          teamId={team.id}
+          onClaim={(result) => {
+            setShowMysteryBoxAR(false);
+            setNotification(null);
+            if (result === 'won') {
+              // notification will arrive via poll as mystery_box_won
+            }
+          }}
+          onClose={() => setShowMysteryBoxAR(false)}
+        />
+      )}
+
+      {isHacked && hackedUntil && (
+        <HackedOverlay hackedUntil={hackedUntil} />
+      )}
+
+      {notification && notification.type !== 'mystery_box' && (
         <NotificationOverlay
           notification={notification}
           teamId={team.id}
@@ -596,17 +853,44 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
       {isFrozen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 900, background: 'rgba(10,30,60,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
           <div style={{ fontSize: '72px' }}>❄️</div>
-          <h2 style={{ color: '#7ec8e3', letterSpacing: '2px' }}>YOU ARE FROZEN</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Another team froze you!</p>
+          <h2 style={{ color: '#7ec8e3', letterSpacing: '2px' }}>{t('frozen.title')}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>{t('frozen.subtitle')}</p>
           <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 800, color: '#7ec8e3' }}>{freezeSecsLeft}s</div>
         </div>
       )}
 
-      <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', alignItems: 'center', gap: '4px' }}>
-        {/* Col 1: team name */}
-        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {team.name}
-        </span>
+      <nav className="nav" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', alignItems: 'center', gap: '4px' }}>
+        {/* Col 1: team name — button in remote mode, span otherwise */}
+        {game.remote_mode ? (
+          <button
+            onClick={() => setShowMembers(v => !v)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '12px',
+              fontWeight: 700,
+              color: 'var(--text)',
+              overflow: 'hidden',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {team.name}
+            </span>
+            <span style={{ fontSize: '9px', color: 'var(--muted)', flexShrink: 0 }}>
+              {showMembers ? '▴' : '▾'}
+            </span>
+          </button>
+        ) : (
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {team.name}
+          </span>
+        )}
 
         {/* Col 2: power-up pill */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -617,52 +901,129 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: availablePowerups > 0 ? 'rgba(255,200,0,0.12)' : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${availablePowerups > 0 ? 'var(--gold)' : 'var(--border)'}`,
+                gap: '5px',
+                background: availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${availablePowerups > 0 ? 'rgba(255,200,0,0.6)' : 'var(--border)'}`,
                 borderRadius: '20px',
-                padding: '4px 8px 4px 6px',
+                padding: '5px 10px 5px 8px',
                 cursor: 'pointer',
                 color: availablePowerups > 0 ? 'var(--gold)' : 'var(--muted)',
                 fontFamily: "'Sora', sans-serif",
                 fontWeight: 700,
                 fontSize: '11px',
                 lineHeight: 1,
-                transition: 'all 0.2s',
+                transition: 'all 0.15s',
                 whiteSpace: 'nowrap',
+                boxShadow: availablePowerups > 0 ? '0 2px 8px rgba(255,200,0,0.2)' : 'none',
+                WebkitTapHighlightColor: 'transparent',
               }}
+              onMouseEnter={e => { if (availablePowerups > 0) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,200,0,0.28)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)'; }}
+              onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)'; }}
+              onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+              onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.28)' : 'rgba(255,255,255,0.06)'; }}
+              onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLButtonElement).style.background = availablePowerups > 0 ? 'rgba(255,200,0,0.18)' : 'rgba(255,255,255,0.06)'; }}
             >
-              <span style={{ fontSize: '13px', lineHeight: 1 }}>⚡</span>
+              <Zap size={13} />
               <span>{availablePowerups > 0 ? `${availablePowerups} left` : 'Used'}</span>
             </button>
           )}
         </div>
 
         {/* Col 3: score */}
-        <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center' }}>
-          ⭐ {team.score}
-        </span>
+        <div style={{ position: 'relative', display: 'inline-flex', justifyContent: 'center' }}>
+          <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: 'var(--gold)', whiteSpace: 'nowrap', textAlign: 'center', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Star size={12} fill="var(--gold)" color="var(--gold)" /> {displayScore}
+          </span>
+          {scoreDelta !== null && (
+            <span className="score-delta">+{scoreDelta}</span>
+          )}
+        </div>
 
         {/* Col 4: timer */}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {game.status === 'active' && secondsLeft !== null && (
             <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '13px', color: timerColor, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none', whiteSpace: 'nowrap' }}>
-              ⏱ {formatTime(secondsLeft)}
+              <Timer size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />{formatTime(secondsLeft)}
             </span>
           )}
         </div>
+
       </nav>
 
-      <div className="container fade-in">
+      {/* ── Brand logo strip ── */}
+      {(game.brand_logo_url || game.brand_name) && (
+        <div style={{
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          padding: '8px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+        }}>
+          {game.brand_logo_url && (
+            <img
+              src={game.brand_logo_url}
+              alt={game.brand_name ?? 'Brand logo'}
+              style={{ height: '24px', maxWidth: '100px', objectFit: 'contain' }}
+            />
+          )}
+          {game.brand_name && (
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.5px' }}>
+              {game.brand_name}
+            </span>
+          )}
+        </div>
+      )}
+
+      {game.remote_mode && showMembers && members.length > 0 && (
+        <div style={{
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          padding: '8px 16px',
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+        }}>
+          {members.map(m => (
+            <div key={m.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              background: m.id === memberId ? 'rgba(124,189,212,0.12)' : 'var(--card)',
+              border: `1px solid ${m.id === memberId ? 'rgba(124,189,212,0.4)' : 'var(--border)'}`,
+              fontSize: '12px',
+              fontWeight: m.id === memberId ? 700 : 500,
+              color: 'var(--text)',
+            }}>
+              <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
+              {m.name}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={`container fade-in${isInverted ? ' sabotage-inverse' : ''}${isSmokeScreen ? ' sabotage-smoke' : ''}`}>
 
         {/* WAITING */}
         {isDraft && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '24px' }}>⏳</div>
-            <h2 style={{ marginBottom: '12px' }}>Waiting for the game to start...</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>The admin will start the game shortly.</p>
+            <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}><Timer size={56} color="var(--muted)" strokeWidth={1.5} /></div>
+            <h2 style={{ marginBottom: '12px' }}>{t('waiting.title')}</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>{t('waiting.subtitle')}</p>
             <div style={{ display: 'inline-block', marginTop: '32px', padding: '12px 24px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', fontFamily: "'Sora', sans-serif", fontSize: '13px', color: 'var(--muted)' }}>
-              Game: <strong style={{ color: 'var(--accent)', letterSpacing: '3px' }}>{game.game_key}</strong>
+              {t('waiting.gameLabel')} <strong style={{ color: 'var(--accent)', letterSpacing: '3px' }}>{game.game_key}</strong>
+            </div>
+            <div style={{ marginTop: '24px' }}>
+              <button
+                onClick={onLogout}
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', opacity: 0.7 }}
+              >
+                {t('waiting.logout')}
+              </button>
             </div>
           </div>
         )}
@@ -716,7 +1077,7 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                       transition: 'all 0.15s',
                     }}
                   >
-                    {tab === 'missions' ? '🎯 Missions' : '🏆 Leaderboard'}
+                    {tab === 'missions' ? t('missions.tabMissions') : t('missions.tabLeaderboard')}
                   </button>
                 ))}
               </div>
@@ -736,62 +1097,49 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             {/* ── MISSIONS TAB ── */}
             {activeTab === 'missions' && (<>
 
-            {/* ── DOUBLE TROUBLE PENALTY VIEW ── */}
-            {effects.double_trouble_remaining && (effects.double_trouble_remaining as number) > 0 ? (() => {
-              const penaltyIds = (effects.double_trouble_missions as string[] | undefined) ?? [];
-              const penaltyMissions = MISSIONS.filter(m => penaltyIds.includes(m.id));
-              return (
-                <div style={{ paddingTop: '16px' }}>
-                  <div style={{
-                    padding: '16px 18px',
-                    background: 'rgba(208,117,125,0.10)',
-                    border: '1px solid var(--accent2)',
-                    borderRadius: '12px',
-                    marginBottom: '20px',
-                    textAlign: 'center',
-                  }}>
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>😈</div>
-                    <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--accent2)', letterSpacing: '1px', marginBottom: '6px' }}>DOUBLE TROUBLE</div>
-                    <div style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.6 }}>
-                      You must complete these {penaltyMissions.length} mission{penaltyMissions.length !== 1 ? 's' : ''} before you can play freely again.<br />
-                      <strong style={{ color: 'var(--text)' }}>{(effects.double_trouble_remaining as number)} remaining</strong>
-                    </div>
-                  </div>
-                  <div className="missions-grid">
-                    {penaltyMissions.map(m => {
-                      const done = team.completed?.includes(m.id);
-                      return (
-                        <div
-                          key={m.id}
-                          className={`mission-card${done ? ' done' : ''}`}
-                          onClick={() => !done && onSelectMission(m.id)}
-                        >
-                          <span className="mission-icon">{m.icon}</span>
-                          <div className="mission-name">{m.name}</div>
-                          <div className="mission-desc">{m.desc}</div>
-                          <div className="mission-meta">
-                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
-                            <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {/* ── DOUBLE AGENT BANNER ── */}
+            {isDoubleAgent && (
+              <div style={{
+                padding: '12px 18px', background: 'rgba(167,139,250,0.12)',
+                border: '1px solid #a78bfa', borderRadius: '12px', marginTop: '16px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', gap: '12px',
+              }}>
+                <span style={{ fontSize: '28px' }}>🕵️</span>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '13px', color: '#a78bfa', letterSpacing: '.5px' }}>{t('missions.doubleAgentTitle')} — {doubleAgentSecsLeft}s</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>{t('missions.doubleAgentDesc')}</div>
                 </div>
-              );
-            })() : (<>
+              </div>
+            )}
+
+            {/* ── SMOKE SCREEN BANNER ── */}
+            {isSmokeScreen && (
+              <div style={{
+                padding: '12px 18px', background: 'rgba(208,117,125,0.10)',
+                border: '1px solid var(--accent2)', borderRadius: '12px', marginTop: '16px', marginBottom: '8px',
+                display: 'flex', alignItems: 'center', gap: '12px',
+              }}>
+                <span style={{ fontSize: '28px' }}>💨</span>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--accent2)', letterSpacing: '.5px' }}>{t('missions.smokeScreenTitle')} — {smokeScreenSecsLeft}s</div>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', lineHeight: 1.4 }}>{t('missions.smokeScreenDesc')}</div>
+                </div>
+              </div>
+            )}
+
+            {(<>
             {/* ── CATEGORY VIEW ── */}
             {selectedCategory === null ? (
               <>
                 <div style={{ padding: '16px 0 14px' }}>
-                  <h2 style={{ fontSize: '20px' }}>Choose your mission</h2>
+                  <h2 style={{ fontSize: '20px' }}>{t('missions.chooseTitle')}</h2>
                   <p style={{ color: 'var(--muted)', marginTop: '4px', fontSize: '13px' }}>
-                    Select a category to see missions.
+                    {t('missions.chooseSubtitle')}
                   </p>
                 </div>
 
                 {/* Category cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', paddingBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridAutoRows: '1fr', gap: '12px', paddingBottom: '24px' }}>
                   {categoryStats.map(({ key, missions, minPts, maxPts, done }) => {
                     const cat = SUPER_CATEGORIES[key];
                     const allCatDone = done === missions.length;
@@ -808,6 +1156,9 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           transition: 'all 0.2s',
                           position: 'relative',
                           overflow: 'hidden',
+                          minHeight: '120px',
+                          height: '100%',
+                          boxSizing: 'border-box',
                         }}
                       >
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: cat.color, borderRadius: '14px 14px 0 0' }} />
@@ -816,13 +1167,57 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                           {cat.label}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
-                          {done}/{missions.length} missions
+                          {t('missions.missionsCount', { done, total: missions.length })}
                         </div>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: cat.color, letterSpacing: '0.5px' }}>
-                          {minPts === maxPts ? `up to ${minPts}` : `${minPts}–${maxPts}`} pts
+                          {minPts === maxPts ? t('missions.upToPts', { pts: minPts }) : t('missions.ptsRange', { min: minPts, max: maxPts })}
                         </div>
                         {allCatDone && (
-                          <div style={{ position: 'absolute', top: '12px', right: '12px', fontSize: '16px' }}>✅</div>
+                          <div style={{ position: 'absolute', top: '12px', right: '12px' }}><CheckCircle2 size={16} color="var(--accent3)" /></div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* ── Custom categories — one card per distinct category ── */}
+                  {selectedCategory === null && customCategoryGroups.map(grp => {
+                    const allGrpDone = grp.done === grp.missions.length;
+                    // category name is "🐉 Dragon" — split emoji from label
+                    const emojiMatch = grp.name.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
+                    const icon = emojiMatch ? emojiMatch[0].trim() : '📋';
+                    const label = emojiMatch ? grp.name.slice(emojiMatch[0].length) : grp.name;
+                    const color = categoryColorMap[grp.name] ?? categoryColor(grp.name);
+                    return (
+                      <div
+                        key={grp.name}
+                        onClick={() => setSelectedCategory((`__custom__:${grp.name}`) as SuperCategoryKey)}
+                        style={{
+                          background: 'var(--card)',
+                          border: `1px solid ${allGrpDone ? color : 'var(--border)'}`,
+                          borderRadius: '14px',
+                          padding: '16px 14px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          minHeight: '120px',
+                          height: '100%',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: color, borderRadius: '14px 14px 0 0' }} />
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.2 }}>
+                          {label}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
+                          {t('missions.missionsCount', { done: grp.done, total: grp.missions.length })}
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color, letterSpacing: '0.5px' }}>
+                          {grp.minPts === grp.maxPts ? t('missions.upToPts', { pts: grp.minPts }) : t('missions.ptsRange', { min: grp.minPts, max: grp.maxPts })}
+                        </div>
+                        {allGrpDone && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px' }}><CheckCircle2 size={16} color="var(--accent3)" /></div>
                         )}
                       </div>
                     );
@@ -833,14 +1228,14 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                 <div style={{ padding: '8px 0 32px' }}>
                   {alreadyFinished ? (
                     <div style={{ padding: '16px 20px', background: 'rgba(140,191,155,0.12)', border: '1px solid var(--accent3)', borderRadius: '12px', color: 'var(--accent3)', fontWeight: 700, fontSize: '14px', textAlign: 'center' }}>
-                      ✅ All done!{elapsedText ? ` · ${elapsedText}` : ''}
+                      {elapsedText ? t('missions.allDoneElapsed', { time: elapsedText }) : t('missions.allDoneLabel')}
                     </div>
                   ) : (
                     <button
                       onClick={() => setConfirmDone(true)}
-                      style={{ width: '100%', padding: '16px', borderRadius: '12px', border: `2px solid ${allDone ? 'var(--accent3)' : 'var(--border)'}`, background: allDone ? 'rgba(140,191,155,0.08)' : 'transparent', color: allDone ? 'var(--accent3)' : 'var(--muted)', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                      style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '2px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     >
-                      🏁 We&apos;re done!
+                      <Flag size={15} />{t('missions.wereDoneButton')}
                     </button>
                   )}
                 </div>
@@ -850,14 +1245,14 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
                   <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
                     <div style={{ background: 'var(--card)', border: '2px solid var(--border)', borderRadius: '16px', padding: '40px 32px', maxWidth: '360px', width: '100%', textAlign: 'center' }}>
                       <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏁</div>
-                      <h2 style={{ marginBottom: '12px' }}>Are you sure?</h2>
+                      <h2 style={{ marginBottom: '12px' }}>{t('missions.confirmDoneTitle')}</h2>
                       <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '32px', lineHeight: 1.6 }}>
-                        This marks your team as finished. You won&apos;t be able to complete more missions after this.
+                        {t('missions.confirmDoneBody')}
                       </p>
                       <div style={{ display: 'flex', gap: '12px' }}>
-                        <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setConfirmDone(false)}>Cancel</button>
+                        <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setConfirmDone(false)}>{t('missions.confirmDoneCancel')}</button>
                         <button className="btn btn-primary" style={{ flex: 1 }} disabled={finishing} onClick={async () => { setConfirmDone(false); await markDone(); }}>
-                          {finishing ? '...' : "Yes, we're done!"}
+                          {finishing ? <span className="spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', verticalAlign: 'middle' }} /> : t('missions.confirmDoneConfirm')}
                         </button>
                       </div>
                     </div>
@@ -867,55 +1262,129 @@ export default function MissionsScreen({ team, game, teams, onSelectMission, onL
             ) : (
               /* ── MISSION LIST VIEW ── */
               <>
-                <div style={{ padding: '16px 0 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* ── Category header with breadcrumb ── */}
+                <div style={{ padding: '14px 0 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', padding: '0', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '4px' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '10px',
+                      color: 'var(--text)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontFamily: "'Sora', sans-serif",
+                      fontWeight: 700,
+                      padding: '10px 14px',
+                      minHeight: '44px',
+                      flexShrink: 0,
+                      transition: 'background 0.15s, border-color 0.15s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--card)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
                   >
-                    ← Back
+                    {t('missions.backButton')}
                   </button>
-                  <span style={{ color: 'var(--border)' }}>|</span>
-                  <span style={{ fontSize: '16px' }}>{SUPER_CATEGORIES[selectedCategory].icon}</span>
-                  <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--text)' }}>
-                    {SUPER_CATEGORIES[selectedCategory].label}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t('missions.breadcrumbMissions')}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)', flexShrink: 0 }}>›</span>
+                    {!isCustomCategory ? (
+                      <>
+                        <span style={{
+                          fontWeight: 800,
+                          fontSize: '15px',
+                          color: SUPER_CATEGORIES[selectedCategory!].color,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {SUPER_CATEGORIES[selectedCategory!].label}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{
+                          fontWeight: 800,
+                          fontSize: '15px',
+                          color: selectedCustomCategoryName ? (categoryColorMap[selectedCustomCategoryName] ?? '#9b59b6') : '#9b59b6',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {selectedCustomCategoryName ?? 'Custom'}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <div className="missions-grid" style={{ paddingBottom: '40px' }}>
-                  {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
-                    const done = team.completed?.includes(m.id);
-                    const blocked = isFrozen;
-                    return (
-                      <div
-                        key={m.id}
-                        className={`mission-card${done ? ' done' : ''}`}
-                        style={{ opacity: blocked && !done ? 0.45 : 1 }}
-                        onClick={() => !done && !blocked && onSelectMission(m.id)}
-                      >
-                        <span className="mission-icon">{m.icon}</span>
-                        <div className="mission-name">{m.name}</div>
-                        <div className="mission-desc">{m.desc}</div>
-                        <div className="mission-meta">
-                          <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{DIFF_LABEL[m.difficulty]}</span>
-                          <span className="mission-pts">up to {game.mission_max_pts?.[m.id] ?? m.maxPts} pts</span>
+                {/* Standard category missions */}
+                {!isCustomCategory && (
+                  <div className="missions-grid" style={{ paddingBottom: '40px' }}>
+                    {categoryStats.find(c => c.key === selectedCategory)?.missions.map(m => {
+                      const done = team.completed?.includes(m.id);
+                      const blocked = isFrozen;
+                      return (
+                        <div
+                          key={m.id}
+                          className={`mission-card${done ? ' done' : ''}`}
+                          style={{ opacity: blocked && !done ? 0.45 : 1 }}
+                          onClick={() => !done && !blocked && onSelectMission(m.id)}
+                        >
+                          <span className="mission-icon">{m.icon}</span>
+                          <div className="mission-name">{tMissions(`${m.id}.name`, { defaultValue: m.name })}</div>
+                          <div className="mission-desc">{tMissions(`${m.id}.desc`, { defaultValue: m.desc })}</div>
+                          <div className="mission-meta">
+                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{t(`difficulty.${m.difficulty}`)}</span>
+                            <span className="mission-pts">{t('missions.upToPts', { pts: game.mission_max_pts?.[m.id] ?? m.maxPts })}</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── Custom category missions list ── */}
+                {isCustomCategory && (
+                  <div className="missions-grid" style={{ paddingBottom: '40px' }}>
+                    {(customCategoryGroups.find(g => g.name === selectedCustomCategoryName)?.missions ?? []).map(m => {
+                      const done = team.completed?.includes(m.id);
+                      const blocked = isFrozen;
+                      return (
+                        <div
+                          key={m.id}
+                          className={`mission-card${done ? ' done' : ''}`}
+                          style={{ opacity: blocked && !done ? 0.45 : 1 }}
+                          onClick={() => !done && !blocked && onSelectMission(m.id)}
+                        >
+                          <span className="mission-icon">{m.icon}</span>
+                          <div className="mission-name">{m.name}</div>
+                          <div className="mission-desc">{m.desc}</div>
+                          <div className="mission-meta">
+                            <span className={`tag ${DIFF_CLS[m.difficulty]}`}>{t(`difficulty.${m.difficulty}`)}</span>
+                            <span className="mission-pts">{t('missions.upToPts', { pts: game.mission_max_pts?.[m.id] ?? m.maxPts })}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </>
             )}
-            </>)}{/* closes double_trouble false-branch and ternary */}
+            </>)}{/* closes missions content */}
             </>)}{/* closes activeTab missions */}
             </>)}{/* closes !showPowerups */}
 
             {/* ── LOGOUT AT BOTTOM ── */}
             <div style={{ padding: '8px 0 40px', textAlign: 'center' }}>
               <button
-                onClick={onLogout}
+                onClick={() => confirmLogout(onLogout, t('missions.logoutConfirm'))}
                 style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", letterSpacing: '0.5px', padding: '8px 16px' }}
               >
-                Log out
+                {t('missions.logoutButton')}
               </button>
             </div>
           </>

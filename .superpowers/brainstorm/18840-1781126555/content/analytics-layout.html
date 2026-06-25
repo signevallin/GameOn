@@ -1,0 +1,97 @@
+<h2>Analytics-sidan — vad ska visas?</h2>
+<p class="subtitle">Välj vilket alternativ som passar bäst för vad du vill se</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#0d1117;border-radius:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#6ec6f5;">12</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Spel totalt</div>
+        </div>
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#4ade80;">78%</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Avklarade</div>
+        </div>
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#fff;">4.2</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Snitt lag/spel</div>
+        </div>
+      </div>
+      <div style="background:#1a2332;border-radius:8px;padding:10px;">
+        <div style="font-size:10px;color:#666;margin-bottom:8px;">DINA SPEL</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:#ccc;">Fredagspuben mars</span>
+            <span style="font-size:10px;background:#1e3a2f;color:#4ade80;padding:2px 6px;border-radius:4px;">Klar</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:#ccc;">Teambuilding Q2</span>
+            <span style="font-size:10px;background:#1a2332;color:#6ec6f5;border:1px solid #6ec6f5;padding:2px 6px;border-radius:4px;">Aktiv</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:#888;">Onboarding april</span>
+            <span style="font-size:10px;background:#1a2332;color:#888;padding:2px 6px;border-radius:4px;">Utkast</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — KPI-kort + spellista</h3>
+      <p>3 nyckeltal högst upp, sedan en lista med alla dina spel och deras status. Enkelt och överskådligt.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#0d1117;border-radius:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#6ec6f5;">12</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Spel totalt</div>
+        </div>
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#4ade80;">78%</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Avklarade</div>
+        </div>
+        <div style="flex:1;background:#1a2332;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#fff;">4.2</div>
+          <div style="font-size:10px;color:#666;margin-top:2px;">Snitt lag/spel</div>
+        </div>
+      </div>
+      <!-- Bar chart -->
+      <div style="background:#1a2332;border-radius:8px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:10px;color:#666;margin-bottom:8px;">SPEL PER VECKA</div>
+        <div style="display:flex;gap:4px;align-items:flex-end;height:40px;">
+          <div style="flex:1;background:rgba(110,198,245,0.2);border-radius:3px 3px 0 0;height:20%;"></div>
+          <div style="flex:1;background:rgba(110,198,245,0.35);border-radius:3px 3px 0 0;height:40%;"></div>
+          <div style="flex:1;background:rgba(110,198,245,0.5);border-radius:3px 3px 0 0;height:30%;"></div>
+          <div style="flex:1;background:rgba(110,198,245,0.65);border-radius:3px 3px 0 0;height:60%;"></div>
+          <div style="flex:1;background:rgba(110,198,245,0.8);border-radius:3px 3px 0 0;height:50%;"></div>
+          <div style="flex:1;background:rgba(110,198,245,0.9);border-radius:3px 3px 0 0;height:80%;"></div>
+          <div style="flex:1;background:#6ec6f5;border-radius:3px 3px 0 0;height:100%;"></div>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:4px;">
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V18</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V19</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V20</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V21</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V22</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V23</div>
+          <div style="flex:1;text-align:center;font-size:8px;color:#555;">V24</div>
+        </div>
+      </div>
+      <div style="background:#1a2332;border-radius:8px;padding:8px;">
+        <div style="font-size:10px;color:#666;margin-bottom:6px;">SENASTE SPEL</div>
+        <div style="font-size:11px;color:#ccc;">Fredagspuben mars · 6 lag · 3 dagar sedan</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — KPI-kort + aktivitetsgraf + senaste spel</h3>
+      <p>Samma som Super Admin-sidan fast bara för dig. Visar din aktivitet över tid + senaste spel. Ger mer "känsla" för trenden.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Klicka för att välja, eller berätta i chatten vad du föredrar.</p>

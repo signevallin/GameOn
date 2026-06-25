@@ -1,0 +1,286 @@
+{
+  "code_quiz": {
+    "name": "Code-Rätsel",
+    "desc": "Was gibt der Code aus? Überlegen Sie gut!"
+  },
+  "binary": {
+    "name": "Binärdecoder",
+    "desc": "Binärzahlen in Dezimalzahlen umwandeln."
+  },
+  "bug_hunt": {
+    "name": "Insektenjagd",
+    "desc": "Finde den Fehler im Code."
+  },
+  "terminal": {
+    "name": "Terminal Guru",
+    "desc": "Welcher Befehl erledigt die Aufgabe?"
+  },
+  "memory": {
+    "name": "Memory-Spiel",
+    "desc": "Ordnen Sie IT-Begriffe ihren Definitionen zu."
+  },
+  "emoji_rebus": {
+    "name": "Emoji-Rebus",
+    "desc": "Welches IT-Konzept verbirgt sich in den Emojis? 5 Runden!"
+  },
+  "sequence": {
+    "name": "Sequenzlogik",
+    "desc": "Welche Zahl folgt als Nächstes in der Zahlenfolge?"
+  },
+  "reaction": {
+    "name": "Reaktionstest",
+    "desc": "Klicken Sie so schnell wie möglich, wenn es blinkt!"
+  },
+  "lidkoping_quiz": {
+    "name": "Lidköping",
+    "desc": "Wie gut kennen Sie Lidköping? Fünf Fragen – beantworten Sie sie in Ihren eigenen Worten!"
+  },
+  "trivia_fun": {
+    "name": "Lustige Quizfragen",
+    "desc": "Allgemeinwissen – 5 unterhaltsame Fragen!"
+  },
+  "typerace": {
+    "name": "Typ Rennen",
+    "desc": "Geben Sie den Text so schnell und genau wie möglich ein!"
+  },
+  "wordguess": {
+    "name": "Wortraten",
+    "desc": "Galgenmännchen – errate das Wort Buchstabe für Buchstabe!"
+  },
+  "wouldyou": {
+    "name": "Wer gehört zum Team...?",
+    "desc": "Wählt denjenigen aus EUREM Team, der am besten passt!"
+  },
+  "color_memory": {
+    "name": "Farbspeicher",
+    "desc": "Eine Farbe blinkt 5 Sekunden lang auf – dann wird sie mithilfe von drei Schiebereglern wieder gemischt. Wie gut ist Ihr Gedächtnis?"
+  },
+  "true_false": {
+    "name": "Richtig oder Falsch",
+    "desc": "Lustige Aussagen – wahr oder falsch?"
+  },
+  "photo_bubble": {
+    "name": "Seifenblasen-Herausforderung",
+    "desc": "Team-Selfie – Pustet die größte Hubba-Bubba-Blase! Der Admin bewertet euer Foto."
+  },
+  "photo_movie_scene": {
+    "name": "Licht, Kamera, Action!",
+    "desc": "Stelle eine berühmte Filmszene nach – der Administrator bewertet deine Leistung!"
+  },
+  "pa_sparet": {
+    "name": "Errate die Person",
+    "desc": "Errate die berühmte Person anhand der Hinweise – weniger Hinweise = mehr Punkte!"
+  },
+  "pa_sparet_destination": {
+    "name": "Errate das Reiseziel",
+    "desc": "Errate das Reiseziel anhand der Hinweise – weniger Hinweise = mehr Punkte!"
+  },
+  "celebrity_quiz": {
+    "name": "Promi-Quiz",
+    "desc": "Errate, welche berühmte Person beschrieben wird – 4 Runden!"
+  },
+  "music_emoji": {
+    "name": "Emoji-Lieder",
+    "desc": "Errate den Song anhand der Emojis – 5 Runden!"
+  },
+  "mix_drinks": {
+    "name": "Die Getränke mischen",
+    "desc": "Kennst du dich mit Cocktails aus? Errate die Zutaten – 3 Runden!"
+  },
+  "food_ingredients": {
+    "name": "Was ist in dem Gericht?",
+    "desc": "Identifiziere die Hauptzutaten klassischer Gerichte – 4 Runden!"
+  },
+  "crack_code": {
+    "name": "Entschlüsseln Sie den Code",
+    "desc": "Nutze die fünf Hinweise, um den geheimen dreistelligen Schlosscode zu entschlüsseln!"
+  },
+  "enigma_cipher": {
+    "name": "Enigma-Chiffre",
+    "desc": "Entschlüsseln Sie die abgefangene Nachricht mithilfe der Caesar-Verschlüsselung!"
+  },
+  "music_quiz": {
+    "name": "Errate den Song",
+    "desc": "Höre dir die Clips an und errate Interpret und Song – sortiere sie anschließend nach Erscheinungsjahr!"
+  },
+  "logo_quiz": {
+    "name": "Logo-Quiz",
+    "desc": "Erkennen Sie das Technologieunternehmen an seinem Logo – das sind nicht die offensichtlichen!"
+  },
+  "geo_guess": {
+    "name": "GeoGuess",
+    "desc": "Erkennen Sie das Wahrzeichen – in welchem Land befindet es sich?"
+  },
+  "finish_lyrics": {
+    "name": "Vervollständige den Liedtext",
+    "desc": "Vervollständige die nächste Zeile dieser legendären Lieder!"
+  },
+  "pictionary": {
+    "name": "Pictionary",
+    "desc": "Eine Person zeichnet, die anderen raten – der Administrator bewertet eure Teamarbeit!"
+  },
+  "movie_emoji": {
+    "name": "Emoji-Filme",
+    "desc": "Erratet den Film anhand der Emoji-Hinweise – kann euer Team alle 5 knacken?"
+  },
+  "film_quiz": {
+    "name": "Filmquiz",
+    "desc": "Legendäre Filmzitate, Szenen und Fakten – 6 Runden!"
+  },
+  "anagram": {
+    "name": "Anagramm",
+    "desc": "Entschlüssele die Buchstaben, um das versteckte IT-Wort zu enthüllen – gib deine Antwort ein!"
+  },
+  "snabb_matte": {
+    "name": "Schnelle Mathematik",
+    "desc": "Kopfrechnen gegen die Uhr – 4 Runden, Taschenrechner verboten!"
+  },
+  "svara_ord": {
+    "name": "Rechtschreibwettbewerb",
+    "desc": "Welche Schreibweise ist richtig? 5 notorisch knifflige Wörter!"
+  },
+  "flag_quiz": {
+    "name": "Flaggenquiz",
+    "desc": "Können Sie diese leicht zu verwechselnden Flaggen unterscheiden? 8 Runden!"
+  },
+  "app_icons": {
+    "name": "App-Symbole",
+    "desc": "Erkennen Sie die App an ihrem Symbol – nicht Ihre alltäglichen Apps!"
+  },
+  "vem_sa_det": {
+    "name": "Wer hat das gesagt?",
+    "desc": "Ordne das berühmte Zitat der richtigen Person zu – 5 Runden!"
+  },
+  "sport_quiz": {
+    "name": "Sportquiz",
+    "desc": "Rekorde, Legenden und ikonische Momente im Sport – 5 Runden!"
+  },
+  "slogans": {
+    "name": "Markenslogans",
+    "desc": "Zu welcher Marke gehört dieser Slogan? 5 Runden!"
+  },
+  "gissa_aret": {
+    "name": "Errate das Jahr",
+    "desc": "Wann geschah es? Teste dein Wissen über historische Ereignisse – 5 Runden!"
+  },
+  "spot_error": {
+    "name": "Finde den Fehler",
+    "desc": "Jede Aussage enthält einen absichtlichen Fehler – können Sie ihn finden?"
+  },
+  "memory_speed": {
+    "name": "Speichergeschwindigkeit",
+    "desc": "Merke dir die Gegenstände – und finde dann den fehlenden!"
+  },
+  "human_statue": {
+    "name": "Menschliche Statue",
+    "desc": "Erschaffe eine menschliche Skulptur – der Administrator bewertet deine Pose!"
+  },
+  "photo_ad_shot": {
+    "name": "Werbespot",
+    "desc": "Suchen Sie sich ein Produkt aus und machen Sie das professionellste Produktfoto, das Sie machen können – der Administrator bewertet es!"
+  },
+  "photo_mirror_selfie": {
+    "name": "Selfie im Spiegel",
+    "desc": "Teamfoto im Spiegel – niemand darf direkt im Bild erscheinen, nur als Spiegelbild!"
+  },
+  "photo_shadow_selfie": {
+    "name": "Schatten-Selfie",
+    "desc": "Kombiniere deine Schatten zu einer erkennbaren Form – und fotografiere sie dann!"
+  },
+  "photo_colour_match": {
+    "name": "Farbabstimmung",
+    "desc": "Finde einen realen Gegenstand, dessen Farbe exakt dieser Hexadezimalfarbe entspricht – je genauer die Übereinstimmung, desto mehr Punkte!"
+  },
+  "photo_weird_sign": {
+    "name": "Seltsamstes Schild",
+    "desc": "Finde und fotografiere das seltsamste, lustigste oder ungewöhnlichste Schild, das du finden kannst – der Administrator bewertet es!"
+  },
+  "timeline": {
+    "name": "Zeitleiste",
+    "desc": "Ordne 5 historische Ereignisse in die richtige chronologische Reihenfolge. Jedes richtig platzierte Ereignis bringt Punkte!"
+  },
+  "closest_wins": {
+    "name": "Knappste Siege",
+    "desc": "Schätzen Sie die Zahlen so genau wie möglich. Genauigkeit wird belohnt – je genauer, desto mehr Punkte!"
+  },
+  "duel_trivia": {
+    "name": "Duell-Trivia",
+    "desc": "Fordere ein gegnerisches Team heraus! Beantworte Quizfragen richtig, um pro richtiger Antwort 10 % ihrer Punkte zu stehlen (maximal 30 %)."
+  },
+  "scavenger_hunt": {
+    "name": "Schnitzeljagd",
+    "desc": "Finde und fotografiere 8 Gegenstände aus der Liste. Der Administrator bewertet jedes Foto – je mehr du findest, desto mehr Punkte erhältst du!"
+  },
+  "gkn_aircraft_quiz": {
+    "name": "Flugzeug entdecken",
+    "desc": "Können Sie das Flugzeug auf dem Foto identifizieren? Raten Sie schnell, um die maximale Punktzahl zu erhalten!"
+  },
+  "gkn_trivia": {
+    "name": "GKN-Trivia",
+    "desc": "Testen Sie Ihr Wissen über GKN Aerospace – vier Fragen, jeweils eine Chance!"
+  },
+  "gkn_truefalse": {
+    "name": "Luftfahrt – Richtig oder Falsch?",
+    "desc": "Richtig oder falsch? Testen Sie Ihr Wissen über GKN Aerospace und die Luftfahrt."
+  },
+  "gkn_closest": {
+    "name": "Luftfahrtzahlen",
+    "desc": "Schätzen Sie die Luftfahrt- und GKN-Nummern so genau wie möglich. Je genauer Sie liegen, desto mehr Punkte erhalten Sie!"
+  },
+  "gkn_pa_sparet": {
+    "name": "Errate das Flugzeug",
+    "desc": "Identifizieren Sie das Flugzeug anhand der Hinweise – je weniger Hinweise verwendet werden, desto mehr Punkte gibt es!"
+  },
+  "gkn_timeline": {
+    "name": "GKN-Geschichte",
+    "desc": "Ordnen Sie die wichtigsten Meilensteine in der Geschichte von GKN Aerospace in die richtige chronologische Reihenfolge."
+  },
+  "relay_typerace": {
+    "name": "Wort-Staffel",
+    "desc": "Jede Person tippt ihren Pangramm so schnell wie möglich — im Staffellauf!"
+  },
+  "relay_trivia": {
+    "name": "Trivia-Staffel",
+    "desc": "Jede Person beantwortet eine Frage — dann ist die nächste Person dran!"
+  },
+  "secret_word": {
+    "name": "Geheimwort",
+    "desc": "Jeder hat einen Hinweis — besprecht es im Videoanruf und ratet das Wort!"
+  },
+  "secret_code": {
+    "name": "Der verlorene Code",
+    "desc": "Jede Person hat eine Ziffer des PIN-Codes — rekonstruiert ihn zusammen!"
+  },
+  "relay_geo": {
+    "name": "Geographie-Quiz",
+    "desc": "Beantwortet abwechselnd Geographiefragen im Videoanruf!"
+  },
+  "relay_movies": {
+    "name": "Film-Quiz",
+    "desc": "Klappe, Action, Trivia! Beantwortet abwechselnd Filmfragen."
+  },
+  "relay_science": {
+    "name": "Wissenschafts-Quiz",
+    "desc": "Wie gut kennt euer Team die Wissenschaft? Findet es gemeinsam heraus!"
+  },
+  "relay_story": {
+    "name": "Geschichte bauen",
+    "desc": "Baut gemeinsam eine verrückte Geschichte — ein Satz pro Person!"
+  },
+  "secret_einstein": {
+    "name": "Berühmter Wissenschaftler",
+    "desc": "Jeder hat einen Hinweis zum selben Wissenschaftler — wer ist es?"
+  },
+  "secret_animal": {
+    "name": "Rätsel-Tier",
+    "desc": "Jeder hat einen Hinweis zum selben Tier — welches ist es?"
+  },
+  "secret_titanic": {
+    "name": "Film erraten",
+    "desc": "Jeder Hinweis beschreibt denselben berühmten Film — nennt ihn!"
+  },
+  "secret_venice": {
+    "name": "Rätsel-Stadt",
+    "desc": "Setzt die Hinweise zusammen und nennt die mysteriöse Stadt!"
+  }
+}

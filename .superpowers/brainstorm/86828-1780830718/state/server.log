@@ -1,0 +1,12 @@
+{"type":"server-started","port":58168,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58168","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-flow.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-flow.html"}
+{"source":"user-event","type":"click","text":"VÄLJ STARTPUNKT\n        \n        \n          \n            🍻\n            \n              After Work\n              8 uppdrag · Quiz, Foto, Musik\n            \n          \n          \n            💻\n            \n              IT Onboarding\n              6 uppdrag · Quiz, Trivia\n            \n          \n          \n            ✏️\n            \n              Börja tomt\n              Välj uppdrag manuellt\n            \n          \n        \n        \n          \n            ANVÄND MALL →\n          \n        \n      \n    \n    \n      B — Eget mallbibliotek-steg\n      Ett dedikerat steg visas innan formuläret: välj mall ur ett bibliotek med förhandsgranskning (vilka uppdrag ingår). Tar ett extra klick men ger mer plats och tydlighet.","choice":"b","id":null,"timestamp":1780831036722}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/waiting.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/waiting.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-library.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-library.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-library-v2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/template-library-v2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/86828-1780830718/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

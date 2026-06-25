@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
+import { fuzzyMatch } from '@/lib/fuzzy-match';
 
 type Props = {
   clues: string[];
@@ -28,7 +29,7 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
 
   function submit() {
     if (!guess.trim()) return;
-    const correct = guess.trim().toLowerCase() === answer.toLowerCase();
+    const correct = fuzzyMatch(guess.trim(), answer);
 
     if (correct) {
       setDone(true);
@@ -86,7 +87,7 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
       )}
 
       {!done && (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input
             ref={inputRef}
             type="text"
@@ -94,9 +95,8 @@ export default function PaSparet({ clues, answer, maxPts, placeholder = 'Who is 
             onChange={e => setGuess(e.target.value)}
             placeholder={placeholder}
             onKeyDown={e => e.key === 'Enter' && submit()}
-            style={{ flex: 1 }}
           />
-          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+          <button className="btn btn-primary" onClick={submit}>
             GUESS →
           </button>
         </div>

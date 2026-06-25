@@ -1,0 +1,64 @@
+<h2>Vilket format ska onboardingen ha?</h2>
+<p class="subtitle">Klicka på det alternativ som känns rätt</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="modal-wizard" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;min-height:160px;display:flex;flex-direction:column;gap:8px;border-radius:8px;">
+      <div style="background:#2a2a4e;border-radius:6px;padding:12px;color:#fff;">
+        <div style="font-size:11px;color:#9b59b6;font-weight:700;margin-bottom:4px">STEG 1 AV 3</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">Välkommen till GameOn! 🎮</div>
+        <div style="font-size:11px;color:#aaa;">Vi guidar dig genom att skapa ditt första spel på under 2 minuter.</div>
+        <div style="display:flex;gap:4px;margin-top:10px">
+          <div style="height:4px;flex:1;background:#9b59b6;border-radius:2px"></div>
+          <div style="height:4px;flex:1;background:#333;border-radius:2px"></div>
+          <div style="height:4px;flex:1;background:#333;border-radius:2px"></div>
+        </div>
+        <button style="margin-top:10px;background:#9b59b6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer">Nästa →</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Modal-wizard</h3>
+      <p>En steg-för-steg modal som dyker upp direkt efter registrering. Guidar admin genom att skapa ett spel. Kan stängas och återöppnas via Help.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="checklist" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;min-height:160px;display:flex;flex-direction:column;gap:8px;border-radius:8px;">
+      <div style="background:#2a2a4e;border-radius:6px;padding:12px;color:#fff;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px">🚀 Kom igång</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:6px">3 av 4 klara</div>
+        <div style="height:4px;background:#333;border-radius:2px;margin-bottom:10px"><div style="height:4px;width:75%;background:#9b59b6;border-radius:2px"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-size:11px;color:#7ed56f">✓ Skapat ett konto</div>
+          <div style="font-size:11px;color:#7ed56f">✓ Utforskat uppdrag</div>
+          <div style="font-size:11px;color:#7ed56f">✓ Skapat ett spel</div>
+          <div style="font-size:11px;color:#aaa">○ Startat ditt första spel</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Checklista i admin-vyn</h3>
+      <p>En "Kom igång"-widget som syns i games-vyn tills alla steg är avklarade. Försvinner automatiskt, finns alltid i Help.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="empty-state" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;padding:16px;min-height:160px;display:flex;flex-direction:column;gap:8px;border-radius:8px;">
+      <div style="background:#2a2a4e;border-radius:6px;padding:16px;color:#fff;text-align:center">
+        <div style="font-size:28px;margin-bottom:6px">🎮</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px">Ditt första spel väntar</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:10px">Välj ett tema, välj uppdrag och dela koden med dina lag.</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button style="background:#9b59b6;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:11px;cursor:pointer">+ Skapa spel</button>
+          <button style="background:transparent;color:#9b59b6;border:1px solid #9b59b6;border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">Se hur det fungerar →</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Rikt empty state</h3>
+      <p>Den tomma games-listan blir en välkomstskärm med CTA och länk till en snabbguide. Enklare, ingen extra modal.</p>
+    </div>
+  </div>
+
+</div>

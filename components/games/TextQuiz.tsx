@@ -1,19 +1,19 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { normalizeAnswer } from '@/lib/fuzzy-match';
 
 export type TextQuizRound = { question: string; answer: string; aliases?: string[] };
 
 type Props = {
   rounds: TextQuizRound[];
   maxPts: number;
+  remoteRoundIdx?: number;
+  onRoundAdvance?: (idx: number) => void;
+  onClearRound?: () => void;
   onFinish: (correct: boolean, pts: number) => void;
 };
 
-function normalize(s: string) {
-  return s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9åäö]/g, '');
-}
-
-export default function TextQuiz({ rounds, maxPts, onFinish }: Props) {
+export default function TextQuiz({ rounds, maxPts, remoteRoundIdx, onRoundAdvance, onClearRound, onFinish }: Props) {
   const [idx, setIdx] = useState(0);
   const [guess, setGuess] = useState('');
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
@@ -24,6 +24,19 @@ export default function TextQuiz({ rounds, maxPts, onFinish }: Props) {
     inputRef.current?.focus();
   }, [idx]);
 
+  useEffect(() => {
+    if (remoteRoundIdx !== undefined && remoteRoundIdx > idx) {
+      setResult('correct');
+      setTimeout(() => {
+        setIdx(remoteRoundIdx);
+        setGuess('');
+        setResult(null);
+      }, 900);
+    }
+  // idx deliberately omitted — we only want to react to incoming remote changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteRoundIdx]);
+
   function resolve(isCorrect: boolean) {
     const newCorrect = correctCount + (isCorrect ? 1 : 0);
     setResult(isCorrect ? 'correct' : 'wrong');
@@ -31,21 +44,24 @@ export default function TextQuiz({ rounds, maxPts, onFinish }: Props) {
 
     setTimeout(() => {
       if (idx + 1 >= rounds.length) {
+        onClearRound?.();
         const pts = Math.round((newCorrect / rounds.length) * maxPts);
         onFinish(newCorrect > 0, pts);
       } else {
-        setIdx(i => i + 1);
+        const nextIdx = idx + 1;
+        setIdx(nextIdx);
         setGuess('');
         setResult(null);
+        onRoundAdvance?.(nextIdx);
       }
     }, 1500);
   }
 
   function submit() {
     if (result !== null || guess.trim() === '') return;
-    const n = normalize(guess);
+    const n = normalizeAnswer(guess);
     const r = rounds[idx];
-    const isCorrect = n === normalize(r.answer) || (r.aliases ?? []).some(a => n === normalize(a));
+    const isCorrect = n === normalizeAnswer(r.answer) || (r.aliases ?? []).some(a => n === normalizeAnswer(a));
     resolve(isCorrect);
   }
 
@@ -89,7 +105,13 @@ export default function TextQuiz({ rounds, maxPts, onFinish }: Props) {
           background: result === 'correct' ? 'rgba(140,191,155,0.12)' : 'rgba(208,117,125,0.10)',
           border: `1px solid ${result === 'correct' ? 'var(--accent3)' : 'var(--accent2)'}`,
         }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>{result === 'correct' ? '✅' : '❌'}</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+            {result === 'correct' ? (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(140,191,155,0.3)"/><path d="M7 12l4 4 6-6" stroke="var(--accent3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            ) : (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="rgba(208,117,125,0.2)"/><path d="M8 8l8 8M16 8l-8 8" stroke="var(--accent2)" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            )}
+          </div>
           <div style={{ fontWeight: 800, fontSize: '16px', color: result === 'correct' ? 'var(--accent3)' : 'var(--accent2)' }}>
             {result === 'correct' ? 'Correct!' : `Wrong — the answer was "${r.answer}"`}
           </div>

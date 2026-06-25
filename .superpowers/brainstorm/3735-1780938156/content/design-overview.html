@@ -1,0 +1,166 @@
+<h2>AR Mystery Box — Design</h2>
+<p class="subtitle">Global tävling · Slumpmässig power-up · 2 minuters tidsgräns</p>
+
+<div class="section">
+  <h3>Admin-flöde</h3>
+  <div style="display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding-bottom:8px">
+
+    <!-- Step 1 -->
+    <div style="flex-shrink:0;width:120px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid #555;border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:#1a2035;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center">
+            <div style="background:rgba(117,171,200,0.15);border:1px solid rgba(117,171,200,0.4);border-radius:6px;padding:4px 8px;font-size:9px;color:var(--accent)">🎁 AR Mystery Box</div>
+          </div>
+          <div style="font-size:7px;color:var(--muted)">Admin dashboard</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">1. Trycker på knappen</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- Step 2 -->
+    <div style="flex-shrink:0;width:120px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid #555;border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:linear-gradient(160deg,#1a2035,#0d1520);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px">
+          <!-- Surface grid -->
+          <div style="position:absolute;bottom:20px;left:0;right:0;height:1px;background:rgba(117,171,200,0.4)"></div>
+          <div style="position:absolute;bottom:16px;left:4px;right:4px;height:1px;background:rgba(117,171,200,0.2)"></div>
+          <!-- Box -->
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:22px">📦</div>
+          <!-- Scan lines -->
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(117,171,200,0.03) 5px)"></div>
+          <div style="font-size:7px;color:var(--accent)">Yta hittad ✓</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">2. AR-kameran öppnas</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px">Håller över en yta → box dyker upp</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- Step 3 -->
+    <div style="flex-shrink:0;width:120px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid #555;border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:linear-gradient(160deg,#1a2035,#0d1520);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+          <div style="font-size:24px">📦</div>
+          <div style="background:var(--accent);color:#fff;font-size:8px;padding:3px 8px;border-radius:4px;font-weight:700">PLACERA HÄR</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">3. Trycker på boxen</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px">Bekräftar placeringen</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- Step 4: Broadcast -->
+    <div style="flex-shrink:0;width:120px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid rgba(222,187,107,0.5);border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:#1a1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+          <div style="font-size:20px">📡</div>
+          <div style="display:flex;gap:4px">
+            <div style="width:16px;height:16px;background:rgba(222,187,107,0.2);border:1px solid var(--gold);border-radius:3px;font-size:8px;display:flex;align-items:center;justify-content:center">L1</div>
+            <div style="width:16px;height:16px;background:rgba(222,187,107,0.2);border:1px solid var(--gold);border-radius:3px;font-size:8px;display:flex;align-items:center;justify-content:center">L2</div>
+            <div style="width:16px;height:16px;background:rgba(222,187,107,0.2);border:1px solid var(--gold);border-radius:3px;font-size:8px;display:flex;align-items:center;justify-content:center">L3</div>
+          </div>
+          <div style="font-size:7px;color:var(--gold)">Broadcastas!</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">4. Alla lag notifieras</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px">2-min timer startar</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Lag-flöde (race!)</h3>
+  <div style="display:flex;align-items:flex-start;gap:8px;overflow-x:auto;padding-bottom:8px">
+
+    <!-- Notification -->
+    <div style="flex-shrink:0;width:110px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid rgba(222,187,107,0.6);border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:#1a1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px">
+          <div style="font-size:20px">📦</div>
+          <div style="font-size:7px;color:var(--gold);font-weight:700;text-align:center">MYSTERY BOX<br>APPEARED!</div>
+          <div style="font-size:6px;color:var(--muted)">1:58 kvar</div>
+          <div style="background:var(--gold);color:#000;font-size:7px;padding:2px 6px;border-radius:4px;font-weight:800">ÖPPNA!</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">Notis + countdown</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- AR camera -->
+    <div style="flex-shrink:0;width:110px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid #555;border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:linear-gradient(160deg,#1a2035,#0d1520);display:flex;align-items:center;justify-content:center">
+          <div style="font-size:26px;animation:pulse 1s ease-in-out infinite">📦</div>
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(117,171,200,0.03) 5px)"></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">AR-kamera öppnas</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px">Box dyker upp på närmaste yta</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- Tap -->
+    <div style="flex-shrink:0;width:110px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid rgba(140,191,155,0.5);border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:#0a1a10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+          <div style="font-size:26px">🏆</div>
+          <div style="font-size:8px;color:var(--accent3);font-weight:700">DU VAR FÖRST!</div>
+          <div style="font-size:20px;animation:spin 1s linear infinite">🎲</div>
+          <div style="font-size:7px;color:var(--muted)">Slumpar power-up...</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">Tryckte på boxen</div>
+    </div>
+
+    <div style="font-size:18px;color:var(--muted);padding-top:48px;flex-shrink:0">→</div>
+
+    <!-- Reward -->
+    <div style="flex-shrink:0;width:110px;text-align:center">
+      <div style="width:80px;height:130px;border:3px solid rgba(140,191,155,0.5);border-radius:10px;background:#111;margin:0 auto 8px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:3px;border-radius:7px;background:#0a1a10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px">
+          <div style="font-size:22px">❄️</div>
+          <div style="font-size:7px;color:var(--accent3);font-weight:700;text-align:center">FREEZE<br>UPPLÅST!</div>
+          <div style="font-size:6px;color:var(--muted);text-align:center">+1 extra användning<br>även om redan använd</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text);font-weight:700">Power-up avslöjas</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3 style="color:var(--accent2)">⏰ Om ingen öppnar den (2 min)</h3>
+  <div style="background:rgba(208,117,125,0.08);border:1px solid rgba(208,117,125,0.25);border-radius:8px;padding:12px;font-size:13px;color:var(--muted)">
+    Boxen försvinner — alla lag ser "Mystery box expired 💨". Admin måste skapa en ny om de vill försöka igen.
+  </div>
+</div>
+
+<div class="section">
+  <h3>Arkitektur (snabbt)</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px">
+      <div style="font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:6px">NY DB-KOLUMN</div>
+      <code style="font-size:10px;color:var(--text)">games.mystery_box<br>{ created_at, expires_at,<br>  claimed_by?: teamId }</code>
+      <br><br>
+      <code style="font-size:10px;color:var(--text)">teams.extra_powerups<br>string[] — extra laddningar<br>som kringgår "redan använd"</code>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px">
+      <div style="font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:6px">NYA API-ROUTES</div>
+      <code style="font-size:10px;color:var(--text)">POST /api/admin/mystery-box<br>— skapar + broadcastar</code>
+      <br><br>
+      <code style="font-size:10px;color:var(--text)">POST /api/team/mystery-box/claim<br>— first-come-first-served</code>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>

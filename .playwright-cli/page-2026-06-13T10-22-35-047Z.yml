@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - button "Language" [ref=e6] [cursor=pointer]:
+      - generic [ref=e7]: 🇬🇧
+      - generic [ref=e8]: EN
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - text: Game
+          - img [ref=e12]
+          - text: "n"
+        - paragraph [ref=e14]: Select your role to log in
+      - generic [ref=e15]:
+        - button "🧑‍💻 TEAM" [ref=e16] [cursor=pointer]
+        - button "🛡️ ADMIN" [ref=e17] [cursor=pointer]
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: Game Key (from the organiser)
+          - generic [ref=e21]:
+            - textbox "E.g. X7K2P9" [ref=e22]
+            - button "Scan QR code" [ref=e23] [cursor=pointer]:
+              - img [ref=e24]
+        - button "Next →" [ref=e32] [cursor=pointer]

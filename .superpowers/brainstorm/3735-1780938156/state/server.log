@@ -1,0 +1,17 @@
+{"type":"server-started","port":63289,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:63289","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-trigger.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-trigger.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-placement.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-placement.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-anchor-challenge.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-anchor-challenge.html"}
+{"source":"user-event","type":"click","text":"ADMIN\n        \n          \n            \n            \n            \n            \n            📦\n            \n            \n          \n        \n        Trycker på bordet → boxen placeras\n      \n\n      \n      \n        →\n        📸\n        Skärm-dump sparas\n      \n\n      \n      \n        LAG\n        \n          \n            \n            \n              📦\n            \n            Ledtråd: \"finns nära ett bord\"\n            ÖPPNA AR\n          \n        \n        Hittar stället → AR-reveal\n      \n    \n    \n      📸 AR-placering + ledtrådsfoto (rekommenderas)\n      Admin placerar boxen i AR-vy → appen sparar en screenshot + en textledtråd. Lagen ser ledtråden och letar rätt ställe fysiskt. När de hittar det öppnar de AR-kameran och boxen animeras fram.\n      \n        FördelarAdmin får riktig AR-placeringsupplevelseLagen får en äventyrskänslaFungerar inomhus och utomhusIngen extra enhet, ingen utskrift\n        NackdelarBoxen är inte bokstavligt \"fast\" i 3D-rummet — lagen triggar AR-animationen manuellt när de hittat rätt plats","choice":"screenshot-clue","id":null,"timestamp":1780938640143}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-creative.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/ar-creative.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/waiting.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/waiting.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/design-overview.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/design-overview.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/waiting-2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/3735-1780938156/content/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

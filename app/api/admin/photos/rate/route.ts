@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
+import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  const admin = await validateAdminToken(req).catch(() => null);
+  if (!admin) return unauthorizedResponse();
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -16,9 +20,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
   }
 
+  // Mark submission as manually rated (clears ai_rated flag)
   const { error: subErr } = await supabase
     .from('photo_submissions')
-    .update({ status: 'rated', points_awarded: points })
+    .update({ status: 'rated', points_awarded: points, ai_rated: false })
     .eq('id', submissionId);
 
   if (subErr) return NextResponse.json({ error: subErr.message }, { status: 500 });
@@ -35,30 +40,41 @@ export async function POST(req: Request) {
   const missionName = mission ? `${mission.icon} ${mission.name}` : 'Photo Challenge';
 
   const notification = points > 0
-    ? { type: 'photo_rated', message: `Your photo for "${missionName}" has been rated! You earned ${points} points! 🎉` }
-    : { type: 'photo_rated', message: `Your photo for "${missionName}" was reviewed — unfortunately no points this time. Keep going! 💪` };
+    ? { type: 'photo_rated', msgKey: 'photo_rated_earned', params: { mission: missionName, points } }
+    : { type: 'photo_rated', msgKey: 'photo_rated_no_points', params: { mission: missionName } };
 
-  if (!team.completed?.includes(missionId)) {
+  const alreadyCompleted = team.completed?.includes(missionId);
+
+  if (!alreadyCompleted) {
+    // First time rated — add points and mark completed
     const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
     const { error: updateErr } = await supabase
       .from('teams')
       .update({
         score: (team.score ?? 0) + points,
-        completed: [...(team.completed ?? []), missionId],
+        completed: points > 0
+          ? [...(team.completed ?? []), missionId]
+          : (team.completed ?? []),
         mission_scores: newMissionScores,
         pending_notification: notification,
         updated_at: new Date().toISOString(),
       })
       .eq('id', teamId);
-
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
   } else {
-    // Already completed (re-rating) — still send the notification
+    // Re-rating (e.g. overriding an AI score) — apply score diff
+    const oldPoints = (team.mission_scores as Record<string, number>)?.[missionId] ?? 0;
+    const scoreDiff = points - oldPoints;
+    const newMissionScores = { ...(team.mission_scores ?? {}), [missionId]: points };
     const { error: updateErr } = await supabase
       .from('teams')
-      .update({ pending_notification: notification, updated_at: new Date().toISOString() })
+      .update({
+        score: Math.max(0, (team.score ?? 0) + scoreDiff),
+        mission_scores: newMissionScores,
+        pending_notification: notification,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', teamId);
-
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
   }
 

@@ -1,0 +1,286 @@
+{
+  "code_quiz": {
+    "name": "Code Riddle",
+    "desc": "What does the code output? Think carefully!"
+  },
+  "binary": {
+    "name": "Binary Decoder",
+    "desc": "Convert binary to a decimal number."
+  },
+  "bug_hunt": {
+    "name": "Bug Hunt",
+    "desc": "Find the bug in the code."
+  },
+  "terminal": {
+    "name": "Terminal Guru",
+    "desc": "Which command gets the job done?"
+  },
+  "memory": {
+    "name": "Memory Match",
+    "desc": "Match IT terms with their definitions."
+  },
+  "emoji_rebus": {
+    "name": "Emoji Rebus",
+    "desc": "Which IT concept is hiding in the emojis? 5 rounds!"
+  },
+  "sequence": {
+    "name": "Sequence Logic",
+    "desc": "What comes next in the number sequence?"
+  },
+  "reaction": {
+    "name": "Reaction Test",
+    "desc": "Click as fast as you can when it flashes!"
+  },
+  "lidkoping_quiz": {
+    "name": "Lidköping",
+    "desc": "How well do you know Lidköping? Five questions — answer in your own words!"
+  },
+  "trivia_fun": {
+    "name": "Fun Trivia",
+    "desc": "General knowledge – 5 fun questions!"
+  },
+  "typerace": {
+    "name": "Type Race",
+    "desc": "Type the text as fast and accurately as possible!"
+  },
+  "wordguess": {
+    "name": "Word Guess",
+    "desc": "Hangman – guess the word letter by letter!"
+  },
+  "wouldyou": {
+    "name": "Who on the team...?",
+    "desc": "Vote for who in YOUR team fits best!"
+  },
+  "color_memory": {
+    "name": "Color Memory",
+    "desc": "A color flashes for 5 seconds — then mix it back using three sliders. How sharp is your memory?"
+  },
+  "true_false": {
+    "name": "True or False",
+    "desc": "Funny statements – true or false?"
+  },
+  "photo_bubble": {
+    "name": "Bubble Challenge",
+    "desc": "Team selfie – blow the biggest Hubba Bubba bubble! Admin rates your photo."
+  },
+  "photo_movie_scene": {
+    "name": "Lights, Camera, Action!",
+    "desc": "Recreate a famous movie scene – admin rates your performance!"
+  },
+  "pa_sparet": {
+    "name": "Guess the Person",
+    "desc": "Guess the famous person from clues – fewer clues = more points!"
+  },
+  "pa_sparet_destination": {
+    "name": "Guess the Destination",
+    "desc": "Guess the travel destination from clues – fewer clues = more points!"
+  },
+  "celebrity_quiz": {
+    "name": "Celebrity Quiz",
+    "desc": "Guess which famous person is being described – 4 rounds!"
+  },
+  "music_emoji": {
+    "name": "Emoji Songs",
+    "desc": "Guess the song from the emojis – 5 rounds!"
+  },
+  "mix_drinks": {
+    "name": "Mix the Drinks",
+    "desc": "Do you know your cocktails? Identify the ingredients – 3 rounds!"
+  },
+  "food_ingredients": {
+    "name": "What's in the Dish?",
+    "desc": "Identify the key ingredients of classic dishes – 4 rounds!"
+  },
+  "crack_code": {
+    "name": "Crack the Code",
+    "desc": "Use the five clues to deduce the secret 3-digit lock code!"
+  },
+  "enigma_cipher": {
+    "name": "Enigma Cipher",
+    "desc": "Decode the intercepted message using the Caesar cipher!"
+  },
+  "music_quiz": {
+    "name": "Name That Tune",
+    "desc": "Listen to clips and guess artist + song — then sort them by release year!"
+  },
+  "logo_quiz": {
+    "name": "Logo Quiz",
+    "desc": "Recognize the tech company from its logo — these are not the obvious ones!"
+  },
+  "geo_guess": {
+    "name": "GeoGuess",
+    "desc": "Recognize the landmark — which country is it in?"
+  },
+  "finish_lyrics": {
+    "name": "Finish the Lyrics",
+    "desc": "Complete the next line of these iconic songs!"
+  },
+  "pictionary": {
+    "name": "Pictionary",
+    "desc": "One person draws, the rest guess — admin rates your teamwork!"
+  },
+  "movie_emoji": {
+    "name": "Emoji Movies",
+    "desc": "Guess the movie from the emoji clues — can your team crack all 5?"
+  },
+  "film_quiz": {
+    "name": "Film Quiz",
+    "desc": "Iconic movie quotes, scenes and facts — 6 rounds!"
+  },
+  "anagram": {
+    "name": "Anagram",
+    "desc": "Unscramble the letters to reveal the hidden IT word — type your answer!"
+  },
+  "snabb_matte": {
+    "name": "Quick Maths",
+    "desc": "Mental math against the clock — 4 rounds, no calculator allowed!"
+  },
+  "svara_ord": {
+    "name": "Spelling Bee",
+    "desc": "Which is the correct spelling? 5 notoriously tricky words!"
+  },
+  "flag_quiz": {
+    "name": "Flag Quiz",
+    "desc": "Can you tell these easily-confused flags apart? 8 rounds!"
+  },
+  "app_icons": {
+    "name": "App Icons",
+    "desc": "Recognize the app from its icon — not your everyday apps!"
+  },
+  "vem_sa_det": {
+    "name": "Who Said It?",
+    "desc": "Match the famous quote to the right person — 5 rounds!"
+  },
+  "sport_quiz": {
+    "name": "Sports Quiz",
+    "desc": "Records, legends and iconic moments in sport — 5 rounds!"
+  },
+  "slogans": {
+    "name": "Brand Slogans",
+    "desc": "Which brand does this slogan belong to? 5 rounds!"
+  },
+  "gissa_aret": {
+    "name": "Guess the Year",
+    "desc": "When did it happen? Test your knowledge of historical moments — 5 rounds!"
+  },
+  "spot_error": {
+    "name": "Spot the Error",
+    "desc": "Each statement has one deliberate mistake — can you find it?"
+  },
+  "memory_speed": {
+    "name": "Memory Speed",
+    "desc": "Memorize the items — then spot the missing one!"
+  },
+  "human_statue": {
+    "name": "Human Statue",
+    "desc": "Create a human sculpture — admin rates your pose!"
+  },
+  "photo_ad_shot": {
+    "name": "Ad Shot",
+    "desc": "Find a product and shoot the most professional product ad photo you can — admin rates it!"
+  },
+  "photo_mirror_selfie": {
+    "name": "Mirror Selfie",
+    "desc": "Team photo in a mirror — nobody can appear directly in the shot, only as a reflection!"
+  },
+  "photo_shadow_selfie": {
+    "name": "Shadow Selfie",
+    "desc": "Combine your shadows to form a recognizable shape — then photograph it!"
+  },
+  "photo_colour_match": {
+    "name": "Colour Match",
+    "desc": "Find a real-world object matching this exact hex colour — the closer the match, the more points!"
+  },
+  "photo_weird_sign": {
+    "name": "Weirdest Sign",
+    "desc": "Find and photograph the strangest, funniest or most unusual sign you can — admin rates it!"
+  },
+  "timeline": {
+    "name": "Timeline",
+    "desc": "Sort 5 historical events into the correct chronological order. Each correctly placed event earns points!"
+  },
+  "closest_wins": {
+    "name": "Closest Wins",
+    "desc": "Guess numbers as close to the correct answer as possible. Precision is rewarded — the closer, the more points!"
+  },
+  "duel_trivia": {
+    "name": "Duel Trivia",
+    "desc": "Challenge a rival team! Answer trivia questions correctly to steal 10% of their points per correct answer (max 30%)."
+  },
+  "scavenger_hunt": {
+    "name": "Scavenger Hunt",
+    "desc": "Find and photograph 8 items from the list. Admin rates each photo — the more you find, the more points you earn!"
+  },
+  "gkn_aircraft_quiz": {
+    "name": "Spot the Aircraft",
+    "desc": "Can you identify the aircraft from the photo? Guess fast for maximum points!"
+  },
+  "gkn_trivia": {
+    "name": "GKN Trivia",
+    "desc": "Test your knowledge about GKN Aerospace — four questions, one chance each!"
+  },
+  "gkn_truefalse": {
+    "name": "Aviation True or False",
+    "desc": "True or false? Test your knowledge of GKN Aerospace and aviation."
+  },
+  "gkn_closest": {
+    "name": "Aviation Numbers",
+    "desc": "Guess aviation and GKN numbers as accurately as possible. The closer you are, the more points you earn!"
+  },
+  "gkn_pa_sparet": {
+    "name": "Guess the Aircraft",
+    "desc": "Identify the aircraft from clues — fewer clues used means more points!"
+  },
+  "gkn_timeline": {
+    "name": "GKN History",
+    "desc": "Sort key milestones in GKN Aerospace's history into the correct chronological order."
+  },
+  "relay_typerace": {
+    "name": "Word Relay",
+    "desc": "Each person types their pangram as fast as possible — relay style!"
+  },
+  "relay_trivia": {
+    "name": "Trivia Relay",
+    "desc": "Each person answers a trivia question — then it's the next person's turn!"
+  },
+  "secret_word": {
+    "name": "Secret Word",
+    "desc": "Everyone has a clue — discuss on the video call and guess the word!"
+  },
+  "secret_code": {
+    "name": "The Lost Code",
+    "desc": "Each person has a digit of the PIN code — reconstruct it together!"
+  },
+  "relay_geo": {
+    "name": "Geography Quiz",
+    "desc": "Take turns answering geography questions on the video call!"
+  },
+  "relay_movies": {
+    "name": "Movie Quiz",
+    "desc": "Lights, camera, trivia! Take turns answering movie questions."
+  },
+  "relay_science": {
+    "name": "Science Quiz",
+    "desc": "How well does your team know science? Find out together!"
+  },
+  "relay_story": {
+    "name": "Story Builder",
+    "desc": "Build a crazy story together — one sentence per person!"
+  },
+  "secret_einstein": {
+    "name": "Famous Scientist",
+    "desc": "Each person has a clue about the same famous scientist — figure out who it is!"
+  },
+  "secret_animal": {
+    "name": "Mystery Animal",
+    "desc": "Everyone has a clue about the same animal — what is it?"
+  },
+  "secret_titanic": {
+    "name": "Guess the Movie",
+    "desc": "Each clue describes the same famous film — name it!"
+  },
+  "secret_venice": {
+    "name": "Mystery City",
+    "desc": "Piece together the clues and name the mystery city!"
+  }
+}

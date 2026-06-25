@@ -1,0 +1,103 @@
+<h2>Var ska "Skapa spel" leva på mobil?</h2>
+<p class="subtitle">Skapa är en primär åtgärd — den behöver vara lätt att nå</p>
+
+<div class="cards">
+
+  <!-- Option A: Skapa som egen flik i bottom nav -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0e19;padding:16px;display:flex;justify-content:center">
+      <div style="width:200px;background:#111827;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+        <div style="background:#0f172a;padding:8px 12px">
+          <span style="color:#7cbdd4;font-size:10px;font-weight:700">GameOn Admin</span>
+        </div>
+        <div style="padding:12px;min-height:140px;display:flex;flex-direction:column;gap:8px">
+          <div style="color:#dce4ee;font-size:9px;font-weight:700">SKAPA SPEL</div>
+          <div style="background:#1e293b;border-radius:6px;padding:8px">
+            <div style="color:#4b5563;font-size:8px;margin-bottom:3px">Spelnamn</div>
+            <div style="background:#0f172a;border-radius:4px;padding:4px 6px;color:#dce4ee;font-size:8px">Team GameOn 2026</div>
+          </div>
+          <div style="background:#1e293b;border-radius:6px;padding:8px">
+            <div style="color:#4b5563;font-size:8px;margin-bottom:3px">Tid</div>
+            <div style="background:#0f172a;border-radius:4px;padding:4px 6px;color:#dce4ee;font-size:8px">45 min</div>
+          </div>
+          <div style="background:#7cbdd4;border-radius:6px;padding:6px;text-align:center">
+            <span style="color:#0a0e19;font-size:8px;font-weight:800">SKAPA →</span>
+          </div>
+        </div>
+        <div style="background:#0f172a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;padding:8px 0">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">🏆</span>
+            <span style="color:#4b5563;font-size:7px">Ledare</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">📸</span>
+            <span style="color:#4b5563;font-size:7px">Foton</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">⚡</span>
+            <span style="color:#4b5563;font-size:7px">Power-ups</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:2px solid #7cbdd4;padding-bottom:2px">
+            <span style="font-size:14px">＋</span>
+            <span style="color:#7cbdd4;font-size:7px;font-weight:700">Skapa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Skapa som egen flik</h3>
+      <p>Bottom nav får 4 flikar: Leaderboard, Foton, Power-ups, Skapa. Alltid ett klick bort. Enkel uppdragslista på mobil (alla förkryssade som default).</p>
+    </div>
+  </div>
+
+  <!-- Option B: FAB floating button -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0e19;padding:16px;display:flex;justify-content:center">
+      <div style="width:200px;background:#111827;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.5);position:relative">
+        <div style="background:#0f172a;padding:8px 12px">
+          <span style="color:#7cbdd4;font-size:10px;font-weight:700">GameOn Admin</span>
+        </div>
+        <div style="padding:10px;min-height:140px">
+          <div style="color:#dce4ee;font-size:9px;font-weight:700;margin-bottom:8px">LEADERBOARD</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#f0b429;font-size:9px;font-weight:700">1. Lag Alpha</span>
+              <span style="color:#7cbdd4;font-size:9px">1 240p</span>
+            </div>
+            <div style="background:#1e293b;border-radius:6px;padding:6px 8px;display:flex;justify-content:space-between">
+              <span style="color:#dce4ee;font-size:9px">2. Lag Beta</span>
+              <span style="color:#7cbdd4;font-size:9px">980p</span>
+            </div>
+          </div>
+          <!-- FAB -->
+          <div style="position:absolute;bottom:48px;right:10px;width:32px;height:32px;background:linear-gradient(135deg,#7cbdd4,#5aa3bd);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(124,189,212,0.4)">
+            <span style="color:#0a0e19;font-size:16px;font-weight:800;line-height:1">+</span>
+          </div>
+        </div>
+        <div style="background:#0f172a;border-top:1px solid #1e293b;display:flex;justify-content:space-around;padding:8px 0">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:2px solid #7cbdd4;padding-bottom:2px">
+            <span style="font-size:14px">🏆</span>
+            <span style="color:#7cbdd4;font-size:7px;font-weight:700">Ledare</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">📸</span>
+            <span style="color:#4b5563;font-size:7px">Foton</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">⚡</span>
+            <span style="color:#4b5563;font-size:7px">Power-ups</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:14px">···</span>
+            <span style="color:#4b5563;font-size:7px">Mer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Flytande + knapp (FAB)</h3>
+      <p>En rund + knapp svävar ovanför bottom nav. Öppnar skapa-flödet som ett modal/sheet underifrån. Mer plats för innehåll, men + knappen kan täcka innehåll.</p>
+    </div>
+  </div>
+
+</div>

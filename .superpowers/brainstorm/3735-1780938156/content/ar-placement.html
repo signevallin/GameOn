@@ -1,0 +1,81 @@
+<h2>Hur placerar admin boxen digitalt?</h2>
+<p class="subtitle">Ingen utskrift — men hur hittar lagen den?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="screen-qr" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;display:flex;align-items:center;justify-content:center;height:170px;gap:16px;position:relative;overflow:hidden">
+      <!-- Admin phone showing QR -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:10px;color:var(--muted)">Admin</div>
+        <div style="width:56px;height:90px;border:3px solid #555;border-radius:8px;background:#111;display:flex;align-items:center;justify-content:center">
+          <div style="width:36px;height:36px;background:#fff;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;padding:3px">
+            <div style="background:#000"></div><div style="background:#fff"></div><div style="background:#000"></div>
+            <div style="background:#fff"></div><div style="background:#000"></div><div style="background:#fff"></div>
+            <div style="background:#000"></div><div style="background:#fff"></div><div style="background:#000"></div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:var(--muted)">Gömmer telefonen</div>
+      </div>
+      <!-- Arrow -->
+      <div style="font-size:20px;color:var(--accent)">→</div>
+      <!-- Team phone scanning -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:10px;color:var(--muted)">Lag</div>
+        <div style="width:56px;height:90px;border:3px solid #444;border-radius:8px;background:#111;display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="position:absolute;inset:4px;border-radius:4px;background:#1a2035;display:flex;align-items:center;justify-content:center">
+            <!-- Scan brackets -->
+            <div style="position:absolute;top:4px;left:4px;width:10px;height:10px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)"></div>
+            <div style="position:absolute;top:4px;right:4px;width:10px;height:10px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)"></div>
+            <div style="position:absolute;bottom:4px;left:4px;width:10px;height:10px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)"></div>
+            <div style="position:absolute;bottom:4px;right:4px;width:10px;height:10px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)"></div>
+            <div style="font-size:20px;animation:float 2s ease-in-out infinite">📦</div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:var(--accent)">AR reveal! ✨</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>📱 QR på skärm (rekommenderas)</h3>
+      <p>Admin genererar en QR-kod i dashboardet, lägger sin telefon/laptop med QR-koden synlig någonstans i rummet. Lag skannar → AR-animation spelar upp och power-upen avslöjas.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Fördelar</h4><ul><li>Ingen utskrift</li><li>Admin bestämmer var i rummet</li><li>Fungerar med befintlig QR-scanner</li><li>Enkelt att dölja eller flytta</li></ul></div>
+        <div class="cons"><h4>Nackdelar</h4><ul><li>Kräver en ledig enhet att ställa ifrån sig</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="gps" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f1117;display:flex;align-items:center;justify-content:center;height:170px;position:relative;overflow:hidden">
+      <!-- Map view mockup -->
+      <div style="width:160px;height:130px;background:#1a2035;border-radius:10px;position:relative;overflow:hidden">
+        <!-- Grid lines -->
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 19px,rgba(255,255,255,0.04) 20px),repeating-linear-gradient(90deg,transparent 19px,rgba(255,255,255,0.04) 20px)"></div>
+        <!-- Admin placed pin -->
+        <div style="position:absolute;top:40%;left:55%;font-size:22px;transform:translate(-50%,-50%)">📦</div>
+        <div style="position:absolute;top:40%;left:55%;transform:translate(-50%,8px);font-size:8px;color:var(--accent);white-space:nowrap">Mystery Box</div>
+        <!-- Team dot -->
+        <div style="position:absolute;top:65%;left:30%;width:12px;height:12px;background:var(--accent);border-radius:50%;border:2px solid #fff;transform:translate(-50%,-50%)"></div>
+        <div style="position:absolute;top:65%;left:30%;transform:translate(-50%,8px);font-size:7px;color:var(--muted)">Ditt lag</div>
+        <!-- Radius circle -->
+        <div style="position:absolute;top:40%;left:55%;width:50px;height:50px;border:1px dashed rgba(117,171,200,0.4);border-radius:50%;transform:translate(-50%,-50%)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>📍 GPS-pin (utomhus)</h3>
+      <p>Admin nålar fast en plats på kartan. Lagen måste fysiskt gå dit — när de är tillräckligt nära (t.ex. 10 m) kan de öppna boxen.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Fördelar</h4><ul><li>Ingen extra enhet behövs</li><li>Fungerar bra utomhus</li></ul></div>
+        <div class="cons"><h4>Nackdelar</h4><ul><li>GPS opålitlig inomhus</li><li>Kräver platsåtkomst</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+</style>

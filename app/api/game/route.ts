@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   if (!key) return NextResponse.json({ error: 'Missing game key.' }, { status: 400 });
 
   const { data, error } = await getSupabase()
-    .from('games').select('*').eq('game_key', key).single();
+    .from('games').select('*').eq('game_key', key).is('deleted_at', null).single();
 
   if (error || !data) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
   return NextResponse.json({ game: data }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   if (!key) return NextResponse.json({ error: 'Missing game key.' }, { status: 400 });
 
   const { data, error } = await getSupabase()
-    .from('games').select('*').eq('game_key', key.toUpperCase()).single();
+    .from('games').select('*').eq('game_key', key.toUpperCase()).is('deleted_at', null).single();
 
   if (error || !data) return NextResponse.json({ error: 'Game not found.' }, { status: 404 });
 

@@ -9,11 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@playwright/cli": "^0.1.13",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.45.0",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/functions": "^3.6.2",
+    "html5-qrcode": "^2.3.8",
+    "i18next": "^26.3.1",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.18.0",
     "next": "14.2.5",
     "qrcode.react": "^4.2.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-i18next": "^17.0.8",
+    "resend": "^6.12.4",
+    "stripe": "^22.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",

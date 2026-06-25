@@ -15,6 +15,7 @@ export type MissionType =
   | 'music_emoji'
   | 'crack_code'
   | 'music_quiz'
+  | 'easy_music_quiz'
   | 'image_quiz'
   | 'memory_speed'
   | 'color_memory'
@@ -27,15 +28,17 @@ export type MissionType =
   | 'scavenger_hunt'
   | 'trivia_quiz'
   | 'movie_emoji'
-  | 'text_quiz';
+  | 'text_quiz'
+  | 'relay'
+  | 'shared_secret';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Statement = { text: string; answer: boolean };
 export type CrimeQuestion = { question: string; options: string[]; answer: string };
 export type CelebRound = { clue: string; options: string[]; answer: string };
-export type EmojiRound = { emojis: string; options: string[]; answer: string };
+export type EmojiRound = { emojis: string; options: string[]; answer: string; aliases?: string[] };
 export type CodeClue = { digits: [number, number, number]; hint: string };
-export type MusicRound = { audioUrl: string; artist: string; title: string; year: number };
+export type MusicRound = { audioUrl: string; artist: string; title: string; year: number; trackViewUrl?: string };
 export type ImageRound = { imageUrl: string; options: string[]; answer: string };
 export type MemorySpeedRound = { items: string[]; missing: string; options: string[]; memorizeSeconds?: number };
 export type TriviaRound = { question: string; options: string[]; answer: string };
@@ -74,6 +77,11 @@ export type Mission = {
   closestWinsQuestions?: ClosestWinsQuestion[];
   textQuizRounds?: { question: string; answer: string; aliases?: string[] }[];
   hexColour?: string;
+  // ── Remote mission fields ──────────────────────────────────────────────────
+  /** relay: one segment per team member */
+  segments?: { prompt: string; answer?: string }[];
+  /** relay: 'typerace' = member must type the prompt exactly; 'button' = honor-system Done button */
+  relayMode?: 'typerace' | 'button';
 };
 
 export const MISSIONS: Mission[] = [
@@ -220,11 +228,11 @@ export const MISSIONS: Mission[] = [
     maxPts: 400,
     type: 'text_quiz',
     textQuizRounds: [
-      { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan' },
+      { question: 'Vad betyder Lidköping?', answer: 'Handelsplats vid Lidan', aliases: ['Handelsplatsen vid Lidan', 'En handelsplats vid Lidan', 'Handelsplats vid lidan', 'Handelsplatsen vid lidan'] },
       { question: 'Vad kallas Lidan i folkmun?', answer: 'Älva' },
       { question: 'Rörstrand har jubileum 2026. Hur många år firas?', answer: '300år', aliases: ['300'] },
       { question: 'Vad kallas den del av Gamla staden som finns kvar efter branden 1553?', answer: 'Limtorget' },
-      { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong' },
+      { question: 'Vad användes Rådhuset på torget till innan det flyttades?', answer: 'Jaktpaviljong', aliases: ['Jakt', 'Jaktpaviljongen'] },
     ],
   },
   {
@@ -565,22 +573,40 @@ export const MISSIONS: Mission[] = [
     answer: 'ENIGMA',
     hint: 'Shift each letter 3 steps BACK. H→E, Q→N, L→I ...',
   },
-  // ── MUSIC QUIZ ──
+  // ── HARD MUSIC QUIZ ──
   {
     id: 'music_quiz',
     icon: '🎧',
-    name: 'Name That Tune',
+    name: 'Hard Music Quiz',
     category: 'Fun',
-    desc: 'Listen to clips and guess artist + song — then sort them by release year!',
-    difficulty: 'medium',
+    desc: 'Listen to clips and type the artist + song from memory — then sort them by year!',
+    difficulty: 'hard',
     maxPts: 1000,
     type: 'music_quiz',
     musicRounds: [
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Graduation.mp3', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 2000 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/time.mp3', artist: 'Hans Zimmer', title: 'Time', year: 2010 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/Holocene.mp3', artist: 'Bon Iver', title: 'Holocene', year: 2011 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/6inch.mp3', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016 },
-      { audioUrl: 'https://rbkpcnzrimicwzqwvgub.supabase.co/storage/v1/object/public/music/SomeoneLikeYou.mp3', artist: 'Adele', title: 'Someone Like You', year: 2011 },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/e2/f1/e7e2f1a3-cef7-1a78-74ea-f9c51a2a0d65/mzaf_16372370292217634037.plus.aac.p.m4a', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 1999, trackViewUrl: 'https://music.apple.com/us/album/graduation-friends-forever/281708508?i=281708631' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/9c/89/949c8995-41f8-d3c1-90eb-81c10b54133b/mzaf_8252792899119007978.plus.aac.p.m4a', artist: 'Hans Zimmer', title: 'Time', year: 2010, trackViewUrl: 'https://music.apple.com/us/album/time/380349905?i=380350246' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a', artist: 'Rihanna', title: 'Umbrella (feat. JAŸ-Z)', year: 2007, trackViewUrl: 'https://music.apple.com/us/album/umbrella-feat-ja%C3%BF-z/1441154435?i=1441154437' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f8/56/59/f8565993-788e-7547-fbc5-ae6b5c5ca223/mzaf_1326133503670566588.plus.aac.p.m4a', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016, trackViewUrl: 'https://music.apple.com/us/album/6-inch-feat-the-weeknd/1460432013?i=1460432022' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/18/7b/ef187b7d-f487-e935-4ca1-af5748313710/mzaf_8455263230305249048.plus.aac.p.m4a', artist: 'Adele', title: 'Someone Like You', year: 2011, trackViewUrl: 'https://music.apple.com/us/album/someone-like-you/1544491232?i=1544491998' },
+    ],
+  },
+  // ── EASY MUSIC QUIZ ──
+  {
+    id: 'easy_music_quiz',
+    icon: '🎵',
+    name: 'Easy Music Quiz',
+    category: 'Fun',
+    desc: 'Listen to a clip and pick the right song from four options — no typing needed!',
+    difficulty: 'easy',
+    maxPts: 500,
+    type: 'easy_music_quiz',
+    musicRounds: [
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/e7/e2/f1/e7e2f1a3-cef7-1a78-74ea-f9c51a2a0d65/mzaf_16372370292217634037.plus.aac.p.m4a', artist: 'Vitamin C', title: 'Graduation (Friends Forever)', year: 1999, trackViewUrl: 'https://music.apple.com/us/album/graduation-friends-forever/281708508?i=281708631' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/9c/89/949c8995-41f8-d3c1-90eb-81c10b54133b/mzaf_8252792899119007978.plus.aac.p.m4a', artist: 'Hans Zimmer', title: 'Time', year: 2010, trackViewUrl: 'https://music.apple.com/us/album/time/380349905?i=380350246' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/45/22/7b452241-882c-409b-3a9b-23306b14286a/mzaf_8588243939716013218.plus.aac.p.m4a', artist: 'Rihanna', title: 'Umbrella (feat. JAŸ-Z)', year: 2007, trackViewUrl: 'https://music.apple.com/us/album/umbrella-feat-ja%C3%BF-z/1441154435?i=1441154437' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/f8/56/59/f8565993-788e-7547-fbc5-ae6b5c5ca223/mzaf_1326133503670566588.plus.aac.p.m4a', artist: 'Beyoncé', title: '6 Inch (feat. The Weeknd)', year: 2016, trackViewUrl: 'https://music.apple.com/us/album/6-inch-feat-the-weeknd/1460432013?i=1460432022' },
+      { audioUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/ef/18/7b/ef187b7d-f487-e935-4ca1-af5748313710/mzaf_8455263230305249048.plus.aac.p.m4a', artist: 'Adele', title: 'Someone Like You', year: 2011, trackViewUrl: 'https://music.apple.com/us/album/someone-like-you/1544491232?i=1544491998' },
     ],
   },
   // ── LOGO QUIZ ──
@@ -771,6 +797,7 @@ export const MISSIONS: Mission[] = [
         emojis: '🐉 👦 🦷 🛡️ ⚔️ 🇳🇴 🦾',
         options: ['How to Train Your Dragon', 'Brave', 'The Hobbit', 'Eragon'],
         answer: 'How to Train Your Dragon',
+        aliases: ['Draktränaren'],
       },
     ],
   },
@@ -1449,7 +1476,7 @@ export const MISSIONS: Mission[] = [
       { text: "GKN Aerospace's site in Filton, UK was involved in the development of Concorde.", answer: true },
       { text: 'The Airbus A350 was the first commercial aircraft to have a fuselage made primarily from carbon fibre.', answer: false },
       { text: 'Carbon fibre composite materials are lighter than aluminium.', answer: true },
-      { text: 'GKN\'s industrial roots date all the way back to the 18th century.', answer: true },
+      { text: 'GKN Aerospace manufactures the cockpit windows for the Boeing 787 Dreamliner.', answer: true },
       { text: 'A carbon fibre composite component is typically around 3 times stronger than steel at the same weight.', answer: false },
     ],
   },
@@ -1502,6 +1529,399 @@ export const MISSIONS: Mission[] = [
       { label: 'GKN Aerospace acquires Fokker Technologies, expanding its composite footprint', year: 2015 },
       { label: 'Melrose Industries acquires GKN plc', year: 2018 },
     ],
+  },
+
+  // ── REMOTE ──────────────────────────────────────────────────────────────────
+  {
+    id: 'relay_typerace',
+    icon: '⌨️',
+    name: 'Word Relay',
+    category: 'remote',
+    desc: 'Each person types their pangram as fast as possible — relay style!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'typerace',
+    segments: [
+      { prompt: 'The quick brown fox jumps over the lazy dog' },
+      { prompt: 'Pack my box with five dozen liquor jugs' },
+      { prompt: 'How vexingly quick daft zebras jump' },
+      { prompt: 'Sphinx of black quartz, judge my vow' },
+    ],
+  },
+  {
+    id: 'relay_trivia',
+    icon: '🧠',
+    name: 'Trivia Relay',
+    category: 'remote',
+    desc: "Each person answers a trivia question — then it's the next person's turn!",
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: "What is Australia's capital city?", answer: 'Canberra' },
+      { prompt: 'How many bones does an adult human have?', answer: '206' },
+      { prompt: 'In what year did the Berlin Wall fall?', answer: '1989' },
+      { prompt: 'What is the chemical symbol for gold?', answer: 'Au' },
+    ],
+  },
+  {
+    id: 'secret_word',
+    icon: '🔍',
+    name: 'Secret Word',
+    category: 'remote',
+    desc: 'Everyone has a clue — discuss on the video call and guess the word!',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'shared_secret',
+    clues: ['It is white', 'It is found in every kitchen', 'It is used to preserve food', 'It is used in almost every recipe'],
+    answer: 'salt',
+    hint: 'Think cooking',
+  },
+  {
+    id: 'secret_code',
+    icon: '🔐',
+    name: 'The Lost Code',
+    category: 'remote',
+    desc: 'Each person has a digit of the PIN code — reconstruct it together!',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'shared_secret',
+    clues: ['The first digit is 3', 'The second digit is 7', 'The third digit is 1', 'The fourth digit is 9'],
+    answer: '3719',
+    hint: 'Combine all digits in order',
+  },
+  {
+    id: 'relay_geo',
+    icon: '🌍',
+    name: 'Geography Quiz',
+    category: 'remote',
+    desc: 'Take turns answering geography questions on the video call!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What is the longest river in the world?', answer: 'The Nile' },
+      { prompt: 'Which country has the most natural lakes?', answer: 'Canada' },
+      { prompt: 'What is the smallest country in the world?', answer: 'Vatican City' },
+      { prompt: 'On which continent is the Sahara Desert located?', answer: 'Africa' },
+    ],
+  },
+  {
+    id: 'relay_movies',
+    icon: '🎬',
+    name: 'Movie Quiz',
+    category: 'remote',
+    desc: 'Lights, camera, trivia! Take turns answering movie questions.',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What year was the first Star Wars film released?', answer: '1977' },
+      { prompt: 'In which film does a clownfish search for his son?', answer: 'Finding Nemo' },
+      { prompt: 'Who played James Bond in Casino Royale (2006)?', answer: 'Daniel Craig' },
+      { prompt: 'What Disney film features a queen named Elsa?', answer: 'Frozen' },
+    ],
+  },
+  {
+    id: 'relay_science',
+    icon: '🔬',
+    name: 'Science Quiz',
+    category: 'remote',
+    desc: 'How well does your team know science? Find out together!',
+    difficulty: 'hard',
+    maxPts: 600,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What planet is closest to the Sun?', answer: 'Mercury' },
+      { prompt: 'What is the hardest natural mineral?', answer: 'Diamond' },
+      { prompt: 'What gas do we breathe out?', answer: 'Carbon dioxide' },
+      { prompt: 'How many planets are in our solar system?', answer: '8' },
+    ],
+  },
+  {
+    id: 'relay_story',
+    icon: '📖',
+    name: 'Story Builder',
+    category: 'remote',
+    desc: 'Build a crazy story together — one sentence per person!',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: "Start the story (1 sentence). Begin with: 'It was a dark and stormy night when suddenly…'" },
+      { prompt: 'Continue the story — add a surprising twist! (1 sentence)' },
+      { prompt: 'Introduce a new mysterious character (1 sentence)' },
+      { prompt: 'Bring the story to an exciting end! (1–2 sentences)' },
+    ],
+  },
+  {
+    id: 'secret_einstein',
+    icon: '👨‍🔬',
+    name: 'Famous Scientist',
+    category: 'remote',
+    desc: 'Each person has a clue about the same famous scientist — figure out who it is!',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'shared_secret',
+    clues: [
+      'This person was born in Germany in 1879',
+      'They are best known for their theory of relativity',
+      'They won the Nobel Prize in Physics in 1921',
+      'Their surname means "one stone" in German',
+    ],
+    answer: 'einstein',
+    hint: 'E = mc²',
+  },
+  {
+    id: 'secret_animal',
+    icon: '🐾',
+    name: 'Mystery Animal',
+    category: 'remote',
+    desc: 'Everyone has a clue about the same animal — what is it?',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'shared_secret',
+    clues: [
+      'I have black and white stripes',
+      'I am found in Africa',
+      'I am closely related to horses and donkeys',
+      'I live in groups sometimes called herds or dazzles',
+    ],
+    answer: 'zebra',
+    hint: 'Think of a striped animal from the savanna',
+  },
+  {
+    id: 'secret_titanic',
+    icon: '🚢',
+    name: 'Guess the Movie',
+    category: 'remote',
+    desc: 'Each clue describes the same famous film — name it!',
+    difficulty: 'easy',
+    maxPts: 350,
+    type: 'shared_secret',
+    clues: [
+      'A ship sinks in the North Atlantic Ocean',
+      'The ship was said to be unsinkable',
+      'A 1997 film starring Leonardo DiCaprio and Kate Winslet',
+      'The main characters are Jack and Rose',
+    ],
+    answer: 'titanic',
+    hint: 'An iceberg plays a key role',
+  },
+  {
+    id: 'secret_venice',
+    icon: '🏙️',
+    name: 'Mystery City',
+    category: 'remote',
+    desc: 'Piece together the clues and name the mystery city!',
+    difficulty: 'medium',
+    maxPts: 450,
+    type: 'shared_secret',
+    clues: [
+      'This city is famous for its canals instead of roads',
+      'It sits on a group of over 100 small islands',
+      'It is located in northeastern Italy',
+      'It hosts a world-famous annual carnival with masks',
+    ],
+    answer: 'venice',
+    hint: 'No cars, only gondolas',
+  },
+  {
+    id: 'relay_sports',
+    icon: '🏅',
+    name: 'Sports Quiz',
+    category: 'remote',
+    desc: 'Take turns answering sports trivia — who knows the most?',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'In which country were the first modern Olympic Games held?', answer: 'Greece' },
+      { prompt: 'How many players are on a basketball team on the court at one time?', answer: '5' },
+      { prompt: 'What sport is played at Wimbledon?', answer: 'Tennis' },
+      { prompt: 'How many kilometres is a standard marathon?', answer: '42' },
+    ],
+  },
+  {
+    id: 'relay_history',
+    icon: '📜',
+    name: 'History Quiz',
+    category: 'remote',
+    desc: 'Journey through history — one question per person!',
+    difficulty: 'hard',
+    maxPts: 600,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'In what year did World War II end?', answer: '1945' },
+      { prompt: 'Who was the first person to walk on the Moon?', answer: 'Neil Armstrong' },
+      { prompt: 'Which empire built the Colosseum in Rome?', answer: 'Roman Empire' },
+      { prompt: 'In what year did the Titanic sink?', answer: '1912' },
+    ],
+  },
+  {
+    id: 'relay_music',
+    icon: '🎵',
+    name: 'Music Trivia',
+    category: 'remote',
+    desc: 'How well does your team know music? Find out together!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'How many members were in The Beatles?', answer: '4' },
+      { prompt: 'Which pop star is known as the "Queen of Pop"?', answer: 'Madonna' },
+      { prompt: 'In what decade did hip-hop music originate?', answer: '1970s' },
+      { prompt: 'What is the best-selling music album of all time?', answer: 'Thriller' },
+    ],
+  },
+  {
+    id: 'relay_food',
+    icon: '🍽️',
+    name: 'Food & Cooking',
+    category: 'remote',
+    desc: 'Are you a foodie? Take turns answering culinary questions!',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What is the main ingredient in guacamole?', answer: 'Avocado' },
+      { prompt: 'Which country is sushi originally from?', answer: 'Japan' },
+      { prompt: 'What gas makes bread rise when baking?', answer: 'Carbon dioxide' },
+      { prompt: 'How many teaspoons are in one tablespoon?', answer: '3' },
+    ],
+  },
+  {
+    id: 'relay_nature',
+    icon: '🌿',
+    name: 'Nature & Animals',
+    category: 'remote',
+    desc: 'Explore the natural world together — one question per person!',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What is the tallest animal in the world?', answer: 'Giraffe' },
+      { prompt: 'How many legs does a spider have?', answer: '8' },
+      { prompt: 'What is the largest ocean on Earth?', answer: 'Pacific Ocean' },
+      { prompt: 'What do you call a group of lions?', answer: 'Pride' },
+    ],
+  },
+  {
+    id: 'relay_pop_culture',
+    icon: '⭐',
+    name: 'Pop Culture',
+    category: 'remote',
+    desc: 'TV, film, games — how pop-culture savvy is your team?',
+    difficulty: 'easy',
+    maxPts: 400,
+    type: 'relay',
+    relayMode: 'button',
+    segments: [
+      { prompt: 'What streaming service produces "Stranger Things"?', answer: 'Netflix' },
+      { prompt: 'Which superhero is known as the "Man of Steel"?', answer: 'Superman' },
+      { prompt: 'What is the best-selling video game of all time?', answer: 'Minecraft' },
+      { prompt: 'What animated film features a character named Simba?', answer: 'The Lion King' },
+    ],
+  },
+  {
+    id: 'relay_typerace_proverbs',
+    icon: '✍️',
+    name: 'Proverbs Relay',
+    category: 'remote',
+    desc: 'Each person types a famous proverb as fast as possible — relay style!',
+    difficulty: 'medium',
+    maxPts: 500,
+    type: 'relay',
+    relayMode: 'typerace',
+    segments: [
+      { prompt: 'Actions speak louder than words' },
+      { prompt: 'Every cloud has a silver lining' },
+      { prompt: 'Better late than never' },
+      { prompt: 'Two heads are better than one' },
+    ],
+  },
+  {
+    id: 'secret_eiffel',
+    icon: '🗼',
+    name: 'Mystery Landmark',
+    category: 'remote',
+    desc: 'Each clue points to the same famous landmark — figure it out together!',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'shared_secret',
+    clues: [
+      'This structure was built in 1889 for a World Fair',
+      'It is made of iron and stands 330 metres tall',
+      'It is located in the capital city of France',
+      'It attracts around 7 million visitors every year',
+    ],
+    answer: 'eiffel tower',
+    hint: 'A tall iron tower in Paris',
+  },
+  {
+    id: 'secret_beatles',
+    icon: '🎸',
+    name: 'Famous Band',
+    category: 'remote',
+    desc: 'Everyone has a clue about the same legendary band — who are they?',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'shared_secret',
+    clues: [
+      'This band was formed in Liverpool, England in 1960',
+      'The band had four members',
+      'They are often called the most influential band in history',
+      'Their final studio album was "Let It Be"',
+    ],
+    answer: 'the beatles',
+    hint: 'Four lads from Liverpool',
+  },
+  {
+    id: 'secret_chocolate',
+    icon: '🍫',
+    name: 'Secret Ingredient',
+    category: 'remote',
+    desc: 'What is the secret ingredient? Pool your clues and guess together!',
+    difficulty: 'easy',
+    maxPts: 300,
+    type: 'shared_secret',
+    clues: [
+      'This ingredient comes from the seeds of the cacao tree',
+      'It was used as currency by the ancient Aztecs',
+      'Switzerland and Belgium are famous for making it',
+      'It comes in dark, milk, and white varieties',
+    ],
+    answer: 'chocolate',
+    hint: 'A sweet treat loved worldwide',
+  },
+  {
+    id: 'secret_moon',
+    icon: '🌕',
+    name: 'Space Mystery',
+    category: 'remote',
+    desc: 'Each person has a clue about the same space object — what is it?',
+    difficulty: 'medium',
+    maxPts: 400,
+    type: 'shared_secret',
+    clues: [
+      'This object orbits the Earth and influences our tides',
+      'Its surface is covered in craters and dust',
+      'Humans first set foot on it in 1969',
+      'It takes about 27 days to orbit the Earth once',
+    ],
+    answer: 'moon',
+    hint: 'It lights up the night sky',
   },
 ];
 

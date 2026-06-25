@@ -1,10 +1,64 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
-import { Team, Game } from '@/lib/supabase';
+import { toMission } from '@/lib/custom-missions';
+import { Team, Game, supabase } from '@/lib/supabase';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
+import type { GameTemplate } from '@/lib/templates';
+import { isTemplateActive } from '@/lib/template-utils';
+import JSZip from 'jszip';
+import MysteryBoxAR from '@/components/MysteryBoxAR';
+import {
+  Trophy, BarChart2, Camera, TrendingUp, Zap, Lock,
+  LayoutGrid, MoreHorizontal, ArrowLeft, ChevronRight,
+  Pencil, Settings2, Search, Wind, Flame,
+  X, Trash2, Target, Monitor,
+  Key, CreditCard, CircleHelp, Palette, Bomb,
+  LogOut, WandSparkles, Play, Coins, MessageCircle, Swords,
+  Gamepad2, Map as MapIcon, Rocket,
+  Tv, FileText, Loader2, Download,
+  Square, RotateCcw, Link2, Check,
+  Calendar, BookMarked,
+} from 'lucide-react';
+
+const IC = '#75abc8';
+
+const EMOJI_300 = [
+  // Games & play
+  '🎮','🎯','🧩','🎲','🏆','🥇','🏅','🎳','♟️','🎱','🎰','🎪','🎭','🎨','🖼️','🎬','🎤','🎧','🎼','🎵',
+  '🎶','🎸','🥁','🎹','🎺','🎻','🪗','🪘','🎷','🪕',
+  // Sports
+  '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎿','🏒','🥍','🏓','🏸','🥊','🥋','🏹','🎣','🤿','🪃',
+  // Animals
+  '🦁','🐯','🦊','🐺','🐻','🦝','🐲','🐉','🦋','🐸','🐨','🦄','🐮','🐷','🐭','🐹','🐰','🐶','🐱','🐔',
+  '🐧','🦆','🦅','🦉','🦇','🐢','🐍','🦎','🐙','🦈','🐬','🐳','🦏','🦛','🦒','🐘','🦓','🦘','🐊','🦀',
+  '🦞','🦐','🐡','🐠','🐟','🦁','🐯','🦜','🦩','🦚','🕊️','🦤','🦢','🦭','🐓','🦃',
+  // Nature & weather
+  '🌿','🌲','🌋','🌊','🌈','⚡','🔥','🌍','🌙','⭐','🌟','💫','🌺','🌸','🌼','🌻','🌵','🍀','🌴','🍃',
+  '🍂','🍁','🌾','🌱','☘️','🎋','🎍','🪸','🪨','🌬️','❄️','⛄','🌤️','⛅','🌩️','🌪️','🌀',
+  // Space & science
+  '🚀','🛸','🔭','🧪','🧬','🧲','⚗️','💡','🌌','👽','🤖','🔬','💊','🧫','🛰️','☄️','🌠','🪐',
+  // Food & drinks
+  '🍕','🍔','🌮','🍣','🍩','🎂','🍺','🍻','☕','🧃','🍇','🍉','🍊','🍋','🍌','🍍','🍎','🍓','🫐','🥝',
+  '🍦','🍰','🧁','🍫','🍬','🍭','🥗','🍜','🍲','🍛','🌯','🥙','🧆','🍱','🥡','🍤','🥐','🧇','🍟','🥩',
+  '🍗','🍖','🌭','🥪','🥨','🧀','🥚','🍳','🥞','🫕','🍯','🧋','🍵','🧉','🍾','🍷','🍸','🍹','🥂','🫗',
+  // People & activities
+  '💪','🤝','🧠','🎓','👑','🎩','🦸','🕵️','🧙','🏋️','🤸','🧗','💃','🕺','🧘','🏊','🚴','🤺','🏄','🧜',
+  // Travel & places
+  '✈️','🚗','🚂','🚢','🏰','🗼','🗽','⛩️','🕌','🛕','🏛️','🏯','🏕️','🏖️','🏔️','🌋','🗺️','🧭','🚁','🛺',
+  // Objects & tools
+  '💎','💰','🔮','🪄','📸','📚','🔑','🔒','🔐','⚙️','🔧','🔨','🛡️','🎁','🎊','🎉','🎀','🎗️','🏮','🪔',
+  '🕯️','🔭','💡','🧲','🎯','🪙','💳','📱','💻','🖥️','⌨️','🖱️','🖨️','📷','🎥','📺','📻','🎙️','📡','🔋',
+  // Symbols & misc
+  '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💕','💞','💓','💗','💖','💝','🌈','☀️','🔥','⚡','🎯','👻',
+  '💀','👾','😈','👹','🤡','🥸','🤠','🦸','🧙','🃏','🪅','🎠','🎡','🎢','🎪','🎭','🎨','🖼️','🏺','🪆',
+];
+const Ic = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', color: IC }}>{children}</span>
+);
 
 // ── Countdown hook (admin side) ──────────────────────────────────────────────
 function useCountdown(game: Game | null) {
@@ -50,7 +104,7 @@ function NavCenter({ game }: { game: Game | null }) {
       )}
       {game && game.status === 'active' && secondsLeft !== null && (
         <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: timerColor, letterSpacing: '2px', lineHeight: 1, animation: urgentTime ? 'pulse 0.5s infinite alternate' : 'none' }}>
-          ⏱ {fmtTimer(secondsLeft)}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 4 }}><circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="2"/><path d="M12 9v4l2.5 2.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M9 2h6M12 2v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>{fmtTimer(secondsLeft)}
         </span>
       )}
     </div>
@@ -75,21 +129,18 @@ type PowerUpsCardProps = {
   setPuMessages: (v: string) => void;
   puLoading: string | null;
   onActivate: (type: string) => void;
-  // point steal
-  stealFrom: string;
-  setStealFrom: (v: string) => void;
-  stealTo: string;
-  setStealTo: (v: string) => void;
-  stealAmount: number;
-  setStealAmount: (v: number) => void;
-  onSteal: () => void;
-  stealLoading: boolean;
   // hot potato
   hotPotatoMissionId: string;
   setHotPotatoMissionId: (v: string) => void;
   onHotPotato: () => void;
   hotPotatoLoading: boolean;
   hotPotatoActive: HotPotatoState;
+  // mystery box
+  mysteryBoxActive: MysteryBoxState;
+  mysteryBoxSecsLeft: number | null;
+  mysteryBoxLoading: boolean;
+  onLaunchMysteryBox: () => void;
+  activeGameStatus: string | undefined;
 };
 
 function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
@@ -105,10 +156,29 @@ function useHotPotatoCountdown(hotPotatoActive: HotPotatoState) {
   return secondsLeft;
 }
 
+type MysteryBoxState = {
+  created_at: string;
+  expires_at: string;
+  claimed_by: string | null;
+} | null;
+
+function useMysteryBoxCountdown(mb: MysteryBoxState) {
+  const [secsLeft, setSecsLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (!mb || mb.claimed_by !== null) { setSecsLeft(null); return; }
+    const endTime = new Date(mb.expires_at).getTime();
+    const tick = () => setSecsLeft(Math.max(0, Math.ceil((endTime - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [mb]);
+  return secsLeft;
+}
+
 function PowerUpsCard({
   teams, gameId: _gameId, gameMissionIds, powerupsUsed, puTargets, setPuTargets, puMessages, setPuMessages, puLoading, onActivate,
-  stealFrom, setStealFrom, stealTo, setStealTo, stealAmount, setStealAmount, onSteal, stealLoading,
   hotPotatoMissionId, setHotPotatoMissionId, onHotPotato, hotPotatoLoading, hotPotatoActive,
+  mysteryBoxActive, mysteryBoxSecsLeft, mysteryBoxLoading, onLaunchMysteryBox, activeGameStatus,
 }: PowerUpsCardProps) {
   const hotPotatoSecondsLeft = useHotPotatoCountdown(hotPotatoActive);
 
@@ -141,9 +211,10 @@ function PowerUpsCard({
   };
 
   const POWERS = [
-    { type: 'sabotage', icon: '💻', label: 'Hack a team (-100p)', btn: 'HACK', allowAll: true },
-    { type: 'double_points', icon: '🎯', label: 'Double points', btn: 'ACTIVATE', allowAll: true },
-    { type: 'fake_hint', icon: '🔍', label: 'Fake hint', btn: 'SEND', allowAll: false },
+    { type: 'sabotage', icon: <Monitor size={20} color={IC} />, label: 'Hack a team', desc: '', btn: 'HACK', allowAll: true },
+    { type: 'double_points', icon: <Target size={20} color={IC} />, label: 'Double points', desc: '', btn: 'ACTIVATE', allowAll: true },
+    { type: 'smoke_screen', icon: <Wind size={20} color={IC} />, label: 'Smoke Screen', desc: 'Blur a team for 30s (reusable)', btn: 'SEND', allowAll: false },
+    { type: 'fake_hint', icon: <Search size={20} color={IC} />, label: 'Fake hint', desc: '', btn: 'SEND', allowAll: true },
   ];
 
   const finalFrenzyUsed = isUsedKey('final_frenzy_all');
@@ -162,25 +233,31 @@ function PowerUpsCard({
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '22px', flexShrink: 0 }}>🔥</span>
+          <span style={{ flexShrink: 0, display: 'inline-flex' }}><Flame size={22} color={IC} /></span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: finalFrenzyUsed ? 'var(--muted)' : 'var(--accent2)' }}>Final Frenzy</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>Doubles all points for ALL teams instantly</div>
           </div>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--surface)', borderRadius: '4px', padding: '2px 7px', border: '1px solid var(--border)', flexShrink: 0 }}>ALL TEAMS</span>
-          <button
-            className="btn btn-primary"
-            style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: finalFrenzyUsed ? 'var(--surface)' : 'var(--accent2)', borderColor: finalFrenzyUsed ? 'var(--border)' : 'var(--accent2)' }}
-            disabled={finalFrenzyUsed || finalFrenzyLoading}
-            onClick={() => onActivate('final_frenzy')}
-          >
-            {finalFrenzyLoading ? '...' : finalFrenzyUsed ? '✓ ACTIVATED' : 'ACTIVATE'}
-          </button>
+          {finalFrenzyUsed ? (
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent3)', background: 'rgba(140,191,155,0.12)', borderRadius: '6px', padding: '6px 12px', border: '1px solid var(--accent3)', flexShrink: 0 }}>✓ ACTIVATED</span>
+          ) : (
+            <>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', background: 'var(--surface)', borderRadius: '4px', padding: '2px 7px', border: '1px solid var(--border)', flexShrink: 0 }}>ALL TEAMS</span>
+              <button
+                className="btn btn-primary"
+                style={{ padding: '8px 16px', fontSize: '12px', flexShrink: 0, background: 'var(--accent2)', borderColor: 'var(--accent2)' }}
+                disabled={finalFrenzyLoading}
+                onClick={() => onActivate('final_frenzy')}
+              >
+                {finalFrenzyLoading ? '...' : 'ACTIVATE'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── Per-team power-ups ── */}
-      {POWERS.map(({ type, icon, label, btn, allowAll }) => {
+      {POWERS.map(({ type, icon, label, desc, btn, allowAll }) => {
         const selectedTeamId = puTargets[type] ?? '';
         const isAllSelected = selectedTeamId === 'all';
         const usedKey = isAllSelected ? `${type}_all` : selectedTeamId ? `${type}_${selectedTeamId}` : '';
@@ -191,18 +268,24 @@ function PowerUpsCard({
 
         return (
           <div key={type} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
-              <span style={{ fontSize: '14px', fontWeight: 700, flex: '0 0 auto' }}>{label}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ flexShrink: 0, display: 'inline-flex' }}>{icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>{label}</div>
+                  {desc && <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>{desc}</div>}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <select
                 value={selectedTeamId}
                 onChange={e => setTarget(type, e.target.value)}
-                style={selectStyle}
+                style={{ ...selectStyle, flex: 1 }}
                 disabled={allUsed}
               >
                 <option value="">Select team…</option>
                 {allowAll && (
-                  <option value="all" disabled={allUsed}>{allUsed ? '✓ All teams (used)' : '📢 All teams'}</option>
+                  <option value="all" disabled={allUsed}>{allUsed ? '✓ All teams (used)' : 'All teams'}</option>
                 )}
                 {teams.map(t => {
                   const tUsed = isUsedKey(`${type}_${t.id}`) || allUsed;
@@ -221,6 +304,7 @@ function PowerUpsCard({
               >
                 {isLoading ? '...' : isAllSelected ? `${btn} ALL` : btn}
               </button>
+              </div>
             </div>
             {type === 'fake_hint' && (
               <input
@@ -243,65 +327,7 @@ function PowerUpsCard({
         );
       })}
 
-      {/* ── Point Steal ── */}
-      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <span style={{ fontSize: '20px' }}>🎰</span>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Point Steal</div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Steal points from one team and give them to another</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-          <select
-            value={stealFrom}
-            onChange={e => setStealFrom(e.target.value)}
-            style={{ ...selectStyle, flex: '1 1 140px' }}
-          >
-            <option value="">From team…</option>
-            {teams.map(t => (
-              <option key={t.id} value={t.id} disabled={t.id === stealTo}>{t.name}</option>
-            ))}
-          </select>
-          <select
-            value={stealTo}
-            onChange={e => setStealTo(e.target.value)}
-            style={{ ...selectStyle, flex: '1 1 140px' }}
-          >
-            <option value="">To team…</option>
-            {teams.map(t => (
-              <option key={t.id} value={t.id} disabled={t.id === stealFrom}>{t.name}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-          {[100, 200, 300, 400, 500].map(pts => (
-            <button
-              key={pts}
-              onClick={() => setStealAmount(pts)}
-              style={{
-                padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700,
-                fontFamily: "'Sora', sans-serif", cursor: 'pointer',
-                border: stealAmount === pts ? '2px solid var(--accent)' : '1px solid var(--border)',
-                background: stealAmount === pts ? 'rgba(140,110,255,0.15)' : 'var(--surface)',
-                color: stealAmount === pts ? 'var(--accent)' : 'var(--text)',
-              }}
-            >
-              {pts}p
-            </button>
-          ))}
-        </div>
-        <button
-          className="btn btn-primary"
-          style={{ padding: '8px 20px', fontSize: '12px', background: 'var(--accent)', borderColor: 'var(--accent)' }}
-          disabled={!stealFrom || !stealTo || !stealAmount || stealLoading}
-          onClick={onSteal}
-        >
-          {stealLoading ? '...' : '🎰 STEAL'}
-        </button>
-      </div>
-
-      {/* ── Hot Potato ── */}
+      {/* ── Time Bomb ── */}
       <div style={{
         background: hotPotatoActive
           ? 'linear-gradient(135deg, rgba(208,117,125,0.15) 0%, rgba(222,150,80,0.12) 100%)'
@@ -311,19 +337,22 @@ function PowerUpsCard({
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '20px' }}>🥔</span>
+          <Ic><Bomb size={20} /></Ic>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Hot Potato</div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 200 pts</div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: hotPotatoActive ? 'var(--accent2)' : 'var(--text)' }}>Time Bomb</div>
+            <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '1px' }}>Teams must complete a mission in 3 min or lose 500 pts</div>
           </div>
           {hotPotatoActive && hotPotatoSecondsLeft !== null && (
-            <div style={{
-              background: hotPotatoSecondsLeft <= 30 ? 'var(--accent2)' : 'rgba(208,117,125,0.8)',
-              color: '#fff', borderRadius: '8px', padding: '4px 10px',
-              fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '14px',
-              letterSpacing: '1px', flexShrink: 0,
-              animation: hotPotatoSecondsLeft <= 30 ? 'pulse 0.5s infinite alternate' : 'none',
-            }}>
+            <div
+              className={hotPotatoSecondsLeft <= 60 ? 'urgent-pulse' : ''}
+              style={{
+                background: hotPotatoSecondsLeft <= 30 ? 'var(--accent2)' : 'rgba(208,117,125,0.8)',
+                color: '#fff', borderRadius: '8px', padding: '4px 10px',
+                fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: '14px',
+                letterSpacing: '1px', flexShrink: 0,
+                animation: hotPotatoSecondsLeft <= 30 ? 'pulse 0.5s infinite alternate' : hotPotatoSecondsLeft <= 60 ? undefined : 'none',
+              }}
+            >
               ⏱ {fmtTimer(hotPotatoSecondsLeft)}
             </div>
           )}
@@ -357,17 +386,67 @@ function PowerUpsCard({
               disabled={!hotPotatoMissionId || hotPotatoLoading}
               onClick={onHotPotato}
             >
-              {hotPotatoLoading ? '...' : '🥔 ACTIVATE'}
+              {hotPotatoLoading ? '...' : <><Bomb size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} /> ACTIVATE</>}
             </button>
           </div>
         )}
       </div>
+
+      {/* AR Mystery Box hidden for now */}
     </div>
   );
 }
 
 type Props = { onLogout: () => void };
-type AdminView = 'games' | 'create' | 'dashboard';
+type AdminView = 'games' | 'create' | 'dashboard' | 'missions' | 'templates' | 'manage-templates' | 'analytics' | 'my-analytics' | 'branding';
+
+type AdminCategory = { id: string; name: string; emoji: string; color?: string | null; sort_order: number };
+
+type MissionFormData = {
+  name: string;
+  icon: string;
+  desc: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  maxPts: number;
+  type: string;
+  // trivia_quiz
+  triviaRounds: { question: string; options: [string, string, string, string]; answer: string }[];
+  // truefalse
+  statements: { text: string; answer: boolean }[];
+  // closest_wins
+  closestQuestions: { q: string; answer: string; unit: string; hint: string }[];
+  // pa_sparet
+  clues: string[];
+  paAnswer: string;
+  // timeline
+  timelineItems: { label: string; year: string }[];
+  // photo
+  photoPrompt: string;
+  // relay
+  relaySegments: { prompt: string; answer: string }[];
+  relayMode: 'typerace' | 'button';
+  // shared_secret
+  sharedSecretAnswer: string;
+  sharedSecretHint: string;
+  musicRounds: { audioUrl: string; artist: string; title: string; year: number }[];
+  // seasonal window — ISO date strings ('' = unset)
+  activeFrom: string;
+  activeUntil: string;
+  seasonal: boolean;
+};
+
+const EMPTY_FORM: MissionFormData = {
+  name: '', icon: '⭐', desc: '', difficulty: 'medium', maxPts: 500, type: '',
+  triviaRounds: [], statements: [], closestQuestions: [],
+  clues: [], paAnswer: '', timelineItems: [], photoPrompt: '',
+  relaySegments: [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
+  relayMode: 'typerace',
+  sharedSecretAnswer: '',
+  sharedSecretHint: '',
+  musicRounds: [],
+  activeFrom: '', activeUntil: '',
+  seasonal: false,
+};
 
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
@@ -375,7 +454,7 @@ const RANK_COLORS = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 type PhotoSubmission = {
   id: string; team_id: string; team_name: string;
   mission_id: string; photo_url: string; status: string;
-  points_awarded: number | null; created_at: string;
+  points_awarded: number | null; ai_rated?: boolean; created_at: string;
 };
 
 type ScavengerSubmission = {
@@ -383,7 +462,7 @@ type ScavengerSubmission = {
   game_id: string; mission_id: string;
   item_id: string; item_label: string;
   photo_url: string; status: string;
-  points_awarded: number | null; created_at: string;
+  points_awarded: number | null; ai_rated?: boolean; created_at: string;
 };
 function getPointOptions(maxPts: number): number[] {
   const steps = 5;
@@ -397,18 +476,399 @@ function getPointOptions(maxPts: number): number[] {
   return opts;
 }
 
+type MissionEntry = { id: string; name: string; icon: string };
+
+function MissionProgressTable({ missions, sorted, accentColor }: {
+  missions: MissionEntry[];
+  sorted: Team[];
+  accentColor: string;
+}) {
+  const borderColor = accentColor.startsWith('var(') ? 'var(--border)' : `${accentColor}33`;
+  return (
+    <div style={{ background: 'var(--card)', border: `1px solid ${borderColor}`, borderRadius: '12px', overflow: 'auto' }}>
+      <table className="progress-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            {missions.map(m => (
+              <th key={m.id} title={m.name}>{m.icon}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.length === 0 ? (
+            <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
+          ) : sorted.map(t => (
+            <tr key={t.id}>
+              <td><strong>{t.name}</strong></td>
+              {missions.map(m => {
+                const done = t.completed?.includes(m.id);
+                const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
+                return (
+                  <td key={m.id}>
+                    {done
+                      ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: accentColor, fontWeight: 700, fontSize: '12px' }}>
+                          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: accentColor, display: 'inline-block', flexShrink: 0 }} />
+                          {pts !== null ? pts : '✓'}
+                        </span>
+                      : <span style={{ color: 'var(--muted)' }}>–</span>
+                    }
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string; bullets: string[] }[] = [
+  {
+    icon: <Gamepad2 size={24} color="var(--accent)" />,
+    title: 'Welcome to GameOn',
+    subtitle: 'Create and run live scavenger hunts & team games in minutes. Here\'s how it works:',
+    bullets: [
+      'Pick missions from the library or create your own',
+      'Share the game code — teams join on their phones',
+      'Watch scores update live and control the game from here',
+    ],
+  },
+  {
+    icon: <MapIcon size={24} color="var(--accent)" />,
+    title: 'Create your first game',
+    subtitle: 'Tap + New Game to pick a template, choose missions, and set a time limit. It takes less than 2 minutes.',
+    bullets: [
+      'Start from a template or build from scratch',
+      'Mix standard missions with your own custom ones',
+      'Add custom branding for your organisation',
+    ],
+  },
+  {
+    icon: <Rocket size={24} color="var(--accent)" />,
+    title: "You're ready to play",
+    subtitle: 'Share the 4-letter game code with your teams. Once everyone\'s joined, hit Start Game from the dashboard.',
+    bullets: [
+      'Teams join at playgameon.app — no app download needed',
+      'Live leaderboard updates as missions are completed',
+      'Rate photo submissions manually or let AI do it automatically',
+    ],
+  },
+];
+
+function OnboardingModal({
+  step,
+  onNext,
+  onBack,
+  onSkip,
+  onFinish,
+}: {
+  step: number;
+  onNext: () => void;
+  onBack: () => void;
+  onSkip: () => void;
+  onFinish: () => void;
+}) {
+  const s = ONBOARDING_STEPS[step];
+  const isLast = step === ONBOARDING_STEPS.length - 1;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(10,14,25,0.75)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'var(--card)',
+        border: '1px solid var(--border)',
+        borderRadius: '14px',
+        width: '100%', maxWidth: '440px',
+        position: 'relative',
+        overflow: 'hidden',
+        fontFamily: "'Sora', sans-serif",
+      }}>
+        {/* Top accent bar */}
+        <div style={{
+          height: '3px',
+          background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))',
+        }} />
+
+        <div style={{ padding: '28px 28px 24px' }}>
+          {/* Close button */}
+          <button
+            onClick={onSkip}
+            style={{
+              position: 'absolute', top: '14px', right: '14px',
+              background: 'transparent', border: 'none',
+              color: 'var(--muted)', fontSize: '18px', cursor: 'pointer',
+              lineHeight: 1, padding: '4px',
+            }}
+            aria-label="Close"
+          ><X size={16} color={IC} /></button>
+
+          {/* Progress bars */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
+            {ONBOARDING_STEPS.map((_, i) => (
+              <div key={i} style={{
+                height: '4px', flex: 1, borderRadius: '2px',
+                background: i < step
+                  ? 'rgba(117,171,200,0.45)'
+                  : i === step
+                    ? 'var(--accent)'
+                    : 'var(--border)',
+              }} />
+            ))}
+          </div>
+
+          {/* Step icon */}
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '14px',
+            background: 'var(--accent-dim)',
+            border: '1px solid var(--accent-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: '16px',
+          }}>
+            {s.icon}
+          </div>
+
+          {/* Title */}
+          <h2 style={{
+            fontSize: '18px', fontWeight: 700, color: 'var(--text)',
+            marginBottom: '8px', lineHeight: 1.3,
+          }}>
+            {s.title}
+          </h2>
+
+          {/* Subtitle */}
+          <p style={{
+            fontSize: '13px', color: 'var(--muted)',
+            lineHeight: 1.6, marginBottom: '20px',
+          }}>
+            {s.subtitle}
+          </p>
+
+          {/* Bullets */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+            {s.bullets.map((b, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text)' }}>
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                  background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
+                  color: 'var(--accent)', fontSize: '11px', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginTop: '1px',
+                }}>
+                  {i + 1}
+                </div>
+                <span>{b}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {isLast ? (
+              <button className="btn btn-primary" style={{ fontSize: '13px', width: '100%' }} onClick={onFinish}>
+                Create my first game
+              </button>
+            ) : (
+              <button className="btn btn-primary" style={{ fontSize: '13px', width: '100%' }} onClick={onNext}>
+                {step === 0 ? 'Get started →' : 'Next →'}
+              </button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {isLast ? (
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+              ) : step === 0 ? (
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onSkip}>Skip tour</button>
+              ) : (
+                <button className="btn btn-ghost" style={{ fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+              )}
+              <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{step + 1} / {ONBOARDING_STEPS.length}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── BrandingView ──────────────────────────────────────────────────────────
+function BrandingView({ authToken, onBack, profileMenu }: {
+  authToken: string | null;
+  onBack: () => void;
+  profileMenu: React.ReactNode;
+}) {
+  const [logoUrl, setLogoUrl] = useState('');
+  const [color, setColor] = useState('');
+  const [name, setName] = useState('');
+  const [applyToAll, setApplyToAll] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!authToken) return;
+    fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${authToken}` } })
+      .then(r => r.json())
+      .then(d => {
+        setLogoUrl(d.brand_logo_url ?? '');
+        setColor(d.brand_primary_color ?? '');
+        setName(d.brand_name ?? '');
+        setApplyToAll(d.apply_to_all_games ?? false);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, [authToken]);
+
+  async function save() {
+    setSaving(true);
+    setSaved(false);
+    setError('');
+    const res = await fetch('/api/admin/branding', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({
+        brand_logo_url: logoUrl || null,
+        brand_primary_color: color || null,
+        brand_name: name || null,
+        apply_to_all_games: applyToAll,
+      }),
+    });
+    setSaving(false);
+    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+    else setError('Could not save. Please try again.');
+  }
+
+  return (
+    <>
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={onBack}><ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back</button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Branding</div>
+        {profileMenu}
+      </nav>
+
+      <div className="container" style={{ maxWidth: 560, paddingTop: '32px' }}>
+        {!loaded ? (
+          <p style={{ color: 'var(--muted)', textAlign: 'center', paddingTop: '60px' }}>Loading…</p>
+        ) : (
+          <>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '28px', lineHeight: 1.6 }}>
+              Add your company identity to the player view. The logo appears in a slim strip below the nav, and the primary color replaces the default GameOn accent color for buttons and highlights.
+            </p>
+
+            {/* Apply to all toggle */}
+            <div
+              onClick={() => setApplyToAll(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '14px 16px', background: 'var(--surface)', border: `1px solid ${applyToAll ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px', marginBottom: '24px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>Apply to all my games</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  When on, every new game you create will automatically use this branding.
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: applyToAll ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '16px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: applyToAll ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Brand name */}
+              <div>
+                <label className="form-label">Brand name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Acme Corp"
+                  value={name}
+                  onChange={e => { setName(e.target.value); setSaved(false); }}
+                />
+              </div>
+
+              {/* Logo URL */}
+              <div>
+                <label className="form-label">Logo URL</label>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px' }}>PNG or SVG with transparent background recommended</div>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="https://example.com/logo.png"
+                  value={logoUrl}
+                  onChange={e => { setLogoUrl(e.target.value); setSaved(false); }}
+                />
+                {logoUrl && (
+                  <div style={{ marginTop: '10px', padding: '12px 16px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img src={logoUrl} alt="Logo preview" style={{ height: '36px', maxWidth: '140px', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Preview</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Primary color */}
+              <div>
+                <label className="form-label">Primary color</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="color"
+                    value={color || '#7cbdd4'}
+                    onChange={e => { setColor(e.target.value); setSaved(false); }}
+                    style={{ width: '48px', height: '40px', padding: '2px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--card)', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '13px', color: 'var(--muted)', fontFamily: 'monospace' }}>{color || '#7cbdd4'}</span>
+                  {color && (
+                    <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => { setColor(''); setSaved(false); }}>
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {error && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginTop: '16px' }}>{error}</p>}
+
+            <button
+              className="btn btn-primary btn-full"
+              style={{ marginTop: '28px' }}
+              onClick={save}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Branding'}
+            </button>
+
+            <p style={{ fontSize: '11px', color: 'var(--muted)', textAlign: 'center', marginTop: '12px', lineHeight: 1.5 }}>
+              Changes apply to new games only. To update an existing game, contact support or re-create it.
+            </p>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
 export default function AdminScreen({ onLogout }: Props) {
   const [view, setView] = useState<AdminView>('games');
   const [games, setGames] = useState<Game[]>([]);
+  const [analyticsGames, setAnalyticsGames] = useState<Game[]>([]);
   const [activeGame, setActiveGame] = useState<Game | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [photos, setPhotos] = useState<PhotoSubmission[]>([]);
   const [scavengerSubs, setScavengerSubs] = useState<ScavengerSubmission[]>([]);
   const [tab, setTab] = useState<'leaderboard' | 'progress' | 'photos' | 'powerups' | 'stats'>('leaderboard');
+  const isMobile = useIsMobile();
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [photoTeamFilter, setPhotoTeamFilter] = useState<string>('all');
+  const [visiblePendingCount, setVisiblePendingCount] = useState(10);
+  const [visibleScavengerCount, setVisibleScavengerCount] = useState(10);
+  const [visibleRatedCount, setVisibleRatedCount] = useState(20);
+  const [downloadingZip, setDownloadingZip] = useState(false);
   const [qrExpanded, setQrExpanded] = useState(false);
   const [photoModal, setPhotoModal] = useState<{ url: string; label: string } | null>(null);
   const [rated, setRated] = useState<Set<string>>(new Set());
+  const [presenterLinkCopied, setPresenterLinkCopied] = useState(false);
   const [scavengerRated, setScavengerRated] = useState<Set<string>>(new Set());
   const [powerupsUsed, setPowerupsUsed] = useState<string[]>([]);
   const [puTargets, setPuTargets] = useState<Record<string, string>>({
@@ -416,15 +876,184 @@ export default function AdminScreen({ onLogout }: Props) {
   });
   const [puMessages, setPuMessages] = useState('');
   const [puLoading, setPuLoading] = useState<string | null>(null);
-  // Point Steal
-  const [stealFrom, setStealFrom] = useState('');
-  const [stealTo, setStealTo] = useState('');
-  const [stealAmount, setStealAmount] = useState(100);
-  const [stealLoading, setStealLoading] = useState(false);
-  // Hot Potato
+  // Time Bomb
   const [hotPotatoMissionId, setHotPotatoMissionId] = useState('');
   const [hotPotatoLoading, setHotPotatoLoading] = useState(false);
   const [hotPotatoActive, setHotPotatoActive] = useState<HotPotatoState>(null);
+  const [mysteryBoxActive, setMysteryBoxActive] = useState<MysteryBoxState>(null);
+  const [showMysteryBoxAR, setShowMysteryBoxAR] = useState(false);
+  const [mysteryBoxLoading, setMysteryBoxLoading] = useState(false);
+  const mysteryBoxSecsLeft = useMysteryBoxCountdown(mysteryBoxActive);
+
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  // Ref so closures (polling interval, startOrStop) always read the latest token
+  // without needing to be in useCallback/useEffect dependency arrays.
+  const authTokenRef = useRef<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [templates, setTemplates] = useState<GameTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [saveTemplateId, setSaveTemplateId] = useState<string | null>(null);
+  const [saveTemplateName, setSaveTemplateName] = useState('');
+  const [saveTemplateIcon, setSaveTemplateIcon] = useState('🎮');
+  const [saveTemplateLoading, setSaveTemplateLoading] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editTemplateName, setEditTemplateName] = useState('');
+  const [editTemplateIcon, setEditTemplateIcon] = useState('🎮');
+  const [editTemplateMissions, setEditTemplateMissions] = useState<string[]>([]);
+  const [editTemplateLoading, setEditTemplateLoading] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateIcon, setNewTemplateIcon] = useState('🎮');
+  const [newTemplateMissions, setNewTemplateMissions] = useState<string[]>([]);
+  const [showNewTemplateForm, setShowNewTemplateForm] = useState(false);
+  const [manageTemplatesLoading, setManageTemplatesLoading] = useState(false);
+  // New template form — extra fields
+  const [newTemplateDesc, setNewTemplateDesc] = useState('');
+  const [newTemplateActiveFrom, setNewTemplateActiveFrom] = useState('');
+  const [newTemplateActiveTo, setNewTemplateActiveTo] = useState('');
+  const [newTemplateDescLoading, setNewTemplateDescLoading] = useState(false);
+
+  // Edit template form — extra fields
+  const [editTemplateDesc, setEditTemplateDesc] = useState('');
+  const [editTemplateActiveFrom, setEditTemplateActiveFrom] = useState('');
+  const [editTemplateActiveTo, setEditTemplateActiveTo] = useState('');
+  const [editTemplateDescLoading, setEditTemplateDescLoading] = useState(false);
+
+  // AI generate modal
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generatePrompt, setGeneratePrompt] = useState('');
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [generatePreview, setGeneratePreview] = useState<{
+    name: string; icon: string; description: string;
+    activeFrom: string | null; activeTo: string | null;
+    selectedMissionIds: string[]; newMissions: Array<{ title: string; icon: string; type: string; points: number; description: string }>;
+  } | null>(null);
+  const [generateSaving, setGenerateSaving] = useState(false);
+  const [generateIsBuiltin, setGenerateIsBuiltin] = useState(false);
+
+  // AI photo rating
+  const [aiPhotoRating, setAiPhotoRating] = useState(false);
+  const [aiPhotoInstructions, setAiPhotoInstructions] = useState('');
+  const [aiRatingEnabled, setAiRatingEnabled] = useState(false);
+  const [aiRatingInstructions, setAiRatingInstructions] = useState('');
+  const [overridingPhotoId, setOverridingPhotoId] = useState<string | null>(null);
+  const [plan, setPlan] = useState<'free' | 'pro' | 'studio'>('free');
+  const [stripeManaged, setStripeManaged] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  // Analytics state
+  type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
+  type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; plan: 'free' | 'pro' | 'studio'; games: AnalyticsGame[] };
+  type AnalyticsMissionStat = { id: string; name: string; gameCount: number; completedCount: number; totalTeams: number; completionRate: number };
+  type AnalyticsKPIs = { totalGames: number; finishedGames: number; activeCustomers: number; activeCustomers30d: number; completionRate: number; avgTeamsPerGame: number; totalTeams: number };
+  type AnalyticsData = { kpis: AnalyticsKPIs; customers: AnalyticsCustomer[]; missionStats: AnalyticsMissionStat[]; gamesPerWeek: Array<{ weekLabel: string; count: number }>; planCounts: { free: number; pro: number; studio: number } };
+
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
+  const [analyticsTab, setAnalyticsTab] = useState<'customers' | 'missions'>('customers');
+  const [analyticsError, setAnalyticsError] = useState(false);
+  const [adminCustomMissions, setAdminCustomMissions] = useState<import('@/lib/supabase').CustomMission[]>([]);
+  const [playedMissionIds, setPlayedMissionIds] = useState<string[]>([]);
+  const [hidePlayedMissions, setHidePlayedMissions] = useState<boolean>(false);
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
+  const [collapsedCustomCats, setCollapsedCustomCats] = useState<Set<string>>(new Set());
+  const [showMissionForm, setShowMissionForm] = useState(false);
+  const [editingMissionId, setEditingMissionId] = useState<string | null>(null);
+  const [missionForm, setMissionForm] = useState<MissionFormData>(EMPTY_FORM);
+  const [missionFormError, setMissionFormError] = useState('');
+  const [missionCategoryId, setMissionCategoryId] = useState<string | null>(null);
+  const [missionSuperCategoryKey, setMissionSuperCategoryKey] = useState<SuperCategoryKey | null>(null);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiType, setAiType] = useState('');
+  const [aiLanguage, setAiLanguage] = useState('en');
+  const [aiCount, setAiCount] = useState(1);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiBulkPreview, setAiBulkPreview] = useState<Array<{ selected: boolean; mission: Record<string, unknown> }> | null>(null);
+  const [aiBulkSaving, setAiBulkSaving] = useState(false);
+  const [aiBulkSaveError, setAiBulkSaveError] = useState('');
+  const [adminCategories, setAdminCategories] = useState<AdminCategory[]>([]);
+  const [missionFilterCategory, setMissionFilterCategory] = useState<string | null>(null);
+  const [missionFilterType, setMissionFilterType] = useState<string | null>(null);
+  const [draggingMissionId, setDraggingMissionId] = useState<string | null>(null);
+  const [dropTargetCatId, setDropTargetCatId] = useState<string | null>(null);
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<Set<string>>(new Set());
+  const [categoryFormName, setCategoryFormName] = useState('');
+  const [categoryFormEmoji, setCategoryFormEmoji] = useState('📋');
+  const [categoryFormColor, setCategoryFormColor] = useState('');
+  const [categoryEmojiPickerOpen, setCategoryEmojiPickerOpen] = useState(false);
+  const [missionEmojiPickerOpen, setMissionEmojiPickerOpen] = useState(false);
+  const [newTemplateEmojiPickerOpen, setNewTemplateEmojiPickerOpen] = useState(false);
+  const [editTemplateEmojiPickerOpen, setEditTemplateEmojiPickerOpen] = useState(false);
+  const [saveTemplateEmojiPickerOpen, setSaveTemplateEmojiPickerOpen] = useState(false);
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
+  const [pendingDeleteCategoryId, setPendingDeleteCategoryId] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryEmoji, setEditCategoryEmoji] = useState('');
+  const [editCategoryColor, setEditCategoryColor] = useState('');
+  const [editCategoryEmojiPickerOpen, setEditCategoryEmojiPickerOpen] = useState(false);
+  const [editCategorySaving, setEditCategorySaving] = useState(false);
+  const [missionSaving, setMissionSaving] = useState(false);
+  const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null);
+  const [itunesQuery, setItunesQuery] = useState('');
+  const [itunesResults, setItunesResults] = useState<{ trackId: number; artistName: string; trackName: string; previewUrl: string; releaseDate: string; trackViewUrl?: string }[]>([]);
+  const [itunesLoading, setItunesLoading] = useState(false);
+  const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' }[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+
+  // Load auth token on mount and subscribe to changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const token = session?.access_token ?? null;
+      authTokenRef.current = token;
+      setAuthToken(token);
+      // Load subscription plan and custom missions once we have a token
+      if (token) {
+        fetch('/api/admin/subscription', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        }).then(r => r.json()).then(d => { if (d.plan) setPlan(d.plan); if (d.stripe_managed) setStripeManaged(true); }).catch(() => {});
+        loadAdminCustomMissions();
+        // Check onboarding: skip if already dismissed locally (guards against stale-token 401 responses)
+        if (!localStorage.getItem('gameon_onboarded')) {
+          fetch('/api/admin/branding', { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+              if (d?.onboarded_at) {
+                localStorage.setItem('gameon_onboarded', '1');
+              } else if (d !== null) {
+                setShowOnboarding(true);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    });
+    // Use getUser() for fresh server-side data (not cached JWT)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsSuperAdmin(user?.app_metadata?.role === 'superadmin');
+      setUserEmail(user?.email ?? '');
+      setUserName(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '');
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const token = session?.access_token ?? null;
+      authTokenRef.current = token;
+      setAuthToken(token);
+      setIsSuperAdmin(session?.user?.app_metadata?.role === 'superadmin');
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Create form state
   const [gameName, setGameName] = useState('');
@@ -434,27 +1063,63 @@ export default function AdminScreen({ onLogout }: Props) {
     Object.fromEntries(MISSIONS.map(m => [m.id, m.maxPts]))
   );
   const [hideLeaderboard, setHideLeaderboard] = useState(false);
+  const [remoteMode, setRemoteMode] = useState(false);
+  const [gameLanguage, setGameLanguage] = useState('en');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+  const [confirmDeleteTeamId, setConfirmDeleteTeamId] = useState<string | null>(null);
+  const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
+
+  // AI game generation
+  const [aiGameMode, setAiGameMode] = useState(false);
+  const [aiGamePrompt, setAiGamePrompt] = useState('');
+  const [aiGameStep, setAiGameStep] = useState<'idle' | 'generating' | 'saving'>('idle');
+  const [aiGameProgress, setAiGameProgress] = useState(0);
+  const [aiGameError, setAiGameError] = useState('');
 
   // Timestamp of the last admin command (start/finish/restart).
   // Polls that started BEFORE a command are discarded to prevent race conditions.
   const lastCommandAtRef = useRef(0);
+  const aiAbortRef = useRef<AbortController | null>(null);
 
-  const POST = (url: string, body?: object) => fetch(url, {
+  async function completeOnboarding(navigateToCreate = false) {
+    localStorage.setItem('gameon_onboarded', '1');
+    setShowOnboarding(false);
+    setOnboardingStep(0);
+    await fetch('/api/admin/onboarding', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${authTokenRef.current}` },
+    }).catch(() => {});
+    if (navigateToCreate) { loadTemplates(); setView('templates'); }
+  }
+
+  const POST = useCallback((url: string, body?: object) => fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+    },
     body: JSON.stringify(body ?? {}),
     cache: 'no-store',
-  });
+  }), [authToken]);
 
   const loadGames = useCallback(async () => {
     const res = await POST('/api/admin/game', { action: 'list' });
     const data = await res.json();
     if (data.games) setGames(data.games);
-  }, []);
+  }, [POST]);
+
+  const loadAnalyticsGames = useCallback(async () => {
+    const res = await fetch('/api/admin/game?includeDeleted=true', {
+      headers: { Authorization: `Bearer ${authToken}` },
+      cache: 'no-store',
+    });
+    const data = await res.json();
+    if (data.games) setAnalyticsGames(data.games);
+  }, [authToken]);
 
   const loadGameData = useCallback(async (game: Game) => {
     const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
@@ -462,7 +1127,7 @@ export default function AdminScreen({ onLogout }: Props) {
       POST('/api/admin/photos'),
       POST('/api/scavenger/submissions'),
       POST('/api/game', { key: game.game_key }),
-      POST('/api/settings'),
+      POST('/api/settings', { gameId: game.id }),
     ]);
     const [td, pd, scvd, gd, sd] = await Promise.all([
       teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
@@ -483,9 +1148,37 @@ export default function AdminScreen({ onLogout }: Props) {
     }
     if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
     setHotPotatoActive(sd.hot_potato ?? null);
-  }, []);
+    setMysteryBoxActive(sd.mystery_box ?? null);
+  }, [POST]);
 
-  useEffect(() => { loadGames(); }, [loadGames]);
+  useEffect(() => { if (authToken) loadGames(); }, [loadGames, authToken]);
+
+  useEffect(() => {
+    if (view === 'my-analytics' && analyticsGames.length === 0) {
+      loadAnalyticsGames();
+    }
+  }, [view, analyticsGames.length, loadAnalyticsGames]);
+
+  useEffect(() => {
+    if (!authToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/played-missions', {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { playedIds?: string[] };
+        if (!cancelled && Array.isArray(data.playedIds)) {
+          setPlayedMissionIds(data.playedIds);
+        }
+      } catch {
+        // Non-fatal — toggle simply has no effect.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authToken]);
 
   // Only restart the polling interval when the game ID changes (not when game data updates).
   // Using activeGame?.id prevents an infinite loop where setActiveGame → effect re-runs → setActiveGame…
@@ -509,15 +1202,30 @@ export default function AdminScreen({ onLogout }: Props) {
       });
     }
 
+    // Helper that always reads the latest token from the ref — avoids stale closure bug
+    // when the interval is set up before getSession() resolves.
+    function postWithAuth(url: string, body?: object) {
+      const token = authTokenRef.current;
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body ?? {}),
+        cache: 'no-store',
+      });
+    }
+
     async function poll() {
       const pollStartedAt = Date.now();
 
       const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
-        POST('/api/admin/teams', { gameId }),
-        POST('/api/admin/photos'),
-        POST('/api/scavenger/submissions'),
-        POST('/api/game', { key: gameKey }),
-        POST('/api/settings'),
+        postWithAuth('/api/admin/teams', { gameId }),
+        postWithAuth('/api/admin/photos'),
+        postWithAuth('/api/scavenger/submissions'),
+        postWithAuth('/api/game', { key: gameKey }),
+        postWithAuth('/api/settings', { gameId }),
       ]);
       const [td, pd, scvd, gd, sd] = await Promise.all([
         teamsRes.json(), photosRes.json(), scavengerRes.json(), gameRes.json(), settingsRes.json(),
@@ -540,11 +1248,21 @@ export default function AdminScreen({ onLogout }: Props) {
 
       // Auto-resolve expired hot potato
       if (hp && new Date(hp.expires_at) <= new Date()) {
-        await POST('/api/admin/powerup/resolve-hot-potato');
+        await postWithAuth('/api/admin/powerup/resolve-hot-potato', { gameId });
         // Refresh settings after resolution
-        const freshSd = await POST('/api/settings').then(r => r.json());
+        const freshSd = await postWithAuth('/api/settings', { gameId }).then(r => r.json());
         if (freshSd.powerups_used) setPowerupsUsed(freshSd.powerups_used);
         setHotPotatoActive(freshSd.hot_potato ?? null);
+      }
+
+      const mb = sd.mystery_box ?? null;
+      setMysteryBoxActive(mb);
+
+      // Auto-expire mystery box when countdown reaches 0
+      if (mb && mb.claimed_by === null && new Date(mb.expires_at) <= new Date()) {
+        await postWithAuth('/api/admin/mystery-box', { gameId, action: 'expire' });
+        const freshSd = await postWithAuth('/api/settings', { gameId }).then(r => r.json());
+        setMysteryBoxActive(freshSd.mystery_box ?? null);
       }
     }
     poll();
@@ -553,19 +1271,46 @@ export default function AdminScreen({ onLogout }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGameId]);
 
+  // Sync AI rating live-toggle state when switching to a different game
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Intentionally keyed on activeGameId (not activeGame object) — avoids re-running on every
+  // poll cycle. Matches the polling useEffect pattern above.
+  useEffect(() => {
+    if (activeGame) {
+      setAiRatingEnabled(activeGame.ai_photo_rating ?? false);
+      setAiRatingInstructions(activeGame.ai_photo_instructions ?? '');
+    }
+    setOverridingPhotoId(null);
+    setExpandedTeamId(null);
+  }, [activeGameId]);
+
+  // Ensure custom missions + categories are loaded when the progress tab opens.
+  // Guards against the rare race where loadAdminCustomMissions ran before the
+  // auth token was ready on mount.
+  useEffect(() => {
+    if (tab === 'progress' && adminCustomMissions.length === 0) {
+      loadAdminCustomMissions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
   async function createGame() {
+    if (!gameName.trim()) { setCreateError('Enter a game name.'); return; }
     if (!selectedMissions.length) { setCreateError('Select at least one mission.'); return; }
     setCreating(true); setCreateError('');
     // Only include custom pts that differ from the mission default
     const customPts: Record<string, number> = {};
     for (const id of selectedMissions) {
-      const m = MISSIONS.find(x => x.id === id);
-      if (m && missionMaxPts[id] !== m.maxPts) customPts[id] = missionMaxPts[id];
+      const builtIn = MISSIONS.find(x => x.id === id);
+      const customM = adminCustomMissions.find(x => x.id === id);
+      const defaultPts = builtIn?.maxPts ?? customM?.max_pts ?? 500;
+      const currentPts = missionMaxPts[id] ?? defaultPts;
+      if (currentPts !== defaultPts) customPts[id] = currentPts;
     }
     const res = await fetch('/api/admin/game', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard }),
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({ name: gameName, missions: selectedMissions, duration_minutes: duration, mission_max_pts: customPts, hide_leaderboard: hideLeaderboard, ai_photo_rating: aiPhotoRating, ai_photo_instructions: aiPhotoInstructions || null, language: gameLanguage, remote_mode: remoteMode }),
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
@@ -575,14 +1320,76 @@ export default function AdminScreen({ onLogout }: Props) {
     loadGames();
   }
 
+  async function generateAiGame() {
+    if (!aiGamePrompt.trim()) { setAiGameError('Enter a theme or topic.'); return; }
+    setAiGameStep('generating');
+    setAiGameProgress(0);
+    setAiGameError('');
+
+    const allMissions: Record<string, unknown>[] = [];
+    const BATCHES = 4;
+
+    for (let batch = 0; batch < BATCHES; batch++) {
+      const excludedNames = allMissions.map(m => m.name as string);
+      try {
+        const res = await fetch('/api/admin/ai-generate-mission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+          body: JSON.stringify({ prompt: aiGamePrompt, language: gameLanguage, count: 5, excludedNames, gameMode: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? 'Generation failed');
+        if (!Array.isArray(data.missions)) throw new Error('Unexpected response format');
+        allMissions.push(...data.missions);
+        setAiGameProgress((batch + 1) * 5);
+      } catch (err) {
+        setAiGameError(err instanceof Error ? err.message : 'Generation failed');
+        setAiGameStep('idle');
+        return;
+      }
+    }
+
+    setAiGameStep('saving');
+    try {
+      const res = await fetch('/api/admin/ai-generate-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({
+          language: gameLanguage,
+          gameConfig: {
+            name: gameName || aiGamePrompt.slice(0, 40),
+            duration_minutes: duration,
+            hide_leaderboard: hideLeaderboard,
+            ai_photo_rating: aiPhotoRating,
+            ai_photo_instructions: aiPhotoInstructions || null,
+            remote_mode: remoteMode,
+          },
+          missions: allMissions,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create game');
+      setActiveGame(data.game);
+      setView('dashboard');
+      setAiGameStep('idle');
+      setAiGamePrompt('');
+      setAiGameMode(false);
+      loadGames();
+    } catch (err) {
+      setAiGameError(err instanceof Error ? err.message : 'Failed to create game');
+      setAiGameStep('idle');
+    }
+  }
+
   async function startOrStop(action: 'start' | 'finish' | 'restart') {
     if (!activeGame) return;
     // Stamp the command time BEFORE the fetch so any poll in-flight right now
     // (which started before this stamp) gets discarded when it returns.
     lastCommandAtRef.current = Date.now();
+    const token = authTokenRef.current;
     const res = await fetch('/api/admin/game/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
       body: JSON.stringify({ gameId: activeGame.id, action }),
     });
     const data = await res.json();
@@ -590,6 +1397,37 @@ export default function AdminScreen({ onLogout }: Props) {
     // This intentionally bypasses applyGame so a restart can go from
     // finished → draft without the status-priority guard blocking it.
     if (data.game) setActiveGame(data.game);
+  }
+
+  async function downloadReport() {
+    if (!activeGame || !authToken) return;
+    setReportLoading(true);
+    setReportError(null);
+    try {
+      const res = await fetch(`/api/admin/game/${activeGame.id}/report`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[report] failed:', body);
+        setReportError('Kunde inte generera rapporten. Försök igen.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${activeGame.name.replace(/\s+/g, '-')}-report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('[report] network error:', err);
+      setReportError('Network error. Check your connection and try again.');
+    } finally {
+      setReportLoading(false);
+    }
   }
 
   async function deleteGame(gameId: string) {
@@ -600,10 +1438,69 @@ export default function AdminScreen({ onLogout }: Props) {
     await loadGames();
   }
 
+  async function deleteTeam(teamId: string) {
+    setDeletingTeamId(teamId);
+    const res = await fetch('/api/admin/teams', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+      body: JSON.stringify({ teamId }),
+    });
+    setDeletingTeamId(null);
+    setConfirmDeleteTeamId(null);
+    if (res.ok) setTeams(prev => prev.filter(t => t.id !== teamId));
+  }
+
+  async function downloadPhotosZip() {
+    setDownloadingZip(true);
+    try {
+      const zip = new JSZip();
+      const allPhotos: { url: string; filename: string }[] = [];
+
+      const regularFiltered = photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter);
+      const scavengerFiltered = scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter);
+
+      for (const sub of regularFiltered) {
+        const ext = sub.photo_url.split('?')[0].split('.').pop() ?? 'jpg';
+        const safeMission = sub.mission_id.replace(/[^a-z0-9_-]/gi, '_');
+        const safeTeam = sub.team_name.replace(/[^a-z0-9_-]/gi, '_');
+        allPhotos.push({ url: sub.photo_url, filename: `${safeTeam}/${safeMission}.${ext}` });
+      }
+
+      for (const sub of scavengerFiltered) {
+        const ext = sub.photo_url.split('?')[0].split('.').pop() ?? 'jpg';
+        const safeLabel = (sub.item_label ?? sub.item_id).replace(/[^a-z0-9_-]/gi, '_');
+        const safeTeam = sub.team_name.replace(/[^a-z0-9_-]/gi, '_');
+        allPhotos.push({ url: sub.photo_url, filename: `${safeTeam}/scavenger_${safeLabel}.${ext}` });
+      }
+
+      if (allPhotos.length === 0) return;
+
+      await Promise.all(allPhotos.map(async ({ url, filename }) => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          zip.file(filename, blob);
+        } catch {
+          // skip photos that fail to fetch
+        }
+      }));
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      const safeName = (activeGame?.name ?? 'game').replace(/[^a-z0-9_-]/gi, '-').replace(/-+/g, '-');
+      a.download = `GameOn-photos-${safeName}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } finally {
+      setDownloadingZip(false);
+    }
+  }
+
   async function ratePhoto(sub: PhotoSubmission, pts: number) {
     await fetch('/api/admin/photos/rate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, points: pts }),
     });
     setRated(r => new Set([...r, sub.id]));
@@ -613,29 +1510,11 @@ export default function AdminScreen({ onLogout }: Props) {
   async function rateScavengerPhoto(sub: ScavengerSubmission, pts: number) {
     await fetch('/api/scavenger/review', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
       body: JSON.stringify({ submissionId: sub.id, teamId: sub.team_id, missionId: sub.mission_id, itemLabel: sub.item_label, points: pts }),
     });
     setScavengerRated(r => new Set([...r, sub.id]));
     if (activeGame) loadGameData(activeGame);
-  }
-
-  async function activatePointSteal() {
-    if (!stealFrom || !stealTo || !stealAmount) return;
-    setStealLoading(true);
-    try {
-      const res = await POST('/api/admin/powerup', { type: 'point_steal', fromTeamId: stealFrom, toTeamId: stealTo, amount: stealAmount });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Point steal failed: ${err.error ?? res.statusText}`);
-        return;
-      }
-      setStealFrom('');
-      setStealTo('');
-      setStealAmount(100);
-    } finally {
-      setStealLoading(false);
-    }
   }
 
   async function activateHotPotato() {
@@ -652,14 +1531,41 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Hot Potato failed: ${err.error ?? res.statusText}`);
+        showToast(`Time Bomb failed: ${err.error ?? res.statusText}`, 'error');
         return;
       }
       const data = await res.json();
-      setHotPotatoActive({ mission_id: hotPotatoMissionId, expires_at: data.expiresAt, penalty_pts: 200, game_id: activeGame.id });
+      setHotPotatoActive({ mission_id: hotPotatoMissionId, expires_at: data.expiresAt, penalty_pts: 500, game_id: activeGame.id });
       setHotPotatoMissionId('');
     } finally {
       setHotPotatoLoading(false);
+    }
+  }
+
+  async function launchMysteryBox() {
+    if (!activeGame) return;
+    setShowMysteryBoxAR(true);
+  }
+
+  async function onMysteryBoxPlaced() {
+    if (!activeGame) return;
+    setShowMysteryBoxAR(false);
+    setMysteryBoxLoading(true);
+    try {
+      const res = await fetch('/api/admin/mystery-box', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({ gameId: activeGame.id }),
+        cache: 'no-store',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMysteryBoxActive({ created_at: new Date().toISOString(), expires_at: data.expiresAt, claimed_by: null });
+      } else {
+        showToast(`Mystery box failed: ${data.error ?? 'Unknown error'}`, 'error');
+      }
+    } finally {
+      setMysteryBoxLoading(false);
     }
   }
 
@@ -678,14 +1584,348 @@ export default function AdminScreen({ onLogout }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`Power-up failed: ${err.error ?? res.statusText}`);
+        showToast(`Power-up failed: ${err.error ?? res.statusText}`, 'error');
         return;
       }
-      const sd = await POST('/api/settings').then(r => r.json());
+      const sd = await POST('/api/settings', { gameId: activeGame?.id }).then(r => r.json());
       if (sd.powerups_used) setPowerupsUsed(sd.powerups_used);
+      showToast('Power-up activated ✓');
     } finally {
       setPuLoading(null);
     }
+  }
+
+  async function loadAnalytics() {
+    setAnalyticsLoading(true);
+    setAnalyticsError(false);
+    try {
+      const res = await POST('/api/admin/superadmin/analytics');
+      const data = await res.json();
+      if (data.kpis) {
+        setAnalytics(data);
+      } else {
+        setAnalyticsError(true);
+      }
+    } catch (err) {
+      console.error('Failed to load analytics:', err);
+      setAnalyticsError(true);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }
+
+  async function toggleAiRating(enabled: boolean) {
+    if (!activeGame || !authToken) return;
+    if (aiRatingEnabled === enabled) return; // prevent double-toggle
+    setAiRatingEnabled(enabled);
+    const res = await fetch(`/api/admin/game/${activeGame.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        ai_photo_rating: enabled,
+        ai_photo_instructions: aiRatingInstructions,
+      }),
+    });
+    if (!res.ok) {
+      setAiRatingEnabled(!enabled); // revert on failure
+      showToast('Failed to update AI rating setting', 'error');
+    }
+  }
+
+  async function loadTemplates() {
+    setTemplatesLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      const data = await res.json();
+      setTemplates(data.templates || []);
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }
+
+  async function saveAsTemplate(missionIds: string[], name: string, icon: string) {
+    setSaveTemplateLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ name, icon, missionIds, isBuiltin: false }),
+      });
+      if (!res.ok) throw new Error('Failed to save template');
+      setSaveTemplateId(null);
+      setSaveTemplateName('');
+      setSaveTemplateIcon('🎮');
+      showToast('Template saved!');
+    } catch (err) {
+      console.error('Failed to save template:', err);
+      showToast('Failed to save template', 'error');
+    } finally {
+      setSaveTemplateLoading(false);
+    }
+  }
+
+  async function updateBuiltinTemplate(id: string, name: string, icon: string, missionIds: string[], description: string, activeFrom: string, activeTo: string) {
+    setEditTemplateLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(`/api/admin/templates/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          name, icon, missionIds,
+          description: description || null,
+          activeFrom: activeFrom || null,
+          activeTo: activeTo || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to update template');
+      const { template } = await res.json();
+      setTemplates(prev => prev.map(t => t.id === id ? template : t));
+      setEditingTemplateId(null);
+      showToast('Template updated');
+    } catch (err) {
+      console.error('Failed to update template:', err);
+      showToast('Failed to update template');
+    } finally {
+      setEditTemplateLoading(false);
+    }
+  }
+
+  async function deleteBuiltinTemplate(id: string) {
+    const session = (await supabase.auth.getSession()).data.session;
+    const res = await fetch(`/api/admin/templates/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
+    if (!res.ok) {
+      showToast('Failed to delete template');
+      return;
+    }
+    setTemplates(prev => prev.filter(t => t.id !== id));
+    showToast('Template deleted');
+  }
+
+  async function suggestTemplateDescription(
+    name: string,
+    missionIds: string[],
+    setter: (v: string) => void,
+    setLoading: (v: boolean) => void
+  ) {
+    setLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates/describe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ name, missionIds }),
+      });
+      const data = await res.json();
+      if (data.description) setter(data.description);
+      else showToast('Could not generate description', 'error');
+    } catch {
+      showToast('Could not generate description', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function generateTemplate() {
+    if (!generatePrompt.trim()) return;
+    setGenerateLoading(true);
+    setGeneratePreview(null);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ prompt: generatePrompt }),
+      });
+      if (!res.ok) throw new Error('generation_failed');
+      const data = await res.json();
+      setGeneratePreview(data);
+    } catch {
+      showToast('Could not generate template', 'error');
+    } finally {
+      setGenerateLoading(false);
+    }
+  }
+
+  async function saveGeneratedTemplate() {
+    if (!generatePreview) return;
+    setGenerateSaving(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const token = session?.access_token;
+
+      // Create new missions first
+      const createdIds: string[] = [];
+      for (const nm of generatePreview.newMissions) {
+        const res = await fetch('/api/admin/custom-missions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ name: nm.title, type: nm.type, max_pts: nm.points, desc: nm.description, icon: nm.icon || '⭐', difficulty: 'medium', data: {} }),
+        });
+        if (!res.ok) throw new Error('Failed to create mission');
+        const { mission } = await res.json();
+        createdIds.push(mission.id);
+      }
+
+      const allMissionIds = [...generatePreview.selectedMissionIds, ...createdIds];
+
+      // Save template with cleanup on failure
+      try {
+        const res = await fetch('/api/admin/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            name: generatePreview.name,
+            icon: generatePreview.icon,
+            description: generatePreview.description,
+            missionIds: allMissionIds,
+            isBuiltin: generateIsBuiltin,
+            activeFrom: generatePreview.activeFrom,
+            activeTo: generatePreview.activeTo,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to save template');
+        const { template } = await res.json();
+        setTemplates(prev => [...prev, template]);
+        setShowGenerateModal(false);
+        setGeneratePrompt('');
+        setGeneratePreview(null);
+        showToast('Template created!');
+      } catch (err) {
+        // Attempt to clean up orphaned missions if template save failed
+        if (createdIds.length > 0) {
+          await Promise.allSettled(
+            createdIds.map(id =>
+              fetch(`/api/admin/custom-missions/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+              })
+            )
+          );
+        }
+        throw err; // Re-throw to outer catch
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save template', 'error');
+    } finally {
+      setGenerateSaving(false);
+    }
+  }
+
+  async function createBuiltinTemplate(name: string, icon: string, missionIds: string[], description: string, activeFrom: string, activeTo: string) {
+    setManageTemplatesLoading(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/admin/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          name, icon, missionIds, isBuiltin: true,
+          description: description || null,
+          activeFrom: activeFrom || null,
+          activeTo: activeTo || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create template');
+      const { template } = await res.json();
+      setTemplates(prev => [template, ...prev]);
+      setShowNewTemplateForm(false);
+      setNewTemplateName('');
+      setNewTemplateIcon('🎮');
+      setNewTemplateMissions([]);
+      setNewTemplateDesc('');
+      setNewTemplateActiveFrom('');
+      setNewTemplateActiveTo('');
+      showToast('Template created');
+    } catch (err) {
+      console.error('Failed to create template:', err);
+      showToast('Failed to create template');
+    } finally {
+      setManageTemplatesLoading(false);
+    }
+  }
+
+  async function handlePortal() {
+    setPortalLoading(true);
+    try {
+      const res = await POST('/api/admin/portal');
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (res.status === 404) {
+        handleUpgrade('pro');
+      } else {
+        showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  async function handleUpgrade(targetPlan: 'pro' | 'studio') {
+    setUpgradeLoading(true);
+    try {
+      const res = await POST('/api/stripe/checkout', { plan: targetPlan });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error ?? 'Something went wrong. Please try again.', 'error');
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    const id = Math.random().toString(36).slice(2);
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
+  }
+
+  async function loadAdminCustomMissions() {
+    // Use the ref so this works even when called before authToken state has updated
+    const token = authTokenRef.current;
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+    const [missionsRes, catsRes] = await Promise.all([
+      fetch('/api/admin/custom-missions', { method: 'GET', headers, cache: 'no-store' }),
+      fetch('/api/admin/mission-categories', { method: 'GET', headers }),
+    ]);
+    const missionsData = await missionsRes.json();
+    const catsData = await catsRes.json();
+    if (missionsData.missions) {
+      setAdminCustomMissions(missionsData.missions);
+    }
+    if (catsData.categories) setAdminCategories(catsData.categories);
   }
 
   // Sort: highest score first; if equal, earliest finish_time wins; unfinished last
@@ -696,76 +1936,2999 @@ export default function AdminScreen({ onLogout }: Props) {
     return fa - fb;
   });
 
+  async function handleChangePassword() {
+    if (!userEmail) return;
+    await supabase.auth.resetPasswordForEmail(userEmail, {
+      redirectTo: `${window.location.origin}/admin`,
+    });
+    setResetSent(true);
+    setTimeout(() => setResetSent(false), 5000);
+  }
+
+  const planLabel = plan === 'studio' ? '✦ Studio' : plan === 'pro' ? 'Pro' : 'Starter';
+  const initials = userName
+    ? userName.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+    : userEmail?.[0]?.toUpperCase() ?? '?';
+
+  function ProfileMenu() {
+    return (
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => setShowProfile(p => !p)}
+          style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: showProfile ? 'var(--accent)' : 'rgba(124,189,212,0.15)',
+            border: '1px solid rgba(124,189,212,0.3)',
+            color: showProfile ? '#0a0e19' : 'var(--accent)',
+            fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Sora', sans-serif", letterSpacing: '0.5px',
+            transition: 'background 0.15s, color 0.15s',
+            flexShrink: 0,
+          }}
+          aria-label="Profile"
+        >
+          {initials}
+        </button>
+        {showProfile && (
+          <>
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+              onClick={() => setShowProfile(false)}
+            />
+            <div style={{
+              position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+              width: 280, background: 'var(--surface)',
+              border: '1px solid var(--border)', borderRadius: '12px',
+              zIndex: 1000, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              overflow: 'hidden',
+            }}>
+              {/* Header */}
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+                {userName && <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '2px' }}>{userName}</div>}
+                <div style={{ fontSize: '13px', color: 'var(--muted)', wordBreak: 'break-all' }}>{userEmail}</div>
+                <div style={{ marginTop: '8px' }}>
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px',
+                    padding: '3px 8px', borderRadius: '20px',
+                    background: plan === 'free' ? 'rgba(255,255,255,0.06)' : 'rgba(124,189,212,0.12)',
+                    color: plan === 'free' ? 'var(--muted)' : 'var(--accent)',
+                    border: `1px solid ${plan === 'free' ? 'var(--border)' : 'rgba(124,189,212,0.3)'}`,
+                  }}>{planLabel}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ padding: '8px' }}>
+                <button
+                  onClick={() => { setShowProfile(false); setOnboardingStep(0); setShowOnboarding(true); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Ic><CircleHelp size={16} /></Ic>
+                  <span>How it works</span>
+                </button>
+
+                <button
+                  onClick={() => { setShowProfile(false); setView('my-analytics'); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <BarChart2 size={16} color={IC} />
+                  <span>Analytics</span>
+                </button>
+
+                <button
+                  onClick={() => { setShowProfile(false); setView('branding'); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Ic><Palette size={16} /></Ic>
+                  <span>Branding</span>
+                </button>
+
+                <button
+                  onClick={() => { handleChangePassword(); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Key size={16} color={IC} />
+                  <span>{resetSent ? 'Reset link sent to your email!' : 'Change password'}</span>
+                </button>
+
+                {plan === 'free' ? (
+                  <button
+                    onClick={() => { setShowProfile(false); handleUpgrade('pro'); }}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '8px',
+                      background: 'transparent', border: 'none', cursor: upgradeLoading ? 'not-allowed' : 'pointer',
+                      color: 'var(--accent)', fontSize: '13px', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      fontFamily: "'Sora', sans-serif", fontWeight: 600,
+                      opacity: upgradeLoading ? 0.6 : 1,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    disabled={upgradeLoading}
+                  >
+                    <Zap size={16} color={IC} />
+                    <span>{upgradeLoading ? 'Loading...' : 'Upgrade to Pro'}</span>
+                  </button>
+                ) : stripeManaged ? (
+                  <button
+                    onClick={() => { setShowProfile(false); handlePortal(); }}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: '8px',
+                      background: 'transparent', border: 'none', cursor: portalLoading ? 'not-allowed' : 'pointer',
+                      color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      fontFamily: "'Sora', sans-serif",
+                      opacity: portalLoading ? 0.6 : 1,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    disabled={portalLoading}
+                  >
+                    <CreditCard size={16} color={IC} />
+                    <span>{portalLoading ? 'Loading...' : 'Manage subscription'}</span>
+                  </button>
+                ) : null}
+
+                <div style={{ height: '1px', background: 'var(--border)', margin: '8px 4px' }} />
+
+                <button
+                  onClick={() => { setShowProfile(false); onLogout(); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: 'var(--muted)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <LogOut size={16} color={IC} />
+                  <span>Log out</span>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ── ANALYTICS PAGE (super admin only) ──
+  if (view === 'analytics' && isSuperAdmin) {
+
+    const timeAgo = (iso: string | null): string => {
+      if (!iso) return '–';
+      const diff = Date.now() - new Date(iso).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      return `${Math.floor(hours / 24)}d ago`;
+    };
+
+    const statusDotColor = (lastActive: string | null): string => {
+      if (!lastActive) return '#555';
+      const days = (Date.now() - new Date(lastActive).getTime()) / 86400000;
+      if (days <= 7) return '#4ade80';
+      if (days <= 30) return '#fbbf24';
+      return '#555';
+    };
+
+    const kpiCardStyle: React.CSSProperties = {
+      background: 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: '12px',
+      padding: isMobile ? '12px' : '16px 20px',
+      minWidth: 0,
+    };
+    const kpiNumSize = isMobile ? '22px' : '28px';
+    const kpiLabelSize = isMobile ? '10px' : '11px';
+
+    return (
+      <>
+        <nav className="nav">
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+          </button>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <BarChart2 size={15} color={IC} /> Analytics
+          </div>
+          <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={loadAnalytics} disabled={analyticsLoading}>
+              {analyticsLoading ? '...' : '↻'}
+            </button>
+            <ProfileMenu />
+          </div>
+        </nav>
+
+        <div className="container fade-in" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0' }}>
+            {(['customers', 'missions'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setAnalyticsTab(t)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '10px 20px',
+                  fontSize: '13px',
+                  fontWeight: analyticsTab === t ? 700 : 400,
+                  color: analyticsTab === t ? 'var(--text)' : 'var(--muted)',
+                  borderBottom: analyticsTab === t ? '2px solid var(--accent)' : '2px solid transparent',
+                  marginBottom: '-1px',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {t === 'customers' ? 'Customers' : 'Missions'}
+              </button>
+            ))}
+          </div>
+
+          {/* Loading */}
+          {analyticsLoading && (
+            <div className="empty-state">Loading analytics...</div>
+          )}
+
+          {/* Error */}
+          {!analyticsLoading && analyticsError && (
+            <div className="empty-state" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+              <span>Could not load analytics.</span>
+              <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={loadAnalytics}>↻ Try again</button>
+            </div>
+          )}
+
+          {/* ── KUNDER TAB ── */}
+          {analytics && !analyticsLoading && analyticsTab === 'customers' && (() => {
+            const { kpis, customers: cx, gamesPerWeek, planCounts } = analytics;
+            const totalCustomers = planCounts.free + planCounts.pro + planCounts.studio;
+            const proCustomers = planCounts.pro + planCounts.studio;
+            const proRatePct = totalCustomers > 0 ? Math.round(proCustomers / totalCustomers * 100) : 0;
+            const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+            const gamesThisMonth = cx.reduce((sum, c) => sum + c.games.filter(g => g.startedAt && g.startedAt >= monthStart).length, 0);
+            const maxBarCount = Math.max(...gamesPerWeek.map(w => w.count), 1);
+            const recentGames = cx
+              .flatMap(c => c.games.map(g => ({ ...g, customerEmail: c.email })))
+              .sort((a, b) => {
+                if (!a.startedAt) return 1;
+                if (!b.startedAt) return -1;
+                return b.startedAt.localeCompare(a.startedAt);
+              })
+              .slice(0, 10);
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* KPI row */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: '12px' }}>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active customers</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: '#6ec6f5', lineHeight: 1 }}>{kpis.activeCustomers}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>↑ {kpis.activeCustomers30d} last 30d</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total games</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.totalGames}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{gamesThisMonth} this month</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Completion rate</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(kpis.completionRate * 100)}%</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{kpis.finishedGames} of {kpis.totalGames} finished</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg teams/game</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{kpis.avgTeamsPerGame}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{kpis.totalTeams} teams total</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pro customers</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{proCustomers}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>{proRatePct}% of all</div>
+                  </div>
+                </div>
+
+                {/* Row 1: Activity chart + Customer status list */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: '16px' }}>
+
+                  {/* Activity chart */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Activity per week</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '96px' }}>
+                      {gamesPerWeek.map((w, i) => {
+                        const barH = Math.max(4, Math.round((w.count / maxBarCount) * 72));
+                        const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
+                        return (
+                          <div
+                            key={w.weekLabel}
+                            title={`${w.weekLabel}: ${w.count} games`}
+                            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}
+                          >
+                            {w.count > 0 && (
+                              <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: '2px', lineHeight: 1 }}>{w.count}</div>
+                            )}
+                            <div style={{ width: '100%', height: `${barH}px`, background: '#6ec6f5', opacity, borderRadius: '3px 3px 0 0', transition: 'height 0.2s' }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      {gamesPerWeek.map(w => (
+                        <div key={w.weekLabel} style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: 'var(--muted)' }}>{w.weekLabel}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Customer status list */}
+                  <div style={{ ...kpiCardStyle, padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Customer status</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'auto', maxHeight: '180px' }}>
+                      {cx.map(c => (
+                        <div
+                          key={c.id}
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '8px', cursor: 'pointer', background: expandedCustomer === c.id ? 'rgba(255,255,255,0.06)' : 'transparent', transition: 'background 0.15s' }}
+                          onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)}
+                        >
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: statusDotColor(c.lastActive), flexShrink: 0 }} />
+                          <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: 'rgba(110,198,245,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#6ec6f5', flexShrink: 0 }}>
+                            {(c.email[0] ?? '?').toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{c.gameCount} games</div>
+                        </div>
+                      ))}
+                      {cx.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No customers</div>}
+                    </div>
+                    {/* Expanded customer games */}
+                    {expandedCustomer && (() => {
+                      const customer = cx.find(c => c.id === expandedCustomer);
+                      if (!customer) return null;
+                      return (
+                        <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '8px', fontWeight: 600 }}>{customer.email}</div>
+                          {customer.games.slice(0, 5).map(g => (
+                            <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '12px' }}>
+                              <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{g.name ?? '(unnamed)'}</span>
+                              <span style={{ color: 'var(--muted)', flexShrink: 0, marginLeft: '8px' }}>{g.teamCount} teams</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Row 2: Recent games feed + Plan distribution */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '16px' }}>
+
+                  {/* Recent games feed */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Recent games</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      {recentGames.map(g => {
+                        const teamBadgeColor = g.teamCount >= 8 ? 'var(--accent3)' : g.teamCount >= 4 ? '#6ec6f5' : 'var(--muted)';
+                        return (
+                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name ?? '(unnamed)'}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.customerEmail}</div>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(g.startedAt)}</div>
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: teamBadgeColor, background: 'rgba(255,255,255,0.06)', borderRadius: '20px', padding: '2px 8px', flexShrink: 0 }}>
+                              {g.teamCount} teams
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {recentGames.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No games</div>}
+                    </div>
+                  </div>
+
+                  {/* Plan distribution */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>Plan distribution</div>
+                    {totalCustomers > 0 ? (
+                      <>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: '#f59e0b', fontWeight: 600 }}>Pro / Studio</span>
+                            <span style={{ color: 'var(--muted)' }}>{proCustomers}</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${(proCustomers / totalCustomers) * 100}%`, background: '#f59e0b', borderRadius: '4px', transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Free</span>
+                            <span style={{ color: 'var(--muted)' }}>{planCounts.free}</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${(planCounts.free / totalCustomers) * 100}%`, background: 'rgba(255,255,255,0.3)', borderRadius: '4px', transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+                          <div style={{ fontSize: '22px', fontWeight: 800, color: '#f59e0b' }}>{proRatePct}%</div>
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>pro rate · {totalCustomers} customers</div>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No customers</div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
+
+          {/* ── UPPDRAG TAB ── */}
+          {analytics && !analyticsLoading && analyticsTab === 'missions' && (() => {
+            const { missionStats } = analytics;
+
+            const missionsInUse = missionStats.length;
+            const avgCompletion = missionStats.length > 0
+              ? missionStats.reduce((s, m) => s + m.completionRate, 0) / missionStats.length
+              : 0;
+            const mostPopular = missionStats[0] ?? null; // already sorted by gameCount desc
+            const hardest = [...missionStats]
+              .filter(m => m.gameCount >= 5)
+              .sort((a, b) => a.completionRate - b.completionRate)[0] ?? null;
+
+            const top10 = missionStats.slice(0, 10);
+            const rarelyUsed = [...missionStats]
+              .filter(m => m.gameCount < 5)
+              .sort((a, b) => a.gameCount - b.gameCount)
+              .slice(0, 5);
+
+            // Per-category stats
+            const categoryStats: Record<string, { completionSum: number; count: number }> = {};
+            for (const m of missionStats) {
+              const cat = MISSION_SUPER_CATEGORY[m.id];
+              if (!cat) continue;
+              if (!categoryStats[cat]) categoryStats[cat] = { completionSum: 0, count: 0 };
+              categoryStats[cat].count++;
+              categoryStats[cat].completionSum += m.completionRate;
+            }
+            const categoryRows = (Object.entries(categoryStats) as [SuperCategoryKey, { completionSum: number; count: number }][])
+              .filter(([, s]) => s.count > 0)
+              .map(([key, s]) => ({
+                key,
+                label: SUPER_CATEGORIES[key].label,
+                icon: SUPER_CATEGORIES[key].icon,
+                color: SUPER_CATEGORIES[key].color,
+                avgCompletion: s.completionSum / s.count,
+              }))
+              .sort((a, b) => b.avgCompletion - a.avgCompletion);
+
+            const missionIconById: Record<string, string> = {};
+            for (const m of MISSIONS) missionIconById[m.id] = m.icon;
+
+            const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+
+            const barColor = (rate: number) => {
+              if (rate >= 0.8) return 'var(--accent3)';
+              if (rate >= 0.5) return '#f59e0b';
+              return 'var(--accent2)';
+            };
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* KPI row */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '12px' }}>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Missions in use</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>{missionsInUse}</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>of {MISSIONS.length} available</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Avg completed/game</div>
+                    <div style={{ fontSize: kpiNumSize, fontWeight: 800, color: 'var(--accent3)', lineHeight: 1 }}>{Math.round(avgCompletion * 100)}%</div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>of selected missions</div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Most popular</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {mostPopular ? `${missionIconById[mostPopular.id] ?? ''} ${mostPopular.name}` : '–'}
+                    </div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>
+                      {mostPopular ? `in ${mostPopular.gameCount} of ${analytics.kpis.totalGames} games` : ''}
+                    </div>
+                  </div>
+                  <div style={kpiCardStyle}>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hardest</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent2)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {hardest ? `${missionIconById[hardest.id] ?? ''} ${hardest.name}` : '–'}
+                    </div>
+                    <div style={{ fontSize: kpiLabelSize, color: 'var(--muted)', marginTop: '4px' }}>
+                      {hardest ? `${Math.round(hardest.completionRate * 100)}% complete it` : 'Needs ≥5 games'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 1: Top missions (3fr) + Right column (2fr) */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: '16px' }}>
+
+                  {/* Top missions ranked list */}
+                  <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '16px', color: 'var(--text)' }}>Top 10 missions</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      {top10.map((m, i) => (
+                        <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 6px', borderRadius: '8px' }}>
+                          <div style={{ width: '20px', textAlign: 'center', fontSize: '13px', fontWeight: 700, color: rankColors[i] ?? 'var(--muted)', flexShrink: 0 }}>
+                            {i + 1}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '14px' }}>{missionIconById[m.id] ?? '🎯'}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>
+                              In {m.gameCount} games · {m.totalTeams} team attempts
+                            </div>
+                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${m.completionRate * 100}%`, background: barColor(m.completionRate), borderRadius: '2px', transition: 'width 0.3s' }} />
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0, minWidth: '36px', textAlign: 'right' }}>
+                            {Math.round(m.completionRate * 100)}%
+                          </div>
+                        </div>
+                      ))}
+                      {top10.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)', textAlign: 'center', padding: '16px 0' }}>No data</div>}
+                    </div>
+                  </div>
+
+                  {/* Right column: category breakdown + rarely used */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                    {/* Per kategori */}
+                    <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '14px', color: 'var(--text)' }}>By category</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {categoryRows.map(cat => (
+                          <div key={cat.key}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '13px' }}>{cat.icon}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--text)', flex: 1 }}>{cat.label}</span>
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: cat.color }}>{Math.round(cat.avgCompletion * 100)}%</span>
+                            </div>
+                            <div style={{ height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${cat.avgCompletion * 100}%`, background: cat.color, borderRadius: '3px', transition: 'width 0.3s' }} />
+                            </div>
+                          </div>
+                        ))}
+                        {categoryRows.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No data</div>}
+                      </div>
+                    </div>
+
+                    {/* Rarely used */}
+                    <div style={{ ...kpiCardStyle, padding: '20px 24px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px', color: 'var(--text)' }}>Rarely used</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {rarelyUsed.map(m => {
+                          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(m.name);
+                          const displayName = isUuid ? '(Custom mission)' : m.name;
+                          return (
+                            <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '14px', flexShrink: 0 }}>{missionIconById[m.id] ?? '🎯'}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '12px', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.gameCount} games · {m.totalTeams} team attempts</div>
+                              </div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: barColor(m.completionRate), flexShrink: 0 }}>{Math.round(m.completionRate * 100)}%</div>
+                            </div>
+                          );
+                        })}
+                        {rarelyUsed.length === 0 && <div style={{ fontSize: '13px', color: 'var(--muted)' }}>All missions used frequently!</div>}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
+
+        </div>
+      </>
+    );
+  }
+
+  // ── MY ANALYTICS (per-user) ──
+  if (view === 'my-analytics') {
+    const isoWeekKey = (d: Date): string => {
+      const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+      const y = tmp.getUTCFullYear();
+      const yearStart = new Date(Date.UTC(y, 0, 1));
+      const w = Math.ceil((((tmp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+      return `${y}-${w}`;
+    };
+
+    const timeAgoLocal = (dateStr: string): string => {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const days = Math.floor(diff / 86400000);
+      if (days === 0) return 'today';
+      if (days === 1) return '1 day ago';
+      if (days < 7) return `${days} days ago`;
+      const weeks = Math.floor(days / 7);
+      if (weeks === 1) return '1 week ago';
+      return `${weeks} weeks ago`;
+    };
+
+    const totalGames = analyticsGames.length;
+    const finishedCount = analyticsGames.filter(g => g.status === 'finished').length;
+    const completionRate = totalGames > 0 ? Math.round(finishedCount / totalGames * 100) : 0;
+    const totalTeams = analyticsGames.reduce((sum, g) => sum + (g.teams_count ?? 0), 0);
+    const avgTeams = totalGames > 0 ? (totalTeams / totalGames).toFixed(1) : '—';
+
+    // Last 7 ISO weeks oldest → newest
+    const gamesPerWeek: { label: string; key: string; count: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i * 7);
+      const key = isoWeekKey(d);
+      const weekNum = parseInt(key.split('-')[1]);
+      gamesPerWeek.push({ label: `V${weekNum}`, key, count: 0 });
+    }
+    analyticsGames.forEach(g => {
+      if (!g.started_at) return;
+      const key = isoWeekKey(new Date(g.started_at));
+      const entry = gamesPerWeek.find(e => e.key === key);
+      if (entry) entry.count++;
+    });
+    const maxCount = Math.max(...gamesPerWeek.map(w => w.count), 1);
+
+    // Last 5 started games
+    const recentGames = [...analyticsGames]
+      .filter(g => g.started_at)
+      .sort((a, b) => new Date(b.started_at!).getTime() - new Date(a.started_at!).getTime())
+      .slice(0, 5);
+
+    const kpis = [
+      { label: 'Total games', value: String(totalGames), color: 'var(--accent)' },
+      { label: 'Completion rate', value: `${completionRate}%`, color: 'var(--accent3)' },
+      { label: 'Avg teams/game', value: String(avgTeams), color: 'var(--text)' },
+      { label: 'Total teams', value: String(totalTeams), color: 'var(--gold)' },
+    ];
+
+    return (
+      <>
+        <nav className="nav">
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+          </button>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <BarChart2 size={15} color={IC} /> My stats
+          </div>
+          <div className="nav-right">
+            <ProfileMenu />
+          </div>
+        </nav>
+        <div style={{ background: 'var(--bg)', padding: '20px 16px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {/* KPI row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+            {kpis.map(kpi => (
+              <div
+                key={kpi.label}
+                style={{
+                  background: 'var(--card)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '14px 12px', textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: 24, fontWeight: 700, color: kpi.color }}>{kpi.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>{kpi.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart + Recent games */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: 12 }}>
+            {/* Activity bar chart */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+                Games per week
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 96 }}>
+                {gamesPerWeek.map((w, i) => {
+                  const opacity = 0.22 + (i / (gamesPerWeek.length - 1 || 1)) * 0.78;
+                  const heightPx = w.count === 0 ? 4 : Math.max(8, Math.round((w.count / maxCount) * 72));
+                  return (
+                    <div
+                      key={w.key}
+                      style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
+                    >
+                      <div style={{ fontSize: 9, fontWeight: 600, color: w.count > 0 ? '#6ec6f5' : 'var(--muted)', minHeight: 12 }}>
+                        {w.count > 0 ? w.count : ''}
+                      </div>
+                      <div
+                        style={{
+                          width: '100%',
+                          background: `rgba(110,198,245,${opacity})`,
+                          borderRadius: '3px 3px 0 0',
+                          height: heightPx,
+                        }}
+                      />
+                      <div style={{ fontSize: 9, color: 'var(--muted)' }}>{w.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Recent games */}
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: 16 }}>
+              <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
+                Recent games
+              </div>
+              {recentGames.length === 0 ? (
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>No games yet</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {recentGames.map(g => (
+                    <div key={g.id}>
+                      <div style={{
+                        fontSize: 13, fontWeight: 600, color: 'var(--text)',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {g.name || '(unnamed)'}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+                        {g.teams_count ?? 0} teams · {g.started_at ? timeAgoLocal(g.started_at) : 'Draft'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        </div>
+      </>
+    );
+  }
+
+  // ── BRANDING SETTINGS ──
+  if (view === 'branding') return <BrandingView authToken={authToken} onBack={() => setView('games')} profileMenu={<ProfileMenu />} />;
+
   // ── GAMES LIST ──
   if (view === 'games') return (
     <>
+      {showOnboarding && (
+        <OnboardingModal
+          step={onboardingStep}
+          onNext={() => setOnboardingStep(s => Math.min(ONBOARDING_STEPS.length - 1, s + 1))}
+          onBack={() => setOnboardingStep(s => Math.max(0, s - 1))}
+          onSkip={() => completeOnboarding(false)}
+          onFinish={() => completeOnboarding(true)}
+        />
+      )}
       <nav className="nav" style={{ position: 'relative' }}>
         <div className="nav-brand"><GameOnLogo size={22} /></div>
         <NavCenter game={null} />
-        <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
+        <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {plan === 'free' && (
+            <button
+              className="btn btn-primary"
+              style={{ padding: '7px 14px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', borderRadius: '8px', cursor: upgradeLoading ? 'not-allowed' : 'pointer', opacity: upgradeLoading ? 0.7 : 1, whiteSpace: 'nowrap' }}
+              onClick={() => handleUpgrade('pro')}
+              disabled={upgradeLoading}
+            >
+              {upgradeLoading ? '...' : <><Ic><Zap size={13} /></Ic> UPGRADE</>}
+            </button>
+          )}
+          <ProfileMenu />
         </div>
       </nav>
       <div className="container fade-in">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
-          <h2>Your Games</h2>
-          <button className="btn btn-primary" onClick={() => setView('create')}>+ NEW GAME</button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px', flexWrap: 'wrap', gap: '12px' }}>
+          <h2 style={{ margin: 0 }}>Your Games</h2>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {plan === 'free' ? (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', color: '#7CBDD4', border: '1px solid rgba(124,189,212,0.3)', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}><Lock size={12} color={IC} /> My Missions (Pro)</button>
+            ) : (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { loadAdminCustomMissions(); setView('missions'); }}><Pencil size={12} color={IC} /> My Missions</button>
+            )}
+            {isSuperAdmin && (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { setView('analytics'); loadAnalytics(); }}><BarChart2 size={12} color={IC} /> Analytics</button>
+            )}
+            {isSuperAdmin && (
+              <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }} onClick={() => { loadTemplates(); setView('manage-templates'); }}><Settings2 size={12} color={IC} /> Templates</button>
+            )}
+            <button className="btn btn-primary" onClick={() => { loadTemplates(); setView('templates'); }}>+ NEW GAME</button>
+          </div>
         </div>
+        {plan === 'free' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.15)', borderRadius: '10px', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1 }}>
+              <span style={{ color: '#DCE4EE', fontWeight: 700 }}>Starter plan</span> — max 5 teams per game · <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade to Pro</span>
+            </span>
+          </div>
+        )}
         {games.length === 0 ? (
           <div className="empty-state" style={{ paddingTop: '80px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="3" stroke="var(--muted)" strokeWidth="1.5"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
             <p>No games yet. Create your first game!</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {games.map(g => {
-              const statusColor = g.status === 'active' ? 'var(--accent3)' : g.status === 'finished' ? 'var(--muted)' : 'var(--gold)';
-              const statusLabel = g.status === 'active' ? '🟢 Active' : g.status === 'finished' ? '⬛ Finished' : '🟡 Draft';
+              const statusKey = g.status === 'active' ? 'active' : g.status === 'finished' ? 'finished' : 'draft';
+              const statusText = g.status === 'active' ? 'Active' : g.status === 'finished' ? 'Finished' : 'Draft';
               const isConfirming = confirmDeleteId === g.id;
               const isDeleting = deletingId === g.id;
               return (
-                <div key={g.id}
-                  style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 24px', background: 'var(--card)', border: `1px solid ${isConfirming ? 'var(--accent2)' : 'var(--border)'}`, borderRadius: '12px', transition: 'all 0.2s' }}>
+                <div key={g.id} className={`admin-game-card${isConfirming ? ' confirming' : ''}`}>
                   {/* Clickable info area */}
-                  <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => { if (!isConfirming) { setActiveGame(g); setView('dashboard'); } }}>
-                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{g.name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
-                      {g.missions.length} missions · {g.duration_minutes} min
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--border)', marginTop: '4px', letterSpacing: '0.5px' }}>
+                  <div className="admin-game-card-info" onClick={() => { if (!isConfirming) { setActiveGame(g); setView('dashboard'); } }}>
+                    <h3>{g.name}</h3>
+                    <div className="meta">{g.missions.length} missions · {g.duration_minutes} min</div>
+                    <div className="date">
                       {g.started_at
-                        ? `▶ ${new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        ? <><Play size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', marginBottom: '1px' }} />{new Date(g.started_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(g.started_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</>
                         : `Created ${new Date(g.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                       }
                     </div>
                   </div>
-                  <div style={{ fontFamily: "'Sora', sans-serif", letterSpacing: '3px', fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{g.game_key}</div>
-                  <div style={{ fontSize: '13px', color: statusColor, fontWeight: 700 }}>{statusLabel}</div>
 
-                  {/* Delete / confirm */}
-                  {isConfirming ? (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: '12px', color: 'var(--accent2)', fontWeight: 600 }}>Delete?</span>
-                      <button onClick={() => deleteGame(g.id)} disabled={isDeleting}
-                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
-                        {isDeleting ? '...' : 'YES'}
-                      </button>
-                      <button onClick={() => setConfirmDeleteId(null)}
-                        style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
-                        NO
-                      </button>
+                  {/* Key + status + actions — stacks below info on mobile */}
+                  <div className="admin-game-card-bottom">
+                    <div className="admin-game-key">{g.game_key}</div>
+                    <div className="admin-game-status">
+                      <span className={`status-pill ${statusKey}`}>
+                        <span className="status-pill-dot" />
+                        {statusText}
+                      </span>
                     </div>
-                  ) : (
-                    <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
-                      title="Delete game"
-                      style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
-                      🗑
-                    </button>
-                  )}
+
+                    {/* Delete / confirm */}
+                    {isConfirming ? (
+                      <div className="admin-game-confirm">
+                        <span style={{ fontSize: '12px', color: 'var(--accent2)', fontWeight: 600 }}>Delete?</span>
+                        <button onClick={() => deleteGame(g.id)} disabled={isDeleting}
+                          style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                          {isDeleting ? '...' : 'YES'}
+                        </button>
+                        <button onClick={() => setConfirmDeleteId(null)}
+                          style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}>
+                          NO
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="admin-game-actions">
+                        <div className="admin-game-actions-row">
+                          <button
+                            onClick={e => { e.stopPropagation(); setSaveTemplateId(g.id); setSaveTemplateName(g.name || 'My Template'); setSaveTemplateIcon('🎮'); }}
+                            title="Save as template"
+                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '13px', lineHeight: 1, flexShrink: 0, fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
+                          >
+                            Save as template
+                          </button>
+                          <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(g.id); }}
+                            title="Delete game"
+                            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>
+                            <Trash2 size={14} color={IC} />
+                          </button>
+                        </div>
+                        {saveTemplateId === g.id && (
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+                            <div style={{ position: 'relative' }}>
+                              <button
+                                type="button"
+                                onClick={() => setSaveTemplateEmojiPickerOpen(v => !v)}
+                                style={{ width: '36px', height: '32px', padding: '0', borderRadius: '6px', border: '1px solid var(--border)', background: saveTemplateEmojiPickerOpen ? 'var(--surface)' : 'var(--card)', color: 'var(--text)', fontSize: '18px', textAlign: 'center', cursor: 'pointer', lineHeight: 1 }}
+                              >
+                                {saveTemplateIcon}
+                              </button>
+                              {saveTemplateEmojiPickerOpen && (
+                                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                                  <input
+                                    type="text"
+                                    placeholder="Type or paste any emoji…"
+                                    maxLength={4}
+                                    autoFocus
+                                    style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                    onChange={e => {
+                                      const v = [...e.target.value].filter(c => c.trim()).join('');
+                                      if (v) { setSaveTemplateIcon(v); setSaveTemplateEmojiPickerOpen(false); }
+                                    }}
+                                  />
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '200px', overflowY: 'auto' }}>
+                                    {EMOJI_300.map(e => (
+                                      <button
+                                        key={e}
+                                        type="button"
+                                        onClick={() => { setSaveTemplateIcon(e); setSaveTemplateEmojiPickerOpen(false); }}
+                                        style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                        onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                        onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                                      >
+                                        {e}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <input
+                              value={saveTemplateName}
+                              onChange={e => setSaveTemplateName(e.target.value)}
+                              placeholder="Template name"
+                              style={{ width: '140px', padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif" }}
+                            />
+                            <button
+                              onClick={() => saveAsTemplate(g.missions, saveTemplateName, saveTemplateIcon)}
+                              disabled={saveTemplateLoading || !saveTemplateName.trim()}
+                              style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                            >
+                              {saveTemplateLoading ? '...' : 'SAVE'}
+                            </button>
+                            <button
+                              onClick={() => { setSaveTemplateId(null); setSaveTemplateEmojiPickerOpen(false); }}
+                              style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
+        )}
+
+        <div style={{ paddingBottom: '32px' }} />
+      </div>
+    </>
+  );
+
+  // ── MY MISSIONS ──
+  if (view === 'missions') {
+    function openNewForm() {
+      setEditingMissionId(null);
+      setMissionForm(EMPTY_FORM);
+      setMissionFormError('');
+      setMissionCategoryId(null); setMissionSuperCategoryKey(null);
+      setShowMissionForm(true);
+    }
+
+    function openEditForm(cm: import('@/lib/supabase').CustomMission) {
+      setEditingMissionId(cm.id);
+      const d = cm.data as Record<string, unknown>;
+      setMissionForm({
+        name: cm.name,
+        icon: cm.icon,
+        desc: cm.desc,
+        difficulty: cm.difficulty,
+        maxPts: cm.max_pts,
+        type: cm.type,
+        triviaRounds: cm.type === 'trivia_quiz' ? (d.rounds as MissionFormData['triviaRounds']) ?? [] : [],
+        statements: cm.type === 'truefalse' ? (d.statements as MissionFormData['statements']) ?? [] : [],
+        closestQuestions: cm.type === 'closest_wins'
+          ? ((d.questions as { q: string; answer: number; unit: string; hint: string }[]) ?? []).map(q => ({ ...q, answer: String(q.answer) }))
+          : [],
+        clues: (cm.type === 'pa_sparet' || cm.type === 'shared_secret') ? (d.clues as string[]) ?? [] : [],
+        paAnswer: cm.type === 'pa_sparet' ? (d.answer as string) ?? '' : '',
+        timelineItems: cm.type === 'timeline'
+          ? ((d.items as { label: string; year: number }[]) ?? []).map(i => ({ label: i.label, year: String(i.year) }))
+          : [],
+        photoPrompt: cm.type === 'photo' ? (d.prompt as string) ?? '' : '',
+        relaySegments: cm.type === 'relay'
+          ? ((d.segments as (string | { prompt: string; answer?: string })[]) ?? []).map(s =>
+              typeof s === 'string' ? { prompt: s, answer: '' } : { prompt: s.prompt, answer: s.answer ?? '' }
+            )
+          : [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
+        relayMode: cm.type === 'relay' ? ((d.relayMode as 'typerace' | 'button') ?? 'typerace') : 'typerace',
+        sharedSecretAnswer: cm.type === 'shared_secret' ? ((d.answer as string) ?? '') : '',
+        sharedSecretHint: cm.type === 'shared_secret' ? ((d.hint as string) ?? '') : '',
+        activeFrom: (cm as { active_from?: string | null }).active_from
+          ? new Date((cm as { active_from: string }).active_from).toISOString().slice(0, 10)
+          : '',
+        activeUntil: (cm as { active_until?: string | null }).active_until
+          ? new Date((cm as { active_until: string }).active_until).toISOString().slice(0, 10)
+          : '',
+        seasonal: cm.seasonal ?? false,
+        musicRounds: (cm.type === 'music_quiz' || cm.type === 'easy_music_quiz') ? ((d.rounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? []) : [],
+      });
+      setMissionFormError('');
+      setMissionCategoryId(cm.category_id ?? null);
+      // Restore super-category when editing — check if category_name matches a built-in
+      if (!cm.category_id && cm.category_name) {
+        const scKey = (Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { icon: string; label: string }][])
+          .find(([, sc]) => `${sc.icon} ${sc.label}` === cm.category_name)?.[0] ?? null;
+        setMissionSuperCategoryKey(scKey);
+      } else {
+        setMissionSuperCategoryKey(null);
+      }
+      setShowMissionForm(true);
+    }
+
+    async function saveCategory() {
+      if (!categoryFormName.trim()) return;
+      setCategorySaving(true);
+      setCategoryError('');
+      try {
+        const res = await fetch('/api/admin/mission-categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({ name: categoryFormName.trim(), emoji: categoryFormEmoji || '📋', color: categoryFormColor || null }),
+        });
+        if (!res.ok) { setCategoryError('Failed to save category.'); return; }
+        const data = await res.json() as { category: AdminCategory };
+        setAdminCategories(prev => [...prev, data.category]);
+        setCategoryFormOpen(false);
+        setCategoryFormName('');
+        setCategoryFormEmoji('📋');
+        setCategoryFormColor('');
+        setCategoryEmojiPickerOpen(false);
+      } catch {
+        setCategoryError('Failed to save category.');
+      } finally {
+        setCategorySaving(false);
+      }
+    }
+
+    async function saveEditCategory(id: string) {
+      if (!editCategoryName.trim()) return;
+      setEditCategorySaving(true);
+      try {
+        const res = await fetch('/api/admin/mission-categories', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({ id, name: editCategoryName.trim(), emoji: editCategoryEmoji || '📋', color: editCategoryColor || null }),
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { category: AdminCategory };
+        setAdminCategories(prev => prev.map(c => c.id === id ? data.category : c));
+        setEditingCategoryId(null);
+        setEditCategoryEmojiPickerOpen(false);
+      } catch {
+        /* silent */
+      } finally {
+        setEditCategorySaving(false);
+      }
+    }
+
+    async function generateWithAI() {
+      if (!aiPrompt.trim()) return;
+      setAiGenerating(true);
+      setAiError('');
+      setAiBulkPreview(null);
+      // Cancel any in-flight request
+      aiAbortRef.current?.abort();
+      const ctrl = new AbortController();
+      aiAbortRef.current = ctrl;
+      try {
+        const excludedNames = (() => {
+          const newest = [...games].sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0];
+          if (!newest || !Array.isArray(newest.missions)) return [];
+          const customById = new Map<string, string>(adminCustomMissions.map(cm => [cm.id, cm.name]));
+          const standardById = new Map<string, string>(MISSIONS.map(m => [m.id, m.name]));
+          const names: string[] = [];
+          for (const id of newest.missions) {
+            const n = customById.get(id) ?? standardById.get(id);
+            if (n) names.push(n);
+          }
+          return names;
+        })();
+
+        const res = await fetch('/api/admin/ai-generate-mission', {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            prompt: aiPrompt,
+            ...(aiType ? { type: aiType } : {}),
+            language: aiLanguage,
+            excludedNames,
+            ...(aiCount > 1 ? { count: aiCount } : {}),
+          }),
+        });
+
+        if (res.status === 403) {
+          setAiError('pro_required');
+          return;
+        }
+        if (!res.ok) {
+          setAiError('Generation failed — try rephrasing your prompt.');
+          return;
+        }
+
+        const data = await res.json() as Record<string, unknown>;
+
+        // Bulk mode — show preview list
+        if (Array.isArray(data.missions)) {
+          const missions = (data.missions as Record<string, unknown>[]).filter(
+            m => typeof m.type === 'string' && typeof m.name === 'string'
+          );
+          if (missions.length === 0) {
+            setAiError('Generation failed — try rephrasing your prompt.');
+            return;
+          }
+          setAiBulkPreview(missions.map(m => ({ selected: true, mission: m })));
+          return;
+        }
+
+        // Single mode — pre-fill form as before
+        const mission = data as {
+          type: string; name: string; icon: string; desc: string;
+          difficulty: 'easy' | 'medium' | 'hard'; maxPts: number;
+          triviaRounds?: { question: string; options: [string, string, string, string]; answer: string }[];
+          statements?: { text: string; answer: boolean }[];
+          closestQuestions?: { q: string; answer: string; unit: string; hint: string }[];
+          clues?: string[];
+          paAnswer?: string;
+          timelineItems?: { label: string; year: string }[];
+          photoPrompt?: string;
+          segments?: { prompt: string }[];
+          relayMode?: string;
+          answer?: string;
+          hint?: string;
+          musicRounds?: { audioUrl: string; artist: string; title: string; year: number }[];
+        };
+
+        if (!mission || typeof mission.type !== 'string' || typeof mission.name !== 'string') {
+          setAiError('Generation failed — try rephrasing your prompt.');
+          return;
+        }
+
+        setEditingMissionId(null);
+        setMissionForm({
+          name: mission.name ?? '',
+          icon: mission.icon ?? '⭐',
+          desc: mission.desc ?? '',
+          difficulty: mission.difficulty ?? 'medium',
+          maxPts: mission.maxPts ?? 500,
+          type: mission.type ?? '',
+          triviaRounds: mission.triviaRounds ?? [],
+          statements: mission.statements ?? [],
+          closestQuestions: mission.closestQuestions ?? [],
+          clues: mission.clues ?? [],
+          paAnswer: mission.paAnswer ?? '',
+          timelineItems: mission.timelineItems ?? [],
+          photoPrompt: mission.photoPrompt ?? '',
+          relaySegments: mission.segments?.map((s: { prompt: string; answer?: string }) => ({ prompt: s.prompt, answer: s.answer ?? '' })) ?? [{ prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }, { prompt: '', answer: '' }],
+          relayMode: (mission.relayMode as 'typerace' | 'button') ?? 'typerace',
+          sharedSecretAnswer: mission.answer ?? '',
+          sharedSecretHint: mission.hint ?? '',
+          musicRounds: mission.musicRounds ?? [],
+          activeFrom: '',
+          activeUntil: '',
+          seasonal: false,
+        });
+        setMissionFormError('');
+        setMissionCategoryId(null); setMissionSuperCategoryKey(null);
+        setShowMissionForm(true);
+        setAiPanelOpen(false);
+        setAiPrompt('');
+        setAiType('');
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        setAiError('Generation failed — try rephrasing your prompt.');
+      } finally {
+        setAiGenerating(false);
+      }
+    }
+
+    async function saveBulkMissions() {
+      if (!aiBulkPreview) return;
+      const selected = aiBulkPreview.filter(p => p.selected).map(p => p.mission);
+      if (selected.length === 0) return;
+      setAiBulkSaving(true);
+      setAiBulkSaveError('');
+      const errors: string[] = [];
+      try {
+        const { buildMissionData } = await import('@/lib/custom-missions');
+        for (const m of selected) {
+          const type = String(m.type ?? '');
+          try {
+            // Skip music_quiz / easy_music_quiz missions with no resolved songs — iTunes lookup failed
+            if (type === 'music_quiz' || type === 'easy_music_quiz') {
+              const rounds = (m.musicRounds as unknown[]) ?? [];
+              const minSongs = type === 'easy_music_quiz' ? 4 : 2;
+              if (rounds.length < minSongs) {
+                errors.push(`"${String(m.name ?? 'Music Quiz')}": not enough iTunes previews found — try again`);
+                continue;
+              }
+            }
+            const data = buildMissionData(type, {
+              triviaRounds: (m.triviaRounds as { question: string; options: string[]; answer: string }[]) ?? [],
+              statements: (m.statements as { text: string; answer: boolean }[]) ?? [],
+              closestQuestions: (m.closestQuestions as { q: string; answer: string; unit: string; hint: string }[]) ?? [],
+              clues: (m.clues as string[]) ?? [],
+              paAnswer: String(m.paAnswer ?? ''),
+              timelineItems: (m.timelineItems as { label: string; year: string }[]) ?? [],
+              photoPrompt: String(m.photoPrompt ?? ''),
+              relaySegments: Array.isArray(m.segments)
+                ? (m.segments as { prompt: string; answer?: string }[]).map(s => ({ prompt: s.prompt, answer: s.answer ?? '' }))
+                : [],
+              relayMode: String(m.relayMode ?? 'button'),
+              sharedSecretAnswer: String(m.answer ?? ''),
+              sharedSecretHint: String(m.hint ?? ''),
+              musicRounds: (m.musicRounds as { audioUrl: string; artist: string; title: string; year: number }[]) ?? [],
+            });
+            const res = await POST('/api/admin/custom-missions', {
+              name: String(m.name ?? '').trim(),
+              icon: String(m.icon ?? '⭐'),
+              desc: String(m.desc ?? ''),
+              difficulty: String(m.difficulty ?? 'medium'),
+              max_pts: Number(m.maxPts ?? 400),
+              type,
+              data,
+              category_id: null,
+              active_from: null,
+              active_until: null,
+              sort_order: adminCustomMissions.length,
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({})) as { error?: string };
+              errors.push(`"${String(m.name ?? type)}": ${err.error ?? 'save failed'}`);
+            }
+          } catch (e) {
+            errors.push(`"${String(m.name ?? type)}": ${e instanceof Error ? e.message : 'unknown error'}`);
+          }
+        }
+        // Refresh missions list even if some failed
+        await loadAdminCustomMissions();
+        if (errors.length === 0) {
+          setAiBulkPreview(null);
+          setAiPanelOpen(false);
+          setAiPrompt('');
+          setAiType('');
+          setAiCount(1);
+        } else {
+          setAiBulkSaveError(errors.join('\n'));
+        }
+      } catch (err) {
+        setAiBulkSaveError(err instanceof Error ? err.message : 'Could not save missions. Try again.');
+      } finally {
+        setAiBulkSaving(false);
+      }
+    }
+
+    async function saveMission() {
+      const { validateMissionData, buildMissionData } = await import('@/lib/custom-missions');
+      const validationError = validateMissionData(missionForm.type, {
+        triviaRounds: missionForm.triviaRounds,
+        statements: missionForm.statements,
+        closestQuestions: missionForm.closestQuestions,
+        clues: missionForm.clues,
+        paAnswer: missionForm.paAnswer,
+        timelineItems: missionForm.timelineItems,
+        photoPrompt: missionForm.photoPrompt,
+        relaySegments: missionForm.relaySegments,
+        relayMode: missionForm.relayMode,
+        sharedSecretAnswer: missionForm.sharedSecretAnswer,
+        sharedSecretHint: missionForm.sharedSecretHint,
+        musicRounds: missionForm.musicRounds,
+      });
+      if (validationError) { setMissionFormError(validationError); return; }
+
+      if (missionForm.activeFrom && missionForm.activeUntil && missionForm.activeFrom > missionForm.activeUntil) {
+        setMissionFormError('Active until must be on or after active from.');
+        return;
+      }
+
+      setMissionSaving(true);
+      setMissionFormError('');
+      const data = buildMissionData(missionForm.type, {
+        triviaRounds: missionForm.triviaRounds,
+        statements: missionForm.statements,
+        closestQuestions: missionForm.closestQuestions,
+        clues: missionForm.clues,
+        paAnswer: missionForm.paAnswer,
+        timelineItems: missionForm.timelineItems,
+        photoPrompt: missionForm.photoPrompt,
+        relaySegments: missionForm.relaySegments,
+        relayMode: missionForm.relayMode,
+        sharedSecretAnswer: missionForm.sharedSecretAnswer,
+        sharedSecretHint: missionForm.sharedSecretHint,
+        musicRounds: missionForm.musicRounds,
+      });
+      const payload = {
+        name: missionForm.name.trim(),
+        icon: missionForm.icon || '⭐',
+        desc: missionForm.desc,
+        difficulty: missionForm.difficulty,
+        max_pts: missionForm.maxPts,
+        type: missionForm.type,
+        data,
+        category_id: missionSuperCategoryKey ? null : missionCategoryId,
+        category_name: missionSuperCategoryKey
+          ? `${SUPER_CATEGORIES[missionSuperCategoryKey].icon} ${SUPER_CATEGORIES[missionSuperCategoryKey].label}`
+          : undefined,
+        active_from: missionForm.activeFrom
+          ? new Date(`${missionForm.activeFrom}T00:00:00Z`).toISOString()
+          : null,
+        active_until: missionForm.activeUntil
+          ? new Date(`${missionForm.activeUntil}T23:59:59Z`).toISOString()
+          : null,
+        seasonal: missionForm.seasonal,
+      };
+
+      if (editingMissionId) {
+        const res = await fetch(`/api/admin/custom-missions/${editingMissionId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setMissionFormError(err.error ?? 'Could not save mission. Try again.');
+          setMissionSaving(false);
+          return;
+        }
+      } else {
+        const res = await POST('/api/admin/custom-missions', { ...payload, sort_order: adminCustomMissions.length });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setMissionFormError(err.error ?? 'Could not save mission. Try again.');
+          setMissionSaving(false);
+          return;
+        }
+      }
+      setMissionSaving(false);
+      setShowMissionForm(false);
+      setEditingMissionId(null);
+      setMissionCategoryId(null); setMissionSuperCategoryKey(null);
+      showToast('Mission saved ✓');
+      loadAdminCustomMissions();
+    }
+
+    async function deleteMission(id: string) {
+      setDeletingMissionId(id);
+      await fetch(`/api/admin/custom-missions/${id}`, {
+        method: 'DELETE',
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {},
+      });
+      setDeletingMissionId(null);
+      loadAdminCustomMissions();
+    }
+
+    async function moveMissionToCategory(missionId: string, categoryId: string | null, categoryName?: string) {
+      // Optimistic update
+      setAdminCustomMissions(prev =>
+        prev.map(m => m.id === missionId ? {
+          ...m,
+          category_id: categoryId,
+          category_name: categoryName ?? (categoryId ? m.category_name : 'My Missions'),
+        } : m)
+      );
+      try {
+        const res = await fetch(`/api/admin/custom-missions/${missionId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            category_id: categoryId,
+            ...(categoryName ? { category_name: categoryName } : {}),
+          }),
+        });
+        if (!res.ok) {
+          showToast('Failed to move mission — please try again.');
+          loadAdminCustomMissions(); // revert optimistic update
+        }
+      } catch {
+        showToast('Failed to move mission — please try again.');
+        loadAdminCustomMissions(); // revert optimistic update
+      }
+    }
+
+    const setF = (patch: Partial<MissionFormData>) => setMissionForm(prev => ({ ...prev, ...patch }));
+    const inputStyle = { width: '100%', padding: '8px 12px', fontSize: '13px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontFamily: "'Sora', sans-serif" };
+    const labelStyle = { fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', color: 'var(--muted)', display: 'block', marginBottom: '4px' };
+
+    return (
+      <>
+        <nav className="nav">
+          <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { setView('games'); setShowMissionForm(false); setMissionCategoryId(null); setMissionSuperCategoryKey(null); }}>
+            <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+          </button>
+          <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>My Missions</div>
+          <div className="nav-right">
+            <ProfileMenu />
+          </div>
+        </nav>
+        <div className="container fade-in">
+          <div style={{ padding: '32px 0 24px' }}>
+            <h2 style={{ margin: 0 }}>My Missions</h2>
+          </div>
+
+          {/* Add / Edit form */}
+          {!showMissionForm && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+              {/* AI generate button */}
+              <button
+                className="btn btn-ghost"
+                style={{ width: '100%', padding: '12px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                onClick={() => { setAiPanelOpen(v => !v); setAiError(''); }}
+              >
+                <WandSparkles size={14} style={{ marginRight: '6px' }} />{aiPanelOpen ? 'Close AI Generator' : 'Generate with AI'}
+              </button>
+
+              {/* AI panel */}
+              {aiPanelOpen && (
+                <div className="card" style={{ marginBottom: '4px' }}>
+                  <h3 style={{ marginBottom: '16px', fontSize: '15px', color: '#7CBDD4', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={14} /> Generate with AI</h3>
+
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>DESCRIBE YOUR MISSION</label>
+                    <textarea
+                      rows={3}
+                      value={aiPrompt}
+                      onChange={e => setAiPrompt(e.target.value)}
+                      placeholder={'e.g. "5 trivia questions about our company history", "Famous landmarks timeline", "True or false about space exploration"'}
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', color: 'var(--text)', fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 80px', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>TYPE (OPTIONAL)</label>
+                      <select
+                        value={aiType}
+                        onChange={e => setAiType(e.target.value)}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value="">Let AI choose</option>
+                        <option value="trivia_quiz">Trivia Quiz</option>
+                        <option value="truefalse">True or False</option>
+                        <option value="closest_wins">Closest Wins</option>
+                        <option value="pa_sparet">På Spåret</option>
+                        <option value="timeline">Timeline</option>
+                        <option value="photo">Photo</option>
+                        <option value="relay">Relay (Remote)</option>
+                        <option value="shared_secret">Shared Secret (Remote)</option>
+                        <option value="music_quiz">Hard Music Quiz</option>
+                        <option value="easy_music_quiz">Easy Music Quiz</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>LANGUAGE</label>
+                      <select
+                        value={aiLanguage}
+                        onChange={e => setAiLanguage(e.target.value)}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value="en">English</option>
+                        <option value="sv">Svenska</option>
+                        <option value="no">Norsk</option>
+                        <option value="da">Dansk</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>COUNT</label>
+                      <select
+                        value={aiCount}
+                        onChange={e => { setAiCount(Number(e.target.value)); setAiBulkPreview(null); }}
+                        style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                      >
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {aiError === 'pro_required' ? (
+                    <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '12px' }}>
+                      AI mission generation requires Pro.{' '}
+                      <span style={{ color: '#7CBDD4', cursor: 'pointer', fontWeight: 600 }} onClick={() => handleUpgrade('pro')}>Upgrade →</span>
+                    </div>
+                  ) : aiError ? (
+                    <div style={{ fontSize: '13px', color: 'var(--danger, #e74c3c)', marginBottom: '12px' }}>{aiError}</div>
+                  ) : null}
+
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', padding: '12px', opacity: (!aiPrompt.trim() || aiGenerating) ? 0.5 : 1 }}
+                    disabled={!aiPrompt.trim() || aiGenerating}
+                    onClick={generateWithAI}
+                  >
+                    <><WandSparkles size={14} style={{ marginRight: '6px' }} />{aiGenerating ? 'Generating…' : aiCount > 1 ? `Generate ${aiCount} missions` : 'Generate'}</>
+                  </button>
+
+                  {/* Bulk preview */}
+                  {aiBulkPreview && (
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ fontSize: '11px', letterSpacing: '.1em', color: 'var(--muted)', marginBottom: '10px' }}>
+                        SELECT MISSIONS TO SAVE
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                        {aiBulkPreview.map((item, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => setAiBulkPreview(prev => prev ? prev.map((p, i) => i === idx ? { ...p, selected: !p.selected } : p) : prev)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '10px',
+                              background: item.selected ? 'rgba(124,189,212,0.08)' : 'var(--surface)',
+                              border: `1px solid ${item.selected ? 'rgba(124,189,212,0.35)' : 'var(--border)'}`,
+                              borderRadius: '10px', padding: '10px 14px', cursor: 'pointer',
+                              opacity: item.selected ? 1 : 0.55, transition: 'all .15s',
+                            }}
+                          >
+                            <div style={{
+                              width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
+                              border: `2px solid ${item.selected ? '#7CBDD4' : 'var(--muted)'}`,
+                              background: item.selected ? '#7CBDD4' : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {item.selected && <span style={{ color: '#000', fontSize: '12px', fontWeight: 700, lineHeight: 1 }}>✓</span>}
+                            </div>
+                            <span style={{ fontSize: '20px', flexShrink: 0 }}>{String(item.mission.icon ?? '⭐')}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {String(item.mission.name ?? '')}
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                                {String(item.mission.type ?? '').replace(/_/g, ' ')} · {String(item.mission.difficulty ?? '')} · {Number(item.mission.maxPts ?? 0)} pts
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {aiBulkSaveError && (
+                        <div style={{ fontSize: '12px', color: 'var(--error, #e74c3c)', marginBottom: '8px', padding: '8px 10px', background: 'rgba(231,76,60,0.08)', borderRadius: '6px' }}>
+                          {aiBulkSaveError}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          className="btn btn-primary"
+                          style={{ flex: 1, padding: '11px', opacity: (aiBulkSaving || aiBulkPreview.every(p => !p.selected)) ? 0.5 : 1 }}
+                          disabled={aiBulkSaving || aiBulkPreview.every(p => !p.selected)}
+                          onClick={saveBulkMissions}
+                        >
+                          {aiBulkSaving ? 'Saving…' : `Save ${aiBulkPreview.filter(p => p.selected).length} mission${aiBulkPreview.filter(p => p.selected).length !== 1 ? 's' : ''}`}
+                        </button>
+                        <button
+                          className="btn btn-ghost"
+                          style={{ padding: '11px 16px' }}
+                          onClick={() => { setAiBulkPreview(null); setAiBulkSaveError(''); }}
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button className="btn btn-ghost" style={{ width: '100%', padding: '12px' }} onClick={openNewForm}>+ Add Mission Manually</button>
+            </div>
+          )}
+
+
+
+          {showMissionForm && (
+            <div className="card" style={{ marginBottom: '32px' }}>
+              <h3 style={{ marginBottom: '20px', fontSize: '16px' }}>{editingMissionId ? 'Edit Mission' : 'New Mission'}</h3>
+
+              {/* Base fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={labelStyle}>NAME</label>
+                  <input type="text" value={missionForm.name} onChange={e => setF({ name: e.target.value })} placeholder="Mission name" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>ICON</label>
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setMissionEmojiPickerOpen(v => !v)}
+                      style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', padding: '6px 4px', cursor: 'pointer', background: missionEmojiPickerOpen ? 'var(--surface)' : undefined }}
+                      title="Choose emoji"
+                    >
+                      {missionForm.icon || '⭐'}
+                    </button>
+                    {missionEmojiPickerOpen && (
+                      <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                        <input
+                          type="text"
+                          placeholder="Type or paste any emoji…"
+                          maxLength={4}
+                          style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                          onChange={e => {
+                            const v = [...e.target.value].filter(c => c.trim()).join('');
+                            if (v) { setF({ icon: v }); setMissionEmojiPickerOpen(false); }
+                          }}
+                        />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                          {EMOJI_300.map(e => (
+                            <button
+                              key={e}
+                              type="button"
+                              onClick={() => { setF({ icon: e }); setMissionEmojiPickerOpen(false); }}
+                              style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                              onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                              onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={labelStyle}>DESCRIPTION</label>
+                <input type="text" value={missionForm.desc} onChange={e => setF({ desc: e.target.value })} placeholder="What teams see before starting" style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={labelStyle}>CATEGORY</label>
+                <select
+                  value={missionSuperCategoryKey ? `super:${missionSuperCategoryKey}` : (missionCategoryId ?? '')}
+                  onChange={e => {
+                    const v = e.target.value;
+                    if (v.startsWith('super:')) {
+                      setMissionCategoryId(null);
+                      setMissionSuperCategoryKey(v.slice(6) as SuperCategoryKey);
+                    } else {
+                      setMissionCategoryId(v || null);
+                      setMissionSuperCategoryKey(null);
+                    }
+                  }}
+                  style={inputStyle}
+                >
+                  <option value="">(No category)</option>
+                  {adminCategories.length > 0 && (
+                    <optgroup label="My categories">
+                      {adminCategories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <optgroup label="Built-in categories">
+                    {(Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string }][]).map(([key, sc]) => (
+                      <option key={key} value={`super:${key}`}>{sc.icon} {sc.label}</option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={labelStyle}>DIFFICULTY</label>
+                  <select value={missionForm.difficulty} onChange={e => setF({ difficulty: e.target.value as MissionFormData['difficulty'] })} style={inputStyle}>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>MAX PTS</label>
+                  <input type="number" value={missionForm.maxPts} min={0} max={9999} step={50} onChange={e => setF({ maxPts: Number(e.target.value) })} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>TYPE</label>
+                  <select value={missionForm.type} onChange={e => setF({ type: e.target.value })} style={inputStyle}>
+                    <option value="">Select type…</option>
+                    <option value="trivia_quiz">Trivia Quiz</option>
+                    <option value="truefalse">True / False</option>
+                    <option value="closest_wins">Closest Wins</option>
+                    <option value="pa_sparet">På Spåret</option>
+                    <option value="timeline">Timeline</option>
+                    <option value="photo">Photo</option>
+                    <option value="music_quiz">Hard Music Quiz</option>
+                    <option value="easy_music_quiz">Easy Music Quiz</option>
+                    <option value="relay">Relay (Remote)</option>
+                    <option value="shared_secret">Shared Secret (Remote)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px', marginBottom: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', display: 'block', marginBottom: '4px' }}>
+                    ACTIVE FROM (OPTIONAL)
+                  </label>
+                  <input
+                    type="date"
+                    value={missionForm.activeFrom}
+                    onChange={e => setF({ activeFrom: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', display: 'block', marginBottom: '4px' }}>
+                    ACTIVE UNTIL (OPTIONAL)
+                  </label>
+                  <input
+                    type="date"
+                    value={missionForm.activeUntil}
+                    onChange={e => setF({ activeUntil: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              {missionForm.activeFrom && missionForm.activeUntil && missionForm.activeFrom > missionForm.activeUntil && (
+                <div style={{ marginBottom: '8px', fontSize: '11px', color: 'var(--danger, #d33)' }}>
+                  Active until must be on or after active from.
+                </div>
+              )}
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '12px', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={missionForm.seasonal}
+                  onChange={e => setF({ seasonal: e.target.checked })}
+                  style={{ width: 15, height: 15, accentColor: '#9b59b6', cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Seasonal — only available via template, hidden from game creation</span>
+              </label>
+
+              {/* ── Type-specific fields ── */}
+
+              {missionForm.type === 'photo' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>WHAT SHOULD TEAMS PHOTOGRAPH?</label>
+                  <input type="text" value={missionForm.photoPrompt} onChange={e => setF({ photoPrompt: e.target.value })} placeholder="e.g. A selfie in front of our logo" style={inputStyle} />
+                </div>
+              )}
+
+              {missionForm.type === 'pa_sparet' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>CLUES (revealed one at a time, most points for first clue)</label>
+                  {missionForm.clues.map((clue, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                      <input type="text" value={clue} onChange={e => { const c = [...missionForm.clues]; c[i] = e.target.value; setF({ clues: c }); }} placeholder={`Clue ${i + 1}`} style={{ ...inputStyle, flex: 1 }} />
+                      <button onClick={() => setF({ clues: missionForm.clues.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px', marginBottom: '10px' }} onClick={() => setF({ clues: [...missionForm.clues, ''] })}>+ Add clue</button>
+                  <label style={labelStyle}>ANSWER</label>
+                  <input type="text" value={missionForm.paAnswer} onChange={e => setF({ paAnswer: e.target.value })} placeholder="The correct answer" style={inputStyle} />
+                </div>
+              )}
+
+              {missionForm.type === 'truefalse' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>STATEMENTS</label>
+                  {missionForm.statements.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                      <input type="text" value={s.text} onChange={e => { const arr = [...missionForm.statements]; arr[i] = { ...arr[i], text: e.target.value }; setF({ statements: arr }); }} placeholder="Statement text" style={{ ...inputStyle, flex: 1 }} />
+                      <select value={s.answer ? 'true' : 'false'} onChange={e => { const arr = [...missionForm.statements]; arr[i] = { ...arr[i], answer: e.target.value === 'true' }; setF({ statements: arr }); }} style={{ ...inputStyle, width: '90px', flexShrink: 0 }}>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                      <button onClick={() => setF({ statements: missionForm.statements.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ statements: [...missionForm.statements, { text: '', answer: true }] })}>+ Add statement</button>
+                </div>
+              )}
+
+              {missionForm.type === 'closest_wins' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>QUESTIONS</label>
+                  {missionForm.closestQuestions.map((q, i) => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Question {i + 1}</span>
+                        <button onClick={() => setF({ closestQuestions: missionForm.closestQuestions.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px' }}>×</button>
+                      </div>
+                      <input type="text" value={q.q} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], q: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Question" style={{ ...inputStyle, marginBottom: '6px' }} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        <input type="number" value={q.answer} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], answer: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Correct answer (number)" style={inputStyle} />
+                        <input type="text" value={q.unit} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], unit: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Unit (e.g. employees)" style={inputStyle} />
+                      </div>
+                      <input type="text" value={q.hint} onChange={e => { const arr = [...missionForm.closestQuestions]; arr[i] = { ...arr[i], hint: e.target.value }; setF({ closestQuestions: arr }); }} placeholder="Hint" style={{ ...inputStyle, marginTop: '6px' }} />
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ closestQuestions: [...missionForm.closestQuestions, { q: '', answer: '', unit: '', hint: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {missionForm.type === 'timeline' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>EVENTS (teams will sort these chronologically)</label>
+                  {missionForm.timelineItems.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                      <input type="text" value={item.label} onChange={e => { const arr = [...missionForm.timelineItems]; arr[i] = { ...arr[i], label: e.target.value }; setF({ timelineItems: arr }); }} placeholder="Event label" style={{ ...inputStyle, flex: 1 }} />
+                      <input type="number" value={item.year} onChange={e => { const arr = [...missionForm.timelineItems]; arr[i] = { ...arr[i], year: e.target.value }; setF({ timelineItems: arr }); }} placeholder="Year" style={{ ...inputStyle, width: '90px', flexShrink: 0 }} />
+                      <button onClick={() => setF({ timelineItems: missionForm.timelineItems.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ timelineItems: [...missionForm.timelineItems, { label: '', year: '' }] })}>+ Add event</button>
+                </div>
+              )}
+
+              {missionForm.type === 'trivia_quiz' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>QUESTIONS</label>
+                  {missionForm.triviaRounds.map((round, i) => (
+                    <div key={i} style={{ background: 'var(--surface)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Question {i + 1}</span>
+                        <button onClick={() => setF({ triviaRounds: missionForm.triviaRounds.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px' }}>×</button>
+                      </div>
+                      <input type="text" value={round.question} onChange={e => { const arr = [...missionForm.triviaRounds]; arr[i] = { ...arr[i], question: e.target.value }; setF({ triviaRounds: arr }); }} placeholder="Question" style={{ ...inputStyle, marginBottom: '8px' }} />
+                      {([0, 1, 2, 3] as const).map(oi => (
+                        <div key={oi} style={{ display: 'flex', gap: '8px', marginBottom: '4px', alignItems: 'center' }}>
+                          <input
+                            type="radio"
+                            name={`correct-${i}`}
+                            checked={round.answer === round.options[oi]}
+                            onChange={() => { const arr = [...missionForm.triviaRounds]; arr[i] = { ...arr[i], answer: arr[i].options[oi] }; setF({ triviaRounds: arr }); }}
+                            style={{ flexShrink: 0 }}
+                          />
+                          <input
+                            type="text"
+                            value={round.options[oi] ?? ''}
+                            onChange={e => {
+                              const arr = [...missionForm.triviaRounds];
+                              const opts: [string, string, string, string] = [...arr[i].options] as [string, string, string, string];
+                              opts[oi] = e.target.value;
+                              const newAnswer = arr[i].answer === arr[i].options[oi] ? e.target.value : arr[i].answer;
+                              arr[i] = { ...arr[i], options: opts, answer: newAnswer };
+                              setF({ triviaRounds: arr });
+                            }}
+                            placeholder={`Option ${oi + 1}`}
+                            style={{ ...inputStyle, flex: 1 }}
+                          />
+                        </div>
+                      ))}
+                      <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '4px' }}>Select the radio button next to the correct option</div>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => setF({ triviaRounds: [...missionForm.triviaRounds, { question: '', options: ['', '', '', ''], answer: '' }] })}>+ Add question</button>
+                </div>
+              )}
+
+              {(missionForm.type === 'music_quiz' || missionForm.type === 'easy_music_quiz') && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>
+                    SONGS ({missionForm.musicRounds.length} added)
+                    {missionForm.type === 'easy_music_quiz' && <span style={{ color: 'var(--muted)', fontWeight: 400, marginLeft: '6px' }}>— add at least 4 (used as answer options)</span>}
+                  </label>
+
+                  {/* Added songs */}
+                  {missionForm.musicRounds.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                      {missionForm.musicRounds.map((r, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--surface)', borderRadius: '8px', padding: '8px 12px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{r.artist} · {r.year}</div>
+                          </div>
+                          <audio controls src={r.audioUrl} style={{ height: '28px', width: '140px', flexShrink: 0 }} />
+                          <button onClick={() => setF({ musicRounds: missionForm.musicRounds.filter((_, j) => j !== i) })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* iTunes search */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input
+                      type="text"
+                      value={itunesQuery}
+                      onChange={e => setItunesQuery(e.target.value)}
+                      onKeyDown={async e => {
+                        if (e.key === 'Enter' && itunesQuery.trim()) {
+                          setItunesLoading(true);
+                          setItunesResults([]);
+                          try {
+                            const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
+                            const json = await res.json();
+                            setItunesResults(json.results ?? []);
+                          } finally { setItunesLoading(false); }
+                        }
+                      }}
+                      placeholder="Search artist or song…"
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <button
+                      className="btn btn-ghost"
+                      style={{ fontSize: '12px', padding: '6px 14px', flexShrink: 0 }}
+                      disabled={itunesLoading || !itunesQuery.trim()}
+                      onClick={async () => {
+                        setItunesLoading(true);
+                        setItunesResults([]);
+                        try {
+                          const res = await fetch(`/api/itunes-search?q=${encodeURIComponent(itunesQuery.trim())}`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} });
+                          const json = await res.json();
+                          setItunesResults(json.results ?? []);
+                        } finally { setItunesLoading(false); }
+                      }}
+                    >
+                      {itunesLoading ? '...' : 'Search'}
+                    </button>
+                  </div>
+
+                  {itunesResults.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '280px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px' }}>
+                      {itunesResults.map(track => {
+                        const year = new Date(track.releaseDate).getFullYear();
+                        const alreadyAdded = missionForm.musicRounds.some(r => r.audioUrl === track.previewUrl);
+                        return (
+                          <div key={track.trackId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', background: alreadyAdded ? 'rgba(117,171,200,0.08)' : 'transparent' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.trackName}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{track.artistName} · {year}</div>
+                            </div>
+                            {track.previewUrl && <audio controls src={track.previewUrl} style={{ height: '28px', width: '120px', flexShrink: 0 }} />}
+                            <button
+                              className="btn btn-ghost"
+                              style={{ fontSize: '11px', padding: '4px 10px', flexShrink: 0, color: alreadyAdded ? 'var(--accent3)' : undefined }}
+                              disabled={alreadyAdded || !track.previewUrl}
+                              onClick={() => {
+                                if (alreadyAdded || !track.previewUrl) return;
+                                setF({ musicRounds: [...missionForm.musicRounds, { audioUrl: track.previewUrl, artist: track.artistName, title: track.trackName, year, ...(track.trackViewUrl ? { trackViewUrl: track.trackViewUrl } : {}) }] });
+                              }}
+                            >
+                              {alreadyAdded ? '✓ Added' : !track.previewUrl ? 'No preview' : '+ Add'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {missionForm.type === 'relay' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>RELAY MODE</label>
+                  <select
+                    value={missionForm.relayMode}
+                    onChange={e => setF({ relayMode: e.target.value as 'typerace' | 'button' })}
+                    style={inputStyle}
+                  >
+                    <option value="typerace">Typerace — participant types the exact text</option>
+                    <option value="button">Relay Quiz — participant types the answer to a question</option>
+                  </select>
+                  <label style={{ ...labelStyle, marginTop: '12px' }}>SEGMENTS (one per team member)</label>
+                  {missionForm.relaySegments.map((seg, i) => (
+                    <div key={i} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: missionForm.relayMode === 'button' ? '4px' : '0' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                        <input
+                          type="text"
+                          value={seg.prompt}
+                          onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = { ...arr[i], prompt: e.target.value }; setF({ relaySegments: arr }); }}
+                          placeholder={missionForm.relayMode === 'button' ? `Question ${i + 1}` : `Segment ${i + 1}`}
+                          style={{ ...inputStyle, flex: 1 }}
+                        />
+                        {missionForm.relaySegments.length > 2 && (
+                          <button
+                            onClick={() => setF({ relaySegments: missionForm.relaySegments.filter((_, j) => j !== i) })}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
+                          >×</button>
+                        )}
+                      </div>
+                      {missionForm.relayMode === 'button' && (
+                        <div style={{ display: 'flex', gap: '8px', paddingLeft: '28px' }}>
+                          <input
+                            type="text"
+                            value={seg.answer}
+                            onChange={e => { const arr = [...missionForm.relaySegments]; arr[i] = { ...arr[i], answer: e.target.value }; setF({ relaySegments: arr }); }}
+                            placeholder={`Answer ${i + 1}`}
+                            style={{ ...inputStyle, flex: 1, fontSize: '12px', opacity: 0.85 }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    className="btn btn-ghost"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={() => setF({ relaySegments: [...missionForm.relaySegments, { prompt: '', answer: '' }] })}
+                  >+ Add segment</button>
+                </div>
+              )}
+
+              {missionForm.type === 'shared_secret' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>CLUES (one per team member)</label>
+                  {missionForm.clues.map((clue, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', alignSelf: 'center', width: '20px', flexShrink: 0 }}>{i + 1}.</span>
+                      <input
+                        type="text"
+                        value={clue}
+                        onChange={e => { const c = [...missionForm.clues]; c[i] = e.target.value; setF({ clues: c }); }}
+                        placeholder={`Clue ${i + 1}`}
+                        style={{ ...inputStyle, flex: 1 }}
+                      />
+                      {missionForm.clues.length > 2 && (
+                        <button
+                          onClick={() => setF({ clues: missionForm.clues.filter((_, j) => j !== i) })}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', flexShrink: 0 }}
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    className="btn btn-ghost"
+                    style={{ fontSize: '11px', padding: '4px 10px', marginBottom: '10px' }}
+                    onClick={() => setF({ clues: [...missionForm.clues, ''] })}
+                  >+ Add clue</button>
+                  <label style={labelStyle}>ANSWER (the secret word/code)</label>
+                  <input
+                    type="text"
+                    value={missionForm.sharedSecretAnswer}
+                    onChange={e => setF({ sharedSecretAnswer: e.target.value })}
+                    placeholder="e.g. salt"
+                    style={inputStyle}
+                  />
+                  <label style={{ ...labelStyle, marginTop: '10px' }}>HINT (optional — revealed after 2 wrong attempts, costs -50 pts)</label>
+                  <input
+                    type="text"
+                    value={missionForm.sharedSecretHint}
+                    onChange={e => setF({ sharedSecretHint: e.target.value })}
+                    placeholder="e.g. Think cooking"
+                    style={inputStyle}
+                  />
+                </div>
+              )}
+
+              {missionFormError && (
+                <p style={{ color: 'var(--accent3)', fontSize: '13px', marginBottom: '12px' }}>{missionFormError}</p>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn btn-primary" style={{ flex: 1, padding: '10px' }} disabled={missionSaving || !missionForm.name.trim() || !missionForm.type} onClick={saveMission}>
+                  {missionSaving ? 'Saving…' : editingMissionId ? 'Save Changes' : 'Add Mission'}
+                </button>
+                <button className="btn btn-ghost" style={{ padding: '10px 16px' }} onClick={() => { setShowMissionForm(false); setEditingMissionId(null); setMissionFormError(''); setMissionCategoryId(null); setMissionSuperCategoryKey(null); }}>Cancel</button>
+              </div>
+            </div>
+          )}
+          {/* Categories + Missions unified collapsible view */}
+          {(() => {
+            const CAT_COLORS = ['#7cbdd4','#9b8ed4','#c47f9e','#5baa8a','#c47d56','#b89840','#6896c8','#b86b6b','#7fa84e','#a06bb5'];
+            const smallBtn: React.CSSProperties = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '11px', padding: '2px 7px', borderRadius: '4px' };
+            const superCatLabels = [...new Set(
+              adminCustomMissions
+                .filter(m => !m.category_id && m.category_name && m.category_name !== 'My Missions')
+                .map(m => m.category_name as string)
+            )];
+            const uncategorized = adminCustomMissions.filter(
+              m => !m.category_id && (!m.category_name || m.category_name === 'My Missions')
+            );
+            function toggleExpand(key: string) {
+              setCollapsedCategoryIds(prev => {
+                const next = new Set(prev);
+                if (next.has(key)) next.delete(key); else next.add(key);
+                return next;
+              });
+            }
+            const dropZoneStyle = (hovered: boolean): React.CSSProperties => ({
+              padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+              border: `2px dashed ${hovered ? 'var(--accent)' : 'rgba(124,189,212,0.35)'}`,
+              background: hovered ? 'rgba(124,189,212,0.18)' : 'rgba(124,189,212,0.05)',
+              color: hovered ? 'var(--accent)' : 'rgba(124,189,212,0.7)',
+              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
+              cursor: 'copy', transition: 'all .12s',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            });
+            const noneZoneStyle = (hovered: boolean): React.CSSProperties => ({
+              padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+              border: `2px dashed ${hovered ? 'var(--muted)' : 'rgba(128,128,128,0.3)'}`,
+              background: hovered ? 'rgba(128,128,128,0.12)' : 'transparent',
+              color: hovered ? 'var(--text)' : 'var(--muted)',
+              fontFamily: "'Sora', sans-serif", whiteSpace: 'nowrap' as const,
+              cursor: 'copy', transition: 'all .12s',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            });
+            const missionRow = (cm: typeof adminCustomMissions[0]) => (
+              <div
+                key={cm.id}
+                draggable
+                onDragStart={() => setDraggingMissionId(cm.id)}
+                onDragEnd={() => { setDraggingMissionId(null); setDropTargetCatId(null); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 14px',
+                  borderTop: '1px solid var(--border)',
+                  background: draggingMissionId === cm.id ? 'var(--surface)' : 'var(--card)',
+                  opacity: draggingMissionId === cm.id ? 0.4 : 1,
+                  cursor: 'grab', transition: 'opacity .1s',
+                }}
+              >
+                <span style={{ fontSize: '14px', color: 'var(--muted)', flexShrink: 0 }}>☰</span>
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>{cm.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cm.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{cm.type.replace(/_/g, ' ')} · {cm.difficulty} · {cm.max_pts} pts</div>
+                </div>
+                <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(124,189,212,0.25)', flexShrink: 0 }} onClick={() => openEditForm(cm)}>
+                  <Pencil size={12} /> Edit
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  style={{ padding: '4px 7px', color: IC, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(124,189,212,0.25)', flexShrink: 0 }}
+                  disabled={deletingMissionId === cm.id}
+                  onClick={() => deleteMission(cm.id)}
+                  title="Delete mission"
+                >
+                  {deletingMissionId === cm.id
+                    ? <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                    : <Trash2 size={13} />}
+                </button>
+              </div>
+            );
+            return (
+              <div style={{ marginBottom: '20px' }}>
+                {/* DnD drop zones (shown while dragging) */}
+                {draggingMissionId && (() => {
+                  const draggedMission = adminCustomMissions.find(m => m.id === draggingMissionId);
+                  const hasCat = !!draggedMission?.category_id || (draggedMission?.category_name && draggedMission.category_name !== 'My Missions');
+                  const superCats = Object.entries(SUPER_CATEGORIES) as [SuperCategoryKey, { label: string; icon: string; color: string }][];
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '10px 12px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                      {adminCategories.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>MY CATS</span>
+                          {adminCategories.map(cat => (
+                            <div key={cat.id} style={dropZoneStyle(dropTargetCatId === cat.id)}
+                              onDragOver={e => { e.preventDefault(); setDropTargetCatId(cat.id); }}
+                              onDragLeave={() => setDropTargetCatId(null)}
+                              onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, cat.id); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                              {cat.emoji} {cat.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '.08em', minWidth: '64px' }}>BUILT-IN</span>
+                        {superCats.map(([key, sc]) => {
+                          const zoneId = `super:${key}`;
+                          return (
+                            <div key={key} style={{ ...dropZoneStyle(dropTargetCatId === zoneId), borderColor: dropTargetCatId === zoneId ? sc.color : `${sc.color}55` }}
+                              onDragOver={e => { e.preventDefault(); setDropTargetCatId(zoneId); }}
+                              onDragLeave={() => setDropTargetCatId(null)}
+                              onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, null, `${sc.icon} ${sc.label}`); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                              {sc.icon} {sc.label}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {hasCat && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ minWidth: '64px' }} />
+                          <div style={noneZoneStyle(dropTargetCatId === 'none')}
+                            onDragOver={e => { e.preventDefault(); setDropTargetCatId('none'); }}
+                            onDragLeave={() => setDropTargetCatId(null)}
+                            onDrop={e => { e.preventDefault(); moveMissionToCategory(draggingMissionId, null); setDraggingMissionId(null); setDropTargetCatId(null); }}>
+                            ✕ Remove from category
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Admin category groups */}
+                {adminCategories.map(cat => {
+                  const catMissions = adminCustomMissions.filter(m => m.category_id === cat.id);
+                  const isExpanded = !collapsedCategoryIds.has(cat.id);
+                  const isEditing = editingCategoryId === cat.id;
+                  const confirmingDelete = pendingDeleteCategoryId === cat.id;
+                  return (
+                    <div key={cat.id} style={{ marginBottom: '6px' }}>
+                      {isEditing ? (
+                        <div className="card" style={{ padding: '14px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <div style={{ position: 'relative', flexShrink: 0 }}>
+                                <button type="button" onClick={() => setEditCategoryEmojiPickerOpen(v => !v)}
+                                  style={{ ...inputStyle, width: '44px', textAlign: 'center', fontSize: '20px', padding: '5px 4px', cursor: 'pointer' }}>
+                                  {editCategoryEmoji}
+                                </button>
+                                {editCategoryEmojiPickerOpen && (
+                                  <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 60, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                                    <input type="text" placeholder="Type or paste emoji…" maxLength={4}
+                                      style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                                      onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditCategoryEmoji(v); setEditCategoryEmojiPickerOpen(false); } }} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                                      {EMOJI_300.map(e => (
+                                        <button key={e} type="button" onClick={() => { setEditCategoryEmoji(e); setEditCategoryEmojiPickerOpen(false); }}
+                                          style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                          onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                          onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <input type="text" value={editCategoryName} onChange={e => setEditCategoryName(e.target.value)}
+                                style={{ ...inputStyle, flex: 1 }}
+                                onKeyDown={e => { if (e.key === 'Enter') saveEditCategory(cat.id); if (e.key === 'Escape') setEditingCategoryId(null); }}
+                                onClick={() => setEditCategoryEmojiPickerOpen(false)} autoFocus />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', marginRight: '2px' }}>Color:</span>
+                              <button type="button" onClick={() => setEditCategoryColor('')}
+                                style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === '' ? '2px solid var(--accent)' : '2px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                title="No color"><X size={16} color={IC} /></button>
+                              {CAT_COLORS.map(c => (
+                                <button key={c} type="button" onClick={() => setEditCategoryColor(c)}
+                                  style={{ width: '22px', height: '22px', borderRadius: '50%', border: editCategoryColor === c ? '2px solid var(--text)' : '2px solid transparent', background: c, cursor: 'pointer' }} />
+                              ))}
+                              <input type="color" value={editCategoryColor || '#7cbdd4'} onChange={e => setEditCategoryColor(e.target.value)}
+                                style={{ width: '22px', height: '22px', borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: 'none' }} title="Custom color" />
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button className="btn btn-primary" style={{ padding: '5px 14px', fontSize: '12px' }}
+                                disabled={!editCategoryName.trim() || editCategorySaving} onClick={() => saveEditCategory(cat.id)}>
+                                {editCategorySaving ? '…' : 'Save'}
+                              </button>
+                              <button style={{ ...smallBtn, color: 'var(--muted)' }} onClick={() => { setEditingCategoryId(null); setEditCategoryEmojiPickerOpen(false); }}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                            onClick={() => toggleExpand(cat.id)}
+                          >
+                            {cat.color && <span style={{ width: '4px', height: '20px', background: cat.color, borderRadius: '2px', flexShrink: 0 }} />}
+                            <span style={{ fontSize: '18px' }}>{cat.emoji}</span>
+                            <span style={{ flex: 1, fontWeight: 600, fontSize: '14px' }}>{cat.name}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{catMissions.length}</span>
+                            {confirmingDelete ? (
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                                <button onClick={async () => {
+                                  const res = await fetch(`/api/admin/mission-categories?id=${cat.id}`, { method: 'DELETE', headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+                                  if (res.ok) {
+                                    setAdminCategories(prev => prev.filter(c => c.id !== cat.id));
+                                    setAdminCustomMissions(prev => prev.map(m => m.category_id === cat.id ? { ...m, category_id: null } : m));
+                                  } else { setCategoryError('Failed to delete category.'); }
+                                  setPendingDeleteCategoryId(null);
+                                }} style={{ ...smallBtn, color: 'var(--danger, #e74c3c)', border: '1px solid var(--danger, #e74c3c)' }}>Delete</button>
+                                <button onClick={() => setPendingDeleteCategoryId(null)} style={{ ...smallBtn, color: 'var(--muted)' }}>Cancel</button>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '4px' }} onClick={e => e.stopPropagation()}>
+                                <button onClick={() => { setEditingCategoryId(cat.id); setEditCategoryName(cat.name); setEditCategoryEmoji(cat.emoji); setEditCategoryColor(cat.color ?? ''); setEditCategoryEmojiPickerOpen(false); setPendingDeleteCategoryId(null); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '13px', padding: '0 5px' }} title="Edit">✎</button>
+                                <button onClick={() => { setPendingDeleteCategoryId(cat.id); setEditingCategoryId(null); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '16px', padding: '0 4px' }} title="Delete">×</button>
+                              </div>
+                            )}
+                            <span style={{ color: 'var(--muted)', fontSize: '10px', marginLeft: '2px' }}>{isExpanded ? '▲' : '▼'}</span>
+                          </div>
+                          {isExpanded && (
+                            <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                              {catMissions.length === 0 ? (
+                                <div style={{ padding: '14px 16px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center' }}>No missions in this category yet.</div>
+                              ) : catMissions.map(cm => missionRow(cm))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Super-category groups (missions assigned to built-in categories) */}
+                {superCatLabels.map(label => {
+                  const superMissions = adminCustomMissions.filter(m => !m.category_id && m.category_name === label);
+                  const groupKey = `supercat:${label}`;
+                  const isExpanded = !collapsedCategoryIds.has(groupKey);
+                  return (
+                    <div key={groupKey} style={{ marginBottom: '6px' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                        onClick={() => toggleExpand(groupKey)}
+                      >
+                        <span style={{ flex: 1, fontWeight: 600, fontSize: '14px', color: '#6495ed' }}>{label}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{superMissions.length}</span>
+                        <span style={{ color: 'var(--muted)', fontSize: '10px' }}>{isExpanded ? '▲' : '▼'}</span>
+                      </div>
+                      {isExpanded && (
+                        <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                          {superMissions.map(cm => missionRow(cm))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Uncategorized group */}
+                {uncategorized.length > 0 && (() => {
+                  const groupKey = '__uncategorized';
+                  const isExpanded = !collapsedCategoryIds.has(groupKey);
+                  return (
+                    <div style={{ marginBottom: '6px' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: isExpanded ? '10px 10px 0 0' : '10px', cursor: 'pointer', userSelect: 'none' }}
+                        onClick={() => toggleExpand(groupKey)}
+                      >
+                        <span style={{ flex: 1, fontWeight: 600, fontSize: '14px', color: 'var(--muted)' }}>Uncategorized</span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)', background: 'var(--surface)', borderRadius: '10px', padding: '2px 8px', minWidth: '20px', textAlign: 'center' }}>{uncategorized.length}</span>
+                        <span style={{ color: 'var(--muted)', fontSize: '10px' }}>{isExpanded ? '▲' : '▼'}</span>
+                      </div>
+                      {isExpanded && (
+                        <div style={{ border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                          {uncategorized.map(cm => missionRow(cm))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {adminCustomMissions.length === 0 && !showMissionForm && (
+                  <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px', fontSize: '14px' }}>
+                    No missions yet. Add your first one below.
+                  </div>
+                )}
+
+                {categoryError && <p style={{ fontSize: '12px', color: 'var(--danger, #e74c3c)', marginTop: '6px' }}>{categoryError}</p>}
+
+                {/* New category form */}
+                {categoryFormOpen && (
+                  <div className="card" style={{ marginTop: '10px', padding: '14px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <button type="button" onClick={() => setCategoryEmojiPickerOpen(v => !v)}
+                          style={{ ...inputStyle, width: '48px', textAlign: 'center', fontSize: '20px', padding: '6px 4px', cursor: 'pointer', background: categoryEmojiPickerOpen ? 'var(--surface)' : undefined }}
+                          title="Choose emoji">
+                          {categoryFormEmoji}
+                        </button>
+                        {categoryEmojiPickerOpen && (
+                          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '280px' }}>
+                            <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                              style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                              onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setCategoryFormEmoji(v); setCategoryEmojiPickerOpen(false); } }} />
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                              {EMOJI_300.map(e => (
+                                <button key={e} type="button" onClick={() => { setCategoryFormEmoji(e); setCategoryEmojiPickerOpen(false); }}
+                                  style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                  onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                  onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>{e}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <input type="text" value={categoryFormName} onChange={e => setCategoryFormName(e.target.value)}
+                        placeholder="Category name…" style={{ ...inputStyle, flex: 1 }}
+                        onKeyDown={async e => { if (e.key === 'Enter' && categoryFormName.trim()) await saveCategory(); }}
+                        onClick={() => setCategoryEmojiPickerOpen(false)} />
+                      <button className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                        disabled={!categoryFormName.trim() || categorySaving} onClick={saveCategory}>
+                        {categorySaving ? '…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* + New category link */}
+                <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                  <button
+                    style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                    onClick={() => { setCategoryFormOpen(v => !v); setCategoryError(''); setCategoryFormName(''); setCategoryFormEmoji('📋'); setCategoryEmojiPickerOpen(false); }}
+                  >
+                    {categoryFormOpen ? 'Cancel' : '+ New category'}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
+
+        </div>
+      </>
+    );
+  }
+
+  if (view === 'manage-templates') return (
+    <>
+      {showGenerateModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={16} /> Generate with AI</div>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
+            </div>
+            {!generatePreview ? (
+              <>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>Describe your event — theme, duration, number of teams, vibe...</p>
+                <textarea
+                  value={generatePrompt}
+                  onChange={e => setGeneratePrompt(e.target.value)}
+                  placeholder="e.g. Halloween scavenger hunt for 8 teams, spooky and competitive, around 45 minutes"
+                  rows={4}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13, fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                />
+                <button
+                  onClick={generateTemplate}
+                  disabled={generateLoading || !generatePrompt.trim()}
+                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: (generateLoading || !generatePrompt.trim()) ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
+                >
+                  {generateLoading ? 'Generating...' : 'Generate →'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 24 }}>{generatePreview.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
+                      {generatePreview.activeFrom && generatePreview.activeTo && (
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} color="var(--accent)" /> {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 12px' }}>{generatePreview.description}</p>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Missions ({generatePreview.selectedMissionIds.length + generatePreview.newMissions.length} total)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
+                    {generatePreview.newMissions.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, background: 'rgba(117,171,200,0.15)', color: 'var(--accent)', borderRadius: 4, padding: '1px 5px', flexShrink: 0 }}>NEW</span>
+                        {m.title}
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>+ {generatePreview.selectedMissionIds.length} existing missions</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => setGeneratePreview(null)}
+                    style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={saveGeneratedTemplate}
+                    disabled={generateSaving}
+                    style={{ flex: 2, padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 13, cursor: generateSaving ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {generateSaving ? 'Saving...' : 'Save template'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadTemplates(); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Manage Templates</div>
+        <div className="nav-right">
+          <ProfileMenu />
+        </div>
+      </nav>
+      <div className="container fade-in" style={{ maxWidth: '680px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 0 24px' }}>
+          <div>
+            <h2 style={{ margin: '0 0 4px' }}>Manage Templates</h2>
+            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Edit built-in templates visible to all admins</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => { setGenerateIsBuiltin(true); setShowGenerateModal(true); }}
+              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+            >
+              <WandSparkles size={14} style={{ marginRight: '6px' }} />Generate with AI
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowNewTemplateForm(true)} style={{ fontSize: '13px' }}>+ NEW TEMPLATE</button>
+          </div>
+        </div>
+
+        {/* New template form */}
+        {showNewTemplateForm && (
+          <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px', color: 'var(--text)' }}>New built-in template</div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <button type="button" onClick={() => setNewTemplateEmojiPickerOpen(v => !v)}
+                  style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif", cursor: 'pointer' }}>
+                  {newTemplateIcon}
+                </button>
+                {newTemplateEmojiPickerOpen && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '300px' }}>
+                    <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                      onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setNewTemplateIcon(v); setNewTemplateEmojiPickerOpen(false); } }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                      {EMOJI_300.map(e => (
+                        <button key={e} type="button" onClick={() => { setNewTemplateIcon(e); setNewTemplateEmojiPickerOpen(false); }}
+                          style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                          onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                          onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                value={newTemplateName}
+                onChange={e => setNewTemplateName(e.target.value)}
+                placeholder="Template name"
+                style={{ flex: 1, padding: '7px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+              />
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
+              Select missions ({newTemplateMissions.length} selected)
+            </div>
+            <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+              {MISSIONS.map(m => {
+                const on = newTemplateMissions.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setNewTemplateMissions(prev => on ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                    style={{ padding: '4px 8px', borderRadius: '6px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, background: on ? 'rgba(124,189,212,0.12)' : 'transparent', color: on ? 'var(--accent)' : 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {m.icon} {m.name}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Description with AI suggest */}
+            <div style={{ marginTop: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700 }}>Description</span>
+                <button
+                  onClick={() => suggestTemplateDescription(newTemplateName, newTemplateMissions, setNewTemplateDesc, setNewTemplateDescLoading)}
+                  disabled={newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
+                  style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: (newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0) ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif", opacity: (newTemplateDescLoading || !newTemplateName.trim() || newTemplateMissions.length === 0) ? 0.5 : 1 }}
+                >
+                  {newTemplateDescLoading ? '...' : '✨ Suggest'}
+                </button>
+              </div>
+              <textarea
+                value={newTemplateDesc}
+                onChange={e => setNewTemplateDesc(e.target.value)}
+                placeholder="What's this template about?"
+                rows={3}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Seasonal date range */}
+            <div style={{ marginTop: 10, marginBottom: 14 }}>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700, marginBottom: 6 }}>Show only between (optional)</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>From</span>
+                <input
+                  type="text"
+                  value={newTemplateActiveFrom}
+                  onChange={e => setNewTemplateActiveFrom(e.target.value)}
+                  placeholder="MM-DD"
+                  maxLength={5}
+                  style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                />
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>To</span>
+                <input
+                  type="text"
+                  value={newTemplateActiveTo}
+                  onChange={e => setNewTemplateActiveTo(e.target.value)}
+                  placeholder="MM-DD"
+                  maxLength={5}
+                  style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => createBuiltinTemplate(newTemplateName, newTemplateIcon, newTemplateMissions, newTemplateDesc, newTemplateActiveFrom, newTemplateActiveTo)}
+                disabled={manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0}
+                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: manageTemplatesLoading || !newTemplateName.trim() || newTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
+              >
+                {manageTemplatesLoading ? 'Saving...' : 'CREATE'}
+              </button>
+              <button
+                onClick={() => { setShowNewTemplateForm(false); setNewTemplateName(''); setNewTemplateIcon('🎮'); setNewTemplateMissions([]); setNewTemplateDesc(''); setNewTemplateActiveFrom(''); setNewTemplateActiveTo(''); }}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Built-in template list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {templates.filter(t => t.isBuiltin).map(t => (
+            <div key={t.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: `1px solid ${editingTemplateId === t.id ? 'var(--accent)' : 'var(--border)'}`, borderRadius: editingTemplateId === t.id ? '12px 12px 0 0' : '12px' }}>
+                <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.missionIds.length} missions</div>
+                  {t.activeFrom && t.activeTo && (
+                    <div style={{ fontSize: '11px', color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Calendar size={11} color="var(--accent)" /> {t.activeFrom} – {t.activeTo}
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => { setEditingTemplateId(t.id); setEditTemplateName(t.name); setEditTemplateIcon(t.icon); setEditTemplateMissions([...t.missionIds]); setEditTemplateDesc(t.description ?? ''); setEditTemplateActiveFrom(t.activeFrom ?? ''); setEditTemplateActiveTo(t.activeTo ?? ''); }}
+                    style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '12px', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 600 }}
+                  >
+                    <Pencil size={13} color={IC} style={{marginRight:4}} /> Edit
+                  </button>
+                  <button
+                    onClick={() => { if (confirm(`Delete "${t.name}"?`)) deleteBuiltinTemplate(t.id); }}
+                    style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: '#ef4444', fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    <Trash2 size={14} color={IC} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Inline edit form */}
+              {editingTemplateId === t.id && (
+                <div style={{ background: 'var(--card)', border: '1px solid var(--accent)', borderTop: 'none', borderRadius: '0 0 12px 12px', padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <button type="button" onClick={() => setEditTemplateEmojiPickerOpen(v => !v)}
+                        style={{ width: '44px', padding: '7px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '20px', textAlign: 'center', fontFamily: "'Sora', sans-serif", cursor: 'pointer' }}>
+                        {editTemplateIcon}
+                      </button>
+                      {editTemplateEmojiPickerOpen && (
+                        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', width: '300px' }}>
+                          <input type="text" placeholder="Type or paste any emoji…" maxLength={4}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '7px', padding: '6px 10px', color: 'var(--text)', fontSize: '14px', fontFamily: 'inherit', marginBottom: '10px' }}
+                            onChange={e => { const v = [...e.target.value].filter(c => c.trim()).join(''); if (v) { setEditTemplateIcon(v); setEditTemplateEmojiPickerOpen(false); } }}
+                          />
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '2px', maxHeight: '260px', overflowY: 'auto' }}>
+                            {EMOJI_300.map(e => (
+                              <button key={e} type="button" onClick={() => { setEditTemplateIcon(e); setEditTemplateEmojiPickerOpen(false); }}
+                                style={{ fontSize: '18px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '6px', lineHeight: 1 }}
+                                onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--surface)')}
+                                onMouseLeave={ev => (ev.currentTarget.style.background = 'none')}>
+                                {e}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      value={editTemplateName}
+                      onChange={e => setEditTemplateName(e.target.value)}
+                      style={{ flex: 1, padding: '7px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>Missions ({editTemplateMissions.length} selected)</div>
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+                    {MISSIONS.map(m => {
+                      const on = editTemplateMissions.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => setEditTemplateMissions(prev => on ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                          style={{ padding: '4px 8px', borderRadius: '6px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`, background: on ? 'rgba(124,189,212,0.12)' : 'transparent', color: on ? 'var(--accent)' : 'var(--muted)', fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                        >
+                          {m.icon} {m.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Description with AI suggest */}
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700 }}>Description</span>
+                      <button
+                        onClick={() => suggestTemplateDescription(editTemplateName, editTemplateMissions, setEditTemplateDesc, setEditTemplateDescLoading)}
+                        disabled={editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
+                        style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: (editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0) ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif", opacity: (editTemplateDescLoading || !editTemplateName.trim() || editTemplateMissions.length === 0) ? 0.5 : 1 }}
+                      >
+                        {editTemplateDescLoading ? '...' : '✨ Suggest'}
+                      </button>
+                    </div>
+                    <textarea
+                      value={editTemplateDesc}
+                      onChange={e => setEditTemplateDesc(e.target.value)}
+                      placeholder="What's this template about?"
+                      rows={3}
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* Seasonal date range */}
+                  <div style={{ marginTop: 10, marginBottom: 14 }}>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 700, marginBottom: 6 }}>Show only between (optional)</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>From</span>
+                      <input
+                        type="text"
+                        value={editTemplateActiveFrom}
+                        onChange={e => setEditTemplateActiveFrom(e.target.value)}
+                        placeholder="MM-DD"
+                        maxLength={5}
+                        style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>To</span>
+                      <input
+                        type="text"
+                        value={editTemplateActiveTo}
+                        onChange={e => setEditTemplateActiveTo(e.target.value)}
+                        placeholder="MM-DD"
+                        maxLength={5}
+                        style={{ width: 70, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontFamily: "'Sora', sans-serif" }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => updateBuiltinTemplate(t.id, editTemplateName, editTemplateIcon, editTemplateMissions, editTemplateDesc, editTemplateActiveFrom, editTemplateActiveTo)}
+                      disabled={editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0}
+                      style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 700, fontSize: '13px', cursor: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 'not-allowed' : 'pointer', opacity: editTemplateLoading || !editTemplateName.trim() || editTemplateMissions.length === 0 ? 0.6 : 1, fontFamily: "'Sora', sans-serif" }}
+                    >
+                      {editTemplateLoading ? 'Saving...' : 'SAVE'}
+                    </button>
+                    <button
+                      onClick={() => { setEditingTemplateId(null); setEditTemplateDescLoading(false); }}
+                      style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '13px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+
+  if (view === 'templates') return (
+    <>
+      {showGenerateModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 520, fontFamily: "'Sora', sans-serif" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={16} /> Generate with AI</div>
+              <button onClick={() => { setShowGenerateModal(false); setGeneratePreview(null); setGeneratePrompt(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 20, cursor: 'pointer' }}><X size={16} color={IC} /></button>
+            </div>
+
+            {!generatePreview ? (
+              <>
+                <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>Describe your event — theme, duration, number of teams, vibe...</p>
+                <textarea
+                  value={generatePrompt}
+                  onChange={e => setGeneratePrompt(e.target.value)}
+                  placeholder="e.g. Halloween scavenger hunt for 8 teams, spooky and competitive, around 45 minutes"
+                  rows={4}
+                  style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 13, fontFamily: "'Sora', sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                />
+                <button
+                  onClick={generateTemplate}
+                  disabled={generateLoading || !generatePrompt.trim()}
+                  style={{ marginTop: 12, width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 14, cursor: generateLoading || !generatePrompt.trim() ? 'not-allowed' : 'pointer', opacity: (generateLoading || !generatePrompt.trim()) ? 0.5 : 1, fontFamily: "'Sora', sans-serif" }}
+                >
+                  {generateLoading ? 'Generating...' : 'Generate →'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 24 }}>{generatePreview.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)' }}>{generatePreview.name}</div>
+                      {generatePreview.activeFrom && generatePreview.activeTo && (
+                        <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} color="var(--accent)" /> {generatePreview.activeFrom} – {generatePreview.activeTo}</div>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 12px' }}>{generatePreview.description}</p>
+
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    Missions ({generatePreview.selectedMissionIds.length + generatePreview.newMissions.length} total)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
+                    {generatePreview.newMissions.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, background: 'rgba(117,171,200,0.15)', color: 'var(--accent)', borderRadius: 4, padding: '1px 5px', flexShrink: 0 }}>NEW</span>
+                        {m.title}
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>+ {generatePreview.selectedMissionIds.length} existing missions</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => setGeneratePreview(null)}
+                    style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    onClick={saveGeneratedTemplate}
+                    disabled={generateSaving}
+                    style={{ flex: 2, padding: '10px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#0a0e19', fontWeight: 800, fontSize: 13, cursor: generateSaving ? 'not-allowed' : 'pointer', fontFamily: "'Sora', sans-serif" }}
+                  >
+                    {generateSaving ? 'Saving...' : 'Save template'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => setView('games')}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>New Game</div>
+        <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => { setGenerateIsBuiltin(false); setShowGenerateModal(true); }}
+            style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Sora', sans-serif", display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <WandSparkles size={14} />Generate with AI
+          </button>
+          <ProfileMenu />
+        </div>
+      </nav>
+      <div className="container fade-in" style={{ maxWidth: '680px' }}>
+        <div style={{ padding: '32px 0 24px' }}>
+          <h2 style={{ margin: '0 0 4px' }}>Choose a starting point</h2>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '14px' }}>Pick a template or start from scratch</p>
+        </div>
+
+        {templatesLoading ? (
+          <div style={{ color: 'var(--muted)', fontSize: '14px', padding: '40px 0', textAlign: 'center' }}>Loading templates...</div>
+        ) : (
+          <>
+            {/* Blank game — first */}
+            <button
+              onClick={() => { setSelectedMissions(MISSIONS.map(m => m.id)); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s', marginBottom: '28px' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <span style={{ flexShrink: 0, display: 'inline-flex' }}><Pencil size={28} color={IC} /></span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>Blank game</div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>Choose missions manually</div>
+              </div>
+              <ChevronRight size={18} color={IC} />
+            </button>
+
+            {/* Built-in templates */}
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px' }}>Built-in templates</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+              {templates.filter(t => t.isBuiltin && isTemplateActive(t.activeFrom, t.activeTo)).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'border-color 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <span style={{ fontSize: '28px', flexShrink: 0 }}>{t.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions{t.description ? ` · ${t.description}` : ''}</div>
+                  </div>
+                  <ChevronRight size={18} color={IC} />
+                </button>
+              ))}
+            </div>
+
+            {/* My templates */}
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}><BookMarked size={12} color="var(--muted)" /> My templates</div>
+            {templates.filter(t => !t.isBuiltin).length === 0 ? (
+              <div style={{ background: 'var(--card)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '24px', textAlign: 'center', color: 'var(--muted)', fontSize: '13px', marginBottom: '24px' }}>
+                No saved templates yet — save a game as a template from the games list
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+                {templates.filter(t => !t.isBuiltin).map(t => (
+                  <div
+                    key={t.id}
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                  >
+                    <button
+                      onClick={() => { setSelectedMissions(t.missionIds); setAiPhotoRating(false); setAiPhotoInstructions(''); loadAdminCustomMissions(); setView('create'); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+                    >
+                      <span style={{ fontSize: '24px', flexShrink: 0 }}>{t.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text)' }}>{t.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{t.missionIds.length} missions</div>
+                      </div>
+                      <ChevronRight size={18} color={IC} />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const session = (await supabase.auth.getSession()).data.session;
+                        await fetch(`/api/admin/templates/${t.id}`, {
+                          method: 'DELETE',
+                          headers: { Authorization: `Bearer ${session?.access_token}` },
+                        });
+                        setTemplates(prev => prev.filter(x => x.id !== t.id));
+                      }}
+                      title="Delete template"
+                      style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}
+                    >
+                      <Trash2 size={14} color={IC} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </>
         )}
       </div>
     </>
@@ -774,11 +4937,13 @@ export default function AdminScreen({ onLogout }: Props) {
   // ── CREATE GAME ──
   if (view === 'create') return (
     <>
-      <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
-        <NavCenter game={null} />
+      <nav className="nav">
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
+        <div className="nav-brand" style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '15px' }}>Create Game</div>
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setView('games'); }}>← BACK</button>
+          <ProfileMenu />
         </div>
       </nav>
       <div className="container fade-in" style={{ maxWidth: '720px' }}>
@@ -787,10 +4952,86 @@ export default function AdminScreen({ onLogout }: Props) {
           <p style={{ color: 'var(--muted)', marginTop: '6px', fontSize: '14px' }}>Configure the game and share the key with your teams.</p>
         </div>
 
+        {/* ── AI GAME GENERATION ── */}
+        <div className="card" style={{ marginBottom: '24px', border: aiGameMode ? '2px solid var(--accent)' : undefined }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            onClick={() => { if (aiGameStep === 'idle') setAiGameMode(v => !v); }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <WandSparkles size={15} color="var(--accent)" />
+                Generate a full game with AI
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
+                Describe a theme — AI creates ~20 varied missions for you
+              </div>
+            </div>
+            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiGameMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px', transition: 'background 0.15s' }}>
+              <div style={{ position: 'absolute', top: '2px', left: aiGameMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+            </div>
+          </div>
+
+          {aiGameMode && (
+            <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+              {aiGameStep === 'idle' && (
+                <>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Theme or topic</label>
+                    <input
+                      type="text"
+                      placeholder="E.g. Swedish history, 90s pop music, space exploration…"
+                      value={aiGamePrompt}
+                      onChange={e => setAiGamePrompt(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && generateAiGame()}
+                      autoFocus
+                    />
+                  </div>
+                  {aiGameError && <p style={{ color: 'var(--accent2)', fontSize: '12px', marginBottom: '10px' }}>{aiGameError}</p>}
+                  <button className="btn btn-primary btn-full" onClick={generateAiGame}>
+                    <WandSparkles size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                    GENERATE 20 MISSIONS →
+                  </button>
+                </>
+              )}
+
+              {(aiGameStep === 'generating' || aiGameStep === 'saving') && (
+                <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                  <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: '12px' }}>
+                    {aiGameStep === 'saving' ? 'Creating game…' : `Generating missions ${aiGameProgress > 0 ? aiGameProgress : 0}/20`}
+                  </div>
+                  <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden', marginBottom: '12px' }}>
+                    <div style={{
+                      height: '100%',
+                      borderRadius: '3px',
+                      background: 'var(--accent)',
+                      width: `${aiGameStep === 'saving' ? 100 : (aiGameProgress / 20) * 100}%`,
+                      transition: 'width 0.4s ease',
+                    }} />
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                    {aiGameStep === 'saving'
+                      ? 'Saving 20 missions and creating your game…'
+                      : `Batch ${Math.ceil((aiGameProgress + 1) / 5)} of 4 — mixing question types for variety`}
+                  </div>
+                  {aiGameError && (
+                    <>
+                      <p style={{ color: 'var(--accent2)', fontSize: '12px', marginTop: '12px' }}>{aiGameError}</p>
+                      <button className="btn btn-ghost" style={{ marginTop: '8px' }} onClick={() => { setAiGameStep('idle'); setAiGameError(''); }}>
+                        Try again
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="form-group">
             <label className="form-label">Game Name (optional)</label>
-            <input type="text" placeholder="E.g. IT Day 2026" value={gameName} onChange={e => setGameName(e.target.value)} />
+            <input type="text" placeholder="E.g. Offsite 2026" value={gameName} onChange={e => setGameName(e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Duration: {duration} minutes</label>
@@ -806,7 +5047,7 @@ export default function AdminScreen({ onLogout }: Props) {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${hideLeaderboard ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
             >
               <div>
-                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)' }}>🙈 Hide leaderboard in last 5 min</div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Hide leaderboard in last 5 min</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
                   Teams won&apos;t see the leaderboard in the last 5 minutes, and won&apos;t see final placements when the game ends.
                 </div>
@@ -816,32 +5057,164 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
             </div>
           </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div
+              onClick={() => setAiPhotoRating(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${aiPhotoRating ? 'var(--accent)' : 'var(--border)'}`, borderRadius: aiPhotoRating ? '10px 10px 0 0' : '10px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><WandSparkles size={14} color={IC} style={{ flexShrink: 0 }} />AI photo rating</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  Photos rated automatically by AI — you can override anytime
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiPhotoRating ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: aiPhotoRating ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+            {aiPhotoRating && (
+              <div style={{ padding: '12px 14px', background: 'var(--surface)', border: `1px solid var(--accent)`, borderTop: 'none', borderRadius: '0 0 10px 10px' }} onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
+                  Scoring focus <span style={{ fontWeight: 400, textTransform: 'none' as const, letterSpacing: 0 }}>(optional)</span>
+                </div>
+                <input
+                  type="text"
+                  value={aiPhotoInstructions}
+                  onChange={e => setAiPhotoInstructions(e.target.value)}
+                  placeholder="e.g. Reward creativity and humor extra highly"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text)', fontSize: '12px', fontFamily: "'Sora', sans-serif", boxSizing: 'border-box' as const }}
+                />
+                <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '5px' }}>
+                  Passed to the AI as extra context when rating photos
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div style={{ padding: '12px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
+              <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>Game language
+              </div>
+              <select
+                value={gameLanguage}
+                onChange={e => setGameLanguage(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '7px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--text)',
+                  fontSize: '13px',
+                  fontFamily: "'Sora', sans-serif",
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="en">🇬🇧 English</option>
+                <option value="sv">🇸🇪 Svenska</option>
+                <option value="no">🇳🇴 Norsk</option>
+                <option value="da">🇩🇰 Dansk</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="fr">🇫🇷 Français</option>
+              </select>
+              <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px' }}>
+                Players see the game UI in this language. They can override it for themselves.
+              </div>
+            </div>
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '10px' }}>
+            <div
+              onClick={() => setRemoteMode(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 14px', background: 'var(--surface)', border: `1px solid ${remoteMode ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '10px' }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, color: IC }}><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>Remote / Distributed mode</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>
+                  Each team member joins on their own device.
+                </div>
+              </div>
+              <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: remoteMode ? 'var(--accent)' : 'var(--border)', position: 'relative', flexShrink: 0, marginLeft: '12px' }}>
+                <div style={{ position: 'absolute', top: '2px', left: remoteMode ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {createError && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>{createError}</p>}
+        <button className="btn btn-primary btn-full" style={{ marginBottom: '32px' }} onClick={createGame} disabled={creating}>
+          {creating ? 'CREATING...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 6 }}><rect x="2" y="6" width="20" height="12" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>CREATE GAME →</>}
+        </button>
 
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <label className="form-label" style={{ margin: 0 }}>Select Missions ({selectedMissions.length} selected)</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions(MISSIONS.map(m => m.id))}>All on</button>
-              <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => setSelectedMissions([])}>All off</button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={hidePlayedMissions}
+                  onChange={e => setHidePlayedMissions(e.target.checked)}
+                  style={{ margin: 0 }}
+                />
+                Hide already played{playedMissionIds.length > 0 ? ` (${[...MISSIONS.map(m => m.id), ...adminCustomMissions.filter(m => !m.seasonal).map(m => m.id)].filter(id => playedMissionIds.includes(id)).length})` : ''}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, fontSize: '11px', color: 'var(--muted)' }}>
+                <button onClick={() => setSelectedMissions([...MISSIONS.map(m => m.id), ...adminCustomMissions.filter(m => !m.seasonal).map(m => m.id)])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All on</button>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <button onClick={() => setSelectedMissions([])} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>All off</button>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <button onClick={() => {
+                  const allKeys = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]);
+                  const customKeys = adminCategories.map(c => c.id).concat(adminCustomMissions.some(m => !m.category_id) ? ['__uncategorized'] : []);
+                  const allCollapsed = allKeys.every(k => collapsedCats.has(k)) && customKeys.every(k => collapsedCustomCats.has(k));
+                  setCollapsedCats(allCollapsed ? new Set() : new Set(allKeys));
+                  setCollapsedCustomCats(allCollapsed ? new Set() : new Set(customKeys));
+                }} style={{ background: 'none', border: 'none', padding: '2px 6px', fontSize: '11px', color: 'var(--muted)', cursor: 'pointer', opacity: 0.8 }} onMouseEnter={e => (e.currentTarget.style.color = '#6ec6f5')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}>
+                  {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).every(k => collapsedCats.has(k)) ? 'Expand all' : 'Collapse all'}
+                </button>
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {(Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => {
+              if (catKey === 'gkn' && !isSuperAdmin) return null;
               const cat = SUPER_CATEGORIES[catKey];
-              const catMissions = MISSIONS.filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey);
-              if (catMissions.length === 0) return null;
-              const allOn = catMissions.every(m => selectedMissions.includes(m.id));
+              const playedSet = new Set(playedMissionIds);
+              const superCatLabel = `${cat.icon} ${cat.label}`;
+              const catMissions = MISSIONS
+                .filter(m => MISSION_SUPER_CATEGORY[m.id] === catKey)
+                .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
+              const customInCat = adminCustomMissions
+                .filter(m => m.category_id === null && m.category_name === superCatLabel)
+                .filter(m => !hidePlayedMissions || !playedSet.has(m.id));
+              if (catMissions.length === 0 && customInCat.length === 0) return null;
+              const allOn = [...catMissions, ...customInCat].every(m => selectedMissions.includes(m.id));
+              const selectedCount = [...catMissions, ...customInCat].filter(m => selectedMissions.includes(m.id)).length;
+              const totalCount = catMissions.length + customInCat.length;
+              const isCollapsed = collapsedCats.has(catKey);
+              const toggleCollapse = () => setCollapsedCats(prev => {
+                const next = new Set(prev);
+                next.has(catKey) ? next.delete(catKey) : next.add(catKey);
+                return next;
+              });
               return (
                 <div key={catKey}>
                   {/* Category header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: cat.color }}>
+                  <div
+                    onClick={toggleCollapse}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isCollapsed ? 0 : '8px', cursor: 'pointer', padding: '6px 0' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: cat.color }}>
+                      <ChevronRight size={13} style={{ transition: 'transform 0.15s', transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', color: cat.color }} />
                       {cat.icon} {cat.label.toUpperCase()}
+                      <span style={{ fontWeight: 400, letterSpacing: 0, color: 'var(--muted)', fontSize: '11px' }}>
+                        {selectedCount > 0 ? `${selectedCount}/${totalCount}` : totalCount}
+                      </span>
                     </span>
                     <button
-                      onClick={() => {
-                        const ids = catMissions.map(m => m.id);
+                      onClick={e => {
+                        e.stopPropagation();
+                        const ids = [...catMissions, ...customInCat].map(m => m.id);
                         setSelectedMissions(prev => allOn
                           ? prev.filter(x => !ids.includes(x))
                           : [...new Set([...prev, ...ids])]);
@@ -851,7 +5224,7 @@ export default function AdminScreen({ onLogout }: Props) {
                       {allOn ? 'Deselect all' : 'Select all'}
                     </button>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {!isCollapsed && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {catMissions.map(m => {
                       const on = selectedMissions.includes(m.id);
                       const pts = missionMaxPts[m.id] ?? m.maxPts;
@@ -887,16 +5260,144 @@ export default function AdminScreen({ onLogout }: Props) {
                         </div>
                       );
                     })}
-                  </div>
+                    {customInCat.map(m => {
+                      const on = selectedMissions.includes(m.id);
+                      const pts = missionMaxPts[m.id] ?? m.max_pts;
+                      return (
+                        <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? cat.color : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45, overflow: 'hidden' }}>
+                          <div
+                            onClick={() => {
+                              setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
+                              if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                          >
+                            <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
+                            </div>
+                            <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? cat.color : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                              <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                            </div>
+                          </div>
+                          {on && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 14px 10px', borderTop: '1px solid var(--border)' }}
+                              onClick={e => e.stopPropagation()}>
+                              <span style={{ fontSize: '11px', color: 'var(--muted)', letterSpacing: '1px', flexShrink: 0 }}>MAX PTS</span>
+                              <input
+                                type="number" min={0} max={9999} step={50} value={pts}
+                                onChange={e => setMissionMaxPts(prev => ({ ...prev, [m.id]: Math.max(0, Number(e.target.value)) }))}
+                                style={{ width: '90px', padding: '4px 8px', fontSize: '13px', fontWeight: 700, fontFamily: "'Sora', sans-serif", background: 'var(--surface)', border: `1px solid var(--border)`, borderRadius: '6px', color: 'var(--text)' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>}
                 </div>
               );
             })}
+            {/* ── Custom missions — grouped by category ── */}
+            {adminCustomMissions.length > 0 && (() => {
+              const playedSet = new Set(playedMissionIds);
+              const nonSeasonal = adminCustomMissions.filter(m => !m.seasonal);
+              const visibleCustom = hidePlayedMissions
+                ? nonSeasonal.filter(m => !playedSet.has(m.id))
+                : nonSeasonal;
+              if (visibleCustom.length === 0) return null;
+              // Missions already shown inside a built-in super-category section above
+              const superCatLabels = new Set(
+                (Object.values(SUPER_CATEGORIES) as { icon: string; label: string }[])
+                  .map(sc => `${sc.icon} ${sc.label}`)
+              );
+              const visibleCustomNotInBuiltin = visibleCustom.filter(
+                m => !(m.category_id === null && m.category_name && superCatLabels.has(m.category_name))
+              );
+              if (visibleCustomNotInBuiltin.length === 0) return null;
+              const buckets = new Map<string | null, typeof visibleCustom>();
+              for (const m of visibleCustomNotInBuiltin) {
+                const key = m.category_id ?? null;
+                if (!buckets.has(key)) buckets.set(key, []);
+                buckets.get(key)!.push(m);
+              }
+              const groups: { cat: AdminCategory | null; superLabel?: string; missions: typeof adminCustomMissions }[] = [];
+              for (const cat of adminCategories) {
+                if (buckets.has(cat.id)) groups.push({ cat, missions: buckets.get(cat.id)! });
+              }
+              if (buckets.has(null)) groups.push({ cat: null, missions: buckets.get(null)! });
+
+              return (
+                <>
+                  {groups.map(({ cat, missions }) => {
+                    const label = cat ? `${cat.emoji} ${cat.name.toUpperCase()}` : '📋 ÖVRIGT';
+                    const groupIds = missions.map(m => m.id);
+                    const allOn = groupIds.every(id => selectedMissions.includes(id));
+                    const customCatKey = cat?.id ?? '__uncategorized';
+                    const isCustomCollapsed = collapsedCustomCats.has(customCatKey);
+                    const selectedInCat = groupIds.filter(id => selectedMissions.includes(id)).length;
+                    return (
+                      <div key={customCatKey} style={{ marginBottom: '16px' }}>
+                        <div
+                          onClick={() => setCollapsedCustomCats(prev => { const next = new Set(prev); next.has(customCatKey) ? next.delete(customCatKey) : next.add(customCatKey); return next; })}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isCustomCollapsed ? 0 : '8px', cursor: 'pointer', padding: '6px 0' }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <ChevronRight size={14} color="#9b59b6" style={{ transition: 'transform 0.15s', transform: isCustomCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', flexShrink: 0 }} />
+                            <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1.5px', color: '#9b59b6' }}>
+                              {label}
+                            </span>
+                            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{selectedInCat}/{groupIds.length}</span>
+                          </div>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setSelectedMissions(prev => allOn
+                                ? prev.filter(x => !groupIds.includes(x))
+                                : [...new Set([...prev, ...groupIds])]);
+                            }}
+                            style={{ fontSize: '11px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            {allOn ? 'Deselect all' : 'Select all'}
+                          </button>
+                        </div>
+                        {!isCustomCollapsed && <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {missions.map(m => {
+                            const on = selectedMissions.includes(m.id);
+                            return (
+                              <div key={m.id} style={{ background: 'var(--card)', border: `1px solid ${on ? '#9b59b6' : 'var(--border)'}`, borderRadius: '8px', opacity: on ? 1 : 0.45 }}>
+                                <div
+                                  onClick={() => {
+                                    setSelectedMissions(prev => on ? prev.filter(x => x !== m.id) : [...prev, m.id]);
+                                    if (!missionMaxPts[m.id]) setMissionMaxPts(prev => ({ ...prev, [m.id]: m.max_pts }));
+                                  }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 14px', cursor: 'pointer' }}
+                                >
+                                  <span style={{ fontSize: '18px' }}>{m.icon}</span>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{m.name}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{m.difficulty} · {m.max_pts} pts</div>
+                                  </div>
+                                  <div style={{ width: '36px', height: '20px', borderRadius: '10px', background: on ? '#9b59b6' : 'var(--border)', position: 'relative', flexShrink: 0 }}>
+                                    <div style={{ position: 'absolute', top: '2px', left: on ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>}
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
           </div>
         </div>
 
-        {createError && <p style={{ color: 'var(--accent2)', fontSize: '13px', marginBottom: '12px' }}>{createError}</p>}
         <button className="btn btn-primary btn-full" onClick={createGame} disabled={creating}>
-          {creating ? 'CREATING...' : '🎮 CREATE GAME →'}
+          {creating ? 'CREATING...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: 'middle', marginRight: 6 }}><rect x="2" y="6" width="20" height="12" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M8 12h4M10 10v4M16 11h.01M18 13h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>CREATE GAME →</>}
         </button>
       </div>
     </>
@@ -911,32 +5412,33 @@ export default function AdminScreen({ onLogout }: Props) {
   return (
     <>
       <nav className="nav" style={{ position: 'relative' }}>
-        <div className="nav-brand"><GameOnLogo size={22} /></div>
+        <button className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>
+          <ArrowLeft size={14} color={IC} style={{marginRight:4}} /> Back
+        </button>
         <NavCenter game={activeGame} />
         <div className="nav-right">
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}>← GAMES</button>
-          <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={onLogout}>LOG OUT</button>
+          <ProfileMenu />
         </div>
       </nav>
 
-      <div className="container fade-in">
+      <div className="container fade-in" style={{ paddingBottom: isMobile ? '80px' : undefined }}>
         {/* GAME KEY + QR + START */}
-        <div style={{ padding: '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ padding: isMobile ? '16px 0 16px' : '28px 0 24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '14px' : '24px', alignItems: 'flex-start' }}>
             {/* QR code — click to expand */}
             <div
               onClick={() => setQrExpanded(true)}
               title="Click to enlarge"
-              style={{ background: '#fff', borderRadius: '12px', padding: '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
+              style={{ background: '#fff', borderRadius: '10px', padding: isMobile ? '7px' : '10px', flexShrink: 0, cursor: 'zoom-in', position: 'relative' }}
             >
               <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
-                size={100}
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
+                size={isMobile ? 110 : 140}
                 bgColor="#ffffff"
                 fgColor="#0f1724"
                 level="M"
               />
-              <div style={{ position: 'absolute', bottom: '4px', right: '6px', fontSize: '10px', color: '#aaa' }}>🔍</div>
+              <div style={{ position: 'absolute', bottom: '4px', right: '6px' }}><Search size={10} color="#aaa" /></div>
             </div>
 
             {/* QR expanded modal */}
@@ -947,7 +5449,7 @@ export default function AdminScreen({ onLogout }: Props) {
               >
                 <div style={{ background: '#fff', borderRadius: '20px', padding: '24px' }}>
                   <QRCodeSVG
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?key=${activeGame.game_key}`}
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/play?key=${activeGame.game_key}`}
                     size={280}
                     bgColor="#ffffff"
                     fgColor="#0f1724"
@@ -984,53 +5486,110 @@ export default function AdminScreen({ onLogout }: Props) {
             {/* Key + status */}
             <div>
               <p style={{ fontSize: '12px', color: 'var(--muted)', letterSpacing: '2px', marginBottom: '6px' }}>GAME KEY — share with teams</p>
-              <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
+              <div className="mobile-game-key" style={{ fontFamily: "'Sora', sans-serif", fontSize: '48px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '8px', lineHeight: 1 }}>
                 {activeGame.game_key}
               </div>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
-                {activeGame.missions.length} missions · {activeGame.duration_minutes} min ·{' '}
-                <span style={{ color: activeGame.status === 'active' ? 'var(--accent3)' : activeGame.status === 'finished' ? 'var(--muted)' : 'var(--gold)', fontWeight: 700 }}>
-                  {activeGame.status === 'active' ? '🟢 Running' : activeGame.status === 'finished' ? '⬛ Finished' : '🟡 Draft'}
-                </span>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
+                {activeGame.missions.length} missions · {activeGame.duration_minutes} min
               </p>
+              <div style={{ marginTop: '4px' }}>
+                <span className={`status-pill ${activeGame.status === 'active' ? 'active' : activeGame.status === 'finished' ? 'finished' : 'draft'}`}>
+                  <span className="status-pill-dot" />
+                  {activeGame.status === 'active' ? 'Running' : activeGame.status === 'finished' ? 'Finished' : 'Draft'}
+                </span>
+              </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end', alignItems: 'center' }}>
+            {(activeGame.status === 'active' || activeGame.status === 'finished') && (
+              <>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => window.open(`/present/${activeGame.game_key}`, '_blank', 'noopener,noreferrer')}
+                  style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  title="Open presenter view (for projector or TV)"
+                >
+                  <Tv size={14} />{isMobile ? '' : 'Presenter'}
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    const url = `${window.location.origin}/present/${activeGame.game_key}`;
+                    navigator.clipboard.writeText(url);
+                    setPresenterLinkCopied(true);
+                    setTimeout(() => setPresenterLinkCopied(false), 2000);
+                  }}
+                  style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px', color: presenterLinkCopied ? 'var(--accent3)' : undefined }}
+                  title="Copy presenter link to share"
+                >
+                  {presenterLinkCopied ? <><Check size={14} /> Copied!</> : <><Link2 size={14} />{isMobile ? '' : ' Copy link'}</>}
+                </button>
+              </>
+            )}
             {activeGame.status === 'draft' && (
-              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: '15px', padding: '14px 28px' }}>
-                ▶ START GAME
+              <button className="btn btn-primary" onClick={() => startOrStop('start')} style={{ fontSize: isMobile ? '14px' : '15px', padding: isMobile ? '12px 22px' : '14px 28px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Play size={16} /> START GAME
               </button>
             )}
             {activeGame.status === 'active' && (
-              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: '12px 20px' }}>
-                ⏹ END GAME
+              <button className="btn btn-danger" onClick={() => startOrStop('finish')} style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Square size={13} />{isMobile ? 'END' : 'END GAME'}
               </button>
             )}
             {(activeGame.status === 'finished' || activeGame.status === 'active') && (
               <button className="btn btn-ghost" onClick={() => startOrStop('restart')}
-                style={{ fontSize: '13px', padding: '12px 20px', border: '1px solid var(--border)' }}
+                style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}
                 title="Reset game to Draft so you can start it again">
-                ↺ RESTART
+                <RotateCcw size={13} />{isMobile ? '' : 'RESTART'}
               </button>
+            )}
+            {activeGame.status === 'finished' && (
+              <>
+                {plan === 'free' ? (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => handleUpgrade('pro')}
+                    disabled={upgradeLoading}
+                    title="Upgrade to Pro to download PDF reports"
+                    style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid rgba(124,189,212,0.3)', color: '#7CBDD4' }}
+                  >
+                    <Lock size={13} color={IC} style={{marginRight:4}} />{isMobile ? ' Report' : ' Download Report (Pro)'}
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-ghost"
+                    disabled={reportLoading}
+                    onClick={downloadReport}
+                    style={{ fontSize: '13px', padding: isMobile ? '10px 14px' : '12px 20px', border: '1px solid var(--border)' }}
+                  >
+                    {reportLoading ? <Loader2 size={13} className="spin" style={{ marginRight: 4, verticalAlign: 'middle' }} /> : <FileText size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />}{isMobile ? (reportLoading ? '' : 'Report') : (reportLoading ? 'Generating…' : 'Download Report')}
+                  </button>
+                )}
+                {reportError && (
+                  <p style={{ color: 'var(--danger, #e74c3c)', fontSize: '12px', margin: '4px 0 0' }}>
+                    {reportError}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
 
         {/* TABS */}
         <div className="admin-tabs">
-          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')}>🏆 Scores</button>
-          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}>📊 Progress</button>
+          <button className={`admin-tab${tab === 'leaderboard' ? ' active' : ''}`} onClick={() => setTab('leaderboard')}><Ic><Trophy size={14} /></Ic> Scores</button>
+          <button className={`admin-tab${tab === 'progress' ? ' active' : ''}`} onClick={() => setTab('progress')}><Ic><BarChart2 size={14} /></Ic> Progress</button>
           <button className={`admin-tab${tab === 'photos' ? ' active' : ''}`} onClick={() => setTab('photos')} style={{ position: 'relative' }}>
-            📸 Photos
+            <Ic><Camera size={14} /></Ic> Photos
             {totalPendingPhotos > 0 && (
               <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent2)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                 {totalPendingPhotos}
               </span>
             )}
           </button>
-          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}>📈 Stats</button>
+          <button className={`admin-tab${tab === 'stats' ? ' active' : ''}`} onClick={() => setTab('stats')}><Ic><TrendingUp size={14} /></Ic> Stats</button>
           {activeGame.status === 'active' && (
-            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}>⚡ Power-ups</button>
+            <button className={`admin-tab${tab === 'powerups' ? ' active' : ''}`} onClick={() => setTab('powerups')}><Ic><Zap size={14} /></Ic> Power-ups{plan === 'free' ? <Ic><Lock size={12} /></Ic> : ''}</button>
           )}
         </div>
 
@@ -1046,18 +5605,84 @@ export default function AdminScreen({ onLogout }: Props) {
                 const finishElapsed = t.finished_at && activeGame.started_at
                   ? fmtElapsed(new Date(t.finished_at).getTime() - new Date(activeGame.started_at).getTime())
                   : null;
+                const isExpanded = expandedTeamId === t.id;
+                const teamMembers = activeGame.remote_mode ? (t.members ?? []) : [];
+                const hasMembers = activeGame.remote_mode && teamMembers.length > 0;
+                const showPanel = isExpanded && hasMembers;
+                const isConfirmingDelete = confirmDeleteTeamId === t.id;
+                const isDeletingTeam = deletingTeamId === t.id;
                 return (
-                  <div className="lb-row" key={t.id}>
-                    <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
-                    <div className="lb-name">{t.name}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
-                      <div className="lb-score">{t.score} p</div>
-                      {finishElapsed ? (
-                        <div style={{ fontSize: '11px', color: 'var(--accent3)', letterSpacing: '0.5px' }}>🏁 {finishElapsed}</div>
+                  <div key={t.id} style={{ marginBottom: '4px' }}>
+                    <div
+                      className="lb-row"
+                      style={{ cursor: activeGame.remote_mode && !isConfirmingDelete ? 'pointer' : 'default', borderRadius: showPanel ? '10px 10px 0 0' : '10px' }}
+                      onClick={() => !isConfirmingDelete && activeGame.remote_mode && setExpandedTeamId(isExpanded ? null : t.id)}
+                    >
+                      <div className="lb-rank" style={{ color: RANK_COLORS[i] ?? 'var(--muted)' }}>{RANK_ICONS[i] ?? i + 1}</div>
+                      <div className="lb-name">{t.name}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', marginLeft: 'auto' }}>
+                        <div className="lb-score">{t.score} p</div>
+                        {finishElapsed ? (
+                          <div style={{ fontSize: '11px', color: 'var(--accent3)', letterSpacing: '0.5px' }}>🏁 {finishElapsed}</div>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
+                        )}
+                      </div>
+                      {isConfirmingDelete ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '10px' }} onClick={e => e.stopPropagation()}>
+                          <span style={{ fontSize: '11px', color: 'var(--accent2)', fontWeight: 700 }}>Remove?</span>
+                          <button
+                            onClick={() => deleteTeam(t.id)}
+                            disabled={isDeletingTeam}
+                            style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', background: 'var(--accent2)', color: '#fff', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            {isDeletingTeam ? '...' : 'YES'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteTeamId(null)}
+                            style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontWeight: 700, fontSize: '11px', cursor: 'pointer', fontFamily: "'Sora', sans-serif" }}
+                          >
+                            NO
+                          </button>
+                        </div>
                       ) : (
-                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{t.completed?.length ?? 0}/{activeGame.missions.length} done</div>
+                        <button
+                          onClick={e => { e.stopPropagation(); setConfirmDeleteTeamId(t.id); }}
+                          title="Remove team"
+                          style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px', padding: '4px', borderRadius: '4px', flexShrink: 0, lineHeight: 1 }}
+                        >
+                          🗑
+                        </button>
+                      )}
+                      {activeGame.remote_mode && !isConfirmingDelete && (
+                        <div style={{ marginLeft: '4px', color: 'var(--muted)', fontSize: '12px', transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</div>
                       )}
                     </div>
+                    {showPanel && (
+                      <div style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderTop: 'none',
+                        borderRadius: '0 0 10px 10px',
+                        padding: '10px 14px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                      }}>
+                        {teamMembers.map(m => (
+                          <div key={m.id} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            fontSize: '12px',
+                            color: m.online ? 'var(--text)' : 'var(--muted)',
+                          }}>
+                            <span style={{ fontSize: '8px', color: m.online ? 'var(--accent3)' : 'var(--muted)' }}>●</span>
+                            {m.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1067,7 +5692,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
         {/* PROGRESS */}
         {tab === 'progress' && (() => {
-          // Group active missions by super-category
+          // Group active missions by super-category (built-in missions only)
           const catGroups = (Object.keys(SUPER_CATEGORIES) as SuperCategoryKey[]).map(catKey => ({
             catKey,
             cat: SUPER_CATEGORIES[catKey],
@@ -1076,55 +5701,53 @@ export default function AdminScreen({ onLogout }: Props) {
               .filter((m): m is NonNullable<typeof m> => !!m && MISSION_SUPER_CATEGORY[m.id] === catKey),
           })).filter(g => g.missions.length > 0);
 
+          // Group custom missions in this game by their admin category
+          const customInGame = adminCustomMissions.filter(cm =>
+            activeGame.missions.includes(cm.id)
+          );
+          const customByCatId = new Map<string | null, typeof customInGame>();
+          for (const cm of customInGame) {
+            const key = cm.category_id ?? null;
+            if (!customByCatId.has(key)) customByCatId.set(key, []);
+            customByCatId.get(key)!.push(cm);
+          }
+          const customGroups: { cat: AdminCategory | null; missions: typeof customInGame }[] = [];
+          for (const cat of [...adminCategories].sort((a, b) => a.sort_order - b.sort_order)) {
+            const missions = customByCatId.get(cat.id) ?? [];
+            if (missions.length > 0) customGroups.push({ cat, missions });
+          }
+          const uncategorized = customByCatId.get(null) ?? [];
+          if (uncategorized.length > 0) customGroups.push({ cat: null, missions: uncategorized });
+
           return (
             <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Built-in mission groups */}
               {catGroups.map(({ catKey, cat, missions }) => (
                 <div key={catKey}>
-                  {/* Category header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                     <span style={{ fontSize: '16px' }}>{cat.icon}</span>
                     <span style={{ fontWeight: 800, fontSize: '13px', color: cat.color, textTransform: 'uppercase', letterSpacing: '0.8px' }}>{cat.label}</span>
                     <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
                   </div>
-                  {/* Table for this category */}
-                  <div style={{ background: 'var(--card)', border: `1px solid ${cat.color}33`, borderRadius: '12px', overflow: 'auto' }}>
-                    <table className="progress-table">
-                      <thead>
-                        <tr>
-                          <th>Team</th>
-                          {missions.map(m => (
-                            <th key={m.id} title={m.name}>{m.icon}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sorted.length === 0 ? (
-                          <tr><td colSpan={missions.length + 1} style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>Waiting for teams...</td></tr>
-                        ) : sorted.map(t => (
-                          <tr key={t.id}>
-                            <td><strong>{t.name}</strong></td>
-                            {missions.map(m => {
-                              const done = t.completed?.includes(m.id);
-                              const pts = done ? (t.mission_scores?.[m.id] ?? null) : null;
-                              return (
-                                <td key={m.id}>
-                                  {done
-                                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: cat.color, fontWeight: 700, fontSize: '12px' }}>
-                                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
-                                        {pts !== null ? pts : '✓'}
-                                      </span>
-                                    : <span style={{ color: 'var(--muted)' }}>–</span>
-                                  }
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <MissionProgressTable missions={missions} sorted={sorted} accentColor={cat.color} />
                 </div>
               ))}
+
+              {/* Custom mission groups */}
+              {customGroups.map(({ cat, missions }) => {
+                const label = cat ? cat.name : 'Övriga';
+                const emoji = cat ? cat.emoji : '📋';
+                return (
+                  <div key={cat ? cat.id : '__uncategorized__'}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '16px' }}>{emoji}</span>
+                      <span style={{ fontWeight: 800, fontSize: '13px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{label}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--muted)', marginLeft: '4px' }}>{missions.length} mission{missions.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <MissionProgressTable missions={missions} sorted={sorted} accentColor="var(--muted)" />
+                  </div>
+                );
+              })}
 
               {/* Total score summary */}
               {sorted.length > 0 && (
@@ -1152,16 +5775,60 @@ export default function AdminScreen({ onLogout }: Props) {
         {tab === 'photos' && (
           <div className="fade-in">
             <div className="section-header">
-              <h2 style={{ fontSize: '18px' }}>Photo Submissions</h2>
-              <span className="badge">{pendingPhotos.length} pending</span>
+              <div>
+                <h2 style={{ fontSize: '18px', margin: 0 }}>Photo Submissions</h2>
+                <span className="badge" style={{ marginTop: '4px' }}>{pendingPhotos.length} pending</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {(photos.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0 ||
+                  scavengerSubs.filter(s => photoTeamFilter === 'all' || s.team_id === photoTeamFilter).length > 0) && (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={downloadPhotosZip}
+                    disabled={downloadingZip}
+                    style={{ fontSize: '13px', padding: '8px 14px', border: '1px solid var(--border)' }}
+                  >
+                    {downloadingZip ? <Loader2 size={13} className="spin" style={{ marginRight: 6, verticalAlign: 'middle' }} /> : <Download size={13} style={{ marginRight: 6, verticalAlign: 'middle' }} />}{downloadingZip ? 'Downloading…' : 'Download ZIP'}
+                  </button>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>AI rating</span>
+                  <div
+                    onClick={() => toggleAiRating(!aiRatingEnabled)}
+                    style={{ width: '36px', height: '20px', borderRadius: '10px', background: aiRatingEnabled ? 'var(--accent)' : 'var(--border)', position: 'relative', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <div style={{ position: 'absolute', top: '2px', left: aiRatingEnabled ? '18px' : '2px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: aiRatingEnabled ? 'var(--accent)' : 'var(--muted)' }}>
+                    {aiRatingEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* AI info card */}
+            {aiRatingEnabled && (
+              <div style={{ background: 'rgba(124,189,212,0.06)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <WandSparkles size={13} color={IC} />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>AI rating is on</span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Photos are rated automatically when submitted</div>
+                {aiRatingInstructions && (
+                  <div style={{ marginTop: '8px', background: 'var(--surface)', borderRadius: '6px', padding: '6px 10px', fontSize: '11px' }}>
+                    <span style={{ color: 'var(--muted)', marginRight: '4px' }}>Focus:</span>
+                    <span style={{ fontStyle: 'italic', color: 'var(--text)' }}>{aiRatingInstructions}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Team filter */}
             {teams.length > 0 && (
               <div style={{ marginBottom: '20px' }}>
                 <select
                   value={photoTeamFilter}
-                  onChange={e => setPhotoTeamFilter(e.target.value)}
+                  onChange={e => { setPhotoTeamFilter(e.target.value); setVisiblePendingCount(10); setVisibleScavengerCount(10); setVisibleRatedCount(20); }}
                   style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontFamily: "'Sora', sans-serif", fontSize: '13px', width: '100%', cursor: 'pointer' }}
                 >
                   <option value="all">All teams</option>
@@ -1178,10 +5845,14 @@ export default function AdminScreen({ onLogout }: Props) {
               : null}
 
             {/* Pending regular photos */}
-            {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                {photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
-                  const mission = MISSIONS.find(m => m.id === sub.mission_id);
+            {(() => {
+              const pendingFiltered = photos.filter(s => s.status !== 'rated' && !rated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              return pendingFiltered.length > 0 && (
+              <>
+              <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                {pendingFiltered.slice(0, visiblePendingCount).map(sub => {
+                  const _customM = adminCustomMissions.find(cm => cm.id === sub.mission_id);
+                  const mission = MISSIONS.find(m => m.id === sub.mission_id) ?? (_customM ? toMission(_customM) : undefined);
                   const missionMaxPts = activeGame.mission_max_pts?.[sub.mission_id] ?? mission?.maxPts ?? 500;
                   const pointOptions = getPointOptions(missionMaxPts);
                   return (
@@ -1211,17 +5882,27 @@ export default function AdminScreen({ onLogout }: Props) {
                   );
                 })}
               </div>
-            )}
+              {pendingFiltered.length > visiblePendingCount && (
+                <button onClick={() => setVisiblePendingCount(n => n + 10)}
+                  style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                  Visa 10 till ({pendingFiltered.length - visiblePendingCount} kvar)
+                </button>
+              )}
+              </>
+              );
+            })()}
 
             {/* Pending scavenger photos */}
-            {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 && (
+            {(() => {
+              const scavFiltered = scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              return scavFiltered.length > 0 && (
               <>
                 <div className="section-header" style={{ marginTop: '32px' }}>
                   <h2 style={{ fontSize: '18px' }}>📍 Scavenger Hunt</h2>
-                  <span className="badge">{scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} pending</span>
+                  <span className="badge">{scavFiltered.length} pending</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                  {scavengerSubs.filter(s => s.status !== 'rated' && !scavengerRated.has(s.id) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
+                  {scavFiltered.slice(0, visibleScavengerCount).map(sub => (
                     <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ padding: '8px 12px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '14px' }}>📍</span>
@@ -1247,61 +5928,123 @@ export default function AdminScreen({ onLogout }: Props) {
                     </div>
                   ))}
                 </div>
+                {scavFiltered.length > visibleScavengerCount && (
+                  <button onClick={() => setVisibleScavengerCount(n => n + 10)}
+                    style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                    Visa 10 till ({scavFiltered.length - visibleScavengerCount} kvar)
+                  </button>
+                )}
               </>
-            )}
+              );
+            })()}
 
             {/* Rated archive — regular + scavenger combined */}
-            {(photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0 ||
-              scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length > 0) && (
+            {(() => {
+              const ratedRegular = photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              const ratedScav = scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter));
+              const allRated = [...ratedRegular.map(s => ({ ...s, _type: 'regular' as const })), ...ratedScav.map(s => ({ ...s, _type: 'scavenger' as const }))];
+              return allRated.length > 0 && (
               <>
                 <div className="section-header" style={{ marginTop: '28px' }}>
                   <h2 style={{ fontSize: '16px', color: 'var(--muted)' }}>✓ Rated</h2>
-                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                    {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length +
-                     scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).length} photos
-                  </span>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{allRated.length} photos</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
-                  {photos.filter(s => (s.status === 'rated' || rated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => {
-                    const mission = MISSIONS.find(m => m.id === sub.mission_id);
-                    return (
-                      <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
-                        <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '12px' }}>{mission?.icon ?? '📸'}</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                <div className="mobile-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', opacity: 0.7 }}>
+                  {allRated.slice(0, visibleRatedCount).map(sub => {
+                    if (sub._type === 'regular') {
+                      const _rMissionId = (sub as typeof ratedRegular[0]).mission_id;
+                      const _rCustomM = adminCustomMissions.find(cm => cm.id === _rMissionId);
+                      const mission = MISSIONS.find(m => m.id === _rMissionId) ?? (_rCustomM ? toMission(_rCustomM) : undefined);
+                      return (
+                        <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
+                          <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '12px' }}>{mission?.icon ?? '📸'}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                            </div>
+                            <span style={{
+                              background: (sub as typeof ratedRegular[0]).ai_rated ? 'rgba(124,189,212,0.15)' : 'transparent',
+                              borderRadius: '4px',
+                              padding: (sub as typeof ratedRegular[0]).ai_rated ? '2px 5px' : '0',
+                              color: (sub as typeof ratedRegular[0]).ai_rated ? 'var(--accent)' : 'var(--accent3)',
+                              fontWeight: 700, fontSize: '11px', flexShrink: 0,
+                            }}>
+                              {(sub as typeof ratedRegular[0]).ai_rated ? '✨' : '✓'} {(sub as typeof ratedRegular[0]).points_awarded ?? 0}p
+                            </span>
                           </div>
-                          <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
+                          <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                            onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? (sub as typeof ratedRegular[0]).mission_id}` })}>
+                            <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          </div>
+                          {overridingPhotoId === sub.id ? (
+                            <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                              {getPointOptions(activeGame.mission_max_pts?.[_rMissionId] ?? mission?.maxPts ?? 500).map(pts => (
+                                <button key={pts} onClick={() => { ratePhoto(sub as PhotoSubmission, pts); setOverridingPhotoId(null); }}
+                                  style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? 'var(--accent)' : 'var(--surface)', color: pts === ((sub as typeof ratedRegular[0]).points_awarded ?? 0) ? '#0a0e19' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '11px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}><X size={16} color={IC} /></button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
+                              {(sub as typeof ratedRegular[0]).ai_rated ? 'Override ✨' : 'Change'}
+                            </button>
+                          )}
                         </div>
-                        <div
-                          style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
-                          onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${mission?.name ?? sub.mission_id}` })}
-                        >
-                          <img src={sub.photo_url} alt={sub.team_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      );
+                    } else {
+                      const s = sub as typeof ratedScav[0];
+                      return (
+                        <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
+                          <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '12px' }}>📍</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
+                            </div>
+                            <span style={{
+                              background: s.ai_rated ? 'rgba(124,189,212,0.15)' : 'transparent',
+                              borderRadius: '4px',
+                              padding: s.ai_rated ? '2px 5px' : '0',
+                              color: s.ai_rated ? 'var(--accent)' : 'var(--accent3)',
+                              fontWeight: 700, fontSize: '11px', flexShrink: 0,
+                            }}>
+                              {s.ai_rated ? '✨' : '✓'} {s.points_awarded ?? 0}p
+                            </span>
+                          </div>
+                          <div style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
+                            onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${s.item_label}` })}>
+                            <img src={sub.photo_url} alt={s.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          </div>
+                          {overridingPhotoId === sub.id ? (
+                            <div style={{ padding: '6px 8px', display: 'flex', gap: '4px', flexWrap: 'wrap', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                              {getPointOptions(activeGame.mission_max_pts?.[(sub as typeof ratedScav[0]).mission_id] ?? 500).map(pts => (
+                                <button key={pts} onClick={() => { rateScavengerPhoto(sub as ScavengerSubmission, pts); setOverridingPhotoId(null); }}
+                                  style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: pts === (s.points_awarded ?? 0) ? 'var(--accent)' : 'var(--surface)', color: pts === (s.points_awarded ?? 0) ? '#0a0e19' : 'var(--text)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '11px' }}>
+                                  {pts}p
+                                </button>
+                              ))}
+                              <button onClick={() => setOverridingPhotoId(null)} style={{ padding: '4px 8px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '11px' }}><X size={16} color={IC} /></button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setOverridingPhotoId(sub.id)} style={{ width: '100%', padding: '5px', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--muted)', cursor: 'pointer', fontSize: '10px', fontFamily: "'Sora', sans-serif" }}>
+                              {s.ai_rated ? 'Override ✨' : 'Change'}
+                            </button>
+                          )}
                         </div>
-                      </div>
-                    );
+                      );
+                    }
                   })}
-                  {scavengerSubs.filter(s => (s.status === 'rated' || scavengerRated.has(s.id)) && (photoTeamFilter === 'all' || s.team_id === photoTeamFilter)).map(sub => (
-                    <div key={sub.id} style={{ background: 'var(--card)', border: '1px solid var(--accent3)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <div style={{ padding: '6px 10px', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '12px' }}>📍</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.team_name}</div>
-                        </div>
-                        <span style={{ color: 'var(--accent3)', fontWeight: 700, fontSize: '12px', flexShrink: 0 }}>✓ {sub.points_awarded ?? 0}p</span>
-                      </div>
-                      <div
-                        style={{ height: '140px', overflow: 'hidden', cursor: 'zoom-in' }}
-                        onClick={() => setPhotoModal({ url: sub.photo_url, label: `${sub.team_name} — ${sub.item_label}` })}
-                      >
-                        <img src={sub.photo_url} alt={sub.item_label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
+                {allRated.length > visibleRatedCount && (
+                  <button onClick={() => setVisibleRatedCount(n => n + 20)}
+                    style={{ marginTop: '16px', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Sora', sans-serif", fontSize: '13px' }}>
+                    Visa 20 till ({allRated.length - visibleRatedCount} kvar)
+                  </button>
+                )}
               </>
-            )}
+              );
+            })()}
           </div>
         )}
 
@@ -1354,9 +6097,9 @@ export default function AdminScreen({ onLogout }: Props) {
             </div>
           );
 
-          const statTitle = (icon: string, label: string) => (
+          const statTitle = (icon: React.ReactNode, label: string) => (
             <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--muted)', letterSpacing: '1px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>{icon}</span>{label}
+              {icon}{label}
             </div>
           );
 
@@ -1403,7 +6146,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 1. Mission completion bar chart */}
               {statCard(<>
-                {statTitle('🏆', 'MOST COMPLETED MISSIONS (TOP 10)')}
+                {statTitle(<Trophy size={13} color={IC} />, 'MOST COMPLETED MISSIONS (TOP 10)')}
                 {completionStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No completions yet.</div>
                   : <BarChart data={completionStats} maxValue={teams.length} color="var(--accent)" unit={`/${teams.length}`} />}
@@ -1411,7 +6154,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 2. Points per mission bar chart */}
               {statCard(<>
-                {statTitle('💰', 'MOST POINTS AWARDED (TOP 10)')}
+                {statTitle(<Coins size={13} color={IC} />, 'MOST POINTS AWARDED (TOP 10)')}
                 {pointStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No points yet.</div>
                   : <BarChart data={pointStats} maxValue={pointStats[0]?.value ?? 1} color="var(--gold)" unit=" pts" />}
@@ -1419,7 +6162,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 3. Would You answers */}
               {statCard(<>
-                {statTitle('💬', 'WHO ON THE TEAM')}
+                {statTitle(<MessageCircle size={13} color={IC} />, 'WHO ON THE TEAM')}
                 {wouldYouAnswers.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No answers submitted yet.</div>
                   : wouldYouAnswers.map(({ m, answers }) => (
@@ -1437,7 +6180,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 4. Duel stolen — top 3 */}
               {statCard(<>
-                {statTitle('⚔️', 'DUEL — MOST POINTS STOLEN (TOP 3)')}
+                {statTitle(<Swords size={13} color={IC} />, 'DUEL — MOST POINTS STOLEN (TOP 3)')}
                 {duelStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No duels completed yet.</div>
                   : duelStats.map(({ name, value }, i) => (
@@ -1450,7 +6193,7 @@ export default function AdminScreen({ onLogout }: Props) {
 
               {/* 5. Power-up targets — top 3 */}
               {statCard(<>
-                {statTitle('🎯', 'MOST TARGETED BY OTHER TEAMS (TOP 3)')}
+                {statTitle(<Target size={13} color={IC} />, 'MOST TARGETED BY OTHER TEAMS (TOP 3)')}
                 {puTargetStats.length === 0
                   ? <div style={{ fontSize: '13px', color: 'var(--muted)' }}>No team power-ups used yet.</div>
                   : puTargetStats.map(({ name, value }, i) => (
@@ -1471,6 +6214,16 @@ export default function AdminScreen({ onLogout }: Props) {
               <h2 style={{ fontSize: '18px' }}>Power-ups</h2>
               <span className="badge">{teams.length} teams</span>
             </div>
+            {plan === 'free' && (
+              <div style={{ background: 'rgba(124,189,212,0.08)', border: '1px solid rgba(124,189,212,0.2)', borderRadius: '12px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
+                <div style={{ marginBottom: '8px' }}><Zap size={32} color={IC} /></div>
+                <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: 'var(--text)' }}>Power-ups ingår i Pro</div>
+                <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '16px' }}>Sabotage, dubbelpoäng, falsk ledtråd och mer — uppgradera för att aktivera dem live under spelet.</div>
+                <button className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #7CBDD4, #4890aa)', color: '#0D1520', border: 'none', fontWeight: 800 }} onClick={() => handleUpgrade('pro')} disabled={upgradeLoading}>
+                  {upgradeLoading ? '...' : 'Upgrade to Pro'}
+                </button>
+              </div>
+            )}
             <PowerUpsCard
               teams={teams}
               gameId={activeGame.id}
@@ -1482,23 +6235,130 @@ export default function AdminScreen({ onLogout }: Props) {
               setPuMessages={setPuMessages}
               puLoading={puLoading}
               onActivate={activatePowerup}
-              stealFrom={stealFrom}
-              setStealFrom={setStealFrom}
-              stealTo={stealTo}
-              setStealTo={setStealTo}
-              stealAmount={stealAmount}
-              setStealAmount={setStealAmount}
-              onSteal={activatePointSteal}
-              stealLoading={stealLoading}
               hotPotatoMissionId={hotPotatoMissionId}
               setHotPotatoMissionId={setHotPotatoMissionId}
               onHotPotato={activateHotPotato}
               hotPotatoLoading={hotPotatoLoading}
               hotPotatoActive={hotPotatoActive}
+              mysteryBoxActive={mysteryBoxActive}
+              mysteryBoxSecsLeft={mysteryBoxSecsLeft}
+              mysteryBoxLoading={mysteryBoxLoading}
+              onLaunchMysteryBox={launchMysteryBox}
+              activeGameStatus={activeGame.status}
             />
           </div>
         )}
       </div>
+      {/* ── Toast notifications ── */}
+      {toasts.length > 0 && (
+        <div style={{ position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 9999, pointerEvents: 'none', alignItems: 'center' }}>
+          {toasts.map(t => (
+            <div key={t.id} style={{
+              background: t.type === 'error' ? 'rgba(42,10,10,0.95)' : 'rgba(22,32,48,0.95)',
+              border: `1px solid ${t.type === 'error' ? 'rgba(255,100,100,0.35)' : 'rgba(124,189,212,0.35)'}`,
+              color: t.type === 'error' ? '#ff8888' : '#DCE4EE',
+              padding: '11px 20px',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+              whiteSpace: 'nowrap',
+            }}>
+              {t.msg}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      {isMobile && (
+        <>
+          {/* More sheet overlay */}
+          {mobileMoreOpen && (
+            <>
+              <div
+                role="presentation"
+                style={{ position: 'fixed', inset: 0, zIndex: 98 }}
+                onClick={() => setMobileMoreOpen(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setMobileMoreOpen(false); }}
+              />
+              <div className="mobile-more-sheet" role="dialog" aria-label="More options">
+                <button
+                  className="mobile-more-sheet-item"
+                  onClick={() => { setTab('progress'); setMobileMoreOpen(false); }}
+                >
+                  <BarChart2 size={14} color={IC} style={{marginRight:6}} /> Progress
+                </button>
+                <button
+                  className="mobile-more-sheet-item"
+                  onClick={() => { setTab('stats'); setMobileMoreOpen(false); }}
+                >
+                  <TrendingUp size={14} color={IC} style={{marginRight:6}} /> Stats
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* FAB — create new game */}
+          <button
+            className="mobile-fab"
+            onClick={() => { setMobileMoreOpen(false); loadAdminCustomMissions(); setView('create'); }}
+            aria-label="Create new game"
+          >
+            +
+          </button>
+
+          {/* Bottom navigation */}
+          <nav className="mobile-bottom-nav">
+            <button
+              className="mobile-bottom-nav-item"
+              onClick={() => { loadGames(); setTeams([]); setPhotos([]); setView('games'); }}
+            >
+              <span className="mobile-nav-icon"><LayoutGrid size={20} color={IC} /></span>
+              <span className="mobile-nav-label">Games</span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${tab === 'leaderboard' ? ' active' : ''}`}
+              onClick={() => { setTab('leaderboard'); setMobileMoreOpen(false); }}
+            >
+              <span className="mobile-nav-icon"><Trophy size={20} color={IC} /></span>
+              <span className="mobile-nav-label">Leaderboard</span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${tab === 'photos' ? ' active' : ''}`}
+              onClick={() => { setTab('photos'); setMobileMoreOpen(false); }}
+              style={{ position: 'relative' }}
+            >
+              <span className="mobile-nav-icon"><Camera size={20} color={IC} /></span>
+              <span className="mobile-nav-label">
+                Photos{totalPendingPhotos > 0 ? ` · ${totalPendingPhotos}` : ''}
+              </span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${tab === 'powerups' ? ' active' : ''}`}
+              onClick={() => { setTab('powerups'); setMobileMoreOpen(false); }}
+            >
+              <span className="mobile-nav-icon"><Zap size={20} color={IC} /></span>
+              <span className="mobile-nav-label">Power-ups</span>
+            </button>
+            <button
+              className={`mobile-bottom-nav-item${mobileMoreOpen ? ' active' : ''}`}
+              onClick={() => setMobileMoreOpen(o => !o)}
+              aria-expanded={mobileMoreOpen}
+            >
+              <span className="mobile-nav-icon"><MoreHorizontal size={20} color={IC} /></span>
+              <span className="mobile-nav-label">More</span>
+            </button>
+          </nav>
+        </>
+      )}
+      {showMysteryBoxAR && (
+        <MysteryBoxAR
+          mode="place"
+          onPlace={onMysteryBoxPlaced}
+          onClose={() => setShowMysteryBoxAR(false)}
+        />
+      )}
     </>
   );
 }

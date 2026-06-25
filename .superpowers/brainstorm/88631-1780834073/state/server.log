@@ -1,0 +1,10 @@
+{"type":"server-started","port":56676,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56676","screen_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content","state_dir":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/state"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/ai-photo-rating-ui.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/ai-photo-rating-ui.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/waiting-1.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/waiting-1.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/ai-photo-rating-v2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/ai-photo-rating-v2.html"}
+{"type":"screen-added","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/waiting-2.html"}
+{"type":"screen-updated","file":"/Users/signevallin/Desktop/GameOn/.superpowers/brainstorm/88631-1780834073/content/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

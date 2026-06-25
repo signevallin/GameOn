@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRemoteRoundSync } from '@/hooks/useRemoteRoundSync';
 
 type Question = { q: string; answer: number; unit: string; hint: string };
 
@@ -15,10 +16,12 @@ const DEFAULT_QUESTIONS: Question[] = [
 type Props = {
   maxPts: number;
   questions?: Question[];
+  teamId?: string;
+  missionId?: string;
   onFinish: (correct: boolean, pts?: number) => void;
 };
 
-export default function ClosestWins({ maxPts, questions: propQuestions, onFinish }: Props) {
+export default function ClosestWins({ maxPts, questions: propQuestions, teamId, missionId, onFinish }: Props) {
   const [questions]  = useState(() => {
     const pool = propQuestions ?? DEFAULT_QUESTIONS;
     return [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
@@ -28,6 +31,16 @@ export default function ClosestWins({ maxPts, questions: propQuestions, onFinish
   const [result, setResult]       = useState<{ pts: number; accuracy: number } | null>(null);
   const [totalPts, setTotalPts]   = useState(0);
   const [done, setDone]           = useState(false);
+
+  const { broadcastRound, clearRound } = useRemoteRoundSync({
+    teamId,
+    missionId,
+    onRemoteAdvance: (idx) => {
+      setQIdx(idx);
+      setGuess('');
+      setResult(null);
+    },
+  });
 
   const ptsPerQ = Math.round(maxPts / questions.length);
   const q = questions[qIdx];
@@ -47,12 +60,15 @@ export default function ClosestWins({ maxPts, questions: propQuestions, onFinish
   function next() {
     const newTotal = totalPts + (result?.pts ?? 0);
     if (qIdx + 1 >= questions.length) {
+      clearRound();
       setDone(true);
       onFinish(newTotal > 0, newTotal);
     } else {
-      setQIdx(i => i + 1);
+      const nextIdx = qIdx + 1;
+      setQIdx(nextIdx);
       setGuess('');
       setResult(null);
+      broadcastRound(nextIdx);
     }
   }
 
@@ -73,16 +89,16 @@ export default function ClosestWins({ maxPts, questions: propQuestions, onFinish
       </p>
 
       {!result ? (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input
             type="number"
+            inputMode="numeric"
             value={guess}
             onChange={e => setGuess(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder={`Your answer${q.unit ? ` (${q.unit})` : ''}`}
-            style={{ flex: 1 }}
           />
-          <button className="btn btn-primary" onClick={submit} style={{ flexShrink: 0 }}>
+          <button className="btn btn-primary" onClick={submit}>
             ANSWER →
           </button>
         </div>

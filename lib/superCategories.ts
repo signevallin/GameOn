@@ -1,4 +1,4 @@
-export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action' | 'gkn';
+export type SuperCategoryKey = 'tech' | 'logic' | 'music_film' | 'knowledge' | 'action' | 'gkn' | 'remote';
 
 export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   label: string;
@@ -12,6 +12,7 @@ export const SUPER_CATEGORIES: Record<SuperCategoryKey, {
   knowledge:  { label: 'Knowledge & Trivia',    icon: '🌍', color: 'var(--accent3)', desc: 'Geography, history and general trivia' },
   action:     { label: 'Action & Creative',     icon: '⚡', color: 'var(--accent2)', desc: 'Physical, speed and creative challenges' },
   gkn:        { label: 'GKN Aerospace',          icon: '✈️', color: '#4a90d9',        desc: 'Missions about GKN Aerospace and aviation' },
+  remote:     { label: 'Remote Teamwork',        icon: '📶', color: '#6366f1',        desc: 'Challenges designed for remote teams on a video call' },
 };
 
 /** Maps every mission id to its super-category. */
@@ -28,7 +29,7 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   anagram:         'tech',
 
   // Logic & Mind
-  memory:          'logic',
+  memory:          'tech',
   sequence:        'logic',
   puzzle:          'logic',
   snabb_matte:     'logic',
@@ -98,4 +99,29 @@ export const MISSION_SUPER_CATEGORY: Record<string, SuperCategoryKey> = {
   gkn_pa_sparet:     'gkn',
   gkn_timeline:      'gkn',
   gkn_aircraft_quiz: 'gkn',
+
+  // Remote Teamwork
+  relay_typerace:         'remote',
+  relay_trivia:           'remote',
+  secret_word:            'remote',
+  secret_code:            'remote',
+  relay_geo:              'remote',
+  relay_movies:           'remote',
+  relay_science:          'remote',
+  relay_story:            'remote',
+  secret_einstein:        'remote',
+  secret_animal:          'remote',
+  secret_titanic:         'remote',
+  secret_venice:          'remote',
+  relay_sports:           'remote',
+  relay_history:          'remote',
+  relay_music:            'remote',
+  relay_food:             'remote',
+  relay_nature:           'remote',
+  relay_pop_culture:      'remote',
+  relay_typerace_proverbs:'remote',
+  secret_eiffel:          'remote',
+  secret_beatles:         'remote',
+  secret_chocolate:       'remote',
+  secret_moon:            'remote',
 };
