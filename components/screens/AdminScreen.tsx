@@ -1124,8 +1124,8 @@ export default function AdminScreen({ onLogout }: Props) {
   const loadGameData = useCallback(async (game: Game) => {
     const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
       POST('/api/admin/teams', { gameId: game.id }),
-      POST('/api/admin/photos'),
-      POST('/api/scavenger/submissions'),
+      POST('/api/admin/photos', { gameId: game.id }),
+      POST('/api/scavenger/submissions', { gameId: game.id }),
       POST('/api/game', { key: game.game_key }),
       POST('/api/settings', { gameId: game.id }),
     ]);
@@ -1222,8 +1222,8 @@ export default function AdminScreen({ onLogout }: Props) {
 
       const [teamsRes, photosRes, scavengerRes, gameRes, settingsRes] = await Promise.all([
         postWithAuth('/api/admin/teams', { gameId }),
-        postWithAuth('/api/admin/photos'),
-        postWithAuth('/api/scavenger/submissions'),
+        postWithAuth('/api/admin/photos', { gameId }),
+        postWithAuth('/api/scavenger/submissions', { gameId }),
         postWithAuth('/api/game', { key: gameKey }),
         postWithAuth('/api/settings', { gameId }),
       ]);

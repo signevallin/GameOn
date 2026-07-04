@@ -1,0 +1,22 @@
+import { defineConfig } from 'vitest/config';
+import { fileURLToPath } from 'node:url';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      // Mirror the "@/*" -> "./*" path alias from tsconfig.json.
+      '@': fileURLToPath(new URL('./', import.meta.url)),
+    },
+  },
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    globals: false,
+    // PLANS in lib/stripe.ts reads these at module load; give them known values
+    // so planFromPriceId has something to map.
+    env: {
+      STRIPE_PRO_PRICE_ID: 'price_pro_test',
+      STRIPE_STUDIO_PRICE_ID: 'price_studio_test',
+    },
+  },
+});

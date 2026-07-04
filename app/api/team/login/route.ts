@@ -1,13 +1,47 @@
 // app/api/team/login/route.ts
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { translateMission } from '@/lib/translate';
+import { getEntitlements } from '@/lib/subscription';
+import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 const MEMBER_CAP = 20;
 
+/**
+ * Enforces the owner's plan team-cap for a game. Returns an error Response when
+ * the cap is reached (only new teams are blocked; existing teams still join),
+ * or null when a new team may be created.
+ */
+async function checkTeamCap(
+  supabase: SupabaseClient,
+  gameId: string,
+  ownerId: string | null
+): Promise<Response | null> {
+  if (!ownerId) return null;
+  const { maxTeams } = await getEntitlements(ownerId);
+  if (maxTeams === Infinity) return null;
+
+  const { count } = await supabase
+    .from('teams')
+    .select('id', { count: 'exact', head: true })
+    .eq('game_id', gameId);
+
+  if ((count ?? 0) >= maxTeams) {
+    return NextResponse.json(
+      { error: `This game has reached the ${maxTeams}-team limit on the free plan. The organiser needs to upgrade to Pro.` },
+      { status: 403 }
+    );
+  }
+  return null;
+}
+
 export async function POST(req: Request) {
+  // Throttle per IP to blunt game-key / join-code brute-forcing.
+  const rl = rateLimit(`team-login:${clientIp(req)}`, 30, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -84,24 +118,8 @@ export async function POST(req: Request) {
 
     if (!team) {
       // No team with that join_code yet — create one
-
-      // ── Enforce free-plan team limit ────────────────────────────────────────
-      if (game.user_id) {
-        const { getSubscription } = await import('@/lib/subscription');
-        const sub = await getSubscription(game.user_id);
-        if (sub.plan === 'free') {
-          const { count } = await supabase
-            .from('teams')
-            .select('id', { count: 'exact', head: true })
-            .eq('game_id', game.id);
-          if ((count ?? 0) >= 5) {
-            return NextResponse.json(
-              { error: 'This game has reached the 5-team limit on the free plan. The organiser needs to upgrade to Pro.' },
-              { status: 403 }
-            );
-          }
-        }
-      }
+      const capDenied = await checkTeamCap(supabase, game.id, game.user_id ?? null);
+      if (capDenied) return capDenied;
 
       // Create new team with join_code
       const { data: newTeam, error: teamErr } = await supabase
@@ -162,23 +180,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ team: teamResult.data, game, customMissions });
   }
 
-  // ── Enforce free-plan team limit ────────────────────────────────────────────
-  if (game.user_id) {
-    const { getSubscription } = await import('@/lib/subscription');
-    const sub = await getSubscription(game.user_id);
-    if (sub.plan === 'free') {
-      const { count } = await supabase
-        .from('teams')
-        .select('id', { count: 'exact', head: true })
-        .eq('game_id', game.id);
-      if ((count ?? 0) >= 5) {
-        return NextResponse.json(
-          { error: 'This game has reached the 5-team limit on the free plan. The organiser needs to upgrade to Pro.' },
-          { status: 403 }
-        );
-      }
-    }
-  }
+  const capDenied = await checkTeamCap(supabase, game.id, game.user_id ?? null);
+  if (capDenied) return capDenied;
 
   const { data: team, error: teamErr } = await supabase
     .from('teams')

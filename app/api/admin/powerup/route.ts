@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 import { MISSION_SUPER_CATEGORY, SUPER_CATEGORIES } from '@/lib/superCategories';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
+import { getEntitlements } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,14 @@ export async function POST(req: Request) {
   if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
 
   const supabase = getSupabase();
+
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
+
+  // Power-ups are a paid feature.
+  if (!admin.isSuperAdmin && !(await getEntitlements(admin.userId)).powerups) {
+    return NextResponse.json({ error: 'pro_required' }, { status: 403 });
+  }
 
   // ── HOT POTATO ───────────────────────────────────────────────────────────────
   if (type === 'hot_potato') {
@@ -84,7 +93,7 @@ export async function POST(req: Request) {
     if (!targetTeamId) return NextResponse.json({ error: 'Missing targetTeamId.' }, { status: 400 });
 
     const { data: team, error: teamErr } = await supabase
-      .from('teams').select('active_effects').eq('id', targetTeamId).single();
+      .from('teams').select('active_effects').eq('id', targetTeamId).eq('game_id', gameId).single();
     if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 
     const effects = (team.active_effects as Record<string, unknown>) ?? {};
@@ -107,7 +116,7 @@ export async function POST(req: Request) {
     if (!targetTeamId) return NextResponse.json({ error: 'Missing targetTeamId.' }, { status: 400 });
 
     const { data: team, error: teamErr } = await supabase
-      .from('teams').select('active_effects').eq('id', targetTeamId).single();
+      .from('teams').select('active_effects').eq('id', targetTeamId).eq('game_id', gameId).single();
     if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 
     const effects = (team.active_effects as Record<string, unknown>) ?? {};
@@ -184,7 +193,7 @@ export async function POST(req: Request) {
 
   // ── SINGLE TEAM ──────────────────────────────────────────────────────────────
   const { data: team, error: teamErr } = await supabase
-    .from('teams').select('score, active_effects').eq('id', targetTeamId).single();
+    .from('teams').select('score, active_effects').eq('id', targetTeamId).eq('game_id', gameId).single();
 
   if (teamErr || !team) return NextResponse.json({ error: 'Team not found.' }, { status: 404 });
 

@@ -1,7 +1,7 @@
 // app/api/admin/game/start/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +16,9 @@ export async function POST(req: Request) {
 
   const { gameId, action } = await req.json();
   if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
+
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
 
   const updates =
     action === 'finish'

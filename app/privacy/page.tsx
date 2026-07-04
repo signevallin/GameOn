@@ -76,6 +76,8 @@ export default function PrivacyPage() {
             <Li><strong>Supabase Inc.</strong> (database and file storage) — USA, protected by standard contractual clauses.</Li>
             <Li><strong>Vercel Inc.</strong> (web hosting and CDN) — USA, protected by standard contractual clauses.</Li>
             <Li><strong>Stripe Inc.</strong> (payments) — USA, PCI-DSS certified.</Li>
+            <Li><strong>Anthropic PBC</strong> (AI features — the in-app support chat and AI mission/game generation process the text you enter) — USA, protected by standard contractual clauses.</Li>
+            <Li><strong>Resend</strong> (transactional email) — processes your email address to send account and subscription messages.</Li>
           </ul>
           <P style={{ marginTop: 16 }}>We never sell your personal data to third parties.</P>
         </Section>

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
-import { getSubscription } from '@/lib/subscription';
+import { getEffectivePlan } from '@/lib/subscription';
+import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -199,10 +200,12 @@ export async function POST(req: Request) {
   if (!admin) return unauthorizedResponse();
 
   // Check pro plan
-  const subscription = await getSubscription(admin.userId);
-  if (!subscription || subscription.plan === 'free') {
+  if (await getEffectivePlan(admin.userId) === 'free') {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
+
+  const rl = rateLimit(`ai-generate-mission:${admin.userId}`, 20, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
 
   let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown; count?: unknown; gameMode?: unknown };
   try {

@@ -231,7 +231,9 @@
     "sendLabel": "{{icon}} Skicka {{label}}",
     "activateLabel": "{{icon}} Aktivera {{label}}",
     "smoke_screen_label": "Rökridå",
-    "smoke_screen_desc": "Sudda ut ett rivallags skärm i 60 sekunder – knapparna finns kvar men syns knappt."
+    "smoke_screen_desc": "Sudda ut ett rivallags skärm i 60 sekunder – knapparna finns kvar men syns knappt.",
+    "doubleAgentTitle": "DUBBELAGENT",
+    "doubleAgentDesc": "Dubbla poäng — men ett misslyckande göder sistaplatsen!"
   },
   "language": {
     "pickerLabel": "Språk",

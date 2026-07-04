@@ -1,7 +1,7 @@
 // app/api/admin/powerup/resolve-hot-potato/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +20,9 @@ export async function POST(req: Request) {
   if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
 
   const supabase = getSupabase();
+
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
 
   const { data: game, error: gameErr } = await supabase
     .from('games').select('hot_potato').eq('id', gameId).single();
