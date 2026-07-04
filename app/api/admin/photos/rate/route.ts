@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireTeamOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +18,18 @@ export async function POST(req: Request) {
 
   if (!submissionId || !teamId || !missionId || points === undefined) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
+  }
+
+  const { denied } = await requireTeamOwnership(supabase, admin, teamId);
+  if (denied) return denied;
+
+  const { data: submission } = await supabase
+    .from('photo_submissions')
+    .select('team_id')
+    .eq('id', submissionId)
+    .single();
+  if (!submission || submission.team_id !== teamId) {
+    return NextResponse.json({ error: 'Submission not found.' }, { status: 404 });
   }
 
   // Mark submission as manually rated (clears ai_rated flag)

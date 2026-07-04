@@ -1,7 +1,7 @@
 // app/api/admin/teams/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireGameOwnership, requireTeamOwnership } from '@/lib/auth-server';
 import { ONLINE_THRESHOLD_MS } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -44,12 +44,18 @@ export async function POST(req: Request) {
   if (!admin) return unauthorizedResponse();
 
   const { gameId } = await req.json();
-  let query = getSupabase().from('teams').select('*').order('score', { ascending: false });
-  if (gameId) query = query.eq('game_id', gameId);
-  const { data, error } = await query;
+  if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
+
+  const supabase = getSupabase();
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
+
+  const { data, error } = await supabase
+    .from('teams').select('*').eq('game_id', gameId)
+    .order('score', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const teams = await enrichWithMembers(getSupabase(), (data ?? []) as RawTeam[]);
+  const teams = await enrichWithMembers(supabase, (data ?? []) as RawTeam[]);
   return NextResponse.json({ teams });
 }
 
@@ -61,6 +67,9 @@ export async function DELETE(req: Request) {
   if (!teamId) return NextResponse.json({ error: 'Missing teamId.' }, { status: 400 });
 
   const supabase = getSupabase();
+  const { denied } = await requireTeamOwnership(supabase, admin, teamId);
+  if (denied) return denied;
+
   const { error } = await supabase.from('teams').delete().eq('id', teamId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -73,11 +82,17 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const gameId = searchParams.get('gameId');
-  let query = getSupabase().from('teams').select('*').order('score', { ascending: false });
-  if (gameId) query = query.eq('game_id', gameId);
-  const { data, error } = await query;
+  if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
+
+  const supabase = getSupabase();
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
+
+  const { data, error } = await supabase
+    .from('teams').select('*').eq('game_id', gameId)
+    .order('score', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const teams = await enrichWithMembers(getSupabase(), (data ?? []) as RawTeam[]);
+  const teams = await enrichWithMembers(supabase, (data ?? []) as RawTeam[]);
   return NextResponse.json({ teams }, { headers: { 'Cache-Control': 'no-store, no-cache' } });
 }

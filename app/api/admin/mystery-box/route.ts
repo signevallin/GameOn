@@ -1,7 +1,7 @@
 // app/api/admin/mystery-box/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +21,9 @@ export async function POST(req: Request) {
   if (!gameId) return NextResponse.json({ error: 'Missing gameId.' }, { status: 400 });
 
   const supabase = getSupabase();
+
+  const denied = await requireGameOwnership(supabase, admin, gameId);
+  if (denied) return denied;
 
   // ── EXPIRE ────────────────────────────────────────────────────────────────────
   if (action === 'expire') {

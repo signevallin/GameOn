@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
-import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { validateAdminToken, unauthorizedResponse, requireTeamOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,12 +20,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
   }
 
+  const { denied } = await requireTeamOwnership(supabase, admin, teamId);
+  if (denied) return denied;
+
   // Fetch existing submission to determine if this is a re-rate
   const { data: existingSub } = await supabase
     .from('scavenger_submissions')
-    .select('status, points_awarded')
+    .select('status, points_awarded, team_id')
     .eq('id', submissionId)
     .single();
+
+  if (!existingSub || existingSub.team_id !== teamId) {
+    return NextResponse.json({ error: 'Submission not found.' }, { status: 404 });
+  }
 
   const wasAlreadyRated = existingSub?.status === 'rated';
   const oldPoints = wasAlreadyRated ? (existingSub?.points_awarded ?? 0) : 0;
