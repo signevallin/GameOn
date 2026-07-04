@@ -20,3 +20,17 @@ export const PLANS = {
 } as const;
 
 export type Plan = keyof typeof PLANS;
+
+/**
+ * Resolves a Stripe price id back to a plan tier. Used by the webhook to keep
+ * the stored plan in sync when a customer changes plans via the billing portal
+ * (where the subscription metadata still holds the original checkout plan).
+ * Returns null for an unrecognised price.
+ */
+export function planFromPriceId(priceId: string | null | undefined): Plan | null {
+  if (!priceId) return null;
+  for (const [tier, cfg] of Object.entries(PLANS)) {
+    if (cfg.priceId === priceId) return tier as Plan;
+  }
+  return null;
+}
