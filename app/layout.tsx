@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Analytics } from '@vercel/analytics/next';
+import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
 const BASE_URL = 'https://playgameon.app';
@@ -94,7 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}<Analytics /></body>
+      <body>{children}<CookieConsent /></body>
     </html>
   );
 }
