@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { translateMission } from '@/lib/translate';
 import { getEntitlements } from '@/lib/subscription';
+import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,10 @@ async function checkTeamCap(
 }
 
 export async function POST(req: Request) {
+  // Throttle per IP to blunt game-key / join-code brute-forcing.
+  const rl = rateLimit(`team-login:${clientIp(req)}`, 30, 60_000);
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
