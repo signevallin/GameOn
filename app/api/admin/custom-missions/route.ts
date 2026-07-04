@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { getEntitlements } from '@/lib/subscription';
 import { parseActiveWindow } from '@/lib/parse-active-window';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
+
+  // Custom missions are a paid feature.
+  if (!admin.isSuperAdmin && !(await getEntitlements(admin.userId)).customMissions) {
+    return NextResponse.json({ error: 'pro_required' }, { status: 403 });
+  }
 
   const body = await req.json();
   const { category_name, category_id, name, icon, desc, difficulty, max_pts, type, data, sort_order, active_from, active_until, seasonal } = body;

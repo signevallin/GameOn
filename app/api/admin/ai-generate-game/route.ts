@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
-import { getSubscription } from '@/lib/subscription';
+import { getEffectivePlan } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,8 +41,7 @@ export async function POST(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
 
-  const subscription = await getSubscription(admin.userId);
-  if (!subscription || subscription.plan === 'free') {
+  if (await getEffectivePlan(admin.userId) === 'free') {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 

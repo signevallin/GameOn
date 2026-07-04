@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 import { MISSION_SUPER_CATEGORY, SUPER_CATEGORIES } from '@/lib/superCategories';
 import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
+import { getEntitlements } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,11 @@ export async function POST(req: Request) {
 
   const denied = await requireGameOwnership(supabase, admin, gameId);
   if (denied) return denied;
+
+  // Power-ups are a paid feature.
+  if (!admin.isSuperAdmin && !(await getEntitlements(admin.userId)).powerups) {
+    return NextResponse.json({ error: 'pro_required' }, { status: 403 });
+  }
 
   // ── HOT POTATO ───────────────────────────────────────────────────────────────
   if (type === 'hot_potato') {

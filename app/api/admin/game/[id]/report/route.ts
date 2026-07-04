@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { renderToBuffer } from '@react-pdf/renderer';
 import React from 'react';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { getEntitlements } from '@/lib/subscription';
 import { MISSIONS } from '@/lib/missions';
 import { buildReport, ReportData, ReportPhoto } from '@/lib/pdf-report';
 
@@ -53,6 +54,11 @@ export async function GET(
   }
   if (game.user_id !== admin.userId && !admin.isSuperAdmin) {
     return unauthorizedResponse();
+  }
+
+  // PDF reports are a paid feature.
+  if (!admin.isSuperAdmin && !(await getEntitlements(admin.userId)).pdfReports) {
+    return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
   // 2. Fetch teams sorted by score desc, then finished_at asc

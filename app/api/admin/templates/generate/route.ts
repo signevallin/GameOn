@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
+import { getEffectivePlan } from '@/lib/subscription';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 
@@ -50,6 +51,10 @@ export interface GeneratedTemplate {
 export async function POST(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);
   if (!admin) return unauthorizedResponse();
+
+  if (await getEffectivePlan(admin.userId) === 'free') {
+    return NextResponse.json({ error: 'pro_required' }, { status: 403 });
+  }
 
   const body = await req.json();
   const { prompt } = body as { prompt?: string };
