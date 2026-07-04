@@ -48,13 +48,9 @@ export default function LoginScreen({ onTeamLogin, onAdminLogin }: Props) {
     if (!gameKey.trim()) { setError(t('login.errGameKey')); return; }
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('games')
-        .select('remote_mode')
-        .eq('game_key', gameKey.trim().toUpperCase())
-        .is('deleted_at', null)
-        .single();
-      setIsRemoteMode(!!(data?.remote_mode));
+      const res = await fetch(`/api/game?key=${encodeURIComponent(gameKey.trim().toUpperCase())}`, { cache: 'no-store' });
+      const { game } = await res.json().catch(() => ({ game: null }));
+      setIsRemoteMode(!!(game?.remote_mode));
     } catch {
       setIsRemoteMode(false);
     } finally {
