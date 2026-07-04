@@ -20,5 +20,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# typescript build info
+*.tsbuildinfo
+
+# playwright ad-hoc debug artifacts
+.playwright-cli/
+
 # vercel
 .vercel
