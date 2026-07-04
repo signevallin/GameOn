@@ -1,48 +1,53 @@
 -- 20260704_rls_hardening.sql
--- Defence-in-depth: enable Row Level Security on every table and remove the
--- permissive `USING (true)` policies that let the public anon key read/write
--- data directly via PostgREST (bypassing the API's auth checks).
+-- Defence-in-depth: remove the permissive policies that let the public anon key
+-- read/write data directly via PostgREST, so tables are DENY-BY-DEFAULT for the
+-- anon/authenticated roles. All game data is reached through the server API
+-- routes, which use the service-role key (service role bypasses RLS).
 --
--- After this migration, tables are DENY-BY-DEFAULT for the anon/authenticated
--- roles. All game data is reached exclusively through the server API routes,
--- which use the service-role key (service role bypasses RLS). The only
--- exceptions are `games`/`custom_missions`, which additionally allow the
--- signed-in *owner* to operate on their own rows.
---
--- Idempotent: safe to run more than once.
+-- Policy names below were reconciled against the live database, so the DROPs
+-- actually match. Idempotent: safe to run more than once.
 
--- ── teams ──────────────────────────────────────────────────────────────────
+-- ── Remove public (anon) access to game data ───────────────────────────────
+
+-- Any anon client could read every customer's teams/scores.
 ALTER TABLE IF EXISTS teams ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read"   ON teams;
-DROP POLICY IF EXISTS "Public insert" ON teams;
-DROP POLICY IF EXISTS "Public update" ON teams;
+DROP POLICY IF EXISTS "Public read" ON teams;
 
--- ── team_members ───────────────────────────────────────────────────────────
-ALTER TABLE IF EXISTS team_members ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read"   ON team_members;
-DROP POLICY IF EXISTS "Public insert" ON team_members;
-DROP POLICY IF EXISTS "Public update" ON team_members;
-
--- ── photo_submissions ──────────────────────────────────────────────────────
+-- Any anon client could read every customer's photo submissions (URLs, names).
 ALTER TABLE IF EXISTS photo_submissions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read submissions"   ON photo_submissions;
-DROP POLICY IF EXISTS "Public insert submissions" ON photo_submissions;
-DROP POLICY IF EXISTS "Public update submissions" ON photo_submissions;
+DROP POLICY IF EXISTS "Public read submissions" ON photo_submissions;
 
--- ── scavenger_submissions ──────────────────────────────────────────────────
+-- Named "Service role full access" but was granted to PUBLIC with USING(true)
+-- AND WITH CHECK(true) — anon could read *and write* all scavenger submissions.
 ALTER TABLE IF EXISTS scavenger_submissions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read"   ON scavenger_submissions;
-DROP POLICY IF EXISTS "Public insert" ON scavenger_submissions;
-DROP POLICY IF EXISTS "Public update" ON scavenger_submissions;
+DROP POLICY IF EXISTS "Service role full access" ON scavenger_submissions;
 
--- ── settings (legacy global row) ───────────────────────────────────────────
-ALTER TABLE IF EXISTS settings ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read"   ON settings;
-DROP POLICY IF EXISTS "Public insert" ON settings;
-DROP POLICY IF EXISTS "Public update" ON settings;
+-- event_leads had RLS disabled entirely — anon could read/write all leads (PII).
+ALTER TABLE IF EXISTS event_leads ENABLE ROW LEVEL SECURITY;
 
--- ── games: owner-scoped access (players go through the API) ─────────────────
+-- Tables that should stay deny-by-default (service role only). RLS is already on;
+-- ensure it and clear any stale permissive policies.
+ALTER TABLE IF EXISTS team_members        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS settings            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS mission_translations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read" ON team_members;
+DROP POLICY IF EXISTS "Public read" ON settings;
+DROP POLICY IF EXISTS "Public read" ON mission_translations;
+
+-- ── games: drop public read (COUPLED TO FRONTEND DEPLOY) ────────────────────
+-- "Public read games" (USING true) let any anon client read every customer's
+-- games. Dropping it is only safe once the LoginScreen change that reads game
+-- metadata through /api/game (service role) is deployed — before that, the old
+-- client reads `games` directly with the anon key to detect remote mode.
+-- Apply this together with deploying this branch.
 ALTER TABLE IF EXISTS games ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read games" ON games;
+
+-- ── Owner-scoped policies (defence-in-depth for any future direct-client use) ─
+-- Idempotent recreate. game_templates is intentionally left untouched: its
+-- existing policies allow any signed-in user to read shared/builtin templates,
+-- which the templates feature relies on.
+
 DROP POLICY IF EXISTS "games_owner_select" ON games;
 DROP POLICY IF EXISTS "games_owner_insert" ON games;
 DROP POLICY IF EXISTS "games_owner_update" ON games;
@@ -52,7 +57,6 @@ CREATE POLICY "games_owner_insert" ON games FOR INSERT WITH CHECK (user_id = aut
 CREATE POLICY "games_owner_update" ON games FOR UPDATE USING (user_id = auth.uid());
 CREATE POLICY "games_owner_delete" ON games FOR DELETE USING (user_id = auth.uid());
 
--- ── custom_missions / categories: owner-scoped ─────────────────────────────
 ALTER TABLE IF EXISTS custom_missions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "custom_missions_owner" ON custom_missions;
 CREATE POLICY "custom_missions_owner" ON custom_missions
@@ -63,27 +67,5 @@ DROP POLICY IF EXISTS "custom_mission_categories_owner" ON custom_mission_catego
 CREATE POLICY "custom_mission_categories_owner" ON custom_mission_categories
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ── admin_branding / game_templates: owner-scoped ──────────────────────────
-ALTER TABLE IF EXISTS admin_branding ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "admin_branding_owner" ON admin_branding;
-CREATE POLICY "admin_branding_owner" ON admin_branding
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-
-ALTER TABLE IF EXISTS game_templates ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "game_templates_owner" ON game_templates;
-DROP POLICY IF EXISTS "Public read templates" ON game_templates;
-CREATE POLICY "game_templates_owner" ON game_templates
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-
--- ── subscriptions: read-own only (writes happen via service role) ──────────
 ALTER TABLE IF EXISTS subscriptions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "subscriptions_owner_select" ON subscriptions;
-CREATE POLICY "subscriptions_owner_select" ON subscriptions
-  FOR SELECT USING (user_id = auth.uid());
-
--- ── mission_translations / event_leads: no anon access (service role only) ──
-ALTER TABLE IF EXISTS mission_translations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read" ON mission_translations;
-
-ALTER TABLE IF EXISTS event_leads ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public insert" ON event_leads;
+-- (Existing "Users can read their own subscription" already covers SELECT-own.)
