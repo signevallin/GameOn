@@ -35,3 +35,25 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-anon-key
           SUPABASE_SERVICE_ROLE_KEY: build-placeholder-service-key
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # Auth-gate + smoke specs boot the app with placeholder env and never
+      # reach a real database. The cross-tenant spec skips unless E2E_TOKEN_* are
+      # set against a disposable test Supabase.
+      - name: Run E2E
+        run: npm run test:e2e
