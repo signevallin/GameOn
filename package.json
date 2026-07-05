@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "e2e:seed": "node scripts/e2e-seed.mjs",
+    "test:e2e:full": "node scripts/e2e-seed.mjs && node --env-file=.env.e2e ./node_modules/@playwright/test/cli.js test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

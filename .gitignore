@@ -34,3 +34,7 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /.playwright/
+
+# e2e generated secrets
+.env.e2e
+.env.e2e.local

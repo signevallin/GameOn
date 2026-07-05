@@ -30,10 +30,13 @@ export default defineConfig({
         url: BASE_URL,
         timeout: 180_000,
         reuseExistingServer: !process.env.CI,
+        // In full mode (npm run test:e2e:full) the seeded test project's
+        // credentials are provided via TEST_SUPABASE_*; otherwise placeholders
+        // are enough for the auth-gate and smoke specs, which never hit a DB.
         env: {
-          NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co',
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder-anon-key',
-          SUPABASE_SERVICE_ROLE_KEY: 'placeholder-service-key',
+          NEXT_PUBLIC_SUPABASE_URL: process.env.TEST_SUPABASE_URL ?? 'https://placeholder.supabase.co',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.TEST_SUPABASE_ANON_KEY ?? 'placeholder-anon-key',
+          SUPABASE_SERVICE_ROLE_KEY: process.env.TEST_SUPABASE_SERVICE_ROLE_KEY ?? 'placeholder-service-key',
         },
       },
 });
