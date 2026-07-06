@@ -15,6 +15,11 @@ test('privacy policy page renders its heading', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /privacy policy/i })).toBeVisible();
 });
 
+test('data processing agreement page renders', async ({ page }) => {
+  await page.goto('/dpa');
+  await expect(page.getByRole('heading', { name: /data processing agreement/i })).toBeVisible();
+});
+
 test('play page shows the join form', async ({ page }) => {
   await page.goto('/play');
   // The login screen asks for a game key first; assert an input is present.

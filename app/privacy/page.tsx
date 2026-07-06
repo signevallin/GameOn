@@ -115,8 +115,9 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Footer nav */}
-        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24 }}>
+        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <Link href="/terms" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Terms of Service →</Link>
+          <Link href="/dpa" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Data Processing Agreement →</Link>
           <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: '#4A6580', textDecoration: 'none' }}>Back to home</Link>
         </div>
       </main>

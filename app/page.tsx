@@ -598,6 +598,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
       <nav class="footer-links">
         <a href="/privacy" class="footer-link">Privacy Policy</a>
         <a href="/terms" class="footer-link">Terms</a>
+        <a href="/dpa" class="footer-link">DPA</a>
         <a href="mailto:hello@playgameon.app" class="footer-link">Contact</a>
       </nav>
     </div>
