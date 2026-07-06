@@ -28,19 +28,35 @@ no auth server to mint the tokens. Any of the options below is fine and free.
 Runs the whole stack (Postgres + Auth) in Docker via the Supabase CLI. It does
 not count against your cloud project quota.
 
+Run the local stack from a **scratch directory**, not the repo — the repo's
+migrations are incomplete and would error on an empty database. We set the
+schema from the self-contained `supabase/test-bootstrap.sql` instead.
+
 ```bash
-supabase start                     # requires Docker
-supabase status -o env             # prints API_URL, ANON_KEY, SERVICE_ROLE_KEY, DB_URL
+# 1. Install the CLI once (macOS): brew install supabase/tap/supabase
 
-# apply the schema to the local db:
-psql "<DB_URL from status>" -f supabase/test-bootstrap.sql
+# 2. Boot a clean local stack from a throwaway dir:
+mkdir ~/gameon-e2e-db && cd ~/gameon-e2e-db
+supabase init          # accept defaults
+supabase start         # requires Docker; prints local URL + keys
+supabase status        # note API URL, anon key, service_role key
+```
 
-# point the tests at the local stack and run:
-export TEST_SUPABASE_URL="<API_URL>"
-export TEST_SUPABASE_ANON_KEY="<ANON_KEY>"
-export TEST_SUPABASE_SERVICE_ROLE_KEY="<SERVICE_ROLE_KEY>"
+**3. Load the schema.** Open local Studio at http://127.0.0.1:54323 → SQL
+Editor → paste the contents of the repo's `supabase/test-bootstrap.sql` → Run.
+(Or, if you have `psql`: `psql "<DB URL from status>" -f <repo>/supabase/test-bootstrap.sql`.)
+
+```bash
+# 4. Back in the repo, point the tests at the local stack and run:
+cd <repo>
+export TEST_SUPABASE_URL="http://127.0.0.1:54321"      # API URL from status
+export TEST_SUPABASE_ANON_KEY="<anon key from status>"
+export TEST_SUPABASE_SERVICE_ROLE_KEY="<service_role key from status>"
 npm run test:e2e:full
 ```
+
+Local keys from `supabase status` are the same fixed demo keys every time and
+are safe to use. When done: `cd ~/gameon-e2e-db && supabase stop`.
 
 ### Cloud options
 
