@@ -33,6 +33,7 @@ export default function Home() {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
   const pendingPlanRef = useRef<string | null>(null);
+  const pendingIntervalRef = useRef<'monthly' | 'yearly'>('monthly');
   // Round sync: tracks the latest round broadcast received from a teammate via nav channel
   const [broadcastedRound, setBroadcastedRound] = useState<{ missionId: string; qIdx: number } | null>(null);
 
@@ -274,9 +275,12 @@ export default function Home() {
     const plan = params.get('plan');
     if (plan === 'pro' || plan === 'studio') {
       pendingPlanRef.current = plan;
+      const interval = params.get('interval');
+      pendingIntervalRef.current = interval === 'yearly' ? 'yearly' : 'monthly';
       // Strip from URL so it doesn't linger
       const url = new URL(window.location.href);
       url.searchParams.delete('plan');
+      url.searchParams.delete('interval');
       window.history.replaceState({}, '', url.toString());
     }
   }, []);
@@ -365,13 +369,14 @@ export default function Home() {
     const plan = pendingPlanRef.current;
     if (!plan) return;
     pendingPlanRef.current = null;
+    const interval = pendingIntervalRef.current;
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, interval }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;

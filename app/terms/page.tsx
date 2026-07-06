@@ -52,8 +52,8 @@ export default function TermsPage() {
         </Section>
 
         <Section title="3. Subscriptions and Payment">
-          <P>GameOn offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed annually in advance. Prices are in SEK and include VAT.</P>
-          <P style={{ marginTop: 12 }}>Payments are handled by Stripe. We do not store card details. If a payment fails, we will retry for 7 days before downgrading the subscription to the Starter plan.</P>
+          <P>GameOn offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed in advance on a monthly or annual cycle, as chosen at checkout, and renew automatically until cancelled. You can cancel anytime from the billing portal; access continues until the end of the paid period. Prices are in SEK and include VAT.</P>
+          <P style={{ marginTop: 12 }}>Payments are handled by Stripe. We do not store card details. If a payment fails, we will retry for up to 7 days before downgrading the subscription to the Starter plan.</P>
         </Section>
 
         <Section title="4. Right of Withdrawal and Refunds">

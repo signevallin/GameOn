@@ -244,6 +244,11 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 .launch-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;border-radius:999px;border:1px solid rgba(124,189,212,.3);background:rgba(124,189,212,.06);font-size:13px;font-weight:700;color:#C8E8F2;letter-spacing:.03em;margin-bottom:40px;}
 .launch-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px rgba(124,189,212,.8);flex-shrink:0;}
 .pricing-lock{font-size:11px;color:var(--text-dim);text-align:center;margin-top:12px;font-weight:600;letter-spacing:.02em;}
+.billing-switch{display:inline-flex;gap:4px;padding:5px;border-radius:999px;border:1px solid rgba(124,189,212,.2);background:rgba(13,21,32,.5);margin-bottom:8px;}
+.billing-opt{padding:9px 20px;border-radius:999px;border:none;background:transparent;color:var(--text-muted);font-family:'Sora',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:background .18s,color .18s;display:inline-flex;align-items:center;gap:8px;}
+.billing-opt.active{background:var(--cyan);color:#0D1520;}
+.billing-save{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(124,189,212,.16);color:var(--cyan);letter-spacing:.02em;}
+.billing-opt.active .billing-save{background:rgba(13,21,32,.18);color:#0D1520;}
 
 /* ══ FAQ */
 #faq-section{max-width:780px;margin:0 auto;padding:80px 40px;}
@@ -536,16 +541,19 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 <section id="pricing-section">
   <div class="reveal">
     <div class="section-eyebrow">Pricing</div>
-    <h2 class="section-h2">Buy once. Play forever.</h2>
-    <p class="section-sub">No subscriptions. No per-event fees. Start free, upgrade when you&apos;re ready.</p>
+    <h2 class="section-h2">Pricing that fits how you run events.</h2>
+    <p class="section-sub">Start free. Pay monthly for flexibility, or save two months with annual billing.</p>
   </div>
   <div class="reveal" style="text-align:center;">
-    <span class="launch-badge"><span class="launch-badge-dot"></span> Launch pricing — locked in for life for early adopters</span>
+    <div class="billing-switch">
+      <button class="billing-opt active" data-interval="monthly" onclick="setBilling('monthly')">Monthly</button>
+      <button class="billing-opt" data-interval="yearly" onclick="setBilling('yearly')">Annual <span class="billing-save">2 months free</span></button>
+    </div>
   </div>
   <div class="pricing-grid">
     <div class="reveal" style="transition-delay:.0s"><div class="pricing-card pricing-card-default"><div class="pricing-name">Starter</div><div class="pricing-tag">Try it for free</div><div class="pricing-price-row"><span class="pricing-price">Free</span></div><div class="pricing-features"><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Up to 5 teams</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 10 standard missions</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 1 active game at a time</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Live leaderboard</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Basic stats</div></div><a href="/play" class="pricing-cta pricing-cta-default">Start for free</a></div></div>
-    <div class="reveal" style="transition-delay:.09s"><div class="pricing-card pricing-card-highlight"><div class="pricing-top-line"></div><div class="pricing-popular">POPULAR</div><div class="pricing-name">Pro</div><div class="pricing-tag">Most popular</div><div class="pricing-price-row"><span class="pricing-price">1 490</span><span class="pricing-unit">kr / year</span></div><div class="pricing-features"><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Unlimited teams</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> All mission types</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Power-ups included</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Custom mission builder</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> PDF reports</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Priority support</div></div><a href="/play?plan=pro" class="pricing-cta pricing-cta-highlight">Get Pro</a><div class="pricing-lock">🔒 Price locked in for life</div></div></div>
-    <div class="reveal" style="transition-delay:.18s"><div class="pricing-card pricing-card-default"><div class="pricing-name">Studio</div><div class="pricing-tag">For agencies &amp; large events</div><div class="pricing-price-row"><span class="pricing-price">3 490</span><span class="pricing-unit">kr / year</span></div><div class="pricing-features"><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Everything in Pro</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Custom branding</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Bulk game creation</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Dedicated account support</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Early feature access</div></div><button class="pricing-cta pricing-cta-default" onclick="window.location.href='mailto:hello@playgameon.app'">Contact us</button><div class="pricing-lock">🔒 Price locked in for life</div></div></div>
+    <div class="reveal" style="transition-delay:.09s"><div class="pricing-card pricing-card-highlight"><div class="pricing-top-line"></div><div class="pricing-popular">POPULAR</div><div class="pricing-name">Pro</div><div class="pricing-tag">Most popular</div><div class="pricing-price-row"><span class="pricing-price" data-price data-monthly="199" data-yearly="1 490">199</span><span class="pricing-unit" data-unit data-monthly="kr / month" data-yearly="kr / year">kr / month</span></div><div class="pricing-features"><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Unlimited teams</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> All mission types</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Power-ups included</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Custom mission builder</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> PDF reports</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Priority support</div></div><a href="/play?plan=pro&interval=monthly" class="pricing-cta pricing-cta-highlight" data-cta data-plan="pro">Get Pro</a><div class="pricing-lock">Cancel anytime</div></div></div>
+    <div class="reveal" style="transition-delay:.18s"><div class="pricing-card pricing-card-default"><div class="pricing-name">Studio</div><div class="pricing-tag">For agencies &amp; large events</div><div class="pricing-price-row"><span class="pricing-price" data-price data-monthly="390" data-yearly="3 490">390</span><span class="pricing-unit" data-unit data-monthly="kr / month" data-yearly="kr / year">kr / month</span></div><div class="pricing-features"><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Everything in Pro</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Custom branding</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Bulk game creation</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Dedicated account support</div><div class="pricing-feature"><svg width="16" height="16" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Early feature access</div></div><a href="/play?plan=studio&interval=monthly" class="pricing-cta pricing-cta-default" data-cta data-plan="studio">Get Studio</a><div class="pricing-lock">Cancel anytime · or <a href="mailto:hello@playgameon.app" style="color:var(--cyan);">talk to us</a></div></div></div>
   </div>
 </section>
 
@@ -665,6 +673,20 @@ export default function LandingPage() {
       card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0px)'; });
     });
 
+    // ── Pricing monthly/annual toggle
+    (window as any).setBilling = (interval: 'monthly' | 'yearly') => {
+      document.querySelectorAll<HTMLElement>('.billing-opt').forEach(b =>
+        b.classList.toggle('active', b.getAttribute('data-interval') === interval));
+      document.querySelectorAll<HTMLElement>('[data-price],[data-unit]').forEach(el => {
+        const v = el.getAttribute('data-' + interval);
+        if (v !== null) el.textContent = v;
+      });
+      document.querySelectorAll<HTMLAnchorElement>('[data-cta]').forEach(a => {
+        const plan = a.getAttribute('data-plan');
+        a.setAttribute('href', `/play?plan=${plan}&interval=${interval}`);
+      });
+    };
+
     // ── FAQ
     (window as any).toggleFaq = (btn: HTMLButtonElement) => {
       const icon = btn.querySelector<HTMLElement>('.faq-icon'), body = btn.nextElementSibling as HTMLElement, was = body.classList.contains('open');
@@ -681,6 +703,7 @@ export default function LandingPage() {
       window.removeEventListener('mousemove', onMove);
       revObs.disconnect(); cntObs.disconnect();
       delete (window as any).toggleFaq;
+      delete (window as any).setBilling;
     };
   }, []);
 

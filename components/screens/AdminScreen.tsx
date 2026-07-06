@@ -1886,10 +1886,10 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
-  async function handleUpgrade(targetPlan: 'pro' | 'studio') {
+  async function handleUpgrade(targetPlan: 'pro' | 'studio', interval: 'monthly' | 'yearly' = 'monthly') {
     setUpgradeLoading(true);
     try {
-      const res = await POST('/api/stripe/checkout', { plan: targetPlan });
+      const res = await POST('/api/stripe/checkout', { plan: targetPlan, interval });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;

@@ -20,3 +20,17 @@ test('play page shows the join form', async ({ page }) => {
   // The login screen asks for a game key first; assert an input is present.
   await expect(page.locator('input').first()).toBeVisible();
 });
+
+test('pricing monthly/annual toggle switches price and checkout link', async ({ page }) => {
+  await page.goto('/');
+  const proCta = page.locator('a[data-cta][data-plan="pro"]');
+
+  // Defaults to monthly.
+  await expect(page.locator('.pricing-card-highlight [data-price]')).toHaveText('199');
+  await expect(proCta).toHaveAttribute('href', '/play?plan=pro&interval=monthly');
+
+  // Switch to annual.
+  await page.getByRole('button', { name: /Annual/ }).click();
+  await expect(page.locator('.pricing-card-highlight [data-price]')).toHaveText('1 490');
+  await expect(proCta).toHaveAttribute('href', '/play?plan=pro&interval=yearly');
+});
