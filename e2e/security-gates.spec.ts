@@ -38,6 +38,8 @@ const PROTECTED: Route[] = [
   { method: 'POST', path: '/api/admin/ai-generate-mission' },
   { method: 'POST', path: '/api/admin/subscription' },
   { method: 'POST', path: '/api/admin/portal' },
+  { method: 'GET', path: '/api/admin/account/export' },
+  { method: 'POST', path: '/api/admin/account/delete' },
   { method: 'POST', path: '/api/admin/superadmin/analytics' },
   { method: 'POST', path: '/api/admin/superadmin/users' },
   { method: 'POST', path: '/api/scavenger/submissions' },

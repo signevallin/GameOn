@@ -44,4 +44,16 @@ test.describe('game flow', () => {
     expect(found, 'joined team should appear in the admin roster').toBeTruthy();
     expect(found.score).toBeGreaterThanOrEqual(300);
   });
+
+  test('the owner can export their account data (GDPR)', async ({ request }) => {
+    const res = await request.get('/api/admin/account/export', {
+      headers: { Authorization: `Bearer ${E2E_TOKEN_A}` },
+    });
+    expect(res.status()).toBe(200);
+    const bundle = await res.json();
+    expect(bundle.account).toBeTruthy();
+    expect(Array.isArray(bundle.games)).toBe(true);
+    // The seeded game owned by A should be in the export.
+    expect(bundle.games.some((g: { id: string }) => g.id === E2E_GAME_A_ID)).toBe(true);
+  });
 });
