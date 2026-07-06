@@ -18,8 +18,33 @@ them at a test database.
 
 ## Running the FULL suite
 
-The full run needs a **non-production** Supabase project (so real customer data
-is never touched). Two safe options:
+The full run needs a **non-production** Supabase-compatible database. The app's
+admin login is built on Supabase Auth (GoTrue) — it issues and verifies the
+admin JWTs — so a plain Postgres (Neon, Railway, etc.) will not work; there is
+no auth server to mint the tokens. Any of the options below is fine and free.
+
+### Option 0 — Local Supabase (free, no cloud project, recommended)
+
+Runs the whole stack (Postgres + Auth) in Docker via the Supabase CLI. It does
+not count against your cloud project quota.
+
+```bash
+supabase start                     # requires Docker
+supabase status -o env             # prints API_URL, ANON_KEY, SERVICE_ROLE_KEY, DB_URL
+
+# apply the schema to the local db:
+psql "<DB_URL from status>" -f supabase/test-bootstrap.sql
+
+# point the tests at the local stack and run:
+export TEST_SUPABASE_URL="<API_URL>"
+export TEST_SUPABASE_ANON_KEY="<ANON_KEY>"
+export TEST_SUPABASE_SERVICE_ROLE_KEY="<SERVICE_ROLE_KEY>"
+npm run test:e2e:full
+```
+
+### Cloud options
+
+If you can't run Docker, use a cloud Supabase project (never production):
 
 **Option A — a free throwaway project (recommended, no cost).** Create a new free
 Supabase project, open its SQL editor, and run **`supabase/test-bootstrap.sql`**
