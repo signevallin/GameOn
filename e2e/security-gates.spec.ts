@@ -65,6 +65,17 @@ test.describe('admin API auth gate', () => {
   }
 });
 
+test.describe('health check', () => {
+  test('GET /api/health returns a valid health payload', async ({ request }) => {
+    const res = await request.get('/api/health');
+    // 200 when the DB is reachable, 503 when not (placeholder env) — both valid.
+    expect([200, 503]).toContain(res.status());
+    const body = await res.json();
+    expect(['ok', 'degraded']).toContain(body.status);
+    expect(['ok', 'error']).toContain(body.db);
+  });
+});
+
 test.describe('player endpoints stay open by design', () => {
   // These authenticate by possession of a teamId in the body, not a bearer
   // token, so they must NOT 401 on an anonymous request (they 400 on a bad

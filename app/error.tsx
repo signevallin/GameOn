@@ -10,8 +10,14 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface to the console (and any monitoring wired to console/onerror).
     console.error('[app error]', error);
+    // Report to the server so it reaches the capture pipeline (log + alert).
+    fetch('/api/client-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: error.message, digest: error.digest, where: 'app/error' }),
+      keepalive: true,
+    }).catch(() => {});
   }, [error]);
 
   return (

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { stripe, planFromPriceId } from '@/lib/stripe';
 import { upsertSubscription } from '@/lib/subscription';
+import { captureError } from '@/lib/observability';
 import type { SubscriptionTier } from '@/lib/subscription';
 import type Stripe from 'stripe';
 
@@ -289,7 +290,8 @@ export async function POST(req: NextRequest) {
         break;
     }
   } catch (err) {
-    console.error('[webhook] handler error:', err);
+    // A failing webhook means subscription state can silently drift — capture it.
+    await captureError(err, { route: '/api/stripe/webhook', event_type: event.type, event_id: event.id });
     return Response.json({ error: 'Internal server error.' }, { status: 500 });
   }
 
