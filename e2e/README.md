@@ -21,13 +21,16 @@ them at a test database.
 The full run needs a **non-production** Supabase project (so real customer data
 is never touched). Two safe options:
 
-**Option A — Supabase branch (most faithful).** In the Supabase dashboard for the
-GameOn project, create a preview/develop branch. It clones the schema via the
-project's migrations. Use the branch's URL + keys below.
+**Option A — a free throwaway project (recommended, no cost).** Create a new free
+Supabase project, open its SQL editor, and run **`supabase/test-bootstrap.sql`**
+once. That single file creates every table the app touches (the tracked
+migrations alone are not enough — the base `games`/`teams`/`team_members`
+tables were historically created ad-hoc and only exist in production).
 
-**Option B — a free throwaway project.** Create a new free Supabase project, then
-apply this repo's migrations to it: `supabase link` + `supabase db push` (or run
-`supabase/migrations/*.sql` in the SQL editor, in filename order).
+**Option B — Supabase branch.** Requires the paid Supabase Pro plan. In the
+dashboard for the GameOn project, create a preview branch and use its URL +
+keys below. Note branches build from tracked migrations, so you will likely
+need to run `supabase/test-bootstrap.sql` on the branch too.
 
 Then, one time, export the **test** project's credentials (Dashboard → Project
 Settings → API). The service-role key is a secret — only ever use the test
