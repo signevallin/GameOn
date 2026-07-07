@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 import { getEffectivePlan } from '@/lib/subscription';
-import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { checkRateLimit, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -204,7 +204,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  const rl = rateLimit(`ai-generate-mission:${admin.userId}`, 20, 60_000);
+  const rl = await checkRateLimit(`ai-generate-mission:${admin.userId}`, 20, 60_000);
   if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
 
   let body: { prompt?: unknown; type?: unknown; language?: unknown; excludedNames?: unknown; count?: unknown; gameMode?: unknown };

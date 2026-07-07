@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +54,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export async function POST(req: NextRequest) {
   try {
     // Public unauthenticated endpoint that calls a paid LLM — throttle per IP.
-    const rl = rateLimit(`chat:${clientIp(req)}`, 20, 60_000);
+    const rl = await checkRateLimit(`chat:${clientIp(req)}`, 20, 60_000);
     if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
 
     const { messages }: { messages: Message[] } = await req.json();

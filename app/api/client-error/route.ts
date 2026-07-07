@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { captureError } from '@/lib/observability';
-import { rateLimit, clientIp } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 // capture pipeline (structured log + optional webhook alert) as server errors.
 export async function POST(req: Request) {
   // Cap per IP so a misbehaving/hostile client can't flood the alert channel.
-  const rl = rateLimit(`client-error:${clientIp(req)}`, 10, 60_000);
+  const rl = await checkRateLimit(`client-error:${clientIp(req)}`, 10, 60_000);
   if (!rl.ok) return NextResponse.json({ ok: true }, { status: 202 });
 
   const body = await req.json().catch(() => ({}));

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
+import { rateLimit, upstashRateLimit, checkRateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -37,6 +37,67 @@ describe('rateLimit', () => {
     expect(rateLimit(a, 1, 60_000).ok).toBe(true);
     expect(rateLimit(a, 1, 60_000).ok).toBe(false);
     expect(rateLimit(b, 1, 60_000).ok).toBe(true);
+  });
+});
+
+describe('upstashRateLimit', () => {
+  const env = { UPSTASH_REDIS_REST_URL: 'https://redis.test', UPSTASH_REDIS_REST_TOKEN: 'tok' };
+
+  function withEnv<T>(fn: () => T): T {
+    const prev = { url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN };
+    process.env.UPSTASH_REDIS_REST_URL = env.UPSTASH_REDIS_REST_URL;
+    process.env.UPSTASH_REDIS_REST_TOKEN = env.UPSTASH_REDIS_REST_TOKEN;
+    try { return fn(); } finally {
+      if (prev.url === undefined) delete process.env.UPSTASH_REDIS_REST_URL;
+      else process.env.UPSTASH_REDIS_REST_URL = prev.url;
+      if (prev.token === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      else process.env.UPSTASH_REDIS_REST_TOKEN = prev.token;
+    }
+  }
+
+  function redisResponse(count: number, ttlMs: number) {
+    return new Response(JSON.stringify([{ result: count }, { result: 1 }, { result: ttlMs }]), {
+      status: 200, headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  it('returns null when Upstash is not configured', async () => {
+    expect(await upstashRateLimit('k', 5, 1000, vi.fn())).toBeNull();
+  });
+
+  it('allows requests under the limit', async () => {
+    await withEnv(async () => {
+      const fetchMock = vi.fn().mockResolvedValue(redisResponse(3, 800));
+      const res = await upstashRateLimit('k', 5, 1000, fetchMock);
+      expect(res).toEqual({ ok: true, remaining: 2, retryAfterSeconds: 0 });
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(String(url)).toBe('https://redis.test/pipeline');
+      const body = JSON.parse((init as RequestInit).body as string);
+      expect(body[0]).toEqual(['INCR', 'rl:k']);
+    });
+  });
+
+  it('blocks over the limit with Retry-After from the key TTL', async () => {
+    await withEnv(async () => {
+      const fetchMock = vi.fn().mockResolvedValue(redisResponse(6, 2400));
+      const res = await upstashRateLimit('k', 5, 60_000, fetchMock);
+      expect(res).toEqual({ ok: false, remaining: 0, retryAfterSeconds: 3 });
+    });
+  });
+
+  it('fails open (null) on network errors and non-200s', async () => {
+    await withEnv(async () => {
+      expect(await upstashRateLimit('k', 5, 1000, vi.fn().mockRejectedValue(new Error('down')))).toBeNull();
+      expect(await upstashRateLimit('k', 5, 1000, vi.fn().mockResolvedValue(new Response('x', { status: 500 })))).toBeNull();
+    });
+  });
+});
+
+describe('checkRateLimit', () => {
+  it('falls back to the in-memory limiter when Upstash is unavailable', async () => {
+    const key = `fallback-${Math.random()}`;
+    expect((await checkRateLimit(key, 1, 60_000)).ok).toBe(true);
+    expect((await checkRateLimit(key, 1, 60_000)).ok).toBe(false);
   });
 });
 
