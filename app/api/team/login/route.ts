@@ -1,6 +1,7 @@
 // app/api/team/login/route.ts
 import { NextResponse } from 'next/server';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { translateMission } from '@/lib/translate';
 import { getEntitlements } from '@/lib/subscription';
 import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
@@ -130,6 +131,7 @@ export async function POST(req: Request) {
 
       if (teamErr) return NextResponse.json({ error: teamErr.message }, { status: 500 });
       team = newTeam;
+      await notifyGameUpdated(supabase, { gameId: game.id }, 'team-joined');
     }
 
     // Member cap check — best-effort (not transactional; acceptable for low-concurrency game use case)
@@ -191,5 +193,6 @@ export async function POST(req: Request) {
 
   if (teamErr) return NextResponse.json({ error: teamErr.message }, { status: 500 });
 
+  await notifyGameUpdated(supabase, { gameId: game.id }, 'team-joined');
   return NextResponse.json({ team, game, customMissions });
 }

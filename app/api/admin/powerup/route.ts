@@ -1,6 +1,7 @@
 // app/api/admin/powerup/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { MISSIONS } from '@/lib/missions';
 import { MISSION_SUPER_CATEGORY, SUPER_CATEGORIES } from '@/lib/superCategories';
 import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
       }
     }
 
+    await notifyGameUpdated(supabase, { gameId }, 'powerup');
     return NextResponse.json({ ok: true, expiresAt });
   }
 
@@ -108,6 +110,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     }).eq('id', targetTeamId);
 
+    await notifyGameUpdated(supabase, { gameId }, 'powerup');
     return NextResponse.json({ ok: true });
   }
 
@@ -132,6 +135,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     }).eq('id', targetTeamId);
 
+    await notifyGameUpdated(supabase, { gameId }, 'powerup');
     return NextResponse.json({ ok: true });
   }
 
@@ -188,6 +192,7 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     }).eq('id', gameId);
 
+    await notifyGameUpdated(supabase, { gameId }, 'powerup');
     return NextResponse.json({ ok: true, usedKey, broadcast: true });
   }
 
@@ -217,5 +222,6 @@ export async function POST(req: Request) {
     updated_at: new Date().toISOString(),
   }).eq('id', gameId);
 
+  await notifyGameUpdated(supabase, { gameId }, 'powerup');
   return NextResponse.json({ ok: true, usedKey });
 }

@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
 import { toMission } from '@/lib/custom-missions';
 import { Team, Game, supabase } from '@/lib/supabase';
+import { createTrailingDebounce } from '@/lib/debounce';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
@@ -1270,8 +1271,19 @@ export default function AdminScreen({ onLogout }: Props) {
       }
     }
     poll();
-    const id = setInterval(poll, 5000);
-    return () => clearInterval(id);
+    // Realtime pings (server broadcasts after each mutation) drive refreshes;
+    // the interval is only a fallback for missed broadcasts (was a tight 5s poll).
+    const debounced = createTrailingDebounce(poll, 700);
+    const channel = supabase
+      .channel(`game-updates-${gameId}`)
+      .on('broadcast', { event: 'update' }, () => debounced.trigger())
+      .subscribe();
+    const id = setInterval(poll, 30_000);
+    return () => {
+      clearInterval(id);
+      debounced.cancel();
+      supabase.removeChannel(channel);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGameId]);
 

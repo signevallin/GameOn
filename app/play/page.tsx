@@ -4,6 +4,7 @@ import { Team, Game, CustomMission } from '@/lib/supabase';
 import { toMission } from '@/lib/custom-missions';
 import { Mission } from '@/lib/missions';
 import { supabase } from '@/lib/supabase';
+import { createTrailingDebounce } from '@/lib/debounce';
 import { initI18n } from '@/lib/i18n';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
@@ -180,11 +181,25 @@ export default function Home() {
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
-    // Poll immediately, then every 5 seconds (3s in remote mode for score/status).
-    // Nav sync in remote mode is handled instantly by the Realtime broadcast channel.
+    // Poll immediately, then keep a slow fallback interval. Server-side
+    // broadcast pings (game-updates channel) drive near-instant refreshes for
+    // scores, notifications and power-ups; the interval only covers missed
+    // broadcasts. (Was a tight 3-5s poll before realtime.)
     refresh();
-    const id = setInterval(refresh, gameRef.current?.remote_mode ? 3000 : 5000);
-    return () => clearInterval(id);
+    const debounced = createTrailingDebounce(refresh, 700);
+    const gameId = gameRef.current?.id;
+    const channel = gameId
+      ? supabase
+          .channel(`game-updates-${gameId}`)
+          .on('broadcast', { event: 'update' }, () => debounced.trigger())
+          .subscribe()
+      : null;
+    const id = setInterval(refresh, gameRef.current?.remote_mode ? 15_000 : 20_000);
+    return () => {
+      clearInterval(id);
+      debounced.cancel();
+      if (channel) supabase.removeChannel(channel);
+    };
   // Only restart when the session itself changes (login/logout), not on every state update.
   // Also restart when remote_mode becomes known so the 500ms interval kicks in.
   // eslint-disable-next-line react-hooks/exhaustive-deps

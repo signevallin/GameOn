@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,5 +90,6 @@ export async function POST(req: Request) {
     }
   }
 
+  await notifyGameUpdated(supabase, { teamId }, 'score');
   return NextResponse.json({ team: data });
 }

@@ -1,6 +1,7 @@
 // app/api/admin/mystery-box/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
         }).eq('id', t.id);
       }
     }
+    await notifyGameUpdated(supabase, { gameId }, 'mystery-box');
     return NextResponse.json({ ok: true, status: 'expired' });
   }
 
@@ -81,5 +83,6 @@ export async function POST(req: Request) {
     }
   }
 
+  await notifyGameUpdated(supabase, { gameId }, 'mystery-box');
   return NextResponse.json({ ok: true, expiresAt });
 }
