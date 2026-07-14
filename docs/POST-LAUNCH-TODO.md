@@ -50,7 +50,15 @@ step-by-step in `docs/EMAIL.md`. Summary:
   `v=DMARC1; p=quarantine; rua=mailto:hello@playgameon.app; fo=1`
 - Wait for Resend to show **Verified**, then test on mail-tester.com (aim 10/10).
 
-## 5. Global rate limiting (Upstash) — optional
+## 5. Set up ESLint (developer experience)
+
+The project has no ESLint config, so `next lint` can't run (it prompts
+interactively) — the CI lint step is currently omitted for that reason. To add
+it: `npm i -D eslint eslint-config-next`, create `.eslintrc.json` with
+`{ "extends": "next/core-web-vitals" }`, fix what it flags, then re-add the
+`Lint` step to `.github/workflows/ci.yml`.
+
+## 6. Global rate limiting (Upstash) — optional
 
 `lib/rate-limit.ts` already works with a per-instance in-memory limiter. For a
 strict global limit before any real traffic spike, create a free Upstash Redis
