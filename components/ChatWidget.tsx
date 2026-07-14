@@ -5,10 +5,10 @@ type Message = { role: 'user' | 'assistant'; content: string };
 
 const WELCOME: Message = {
   role: 'assistant',
-  content: "Hi! I can answer questions about GameOn — features, pricing, or how to get started. What would you like to know?",
+  content: "Hi! I can answer questions about Rivalry — features, pricing, or how to get started. What would you like to know?",
 };
 
-const ERROR_MSG = "Sorry, something went wrong. Email us at hello@playgameon.app";
+const ERROR_MSG = "Sorry, something went wrong. Email us at hello@rivalry.se";
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
@@ -77,7 +77,7 @@ export default function ChatWidget() {
                 </svg>
               </div>
               <div>
-                <div style={{ color: '#0D1520', fontWeight: 700, fontSize: 13 }}>GameOn Support</div>
+                <div style={{ color: '#0D1520', fontWeight: 700, fontSize: 13 }}>Rivalry Support</div>
                 <div style={{ color: 'rgba(13,21,32,0.6)', fontSize: 11 }}>Powered by AI</div>
               </div>
             </div>

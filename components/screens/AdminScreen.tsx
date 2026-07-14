@@ -528,7 +528,7 @@ function MissionProgressTable({ missions, sorted, accentColor }: {
 const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string; bullets: string[] }[] = [
   {
     icon: <Gamepad2 size={24} color="var(--accent)" />,
-    title: 'Welcome to GameOn',
+    title: 'Welcome to Rivalry',
     subtitle: 'Create and run live scavenger hunts & team games in minutes. Here\'s how it works:',
     bullets: [
       'Pick missions from the library or create your own',
@@ -551,7 +551,7 @@ const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string
     title: "You're ready to play",
     subtitle: 'Share the 4-letter game code with your teams. Once everyone\'s joined, hit Start Game from the dashboard.',
     bullets: [
-      'Teams join at playgameon.app — no app download needed',
+      'Teams join at rivalry.se — no app download needed',
       'Live leaderboard updates as missions are completed',
       'Rate photo submissions manually or let AI do it automatically',
     ],
@@ -758,7 +758,7 @@ function BrandingView({ authToken, onBack, profileMenu }: {
         ) : (
           <>
             <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '28px', lineHeight: 1.6 }}>
-              Add your company identity to the player view. The logo appears in a slim strip below the nav, and the primary color replaces the default GameOn accent color for buttons and highlights.
+              Add your company identity to the player view. The logo appears in a slim strip below the nav, and the primary color replaces the default Rivalry accent color for buttons and highlights.
             </p>
 
             {/* Apply to all toggle */}
@@ -1505,7 +1505,7 @@ export default function AdminScreen({ onLogout }: Props) {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(content);
       const safeName = (activeGame?.name ?? 'game').replace(/[^a-z0-9_-]/gi, '-').replace(/-+/g, '-');
-      a.download = `GameOn-photos-${safeName}.zip`;
+      a.download = `Rivalry-photos-${safeName}.zip`;
       a.click();
       URL.revokeObjectURL(a.href);
     } finally {

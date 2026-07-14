@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Data Processing Agreement',
-  description: 'Data Processing Agreement (GDPR Art. 28) for GameOn business customers.',
+  description: 'Data Processing Agreement (GDPR Art. 28) for Rivalry business customers.',
 };
 
 export default function DpaPage() {
@@ -20,7 +20,7 @@ export default function DpaPage() {
               </svg>
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#DCE4EE' }}>
-              Game<span style={{ color: '#7CBDD4' }}>On</span>
+              Rival<span style={{ color: '#7CBDD4' }}>ry</span>
             </span>
           </Link>
           <Link href="/" style={{ fontSize: 13, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>
@@ -43,12 +43,12 @@ export default function DpaPage() {
         </p>
 
         <Section title="1. Parties and Scope">
-          <P>This Data Processing Agreement ("DPA") forms part of the <Link href="/terms" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Terms of Service</Link> between GameOn ("Processor", "we") and the business customer holding the account ("Controller", "you"). It applies automatically whenever you use GameOn to run games in which your employees, colleagues or event participants ("players") take part, and governs our processing of players&apos; personal data on your behalf under Article 28 GDPR.</P>
+          <P>This Data Processing Agreement ("DPA") forms part of the <Link href="/terms" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Terms of Service</Link> between Rivalry ("Processor", "we") and the business customer holding the account ("Controller", "you"). It applies automatically whenever you use Rivalry to run games in which your employees, colleagues or event participants ("players") take part, and governs our processing of players&apos; personal data on your behalf under Article 28 GDPR.</P>
           <P style={{ marginTop: 12 }}>For your own account data (your email, login and billing details) we act as an independent controller — that processing is described in our <Link href="/privacy" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Privacy Policy</Link>.</P>
         </Section>
 
         <Section title="2. Subject Matter, Nature and Purpose">
-          <P>We process player personal data solely to provide the GameOn service: letting players join games, play missions, submit answers and photos, appear on leaderboards, and generating result reports for you. Processing lasts for the duration of your subscription plus the retention periods in Section 7.</P>
+          <P>We process player personal data solely to provide the Rivalry service: letting players join games, play missions, submit answers and photos, appear on leaderboards, and generating result reports for you. Processing lasts for the duration of your subscription plus the retention periods in Section 7.</P>
         </Section>
 
         <Section title="3. Categories of Data and Data Subjects">
@@ -84,7 +84,7 @@ export default function DpaPage() {
         </Section>
 
         <Section title="6. Your Obligations as Controller">
-          <P>You are responsible for having a lawful basis for the processing (for workplace events, typically legitimate interest), for informing your players that GameOn is used and where they can read about the processing, and for the content of the missions you create. You warrant that your instructions to us comply with applicable law.</P>
+          <P>You are responsible for having a lawful basis for the processing (for workplace events, typically legitimate interest), for informing your players that Rivalry is used and where they can read about the processing, and for the content of the missions you create. You warrant that your instructions to us comply with applicable law.</P>
         </Section>
 
         <Section title="7. Retention and Deletion">
@@ -100,7 +100,7 @@ export default function DpaPage() {
         </Section>
 
         <Section title="9. Contact">
-          <P>Data protection questions and breach notifications: <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>. If your procurement process requires a countersigned copy of this DPA, contact us and we will provide one.</P>
+          <P>Data protection questions and breach notifications: <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>. If your procurement process requires a countersigned copy of this DPA, contact us and we will provide one.</P>
         </Section>
 
         {/* Footer nav */}

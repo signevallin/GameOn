@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 import { getSubscription } from '@/lib/subscription';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://playgameon.app';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://rivalry.se';
 
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────

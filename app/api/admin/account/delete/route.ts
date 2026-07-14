@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     if (error) throw error;
   } catch (err) {
     await captureError(err, { route: '/api/admin/account/delete', step: 'delete', userId: admin.userId });
-    return NextResponse.json({ error: 'Could not fully delete the account. Please contact hello@playgameon.app.' }, { status: 500 });
+    return NextResponse.json({ error: 'Could not fully delete the account. Please contact hello@rivalry.se.' }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

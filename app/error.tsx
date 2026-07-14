@@ -39,7 +39,7 @@ export default function Error({
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 12px' }}>Something went wrong</h1>
         <p style={{ fontSize: 15, lineHeight: 1.6, opacity: 0.8, margin: '0 0 24px' }}>
           An unexpected error interrupted the game. You can try again — if it keeps happening,
-          email us at hello@playgameon.app.
+          email us at hello@rivalry.se.
         </p>
         <button
           onClick={reset}

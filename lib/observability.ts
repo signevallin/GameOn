@@ -36,7 +36,7 @@ export async function captureError(error: unknown, context: Context = {}): Promi
     await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: `🔴 GameOn error${where}: ${err.message}` }),
+      body: JSON.stringify({ text: `🔴 Rivalry error${where}: ${err.message}` }),
       // Don't let a slow webhook hang the request.
       signal: AbortSignal.timeout(3000),
     });

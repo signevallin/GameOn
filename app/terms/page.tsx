@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms of Service for GameOn.',
+  description: 'Terms of Service for Rivalry.',
 };
 
 export default function TermsPage() {
@@ -20,7 +20,7 @@ export default function TermsPage() {
               </svg>
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#DCE4EE' }}>
-              Game<span style={{ color: '#7CBDD4' }}>On</span>
+              Rival<span style={{ color: '#7CBDD4' }}>ry</span>
             </span>
           </Link>
           <Link href="/" style={{ fontSize: 13, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>
@@ -43,7 +43,7 @@ export default function TermsPage() {
         </p>
 
         <Section title="1. About the Service">
-          <P>GameOn is a web-based platform for creating and running team-based competitions and games at events. The service is provided by GameOn ("we", "us"). By creating an account or using the service, you accept these terms.</P>
+          <P>Rivalry is a web-based platform for creating and running team-based competitions and games at events. The service is provided by Rivalry ("we", "us"). By creating an account or using the service, you accept these terms.</P>
         </Section>
 
         <Section title="2. Account and Access">
@@ -52,12 +52,12 @@ export default function TermsPage() {
         </Section>
 
         <Section title="3. Subscriptions and Payment">
-          <P>GameOn offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed in advance on a monthly or annual cycle, as chosen at checkout, and renew automatically until cancelled. You can cancel anytime from the billing portal; access continues until the end of the paid period. Prices are in SEK and include VAT.</P>
+          <P>Rivalry offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed in advance on a monthly or annual cycle, as chosen at checkout, and renew automatically until cancelled. You can cancel anytime from the billing portal; access continues until the end of the paid period. Prices are in SEK and include VAT.</P>
           <P style={{ marginTop: 12 }}>Payments are handled by Stripe. We do not store card details. If a payment fails, we will retry for up to 7 days before downgrading the subscription to the Starter plan.</P>
         </Section>
 
         <Section title="4. Right of Withdrawal and Refunds">
-          <P>As a consumer you have a 14-day right of withdrawal from the date of purchase, provided you have not started using the paid features. Contact us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A> to exercise this right.</P>
+          <P>As a consumer you have a 14-day right of withdrawal from the date of purchase, provided you have not started using the paid features. Contact us at <A href="mailto:hello@rivalry.se">hello@rivalry.se</A> to exercise this right.</P>
           <P style={{ marginTop: 12 }}>Beyond the statutory right of withdrawal, we do not offer refunds for a subscription period that has already started.</P>
         </Section>
 
@@ -103,18 +103,18 @@ export default function TermsPage() {
         </Section>
 
         <Section title="11. Business Customers (B2B Addendum)">
-          <P>When you use GameOn on behalf of a company or other organisation, the following applies in addition to — and where conflicting, instead of — the sections above:</P>
+          <P>When you use Rivalry on behalf of a company or other organisation, the following applies in addition to — and where conflicting, instead of — the sections above:</P>
           <ul style={{ paddingLeft: 24, display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
             <Li><strong>No consumer rights:</strong> the 14-day right of withdrawal in Section 4 and the consumer dispute options in Section 10 (ARN/ODR) apply to consumers only and do not apply to business customers.</Li>
             <Li><strong>Authority:</strong> you confirm that you are authorised to bind the organisation to these terms.</Li>
             <Li><strong>Data processing:</strong> our <Link href="/dpa" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Data Processing Agreement</Link> (GDPR Art. 28) forms part of these terms and governs our processing of your players&apos; personal data on your behalf.</Li>
             <Li><strong>Liability:</strong> the limitation in Section 9 applies. Neither party&apos;s liability is limited in cases of intent or gross negligence.</Li>
-            <Li><strong>Invoicing:</strong> paid plans are charged by card via Stripe. Invoice payment can be arranged for annual Studio subscriptions — contact <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</Li>
+            <Li><strong>Invoicing:</strong> paid plans are charged by card via Stripe. Invoice payment can be arranged for annual Studio subscriptions — contact <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>.</Li>
           </ul>
         </Section>
 
         <Section title="12. Contact">
-          <P>Questions about these terms can be sent to <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</P>
+          <P>Questions about these terms can be sent to <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>.</P>
         </Section>
 
         {/* Footer nav */}

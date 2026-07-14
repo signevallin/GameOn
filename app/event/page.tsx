@@ -47,7 +47,7 @@ function ShareButton({ style }: { style?: React.CSSProperties }) {
   function share() {
     const url = `${window.location.origin}/event`;
     if (navigator.share) {
-      navigator.share({ title: 'GameOn – Live Team Building', text: 'Check out this incredibly smooth quiz and team building app!', url }).catch(() => {});
+      navigator.share({ title: 'Rivalry – Live Team Building', text: 'Check out this incredibly smooth quiz and team building app!', url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!')).catch(() => {});
     }
@@ -295,7 +295,7 @@ export default function EventPage() {
           {!emailSent ? (
             <div style={cardStyle}>
               <p style={{ color: 'var(--text)', fontWeight: 700, fontSize: '15px', marginBottom: '4px' }}>Want to try this with your team?</p>
-              <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Drop your email and we'll show you how to set up GameOn for your team.</p>
+              <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Drop your email and we'll show you how to set up Rivalry for your team.</p>
               <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <input
                   type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com"
@@ -309,7 +309,7 @@ export default function EventPage() {
           ) : (
             <div style={{ ...cardStyle, textAlign: 'left' }}>
               <div style={{ color: 'var(--accent3)', fontWeight: 700, marginBottom: '4px' }}>✓ You're on the list!</div>
-              <div style={{ color: 'var(--muted)', fontSize: '13px' }}>We'll reach out to <strong style={{ color: 'var(--text)' }}>{email}</strong> with everything you need to set up GameOn for your team.</div>
+              <div style={{ color: 'var(--muted)', fontSize: '13px' }}>We'll reach out to <strong style={{ color: 'var(--text)' }}>{email}</strong> with everything you need to set up Rivalry for your team.</div>
             </div>
           )}
 

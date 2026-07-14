@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   if (!q) return NextResponse.json({ error: 'Missing q.' }, { status: 400 });
 
   const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=15&lang=en_us`;
-  const res = await fetch(itunesUrl, { headers: { 'User-Agent': 'GameOn/1.0' } });
+  const res = await fetch(itunesUrl, { headers: { 'User-Agent': 'Rivalry/1.0' } });
   if (!res.ok) return NextResponse.json({ error: 'iTunes API error.' }, { status: 502 });
 
   const json = await res.json() as { results?: Record<string, unknown>[] };

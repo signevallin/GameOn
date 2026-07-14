@@ -5,7 +5,7 @@ import { stripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://playgameon.app';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://rivalry.se';
 
 export async function POST(req: Request) {
   const admin = await validateAdminToken(req).catch(() => null);

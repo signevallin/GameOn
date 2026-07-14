@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How GameOn handles your personal data.',
+  description: 'How Rivalry handles your personal data.',
 };
 
 export default function PrivacyPage() {
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
               </svg>
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#DCE4EE' }}>
-              Game<span style={{ color: '#7CBDD4' }}>On</span>
+              Rival<span style={{ color: '#7CBDD4' }}>ry</span>
             </span>
           </Link>
           <Link href="/" style={{ fontSize: 13, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
         </p>
 
         <Section title="1. Data Controller">
-          <P>GameOn ("we", "us", "our") is the data controller for the personal data described in this policy. Contact us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A> with any questions.</P>
+          <P>Rivalry ("we", "us", "our") is the data controller for the personal data described in this policy. Contact us at <A href="mailto:hello@rivalry.se">hello@rivalry.se</A> with any questions.</P>
         </Section>
 
         <Section title="2. What Data We Collect">
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
             <Li><strong>Data portability:</strong> request your data in a machine-readable format.</Li>
             <Li><strong>Objection:</strong> object to processing based on legitimate interest.</Li>
           </ul>
-          <P style={{ marginTop: 16 }}>Account holders can exercise access, portability and erasure directly from the app: your profile menu has <strong>Export my data</strong> (a machine-readable JSON copy of your account) and <strong>Delete account</strong> (permanent erasure of your account and all associated data). For any other request, contact <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>. We will respond within 30 days. You also have the right to lodge a complaint with the <A href="https://www.imy.se" target="_blank" rel="noopener">Swedish Authority for Privacy Protection (IMY)</A>.</P>
+          <P style={{ marginTop: 16 }}>Account holders can exercise access, portability and erasure directly from the app: your profile menu has <strong>Export my data</strong> (a machine-readable JSON copy of your account) and <strong>Delete account</strong> (permanent erasure of your account and all associated data). For any other request, contact <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>. We will respond within 30 days. You also have the right to lodge a complaint with the <A href="https://www.imy.se" target="_blank" rel="noopener">Swedish Authority for Privacy Protection (IMY)</A>.</P>
         </Section>
 
         <Section title="7. Cookies">
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="11. Contact">
-          <P>Questions about this privacy policy can be sent to us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</P>
+          <P>Questions about this privacy policy can be sent to us at <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>.</P>
         </Section>
 
         {/* Footer nav */}

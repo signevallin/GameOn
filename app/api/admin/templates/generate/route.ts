@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     .map(m => `- id:${m.id} | "${m.title}" | type:${m.type}`)
     .join('\n');
 
-  const systemPrompt = `You generate game templates for GameOn, a team event platform.
+  const systemPrompt = `You generate game templates for Rivalry, a team event platform.
 
 Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
 

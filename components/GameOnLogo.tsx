@@ -1,45 +1,32 @@
 type Props = {
-  /** Base font size for "Game" and "n" in px. The power icon scales to 1.24× at large sizes. */
+  /** Target cap-height in px (matches the old font-size prop). */
   size?: number;
 };
 
+// Rivalry wordmark, rendered inline so the Rajdhani font (loaded in the app
+// <head>) applies — external fonts don't load when an SVG is used via <img>.
+// The clashing triangles read as a "versus" mark; text is two-tone (RIVA / LRY).
+// (Component name kept as GameOnLogo to avoid churn across importers.)
 export default function GameOnLogo({ size = 22 }: Props) {
-  const iconSize = size >= 40 ? Math.round(size * 1.24) : size;
-  // Circle center is at y=12.6, radius 8 → bottom of ring at y=20.6.
-  // Add half stroke-width (1.3) → clip viewBox at y=22 so SVG bottom = ring bottom.
-  // Height is scaled proportionally so the circle stays perfectly round.
-  const iconHeight = Math.round(iconSize * 22 / 24);
-  const gap = -Math.round(size * 0.10);
+  const height = Math.round((size * 40) / 30); // logo art is 40 tall for a 30px face
   return (
-    <span style={{ display: 'inline-block', whiteSpace: 'nowrap', lineHeight: 1 }}>
-      <span style={{
-        fontFamily: "'Sora', sans-serif",
-        fontWeight: 800,
-        fontSize: `${size}px`,
-        color: '#e0e7f3',
-        letterSpacing: '-1px',
-      }}>Game</span>
-      <svg
-        width={iconSize}
-        height={iconHeight}
-        viewBox="0 0 24 22"
-        fill="none"
-        stroke="var(--accent)"
-        strokeWidth={2.6}
-        strokeLinecap="round"
-        style={{ display: 'inline-block', verticalAlign: 'baseline', marginRight: `${gap}px` }}
-        aria-hidden="true"
+    <svg
+      viewBox="0 0 196 40"
+      height={height}
+      role="img"
+      aria-label="Rivalry"
+      style={{ display: 'inline-block', verticalAlign: 'middle' }}
+    >
+      <polygon points="2,6 20,20 2,34" fill="#F4F7FA" />
+      <polygon points="42,6 24,20 42,34" fill="var(--accent, #7CBDD4)" />
+      <text
+        x="56"
+        y="30"
+        style={{ fontFamily: "'Rajdhani','Arial Narrow',sans-serif", fontWeight: 700, fontSize: '30px', letterSpacing: '1.5px' }}
       >
-        <path d="M12 3v7" />
-        <path d="M7.2 6.2A8 8 0 1 0 16.8 6.2" />
-      </svg>
-      <span style={{
-        fontFamily: "'Sora', sans-serif",
-        fontWeight: 800,
-        fontSize: `${size}px`,
-        color: 'var(--accent)',
-        letterSpacing: '-1px',
-      }}>n</span>
-    </span>
+        <tspan fill="#F4F7FA">RIVA</tspan>
+        <tspan fill="var(--accent, #7CBDD4)">LRY</tspan>
+      </text>
+    </svg>
   );
 }
