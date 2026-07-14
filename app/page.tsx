@@ -362,7 +362,6 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
   <div class="hero-inner">
     <div style="display:flex;justify-content:center;margin-bottom:32px;">
       <div class="hero-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7CBDD4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg>
         Real-time team competition &middot; No app required
       </div>
     </div>
@@ -574,7 +573,6 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
   <div class="footer-cta-glow glow-orb"></div>
   <div class="footer-cta-inner">
     <div class="reveal">
-      <div class="float-a" style="display:inline-block;margin-bottom:30px;"><div class="footer-cta-icon"><svg width="36" height="36" viewBox="0 0 24 24"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg></div></div>
       <h2 class="footer-cta-h2">Ready to turn your<br><span style="background:linear-gradient(135deg,#7CBDD4,#A8D4E6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">next event epic?</span></h2>
       <p class="footer-cta-sub">Join thousands of organizers who&apos;ve already discovered the magic of Rivalry.</p>
       <div class="footer-cta-row">
@@ -591,7 +589,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
   <div id="footer">
     <div class="footer-grid">
       <div class="footer-logo">
-        <span class="footer-wordmark">Game<svg width="20" height="18" viewBox="0 0 24 22" fill="none" stroke="var(--cyan)" stroke-width="2.6" stroke-linecap="round" style="margin-right:-2px"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg><span class="wm-on">n</span></span>
+        <span class="footer-wordmark">Rival<span class="wm-on">ry</span></span>
       </div>
       <p class="footer-copy">&copy; 2026 Rivalry. All rights reserved.</p>
       <nav class="footer-links">
