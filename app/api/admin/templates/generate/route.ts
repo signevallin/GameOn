@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 import { getEffectivePlan } from '@/lib/subscription';
-import { rateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { checkRateLimit, tooManyRequests } from '@/lib/rate-limit';
 import { createClient } from '@supabase/supabase-js';
 import { MISSIONS } from '@/lib/missions';
 
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'pro_required' }, { status: 403 });
   }
 
-  const rl = rateLimit(`templates-generate:${admin.userId}`, 20, 60_000);
+  const rl = await checkRateLimit(`templates-generate:${admin.userId}`, 20, 60_000);
   if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
 
   const body = await req.json();

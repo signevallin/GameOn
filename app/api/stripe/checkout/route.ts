@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { stripe, PLANS, Plan } from '@/lib/stripe';
+import { stripe, PLANS, Plan, priceIdFor, isBillingInterval } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
@@ -18,12 +18,14 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const plan = body.plan as Plan;
+  // Default to monthly (the lower-commitment entry point) when unspecified.
+  const interval = isBillingInterval(body.interval) ? body.interval : 'monthly';
 
   if (!plan || !(plan in PLANS)) {
     return Response.json({ error: 'Invalid plan.' }, { status: 400 });
   }
 
-  const priceId = PLANS[plan].priceId;
+  const priceId = priceIdFor(plan, interval);
   if (!priceId) {
     return Response.json({ error: 'Plan not configured yet.' }, { status: 503 });
   }
@@ -58,9 +60,9 @@ export async function POST(req: NextRequest) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${BASE_URL}/play?upgraded=${plan}`,
     cancel_url: `${BASE_URL}/play`,
-    metadata: { supabase_user_id: adminUser.userId, plan },
+    metadata: { supabase_user_id: adminUser.userId, plan, interval },
     subscription_data: {
-      metadata: { supabase_user_id: adminUser.userId, plan },
+      metadata: { supabase_user_id: adminUser.userId, plan, interval },
     },
     locale: 'sv',
     allow_promotion_codes: true,

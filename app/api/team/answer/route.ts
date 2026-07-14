@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,5 +45,6 @@ export async function POST(req: Request) {
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
   }
 
+  await notifyGameUpdated(supabase, { teamId }, 'answer');
   return NextResponse.json({ ok: true });
 }

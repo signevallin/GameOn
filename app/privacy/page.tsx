@@ -91,7 +91,7 @@ export default function PrivacyPage() {
             <Li><strong>Data portability:</strong> request your data in a machine-readable format.</Li>
             <Li><strong>Objection:</strong> object to processing based on legitimate interest.</Li>
           </ul>
-          <P style={{ marginTop: 16 }}>Send your request to <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>. We will respond within 30 days. You also have the right to lodge a complaint with the <A href="https://www.imy.se" target="_blank" rel="noopener">Swedish Authority for Privacy Protection (IMY)</A>.</P>
+          <P style={{ marginTop: 16 }}>Account holders can exercise access, portability and erasure directly from the app: your profile menu has <strong>Export my data</strong> (a machine-readable JSON copy of your account) and <strong>Delete account</strong> (permanent erasure of your account and all associated data). For any other request, contact <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>. We will respond within 30 days. You also have the right to lodge a complaint with the <A href="https://www.imy.se" target="_blank" rel="noopener">Swedish Authority for Privacy Protection (IMY)</A>.</P>
         </Section>
 
         <Section title="7. Cookies">
@@ -115,8 +115,9 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Footer nav */}
-        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24 }}>
+        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <Link href="/terms" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Terms of Service →</Link>
+          <Link href="/dpa" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Data Processing Agreement →</Link>
           <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: '#4A6580', textDecoration: 'none' }}>Back to home</Link>
         </div>
       </main>

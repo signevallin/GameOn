@@ -28,3 +28,13 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/.playwright/
+
+# e2e generated secrets
+.env.e2e
+.env.e2e.local

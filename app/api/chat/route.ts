@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { rateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
+import { checkRateLimit, clientIp, tooManyRequests } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +13,9 @@ GameOn is available in Swedish, English, Danish, Norwegian, German, and French. 
 
 PLANS AND PRICING:
 - Starter (free): 1 active game at a time, up to 5 teams, 10 standard missions, live leaderboard, basic stats
-- Pro (1,490 kr/year, launch pricing — locked in for life for early adopters): unlimited teams, all mission types, Power-Ups, custom mission builder, PDF reports after each game, priority support
-- Studio (3,490 kr/year, for agencies and large events): everything in Pro, plus custom branding, bulk game creation, dedicated account support, early feature access
-- All paid plans are billed annually. Payments handled by Stripe.
+- Pro (199 kr/month or 1,490 kr/year — annual saves two months): unlimited teams, all mission types, Power-Ups, custom mission builder, PDF reports after each game, priority support
+- Studio (390 kr/month or 3,490 kr/year, for agencies and large events): everything in Pro, plus custom branding, bulk game creation, dedicated account support, early feature access
+- Paid plans can be billed monthly or annually, and can be cancelled anytime. Payments handled by Stripe.
 
 HOW IT WORKS FOR ORGANIZERS:
 1. Create a free account at playgameon.app
@@ -54,7 +54,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export async function POST(req: NextRequest) {
   try {
     // Public unauthenticated endpoint that calls a paid LLM — throttle per IP.
-    const rl = rateLimit(`chat:${clientIp(req)}`, 20, 60_000);
+    const rl = await checkRateLimit(`chat:${clientIp(req)}`, 20, 60_000);
     if (!rl.ok) return tooManyRequests(rl.retryAfterSeconds);
 
     const { messages }: { messages: Message[] } = await req.json();

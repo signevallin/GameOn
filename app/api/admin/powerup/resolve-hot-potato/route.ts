@@ -1,6 +1,7 @@
 // app/api/admin/powerup/resolve-hot-potato/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
@@ -72,5 +73,6 @@ export async function POST(req: Request) {
     updated_at: now.toISOString(),
   }).eq('id', gameId);
 
+  await notifyGameUpdated(supabase, { gameId }, 'hot-potato-resolved');
   return NextResponse.json({ ok: true, status: 'resolved', penalized: penalizedTeams.length });
 }

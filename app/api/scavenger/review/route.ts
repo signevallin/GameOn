@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { MISSIONS } from '@/lib/missions';
 import { validateAdminToken, unauthorizedResponse, requireTeamOwnership } from '@/lib/auth-server';
 
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields.' }, { status: 400 });
   }
 
-  const { denied } = await requireTeamOwnership(supabase, admin, teamId);
+  const { denied, gameId } = await requireTeamOwnership(supabase, admin, teamId);
   if (denied) return denied;
 
   // Fetch existing submission to determine if this is a re-rate
@@ -83,5 +84,6 @@ export async function POST(req: Request) {
 
   if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
 
+  if (gameId) await notifyGameUpdated(supabase, { gameId }, 'scavenger-reviewed');
   return NextResponse.json({ ok: true });
 }

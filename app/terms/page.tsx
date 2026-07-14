@@ -52,8 +52,8 @@ export default function TermsPage() {
         </Section>
 
         <Section title="3. Subscriptions and Payment">
-          <P>GameOn offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed annually in advance. Prices are in SEK and include VAT.</P>
-          <P style={{ marginTop: 12 }}>Payments are handled by Stripe. We do not store card details. If a payment fails, we will retry for 7 days before downgrading the subscription to the Starter plan.</P>
+          <P>GameOn offers a free Starter plan and paid plans (Pro and Studio). Paid plans are billed in advance on a monthly or annual cycle, as chosen at checkout, and renew automatically until cancelled. You can cancel anytime from the billing portal; access continues until the end of the paid period. Prices are in SEK and include VAT.</P>
+          <P style={{ marginTop: 12 }}>Payments are handled by Stripe. We do not store card details. If a payment fails, we will retry for up to 7 days before downgrading the subscription to the Starter plan.</P>
         </Section>
 
         <Section title="4. Right of Withdrawal and Refunds">
@@ -102,13 +102,25 @@ export default function TermsPage() {
           <P style={{ marginTop: 12 }}>As a consumer you also have the right to contact the <A href="https://www.arn.se" target="_blank" rel="noopener">Swedish National Board for Consumer Disputes (ARN)</A> or use the European Commission's <A href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener">Online Dispute Resolution (ODR) platform</A>.</P>
         </Section>
 
-        <Section title="11. Contact">
+        <Section title="11. Business Customers (B2B Addendum)">
+          <P>When you use GameOn on behalf of a company or other organisation, the following applies in addition to — and where conflicting, instead of — the sections above:</P>
+          <ul style={{ paddingLeft: 24, display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+            <Li><strong>No consumer rights:</strong> the 14-day right of withdrawal in Section 4 and the consumer dispute options in Section 10 (ARN/ODR) apply to consumers only and do not apply to business customers.</Li>
+            <Li><strong>Authority:</strong> you confirm that you are authorised to bind the organisation to these terms.</Li>
+            <Li><strong>Data processing:</strong> our <Link href="/dpa" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Data Processing Agreement</Link> (GDPR Art. 28) forms part of these terms and governs our processing of your players&apos; personal data on your behalf.</Li>
+            <Li><strong>Liability:</strong> the limitation in Section 9 applies. Neither party&apos;s liability is limited in cases of intent or gross negligence.</Li>
+            <Li><strong>Invoicing:</strong> paid plans are charged by card via Stripe. Invoice payment can be arranged for annual Studio subscriptions — contact <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</Li>
+          </ul>
+        </Section>
+
+        <Section title="12. Contact">
           <P>Questions about these terms can be sent to <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</P>
         </Section>
 
         {/* Footer nav */}
-        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24 }}>
+        <div style={{ marginTop: 72, paddingTop: 32, borderTop: '1px solid rgba(124,189,212,0.1)', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <Link href="/privacy" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Privacy Policy →</Link>
+          <Link href="/dpa" style={{ fontSize: 14, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>Data Processing Agreement →</Link>
           <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: '#4A6580', textDecoration: 'none' }}>Back to home</Link>
         </div>
       </main>

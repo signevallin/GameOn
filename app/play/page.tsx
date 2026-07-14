@@ -4,6 +4,7 @@ import { Team, Game, CustomMission } from '@/lib/supabase';
 import { toMission } from '@/lib/custom-missions';
 import { Mission } from '@/lib/missions';
 import { supabase } from '@/lib/supabase';
+import { createTrailingDebounce } from '@/lib/debounce';
 import { initI18n } from '@/lib/i18n';
 import LoginScreen from '@/components/screens/LoginScreen';
 import MissionsScreen from '@/components/screens/MissionsScreen';
@@ -33,6 +34,7 @@ export default function Home() {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
   const pendingPlanRef = useRef<string | null>(null);
+  const pendingIntervalRef = useRef<'monthly' | 'yearly'>('monthly');
   // Round sync: tracks the latest round broadcast received from a teammate via nav channel
   const [broadcastedRound, setBroadcastedRound] = useState<{ missionId: string; qIdx: number } | null>(null);
 
@@ -179,11 +181,25 @@ export default function Home() {
       } catch (err) { console.error('[poll] network error:', err); }
     }
 
-    // Poll immediately, then every 5 seconds (3s in remote mode for score/status).
-    // Nav sync in remote mode is handled instantly by the Realtime broadcast channel.
+    // Poll immediately, then keep a slow fallback interval. Server-side
+    // broadcast pings (game-updates channel) drive near-instant refreshes for
+    // scores, notifications and power-ups; the interval only covers missed
+    // broadcasts. (Was a tight 3-5s poll before realtime.)
     refresh();
-    const id = setInterval(refresh, gameRef.current?.remote_mode ? 3000 : 5000);
-    return () => clearInterval(id);
+    const debounced = createTrailingDebounce(refresh, 700);
+    const gameId = gameRef.current?.id;
+    const channel = gameId
+      ? supabase
+          .channel(`game-updates-${gameId}`)
+          .on('broadcast', { event: 'update' }, () => debounced.trigger())
+          .subscribe()
+      : null;
+    const id = setInterval(refresh, gameRef.current?.remote_mode ? 15_000 : 20_000);
+    return () => {
+      clearInterval(id);
+      debounced.cancel();
+      if (channel) supabase.removeChannel(channel);
+    };
   // Only restart when the session itself changes (login/logout), not on every state update.
   // Also restart when remote_mode becomes known so the 500ms interval kicks in.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -274,9 +290,12 @@ export default function Home() {
     const plan = params.get('plan');
     if (plan === 'pro' || plan === 'studio') {
       pendingPlanRef.current = plan;
+      const interval = params.get('interval');
+      pendingIntervalRef.current = interval === 'yearly' ? 'yearly' : 'monthly';
       // Strip from URL so it doesn't linger
       const url = new URL(window.location.href);
       url.searchParams.delete('plan');
+      url.searchParams.delete('interval');
       window.history.replaceState({}, '', url.toString());
     }
   }, []);
@@ -365,13 +384,14 @@ export default function Home() {
     const plan = pendingPlanRef.current;
     if (!plan) return;
     pendingPlanRef.current = null;
+    const interval = pendingIntervalRef.current;
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, interval }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;

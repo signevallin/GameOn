@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { MISSIONS } from '@/lib/missions';
 import { toMission } from '@/lib/custom-missions';
 import { Team, Game, supabase } from '@/lib/supabase';
+import { createTrailingDebounce } from '@/lib/debounce';
 import GameOnLogo from '@/components/GameOnLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { SUPER_CATEGORIES, MISSION_SUPER_CATEGORY, SuperCategoryKey } from '@/lib/superCategories';
@@ -946,6 +947,10 @@ export default function AdminScreen({ onLogout }: Props) {
   const [userName, setUserName] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   // Analytics state
   type AnalyticsGame = { id: string; name: string | null; teamCount: number; topScore: number; finished: boolean; startedAt: string | null };
   type AnalyticsCustomer = { id: string; email: string; gameCount: number; avgTeams: number; completionRate: number; lastActive: string | null; plan: 'free' | 'pro' | 'studio'; games: AnalyticsGame[] };
@@ -1266,8 +1271,19 @@ export default function AdminScreen({ onLogout }: Props) {
       }
     }
     poll();
-    const id = setInterval(poll, 5000);
-    return () => clearInterval(id);
+    // Realtime pings (server broadcasts after each mutation) drive refreshes;
+    // the interval is only a fallback for missed broadcasts (was a tight 5s poll).
+    const debounced = createTrailingDebounce(poll, 700);
+    const channel = supabase
+      .channel(`game-updates-${gameId}`)
+      .on('broadcast', { event: 'update' }, () => debounced.trigger())
+      .subscribe();
+    const id = setInterval(poll, 30_000);
+    return () => {
+      clearInterval(id);
+      debounced.cancel();
+      supabase.removeChannel(channel);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGameId]);
 
@@ -1886,10 +1902,10 @@ export default function AdminScreen({ onLogout }: Props) {
     }
   }
 
-  async function handleUpgrade(targetPlan: 'pro' | 'studio') {
+  async function handleUpgrade(targetPlan: 'pro' | 'studio', interval: 'monthly' | 'yearly' = 'monthly') {
     setUpgradeLoading(true);
     try {
-      const res = await POST('/api/stripe/checkout', { plan: targetPlan });
+      const res = await POST('/api/stripe/checkout', { plan: targetPlan, interval });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -1943,6 +1959,50 @@ export default function AdminScreen({ onLogout }: Props) {
     });
     setResetSent(true);
     setTimeout(() => setResetSent(false), 5000);
+  }
+
+  async function handleExportData() {
+    setExportingData(true);
+    try {
+      const res = await fetch('/api/admin/account/export', {
+        headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        cache: 'no-store',
+      });
+      if (!res.ok) { showToast('Could not export data. Please try again.', 'error'); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gameon-account-data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setExportingData(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeletingAccount(true);
+    try {
+      const res = await fetch('/api/admin/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+        body: JSON.stringify({ confirmEmail: deleteConfirmEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        await supabase.auth.signOut().catch(() => {});
+        window.location.href = '/';
+      } else {
+        showToast(data.error ?? 'Could not delete account.', 'error');
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error');
+    } finally {
+      setDeletingAccount(false);
+    }
   }
 
   const planLabel = plan === 'studio' ? '✦ Studio' : plan === 'pro' ? 'Pro' : 'Starter';
@@ -2105,6 +2165,41 @@ export default function AdminScreen({ onLogout }: Props) {
                 <div style={{ height: '1px', background: 'var(--border)', margin: '8px 4px' }} />
 
                 <button
+                  onClick={handleExportData}
+                  disabled={exportingData}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: exportingData ? 'not-allowed' : 'pointer',
+                    color: 'var(--text)', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif", opacity: exportingData ? 0.6 : 1,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Download size={16} color={IC} />
+                  <span>{exportingData ? 'Exporting…' : 'Export my data'}</span>
+                </button>
+
+                <button
+                  onClick={() => { setShowProfile(false); setDeleteConfirmEmail(''); setShowDeleteAccount(true); }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: '8px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: '#e0808a', fontSize: '13px', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(224,128,138,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Trash2 size={16} color="#e0808a" />
+                  <span>Delete account</span>
+                </button>
+
+                <div style={{ height: '1px', background: 'var(--border)', margin: '8px 4px' }} />
+
+                <button
                   onClick={() => { setShowProfile(false); onLogout(); }}
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: '8px',
@@ -2122,6 +2217,75 @@ export default function AdminScreen({ onLogout }: Props) {
               </div>
             </div>
           </>
+        )}
+
+        {showDeleteAccount && (
+          <div
+            onClick={() => !deletingAccount && setShowDeleteAccount(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(4,8,14,0.72)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: '440px', background: 'var(--card, #162030)',
+                border: '1px solid rgba(224,128,138,0.3)', borderRadius: '16px', padding: '28px',
+                fontFamily: "'Sora', sans-serif", color: 'var(--text, #DCE4EE)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <Trash2 size={20} color="#e0808a" />
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Delete account</h3>
+              </div>
+              <p style={{ margin: '0 0 8px', fontSize: '14px', lineHeight: 1.6, color: 'var(--muted, #8FA8C0)' }}>
+                This permanently deletes your account and <strong>all</strong> your games, teams,
+                submissions and custom missions. Any active subscription is cancelled. This cannot be undone.
+              </p>
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: 'var(--muted, #8FA8C0)' }}>
+                Type <strong>{userEmail}</strong> to confirm:
+              </p>
+              <input
+                type="email"
+                value={deleteConfirmEmail}
+                onChange={e => setDeleteConfirmEmail(e.target.value)}
+                placeholder="your@email.com"
+                autoComplete="off"
+                style={{
+                  width: '100%', padding: '11px 13px', borderRadius: '9px', marginBottom: '18px',
+                  background: 'rgba(0,0,0,0.25)', border: '1px solid var(--border, rgba(124,189,212,0.2))',
+                  color: 'var(--text, #DCE4EE)', fontSize: '14px', fontFamily: "'Sora', sans-serif",
+                }}
+              />
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowDeleteAccount(false)}
+                  disabled={deletingAccount}
+                  style={{
+                    padding: '10px 18px', borderRadius: '999px', border: '1px solid var(--border, rgba(124,189,212,0.3))',
+                    background: 'transparent', color: 'var(--muted, #8FA8C0)', fontWeight: 700, fontSize: '14px',
+                    cursor: 'pointer', fontFamily: "'Sora', sans-serif",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount || deleteConfirmEmail.trim().toLowerCase() !== userEmail.toLowerCase()}
+                  style={{
+                    padding: '10px 20px', borderRadius: '999px', border: 'none',
+                    background: '#c8434f', color: '#fff', fontWeight: 800, fontSize: '14px',
+                    cursor: (deletingAccount || deleteConfirmEmail.trim().toLowerCase() !== userEmail.toLowerCase()) ? 'not-allowed' : 'pointer',
+                    opacity: (deletingAccount || deleteConfirmEmail.trim().toLowerCase() !== userEmail.toLowerCase()) ? 0.5 : 1,
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                >
+                  {deletingAccount ? 'Deleting…' : 'Delete forever'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );

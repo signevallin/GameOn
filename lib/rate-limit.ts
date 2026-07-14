@@ -1,12 +1,15 @@
 // lib/rate-limit.ts
 //
-// Lightweight fixed-window rate limiter with no external dependencies.
+// Fixed-window rate limiting with two backends:
 //
-// NOTE: state lives in-process, so on a multi-instance/serverless deployment
-// each instance keeps its own counters — this is a best-effort throttle that
-// blunts brute-force and runaway-spend abuse, not a hard global guarantee. For
-// a strict global limit, back this with Upstash Redis (@upstash/ratelimit) and
-// keep the same call sites.
+// 1. **Upstash Redis (REST)** — used automatically when UPSTASH_REDIS_REST_URL
+//    and UPSTASH_REDIS_REST_TOKEN are set. Gives a strict *global* limit across
+//    all serverless instances. No SDK needed — one pipelined REST call.
+// 2. **In-memory** — fallback when Upstash isn't configured (or errors). State
+//    is per-instance, so on serverless it's a best-effort throttle only.
+//
+// Redis failures fail OPEN (request allowed): availability of the product
+// beats strictness of the limiter.
 
 type Bucket = { count: number; resetAt: number };
 
@@ -29,10 +32,7 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
-/**
- * Records a hit for `key` and reports whether it is within `limit` per
- * `windowMs`. Call once per request you want to count.
- */
+/** In-memory fixed window (exported for tests; call sites use checkRateLimit). */
 export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();
   sweep(now);
@@ -48,6 +48,59 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
     return { ok: false, remaining: 0, retryAfterSeconds: Math.ceil((existing.resetAt - now) / 1000) };
   }
   return { ok: true, remaining: limit - existing.count, retryAfterSeconds: 0 };
+}
+
+/**
+ * Upstash-backed fixed window: INCR the key and set its expiry on first hit,
+ * in one pipelined request. Exported for tests (fetch injectable).
+ * Returns null when the request fails — the caller falls back to in-memory.
+ */
+export async function upstashRateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+  fetchImpl: typeof fetch = fetch
+): Promise<RateLimitResult | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+
+  try {
+    const res = await fetchImpl(`${url}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([
+        ['INCR', `rl:${key}`],
+        ['PEXPIRE', `rl:${key}`, String(windowMs), 'NX'],
+        ['PTTL', `rl:${key}`],
+      ]),
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!res.ok) return null;
+
+    const results = (await res.json()) as Array<{ result?: unknown; error?: string }>;
+    const count = Number(results[0]?.result);
+    const ttlMs = Number(results[2]?.result);
+    if (!Number.isFinite(count)) return null;
+
+    if (count > limit) {
+      const retryAfterSeconds = Number.isFinite(ttlMs) && ttlMs > 0 ? Math.ceil(ttlMs / 1000) : Math.ceil(windowMs / 1000);
+      return { ok: false, remaining: 0, retryAfterSeconds };
+    }
+    return { ok: true, remaining: limit - count, retryAfterSeconds: 0 };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The rate limiter call sites use: strict global limit via Upstash when
+ * configured, per-instance in-memory otherwise (and as fail-open fallback).
+ */
+export async function checkRateLimit(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
+  const global = await upstashRateLimit(key, limit, windowMs);
+  if (global) return global;
+  return rateLimit(key, limit, windowMs);
 }
 
 /** Best-effort client IP from proxy headers (Vercel sets x-forwarded-for). */

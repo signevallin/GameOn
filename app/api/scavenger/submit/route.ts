@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { MISSIONS } from '@/lib/missions';
 import { ratePhoto as aiRatePhoto } from '@/lib/ai-photo-rater';
 
@@ -119,5 +120,6 @@ export async function POST(req: Request) {
     }
   })());
 
+  await notifyGameUpdated(supabase, { gameId }, 'scavenger-submit');
   return NextResponse.json({ ok: true });
 }

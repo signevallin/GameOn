@@ -1,6 +1,7 @@
 // app/api/admin/game/start/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyGameUpdated } from '@/lib/realtime-server';
 import { validateAdminToken, unauthorizedResponse, requireGameOwnership } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
@@ -51,5 +52,6 @@ export async function POST(req: Request) {
     }).eq('game_id', gameId);
   }
 
+  await notifyGameUpdated(supabase, { gameId }, 'game-status');
   return NextResponse.json({ game: data });
 }

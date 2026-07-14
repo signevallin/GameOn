@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import GameOnLogo from '@/components/GameOnLogo';
+import { useGameUpdates } from '@/hooks/useGameUpdates';
 
 type Team = {
   id: string;
@@ -17,6 +18,7 @@ type Photo = {
 };
 
 type Game = {
+  id: string;
   name: string;
   status: 'draft' | 'active' | 'finished';
   started_at: string | null;
@@ -299,9 +301,13 @@ export default function PresentPage({ params }: { params: { gameKey: string } })
     }
   }, [params.gameKey, showOverlay]);
 
+  // Realtime pings drive updates; the interval is only a fallback for missed
+  // broadcasts (was a tight 4s poll before realtime).
+  useGameUpdates(data?.game.id ?? null, poll);
+
   useEffect(() => {
     poll();
-    const id = setInterval(poll, 4000);
+    const id = setInterval(poll, 30_000);
     return () => clearInterval(id);
   }, [poll]);
 
