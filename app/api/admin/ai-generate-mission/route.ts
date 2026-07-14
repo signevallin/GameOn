@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { validateAdminToken, unauthorizedResponse } from '@/lib/auth-server';
 import { getEffectivePlan } from '@/lib/subscription';
 import { checkRateLimit, tooManyRequests } from '@/lib/rate-limit';
+import { guardClueMission } from '@/lib/clue-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +29,7 @@ Generate 1-3 questions. answer is a string representation of a number. unit is t
 
 pa_sparet — progressive clues leading to a hidden answer:
 {"type":"pa_sparet","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["vague clue","more specific","most specific"],"paAnswer":"..."}
-Generate 3-5 clues, each progressively more revealing. paAnswer is the final answer.
+Generate 3-5 clues, each progressively more revealing. paAnswer is the final answer. CRITICAL: no clue may ever contain the answer — not the answer word itself, nor an inflection, translation, abbreviation, or the answer hidden inside a longer word. The clues point toward paAnswer without ever naming it. A clue that states the answer makes the mission pointless.
 
 timeline — sort events in chronological order:
 {"type":"timeline","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"timelineItems":[{"label":"...","year":"1984"}]}
@@ -44,7 +45,7 @@ Generate 4-6 segments. relayMode must be "button" (teams answer each question, c
 
 shared_secret — teams share clues to find a common answer (remote play):
 {"type":"shared_secret","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["Your clue is: apple","Your clue is: red","Your clue is: fruit"],"answer":"Apple","hint":"optional hint for stuck teams"}
-Generate 3-5 clues — one per team member, each different. The answer is what all clues point to. hint is optional.
+Generate 3-5 clues — one per team member, each different. The answer is what all clues point to. hint is optional. CRITICAL: no clue (and no hint) may contain the answer word or an obvious variant/translation of it — the clues only point toward it, never state it.
 
 music_quiz — hard: listen and TYPE artist + song from memory, then sort by year:
 {"type":"music_quiz","name":"...","icon":"🎧","desc":"...","difficulty":"hard","maxPts":800,"songs":[{"artist":"Adele","title":"Rolling in the Deep","year":2011}]}
@@ -96,7 +97,7 @@ Generate 1-3 questions. answer is a string representation of a number. unit is t
 
 pa_sparet — progressive clues leading to a hidden answer:
 {"type":"pa_sparet","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["vague clue","more specific","most specific"],"paAnswer":"..."}
-Generate 3-5 clues, each progressively more revealing. paAnswer is the final answer.
+Generate 3-5 clues, each progressively more revealing. paAnswer is the final answer. CRITICAL: no clue may ever contain the answer — not the answer word itself, nor an inflection, translation, abbreviation, or the answer hidden inside a longer word. The clues point toward paAnswer without ever naming it. A clue that states the answer makes the mission pointless.
 
 timeline — sort events in chronological order:
 {"type":"timeline","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"timelineItems":[{"label":"...","year":"1984"}]}
@@ -179,7 +180,9 @@ function stripLeadingEmoji(name: unknown): string {
 }
 
 function sanitizeMission(m: Record<string, unknown>): Record<string, unknown> {
-  return { ...m, name: stripLeadingEmoji(m.name) };
+  // guardClueMission redacts the answer from clue-based missions (pa_sparet,
+  // shared_secret) so it can never leak into the clues, even if the model slips.
+  return guardClueMission({ ...m, name: stripLeadingEmoji(m.name) });
 }
 
 function parseJSON(text: string): Record<string, unknown> | null {
