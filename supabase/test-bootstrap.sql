@@ -204,3 +204,14 @@ CREATE TABLE IF NOT EXISTS stripe_events (
   processed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE stripe_events ENABLE ROW LEVEL SECURITY;
+
+-- ── Role grants ─────────────────────────────────────────────────────────────
+-- Tables created via the SQL editor don't always inherit Supabase's default
+-- privileges, so the API roles get "permission denied" even though the
+-- service_role bypasses RLS. Grant them explicitly. (RLS still governs what the
+-- anon/authenticated roles can actually see; service_role bypasses RLS.)
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
