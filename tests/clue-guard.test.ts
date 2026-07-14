@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clueLeaksAnswer, redactAnswerFromClues, guardClueMission } from '@/lib/clue-guard';
+import { clueLeaksAnswer, redactAnswerFromClues, redactNumberFromHint, guardClueMission } from '@/lib/clue-guard';
 
 describe('clueLeaksAnswer', () => {
   it('detects the answer stated verbatim in a clue', () => {
@@ -49,6 +49,26 @@ describe('redactAnswerFromClues', () => {
   });
 });
 
+describe('redactNumberFromHint', () => {
+  it('redacts the exact answer number', () => {
+    expect(redactNumberFromHint('It is about 42 years', '42')).not.toMatch(/42/);
+  });
+
+  it('matches across thousands separators', () => {
+    expect(redactNumberFromHint('roughly 1,000 people', '1000')).not.toMatch(/1[,.]?000/);
+    expect(redactNumberFromHint('roughly 1000 people', '1,000')).not.toMatch(/1000/);
+  });
+
+  it('does not redact a different number that merely contains the digits', () => {
+    // answer 42 must not touch the year 1942
+    expect(redactNumberFromHint('back in 1942 it happened', '42')).toBe('back in 1942 it happened');
+  });
+
+  it('keeps non-numeric hints intact', () => {
+    expect(redactNumberFromHint('somewhere in Europe', '42')).toBe('somewhere in Europe');
+  });
+});
+
 describe('guardClueMission', () => {
   it('redacts paAnswer from a pa_sparet mission', () => {
     const m = guardClueMission({ type: 'pa_sparet', clues: ['Stockholm is the capital'], paAnswer: 'Stockholm' });
@@ -58,6 +78,15 @@ describe('guardClueMission', () => {
   it('redacts answer from a shared_secret mission', () => {
     const m = guardClueMission({ type: 'shared_secret', clues: ['Your clue: apple'], answer: 'Apple' });
     expect((m.clues as string[])[0]).not.toMatch(/apple/i);
+  });
+
+  it('redacts the answer number from a closest_wins hint', () => {
+    const m = guardClueMission({
+      type: 'closest_wins',
+      closestQuestions: [{ q: 'How tall in metres?', answer: '324', unit: 'm', hint: 'Just over 324 metres' }],
+    });
+    const qs = m.closestQuestions as Array<{ hint: string }>;
+    expect(qs[0].hint).not.toMatch(/324/);
   });
 
   it('leaves non-clue missions untouched', () => {

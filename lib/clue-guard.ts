@@ -64,20 +64,54 @@ export function redactAnswerFromClues(clues: string[], answer: string): string[]
   });
 }
 
+/** Just the digits of a numeric string ("1,000" / "3.14" -> "1000" / "314"). */
+function digitsOf(s: string): string {
+  return s.replace(/\D/g, '');
+}
+
 /**
- * If a mission is clue-based, redact its answer from the clues. Returns the
- * mission unchanged for other types. Handles both schema shapes:
- * pa_sparet ({ clues, paAnswer }) and shared_secret ({ clues, answer }).
+ * Redacts the answer number from a closest_wins hint: any number token whose
+ * digits equal the answer's digits is masked (so "1,000" is caught for answer
+ * "1000", but "1942" is not caught for answer "42").
+ */
+export function redactNumberFromHint(hint: string, answer: string): string {
+  const target = digitsOf(answer);
+  if (!target) return hint;
+  return hint.replace(/\d[\d.,\s]*\d|\d/g, (token) => (digitsOf(token) === target ? REDACTION : token));
+}
+
+/**
+ * Redacts the answer from a mission's clues/hints so it can never leak. Handles:
+ *   pa_sparet     ({ clues, paAnswer })
+ *   shared_secret ({ clues, answer })
+ *   closest_wins  ({ closestQuestions: [{ answer, hint }] })
+ * Returns other mission types unchanged.
  */
 export function guardClueMission(mission: Record<string, unknown>): Record<string, unknown> {
   const type = mission.type;
-  if (type !== 'pa_sparet' && type !== 'shared_secret') return mission;
 
-  const clues = mission.clues;
-  if (!Array.isArray(clues) || !clues.every((c) => typeof c === 'string')) return mission;
+  if (type === 'pa_sparet' || type === 'shared_secret') {
+    const clues = mission.clues;
+    if (!Array.isArray(clues) || !clues.every((c) => typeof c === 'string')) return mission;
+    const answer = type === 'pa_sparet' ? mission.paAnswer : mission.answer;
+    if (typeof answer !== 'string' || !answer.trim()) return mission;
+    return { ...mission, clues: redactAnswerFromClues(clues as string[], answer) };
+  }
 
-  const answer = type === 'pa_sparet' ? mission.paAnswer : mission.answer;
-  if (typeof answer !== 'string' || !answer.trim()) return mission;
+  if (type === 'closest_wins') {
+    const questions = mission.closestQuestions;
+    if (!Array.isArray(questions)) return mission;
+    const guarded = questions.map((q) => {
+      if (!q || typeof q !== 'object') return q;
+      const question = q as Record<string, unknown>;
+      const answer = question.answer;
+      if ((typeof answer !== 'string' && typeof answer !== 'number') || typeof question.hint !== 'string') {
+        return question;
+      }
+      return { ...question, hint: redactNumberFromHint(question.hint, String(answer)) };
+    });
+    return { ...mission, closestQuestions: guarded };
+  }
 
-  return { ...mission, clues: redactAnswerFromClues(clues as string[], answer) };
+  return mission;
 }

@@ -25,7 +25,7 @@ Generate 3-5 statements. answer is a boolean.
 
 closest_wins — guess a number, closest wins:
 {"type":"closest_wins","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":400,"closestQuestions":[{"q":"...","answer":"42","unit":"years","hint":"..."}]}
-Generate 1-3 questions. answer is a string representation of a number. unit is the unit of measurement (e.g. "km", "years", "kg"). hint is an optional helpful hint.
+Generate 1-3 questions. answer is a string representation of a number. unit is the unit of measurement (e.g. "km", "years", "kg"). hint is an optional helpful hint. CRITICAL: the hint must NEVER contain or reveal the answer number — it gives context or narrows the range, but never states the value (not the exact number, nor "about X").
 
 pa_sparet — progressive clues leading to a hidden answer:
 {"type":"pa_sparet","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["vague clue","more specific","most specific"],"paAnswer":"..."}
@@ -93,7 +93,7 @@ Generate 3-5 statements. answer is a boolean.
 
 closest_wins — guess a number, closest wins:
 {"type":"closest_wins","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":400,"closestQuestions":[{"q":"...","answer":"42","unit":"years","hint":"..."}]}
-Generate 1-3 questions. answer is a string representation of a number. unit is the unit of measurement (e.g. "km", "years", "kg"). hint is an optional helpful hint.
+Generate 1-3 questions. answer is a string representation of a number. unit is the unit of measurement (e.g. "km", "years", "kg"). hint is an optional helpful hint. CRITICAL: the hint must NEVER contain or reveal the answer number — it gives context or narrows the range, but never states the value (not the exact number, nor "about X").
 
 pa_sparet — progressive clues leading to a hidden answer:
 {"type":"pa_sparet","name":"...","icon":"...","desc":"...","difficulty":"easy|medium|hard","maxPts":500,"clues":["vague clue","more specific","most specific"],"paAnswer":"..."}
