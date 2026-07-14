@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 40" width="196" height="40" role="img" aria-label="Rivalry">
+  <title>Rivalry</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap');
+    .rv-word{font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;font-size:30px;letter-spacing:1.5px;}
+  </style>
+  <polygon points="2,6 20,20 2,34" fill="#FFFFFF"/>
+  <polygon points="42,6 24,20 42,34" fill="#7CBDD4"/>
+  <text x="56" y="30" class="rv-word"><tspan fill="#F4F7FA">RIVA</tspan><tspan fill="#7CBDD4">LRY</tspan></text>
+</svg>

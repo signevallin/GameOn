@@ -12,9 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0D1520',
     icons: [
       {
-        src: '/Rivalry-AppIcon-1024.png',
-        sizes: '1024x1024',
-        type: 'image/png',
+        src: '/rivalry-icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
         purpose: 'any',
       },
     ],

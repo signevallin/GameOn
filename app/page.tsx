@@ -342,7 +342,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 <nav id="nav">
   <div class="nav-inner">
     <a href="/" class="nav-logo">
-      <span class="nav-wordmark">Game<svg width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="var(--cyan)" stroke-width="2.6" stroke-linecap="round" style="margin-right:-2px"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg><span class="wm-on">n</span></span>
+      <svg viewBox="0 0 196 40" height="26" role="img" aria-label="Rivalry" style="display:block"><polygon points="2,6 20,20 2,34" fill="#F4F7FA"/><polygon points="42,6 24,20 42,34" fill="var(--cyan)"/><text x="56" y="30" style="font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;font-size:30px;letter-spacing:1.5px"><tspan fill="#F4F7FA">RIVA</tspan><tspan fill="var(--cyan)">LRY</tspan></text></svg>
     </a>
     <nav class="nav-links">
       <a href="#features" class="nav-link">Features</a>
@@ -386,7 +386,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
         <div class="phone float-b">
           <div class="phone-notch"></div>
           <div class="phone-nav">
-            <span class="phone-nav-logo">GAME<svg width="9" height="9" viewBox="0 0 24 22" fill="none" stroke="#75abc8" stroke-width="2.6" stroke-linecap="round" style="display:inline-block;vertical-align:baseline;margin:0 -1px"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg>N</span>
+            <span class="phone-nav-logo">RIVALRY</span>
             <span class="phone-nav-score">1 490 p &middot; you</span>
           </div>
           <div class="phone-screen">
