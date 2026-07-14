@@ -1,13 +1,13 @@
 # Email deliverability (SPF / DKIM / DMARC)
 
-GameOn sends transactional email via **Resend** from `hello@playgameon.app`
+GameOn sends transactional email via **Resend** from `hello@rivalry.se`
 (welcome, subscription, payment-failed/dunning). Without domain authentication
 these land in spam — which for the payment-failed email means silent churn. Set
-this up once on the `playgameon.app` DNS.
+this up once on the `rivalry.se` DNS.
 
 ## 1. Verify the domain in Resend
 
-Resend dashboard → **Domains → Add Domain → `playgameon.app`**. Resend shows the
+Resend dashboard → **Domains → Add Domain → `rivalry.se`**. Resend shows the
 exact DNS records to add (values are account-specific — copy them from Resend,
 don't hardcode). You'll get:
 
@@ -24,7 +24,7 @@ to treat mail that fails checks:
 
 | Type | Name | Value |
 |------|------|-------|
-| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:hello@playgameon.app; fo=1` |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:hello@rivalry.se; fo=1` |
 
 Start with `p=quarantine`. Once you've watched the aggregate (`rua`) reports for
 a couple of weeks and confirmed all legitimate mail passes, tighten to
@@ -43,5 +43,5 @@ a couple of weeks and confirmed all legitimate mail passes, tighten to
   are invalid. If you already have one, merge Resend's include into it rather
   than adding a second.
 - The `FROM` address is set in `app/api/stripe/webhook/route.ts`
-  (`GameOn <hello@playgameon.app>`); keep the domain there in sync with the
+  (`GameOn <hello@rivalry.se>`); keep the domain there in sync with the
   verified Resend domain.

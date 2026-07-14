@@ -8,7 +8,7 @@ const WELCOME: Message = {
   content: "Hi! I can answer questions about Rivalry — features, pricing, or how to get started. What would you like to know?",
 };
 
-const ERROR_MSG = "Sorry, something went wrong. Email us at hello@playgameon.app";
+const ERROR_MSG = "Sorry, something went wrong. Email us at hello@rivalry.se";
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);

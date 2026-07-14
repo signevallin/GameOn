@@ -551,7 +551,7 @@ const ONBOARDING_STEPS: { icon: React.ReactNode; title: string; subtitle: string
     title: "You're ready to play",
     subtitle: 'Share the 4-letter game code with your teams. Once everyone\'s joined, hit Start Game from the dashboard.',
     bullets: [
-      'Teams join at playgameon.app — no app download needed',
+      'Teams join at rivalry.se — no app download needed',
       'Live leaderboard updates as missions are completed',
       'Rate photo submissions manually or let AI do it automatically',
     ],

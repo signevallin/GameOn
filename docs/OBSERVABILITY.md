@@ -11,7 +11,7 @@ database:
 - `200 {"status":"ok","db":"ok",...}` — healthy
 - `503 {"status":"degraded","db":"error",...}` — the database is unreachable
 
-Point an uptime monitor at `https://playgameon.app/api/health` and alert on any
+Point an uptime monitor at `https://rivalry.se/api/health` and alert on any
 non-200. Free options: UptimeRobot, Better Stack, or Vercel's own monitors.
 Suggested interval: 1–5 minutes.
 

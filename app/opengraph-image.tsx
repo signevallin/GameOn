@@ -129,7 +129,7 @@ export default function OGImage() {
             letterSpacing: '0.08em',
           }}
         >
-          playgameon.app
+          rivalry.se
         </div>
       </div>
     ),

@@ -57,7 +57,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="4. Right of Withdrawal and Refunds">
-          <P>As a consumer you have a 14-day right of withdrawal from the date of purchase, provided you have not started using the paid features. Contact us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A> to exercise this right.</P>
+          <P>As a consumer you have a 14-day right of withdrawal from the date of purchase, provided you have not started using the paid features. Contact us at <A href="mailto:hello@rivalry.se">hello@rivalry.se</A> to exercise this right.</P>
           <P style={{ marginTop: 12 }}>Beyond the statutory right of withdrawal, we do not offer refunds for a subscription period that has already started.</P>
         </Section>
 
@@ -109,12 +109,12 @@ export default function TermsPage() {
             <Li><strong>Authority:</strong> you confirm that you are authorised to bind the organisation to these terms.</Li>
             <Li><strong>Data processing:</strong> our <Link href="/dpa" style={{ color: '#7CBDD4', textDecoration: 'underline', textUnderlineOffset: 3 }}>Data Processing Agreement</Link> (GDPR Art. 28) forms part of these terms and governs our processing of your players&apos; personal data on your behalf.</Li>
             <Li><strong>Liability:</strong> the limitation in Section 9 applies. Neither party&apos;s liability is limited in cases of intent or gross negligence.</Li>
-            <Li><strong>Invoicing:</strong> paid plans are charged by card via Stripe. Invoice payment can be arranged for annual Studio subscriptions — contact <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</Li>
+            <Li><strong>Invoicing:</strong> paid plans are charged by card via Stripe. Invoice payment can be arranged for annual Studio subscriptions — contact <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>.</Li>
           </ul>
         </Section>
 
         <Section title="12. Contact">
-          <P>Questions about these terms can be sent to <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>.</P>
+          <P>Questions about these terms can be sent to <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>.</P>
         </Section>
 
         {/* Footer nav */}

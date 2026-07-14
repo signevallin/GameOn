@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import CookieConsent from '@/components/CookieConsent';
 import './globals.css';
 
-const BASE_URL = 'https://playgameon.app';
+const BASE_URL = 'https://rivalry.se';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

@@ -49,7 +49,7 @@ const SHELL = (title: string, bodyHtml: string) => `
         </td></tr>
         <tr><td style="padding:40px 48px;">${bodyHtml}</td></tr>
         <tr><td style="padding:24px 48px;border-top:1px solid rgba(124,189,212,0.1);">
-          <p style="margin:0;font-size:12px;color:#4A6580;line-height:1.6;">Questions? Contact us at <a href="mailto:hello@playgameon.app" style="color:#7CBDD4;">hello@playgameon.app</a></p>
+          <p style="margin:0;font-size:12px;color:#4A6580;line-height:1.6;">Questions? Contact us at <a href="mailto:hello@rivalry.se" style="color:#7CBDD4;">hello@rivalry.se</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -71,7 +71,7 @@ function emailContent(kind: EmailKind, plan?: SubscriptionTier): { subject: stri
           <tr><td style="padding:6px 0;font-size:14px;color:#7CBDD4;font-weight:700;">✓</td><td style="padding:6px 0 6px 10px;font-size:14px;color:#DCE4EE;">Power-ups (sabotage, double points &amp; more)</td></tr>
           <tr><td style="padding:6px 0;font-size:14px;color:#7CBDD4;font-weight:700;">✓</td><td style="padding:6px 0 6px 10px;font-size:14px;color:#DCE4EE;">PDF results reports</td></tr>
         </table>
-        <a href="https://playgameon.app/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Start creating →</a>`),
+        <a href="https://rivalry.se/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Start creating →</a>`),
     };
   }
   if (kind === 'payment_failed') {
@@ -80,7 +80,7 @@ function emailContent(kind: EmailKind, plan?: SubscriptionTier): { subject: stri
       html: SHELL('Payment failed', `
         <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#DCE4EE;letter-spacing:-0.02em;">Your payment didn't go through</h1>
         <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#8FA8C0;">We couldn't charge your card for your Rivalry subscription. Paid features are paused until the payment succeeds. Please update your payment method to keep your access.</p>
-        <a href="https://playgameon.app/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Update payment method →</a>`),
+        <a href="https://rivalry.se/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Update payment method →</a>`),
     };
   }
   return {
@@ -89,7 +89,7 @@ function emailContent(kind: EmailKind, plan?: SubscriptionTier): { subject: stri
       <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#DCE4EE;letter-spacing:-0.02em;">Subscription cancelled</h1>
       <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#8FA8C0;">Your Rivalry subscription has been cancelled. You'll keep access until the end of your current billing period.</p>
       <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#8FA8C0;">If this was a mistake or you'd like to come back, you can reactivate at any time.</p>
-      <a href="https://playgameon.app/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Reactivate →</a>`),
+      <a href="https://rivalry.se/play" style="display:inline-block;padding:14px 28px;background:#7CBDD4;color:#0D1520;font-weight:800;font-size:15px;border-radius:999px;text-decoration:none;">Reactivate →</a>`),
   };
 }
 
@@ -107,7 +107,7 @@ function realDeps(): WebhookDeps {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { subject, html } = emailContent(kind, opts.plan);
       await resend.emails
-        .send({ from: 'Rivalry <hello@playgameon.app>', to, subject, html })
+        .send({ from: 'Rivalry <hello@rivalry.se>', to, subject, html })
         .catch((err) => console.error('[webhook] email error:', err));
     },
   };

@@ -100,7 +100,7 @@ export default function DpaPage() {
         </Section>
 
         <Section title="9. Contact">
-          <P>Data protection questions and breach notifications: <A href="mailto:hello@playgameon.app">hello@playgameon.app</A>. If your procurement process requires a countersigned copy of this DPA, contact us and we will provide one.</P>
+          <P>Data protection questions and breach notifications: <A href="mailto:hello@rivalry.se">hello@rivalry.se</A>. If your procurement process requires a countersigned copy of this DPA, contact us and we will provide one.</P>
         </Section>
 
         {/* Footer nav */}

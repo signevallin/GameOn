@@ -9,7 +9,7 @@ time. None of them stop you taking payments today.
 Create a free monitor (UptimeRobot, Better Stack, or Vercel Monitors) pointed at:
 
 ```
-GET https://playgameon.app/api/health
+GET https://rivalry.se/api/health
 ```
 
 - Interval: 1–5 minutes
@@ -44,10 +44,10 @@ non-main branch push then becomes a safe staging app. Details in
 So welcome / payment-failed / cancellation emails don't land in spam. Full
 step-by-step in `docs/EMAIL.md`. Summary:
 
-- Resend → Domains → verify `playgameon.app`, add the DNS records it shows
+- Resend → Domains → verify `rivalry.se`, add the DNS records it shows
   (SPF TXT + DKIM CNAME + MX) at your DNS provider.
 - Add a DMARC record: `TXT` on `_dmarc` →
-  `v=DMARC1; p=quarantine; rua=mailto:hello@playgameon.app; fo=1`
+  `v=DMARC1; p=quarantine; rua=mailto:hello@rivalry.se; fo=1`
 - Wait for Resend to show **Verified**, then test on mail-tester.com (aim 10/10).
 
 ## 5. Set up ESLint (developer experience)
