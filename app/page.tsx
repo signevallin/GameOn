@@ -342,7 +342,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 <nav id="nav">
   <div class="nav-inner">
     <a href="/" class="nav-logo">
-      <svg viewBox="0 0 196 40" height="26" role="img" aria-label="Rivalry" style="display:block"><polygon points="2,6 20,20 2,34" fill="#F4F7FA"/><polygon points="42,6 24,20 42,34" fill="var(--cyan)"/><text x="56" y="30" style="font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;font-size:30px;letter-spacing:1.5px"><tspan fill="#F4F7FA">RIVA</tspan><tspan fill="var(--cyan)">LRY</tspan></text></svg>
+      <svg viewBox="0 0 196 40" height="26" role="img" aria-label="Rivalry" style="display:block"><polygon points="2,6 20,20 2,34" fill="#F4F7FA"/><polygon points="42,6 24,20 42,34" fill="var(--cyan)"/><text x="56" y="30" style="font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;font-size:30px;letter-spacing:1.5px"><tspan fill="#F4F7FA">RIVAL</tspan><tspan fill="var(--cyan)">RY</tspan></text></svg>
     </a>
     <nav class="nav-links">
       <a href="#features" class="nav-link">Features</a>
