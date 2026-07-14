@@ -422,9 +422,8 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
         <div class="dashboard float-c">
           <div class="db-nav">
             <div class="db-nav-logo">
-              <span class="db-nav-logo-text">Game</span>
-              <svg width="13" height="12" viewBox="0 0 24 22" fill="none" stroke="#75abc8" stroke-width="2.6" stroke-linecap="round" style="display:inline-block;vertical-align:baseline;margin:0 -1px"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg>
-              <span class="db-nav-logo-on">n</span>
+              <span class="db-nav-logo-text">Rival</span>
+              <span class="db-nav-logo-on">ry</span>
             </div>
             <div class="db-nav-center">
               <div class="db-nav-game-name">Sommarkickoff 2026</div>
@@ -475,7 +474,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <div class="reveal" style="text-align:center;">
       <div class="section-eyebrow">Features</div>
       <h2 class="section-h2">Everything you need to run epic games</h2>
-      <p class="section-sub">From first join to final leaderboard &mdash; GameOn handles everything.</p>
+      <p class="section-sub">From first join to final leaderboard &mdash; Rivalry handles everything.</p>
     </div>
     <div class="features-grid">
       <div class="feature-card reveal tilt-card" style="transition-delay:.05s"><div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg></div><div class="feature-title">Live Leaderboard</div><div class="feature-desc">Standings update in real time for every team. The drama on that big screen is genuinely electric.</div></div>
@@ -532,7 +531,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <div class="testimonials-grid">
       <div class="testimonial-card reveal tilt-card" style="transition-delay:.05s"><div class="testimonial-stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div><p class="testimonial-quote">"Our annual company event has never been this electric. 12 teams, 45 minutes of pure chaos. Everyone&apos;s still talking about it weeks later."</p><div class="testimonial-name">Emma K.</div><div class="testimonial-role">HR Manager, Volvo Cars</div></div>
       <div class="testimonial-card reveal tilt-card" style="transition-delay:.1s"><div class="testimonial-stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div><p class="testimonial-quote">"Setup took 2 minutes. The photo missions had everyone sprinting around the venue. Best team-building we&apos;ve ever organised."</p><div class="testimonial-name">Marcus L.</div><div class="testimonial-role">Event Coordinator, Spotify</div></div>
-      <div class="testimonial-card reveal tilt-card" style="transition-delay:.15s"><div class="testimonial-stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div><p class="testimonial-quote">"We&apos;ve run GameOn at three conferences now. The live leaderboard on the big screen creates insane energy from the first minute."</p><div class="testimonial-name">Sofia A.</div><div class="testimonial-role">Conference Organizer, Summit Group</div></div>
+      <div class="testimonial-card reveal tilt-card" style="transition-delay:.15s"><div class="testimonial-stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div><p class="testimonial-quote">"We&apos;ve run Rivalry at three conferences now. The live leaderboard on the big screen creates insane energy from the first minute."</p><div class="testimonial-name">Sofia A.</div><div class="testimonial-role">Conference Organizer, Summit Group</div></div>
     </div>
   </div>
 </section>
@@ -566,7 +565,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">Can I create my own missions?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Yes! The custom mission builder (available on Pro and Studio) lets you create trivia, photo, true/false, timeline, and closest-answer missions tailored to your event theme.</p></div></div>
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">How long does a typical game run?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Most events run 30&ndash;90 minutes. You set the duration when creating the game, and you can end it early at any time from your admin dashboard.</p></div></div>
     <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">What happens after the game ends?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">An auto-generated PDF report is ready immediately &mdash; full standings, per-team scores, mission breakdowns, fun stats, and the highest-rated photo from each team.</p></div></div>
-    <div class="faq-item" style="border-bottom:none;"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">What languages does GameOn support?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">GameOn is available in Swedish, English, Danish, Norwegian, German, and French. Players see the interface in their chosen language automatically &mdash; no manual switching needed.</p></div></div>
+    <div class="faq-item" style="border-bottom:none;"><button class="faq-btn" onclick="toggleFaq(this)"><span class="faq-q">What languages does Rivalry support?</span><span class="faq-icon">+</span></button><div class="faq-body"><p class="faq-a">Rivalry is available in Swedish, English, Danish, Norwegian, German, and French. Players see the interface in their chosen language automatically &mdash; no manual switching needed.</p></div></div>
   </div>
 </section>
 
@@ -577,7 +576,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
     <div class="reveal">
       <div class="float-a" style="display:inline-block;margin-bottom:30px;"><div class="footer-cta-icon"><svg width="36" height="36" viewBox="0 0 24 24"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg></div></div>
       <h2 class="footer-cta-h2">Ready to turn your<br><span style="background:linear-gradient(135deg,#7CBDD4,#A8D4E6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">next event epic?</span></h2>
-      <p class="footer-cta-sub">Join thousands of organizers who&apos;ve already discovered the magic of GameOn.</p>
+      <p class="footer-cta-sub">Join thousands of organizers who&apos;ve already discovered the magic of Rivalry.</p>
       <div class="footer-cta-row">
         <a href="/play" class="btn-primary-lg">Start for free &rarr;</a>
         <button class="btn-ghost" onclick="window.location.href='mailto:hello@playgameon.app'">Book a demo</button>
@@ -594,7 +593,7 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
       <div class="footer-logo">
         <span class="footer-wordmark">Game<svg width="20" height="18" viewBox="0 0 24 22" fill="none" stroke="var(--cyan)" stroke-width="2.6" stroke-linecap="round" style="margin-right:-2px"><path d="M12 3v7"/><path d="M7.2 6.2A8 8 0 1 0 16.8 6.2"/></svg><span class="wm-on">n</span></span>
       </div>
-      <p class="footer-copy">&copy; 2026 GameOn. All rights reserved.</p>
+      <p class="footer-copy">&copy; 2026 Rivalry. All rights reserved.</p>
       <nav class="footer-links">
         <a href="/privacy" class="footer-link">Privacy Policy</a>
         <a href="/terms" class="footer-link">Terms</a>

@@ -45,8 +45,8 @@ export default function CardPage() {
           boxShadow: '0 4px 24px rgba(124,189,212,0.2)',
         }}>
           <Image
-            src="/GameOn-AppIcon-1024.png"
-            alt="GameOn"
+            src="/Rivalry-AppIcon-1024.png"
+            alt="Rivalry"
             width={80}
             height={80}
             style={{ objectFit: 'cover' }}
@@ -62,7 +62,7 @@ export default function CardPage() {
           margin: 0,
           marginBottom: '6px',
         }}>
-          GameOn
+          Rivalry
         </h1>
 
         {/* Tagline */}

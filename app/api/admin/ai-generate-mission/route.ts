@@ -63,7 +63,7 @@ Field rules:
 - maxPts: 300-400 for easy, 400-600 for medium/hard
 - Write ALL content in the language specified in the user message`;
 
-const SINGLE_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+const SINGLE_SYSTEM_PROMPT = `You generate custom missions for a team game app called Rivalry.
 Return ONLY a valid JSON object — no markdown, no explanation, no code fences.
 
 Choose the most interesting type for the topic unless the user specifies one.
@@ -71,7 +71,7 @@ Choose the most interesting type for the topic unless the user specifies one.
 ${MISSION_SCHEMAS}
 - Return ONLY the JSON object`;
 
-const BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+const BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called Rivalry.
 Return ONLY a valid JSON object with a "missions" key containing an array — no markdown, no explanation, no code fences.
 
 Choose the most interesting and VARIED types across missions unless the user specifies one type.
@@ -120,7 +120,7 @@ Field rules:
 - category: an emoji followed by a short thematic group name (2-4 words) in the same language as the content, e.g. "🎵 Musik & Film" or "⚽ Sport" — assign all missions across EXACTLY 3-6 categories total (not one category per mission — many missions must share the same category)
 - Write ALL content in the language specified in the user message`;
 
-const GAME_BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called GameOn.
+const GAME_BULK_SYSTEM_PROMPT = `You generate custom missions for a team game app called Rivalry.
 Return ONLY a valid JSON object with a "missions" key containing an array — no markdown, no explanation, no code fences.
 
 Choose the most interesting and VARIED types across missions unless the user specifies one type.
@@ -153,7 +153,7 @@ async function resolveItunesPreviews(
       const q = encodeURIComponent(`${song.artist} ${song.title}`);
       const res = await fetch(
         `https://itunes.apple.com/search?term=${q}&media=music&entity=song&limit=5`,
-        { headers: { 'User-Agent': 'GameOn/1.0' } }
+        { headers: { 'User-Agent': 'Rivalry/1.0' } }
       );
       if (!res.ok) continue;
       const json = await res.json() as { results?: { artistName: string; trackName: string; previewUrl?: string; trackViewUrl?: string }[] };

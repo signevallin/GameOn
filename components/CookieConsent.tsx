@@ -66,7 +66,7 @@ export default function CookieConsent() {
           }}
         >
           <p style={{ margin: 0, flex: '1 1 260px', fontSize: 13.5, lineHeight: 1.6, color: '#8FA8C0' }}>
-            We use necessary cookies to run GameOn. With your consent we also use
+            We use necessary cookies to run Rivalry. With your consent we also use
             privacy-friendly analytics to improve the product. See our{' '}
             <a href="/privacy" style={{ color: '#7CBDD4', textDecoration: 'underline' }}>
               privacy policy

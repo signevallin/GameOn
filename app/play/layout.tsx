@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'GameOn — Play',
-  description: 'Join or create a GameOn event.',
+  title: 'Rivalry — Play',
+  description: 'Join or create a Rivalry event.',
   robots: { index: false, follow: false },
 };
 

@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
 
   title: {
-    default: 'GameOn — Turn any event into an epic game',
-    template: '%s | GameOn',
+    default: 'Rivalry — Turn any event into an epic game',
+    template: '%s | Rivalry',
   },
   description:
     'Real-time team competitions with live leaderboards, photo missions and power-ups. No app required — teams join in seconds with a 6-digit code.',
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
     'kickoff',
   ],
 
-  authors: [{ name: 'GameOn', url: BASE_URL }],
-  creator: 'GameOn',
-  publisher: 'GameOn',
+  authors: [{ name: 'Rivalry', url: BASE_URL }],
+  creator: 'Rivalry',
+  publisher: 'Rivalry',
 
   /* ── Open Graph ─────────────────────────────────────────── */
   openGraph: {
     type: 'website',
     url: BASE_URL,
-    siteName: 'GameOn',
-    title: 'GameOn — Turn any event into an epic game',
+    siteName: 'Rivalry',
+    title: 'Rivalry — Turn any event into an epic game',
     description:
       'Real-time leaderboards, photo missions and power-ups. Zero app downloads — teams join in seconds.',
     images: [
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'GameOn — Turn any event into an epic game',
+        alt: 'Rivalry — Turn any event into an epic game',
       },
     ],
     locale: 'sv_SE',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   /* ── Twitter / X ────────────────────────────────────────── */
   twitter: {
     card: 'summary_large_image',
-    title: 'GameOn — Turn any event into an epic game',
+    title: 'Rivalry — Turn any event into an epic game',
     description:
       'Real-time leaderboards, photo missions and power-ups. Zero app downloads.',
     images: ['/opengraph-image'],
@@ -68,15 +68,15 @@ export const metadata: Metadata = {
 
   /* ── Icons ──────────────────────────────────────────────── */
   icons: {
-    icon: '/GameOn-AppIcon-1024.png',
-    apple: '/GameOn-AppIcon-1024.png',
+    icon: '/Rivalry-AppIcon-1024.png',
+    apple: '/Rivalry-AppIcon-1024.png',
   },
 
   /* ── PWA / mobile ───────────────────────────────────────── */
-  applicationName: 'GameOn',
+  applicationName: 'Rivalry',
   appleWebApp: {
     capable: true,
-    title: 'Game⏻n',
+    title: 'Rivalry',
     statusBarStyle: 'black-translucent',
   },
 

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How GameOn handles your personal data.',
+  description: 'How Rivalry handles your personal data.',
 };
 
 export default function PrivacyPage() {
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
               </svg>
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#DCE4EE' }}>
-              Game<span style={{ color: '#7CBDD4' }}>On</span>
+              Rival<span style={{ color: '#7CBDD4' }}>ry</span>
             </span>
           </Link>
           <Link href="/" style={{ fontSize: 13, fontWeight: 600, color: '#8FA8C0', textDecoration: 'none' }}>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
         </p>
 
         <Section title="1. Data Controller">
-          <P>GameOn ("we", "us", "our") is the data controller for the personal data described in this policy. Contact us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A> with any questions.</P>
+          <P>Rivalry ("we", "us", "our") is the data controller for the personal data described in this policy. Contact us at <A href="mailto:hello@playgameon.app">hello@playgameon.app</A> with any questions.</P>
         </Section>
 
         <Section title="2. What Data We Collect">

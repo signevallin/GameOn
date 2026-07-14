@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'GameOn — Turn any event into an epic game';
+export const alt = 'Rivalry — Turn any event into an epic game';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -78,8 +78,8 @@ export default function OGImage() {
             marginBottom: '20px',
           }}
         >
-          <span style={{ color: '#DCE4EE' }}>Game</span>
-          <span style={{ color: '#7CBDD4' }}>On</span>
+          <span style={{ color: '#DCE4EE' }}>Rival</span>
+          <span style={{ color: '#7CBDD4' }}>ry</span>
         </div>
 
         {/* Tagline */}

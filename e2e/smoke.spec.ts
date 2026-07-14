@@ -5,9 +5,9 @@ import { test, expect } from '@playwright/test';
  * LoginScreen change — i.e. the build boots and the core public pages paint.
  */
 
-test('landing page renders the GameOn brand', async ({ page }) => {
+test('landing page renders the Rivalry brand', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('body')).toContainText(/GameOn/i);
+  await expect(page.locator('body')).toContainText(/Rivalry/i);
 });
 
 test('privacy policy page renders its heading', async ({ page }) => {

@@ -119,7 +119,7 @@ function Footer() {
     <View style={[shared.footer, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
       <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.text }}>Game</Text>
       <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.accent }}>On</Text>
-      <Text style={{ fontSize: 9, color: C.muted }}> · Powered by GameOn</Text>
+      <Text style={{ fontSize: 9, color: C.muted }}> · Powered by Rivalry</Text>
     </View>
   );
 }
