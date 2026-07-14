@@ -588,9 +588,6 @@ button{font-family:'Sora',sans-serif;cursor:pointer;}
 <footer>
   <div id="footer">
     <div class="footer-grid">
-      <div class="footer-logo">
-        <span class="footer-wordmark">Rival<span class="wm-on">ry</span></span>
-      </div>
       <p class="footer-copy">&copy; 2026 Rivalry. All rights reserved.</p>
       <nav class="footer-links">
         <a href="/privacy" class="footer-link">Privacy Policy</a>
