@@ -5,7 +5,7 @@ type Props = {
 
 // Rivalry wordmark, rendered inline so the Rajdhani font (loaded in the app
 // <head>) applies — external fonts don't load when an SVG is used via <img>.
-// The clashing triangles read as a "versus" mark; text is two-tone (RIVA / LRY).
+// The clashing triangles read as a "versus" mark; text is two-tone (RIVAL / RY).
 // (Component name kept as GameOnLogo to avoid churn across importers.)
 export default function GameOnLogo({ size = 22 }: Props) {
   const height = Math.round((size * 40) / 30); // logo art is 40 tall for a 30px face
@@ -24,8 +24,8 @@ export default function GameOnLogo({ size = 22 }: Props) {
         y="30"
         style={{ fontFamily: "'Rajdhani','Arial Narrow',sans-serif", fontWeight: 700, fontSize: '30px', letterSpacing: '1.5px' }}
       >
-        <tspan fill="#F4F7FA">RIVA</tspan>
-        <tspan fill="var(--accent, #7CBDD4)">LRY</tspan>
+        <tspan fill="#F4F7FA">RIVAL</tspan>
+        <tspan fill="var(--accent, #7CBDD4)">RY</tspan>
       </text>
     </svg>
   );
